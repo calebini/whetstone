@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/rubric_gaps.schema.json",
+  "title": "Whetstone Rubric Gaps",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round_number", "draft_hash", "rubric_content_hash", "rubric_gaps"],
+  "properties": {
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "rubric_content_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "rubric_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gap_id",
+          "gap_fingerprint",
+          "rubric_anchor",
+          "affected_sections",
+          "normalized_severity",
+          "claim",
+          "evidence",
+          "recommendation",
+          "status",
+          "blocking_convergence"
+        ],
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "pattern": "^gap_[a-f0-9]{16}$"
+          },
+          "gap_fingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+          "rubric_anchor": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "affected_sections": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "normalized_severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "claim": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "evidence": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "recommendation": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "status": {
+            "type": "string",
+            "enum": ["unresolved", "accepted", "resolved"]
+          },
+          "blocking_convergence": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

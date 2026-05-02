@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/decision_intervention_request.schema.json",
+  "title": "Whetstone Decision Intervention Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["terminal_state", "generated_at", "round_number", "profile", "draft_hash", "decision_points", "recommendation"],
+  "properties": {
+    "terminal_state": { "type": "string", "const": "PAUSED_DECISION" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "decision_points": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/decisionPoint" }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["choose_option", "modify_draft_manually", "lower_threshold", "continue_record_only"]
+    }
+  }
+}

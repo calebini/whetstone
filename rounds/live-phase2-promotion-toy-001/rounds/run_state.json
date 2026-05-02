@@ -1,0 +1,18 @@
+{
+  "active_profile": "operability",
+  "current_draft_hash": "7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081",
+  "current_round": 3,
+  "last_accepted_draft_hash": "7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081",
+  "phase": "phase_1",
+  "ready_for_phase_2": true,
+  "resumable": false,
+  "seen_draft_hashes": [
+    "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+    "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+    "8e8e4fcdad75bc00252fc37c253a307f0f36846cfdcee761315660d2407adb75",
+    "8e8e4fcdad75bc00252fc37c253a307f0f36846cfdcee761315660d2407adb75",
+    "7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081"
+  ],
+  "terminal_state": "PHASE_1_STABLE",
+  "updated_at": "2026-05-02T03:59:17.445671+00:00"
+}

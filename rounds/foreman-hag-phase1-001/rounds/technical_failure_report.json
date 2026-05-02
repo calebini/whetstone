@@ -1,0 +1,15 @@
+{
+  "draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "exit_reason": "artifact validation retry exhausted",
+  "final_draft_path": "rounds/round-1/draft_after.md",
+  "generated_at": "2026-05-01T20:30:23.734216+00:00",
+  "last_accepted_draft_hash": null,
+  "last_draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "recommendation": "manual_review_required",
+  "round_number": 1,
+  "terminal_state": "HALTED_ARTIFACT_INVALID",
+  "unresolved_blockers": [],
+  "unresolved_conflicts": [],
+  "unresolved_major_issues": [],
+  "unresolved_oscillation": null
+}

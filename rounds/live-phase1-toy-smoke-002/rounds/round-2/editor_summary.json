@@ -1,0 +1,20 @@
+{
+  "accepted_feedback_ids": [],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Notification Spec\n\n## Purpose\n\nSend a notification when a watched file changes.\n\n## Roles\n\n- Watcher: observes file changes.\n- Sender: sends notifications.\n- Operator: configures the watched file and destination.\n\n## Behavior\n\nThe system polls `watch_path` every `poll_interval_seconds`.\n\nPoll scheduling is start-to-start: each poll cycle is scheduled to begin `poll_interval_seconds` after the start time of the previous poll cycle.\n\n### Change Definition\n\nA file is considered **changed** when the SHA-256 hash of its byte content differs from the hash recorded for the previous poll cycle.\n\n### First-Run Baseline\n\nOn the first poll cycle after startup, the system records the file's current SHA-256 hash as the baseline and MUST NOT send a notification.\n\n### Subsequent Cycles\n\nOn each subsequent poll cycle:\n\n1. Read the file bytes from `watch_path`.\n2. Compute `sha256_current` over those bytes.\n3. If `sha256_current != sha256_previous`, the system MUST attempt to send a notification (see **Notification Format**).\n   - On send success, the system MUST set `sha256_previous = sha256_current`.\n   - On send failure, the system MUST NOT update `sha256_previous`.\n4. If `sha256_current == sha256_previous`, no notification is sent.\n\n## Notification Format\n\n- Transport: an email message addressed to `destination`, which MUST be an email address.\n- Subject: `ToyNotify: file changed: {watch_path}`\n- Body (plain text):\n  - `watch_path: {watch_path}`\n  - `timestamp_utc: {RFC3339 UTC, Z suffix, no fractional seconds (e.g., 2026-05-02T12:00:00Z)}`\n  - `sha256: {sha256_current}`\n\n## Configuration\n\n```yaml\nwatch_path: ./input.txt\ndestination: ops@example.com\npoll_interval_seconds: 60\nfailure_log_path: ./toy_notify_failures.log\n```\n\n## Failure Handling\n\nIf sending fails, the system MUST append a single-line JSON object to `failure_log_path` (JSONL format) with keys:\n\n- `timestamp_utc` (RFC3339 UTC, Z suffix, no fractional seconds)\n- `watch_path`\n- `destination`\n- `error`\n\nAfter recording the failure, the system MUST continue polling on the normal schedule.\n",
+  "draft_after_hash": "48eee2c32c2dc1c93c20692a4821509e4052043249c73246cfd7cd1d5a10ad4e",
+  "draft_before_hash": "0d51e4de4caebe403d883bd09389d62dfe8cca5044d2e69cad9e8b0e57a41041",
+  "modified_feedback_ids": [
+    "fb_001",
+    "fb_002",
+    "fb_003"
+  ],
+  "resolved_issue_ids": [
+    "iss_3c9ab1f7e20d5864",
+    "iss_7b2e4f9c1a3d5e8f",
+    "iss_5e1c7f3a9b2d4e6f"
+  ],
+  "round_number": 2,
+  "unresolved_issue_ids": []
+}

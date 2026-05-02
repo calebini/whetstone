@@ -1,0 +1,96 @@
+{
+  "draft_hash": "26912b5b4333f684b449cab3d5fdf610005301b00ff5a4442b3e92ec85b58801",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "The predicate 'the file changed' is used as the core trigger condition but is never defined, leaving the change detection mechanism entirely unspecified.",
+      "determinism_impact": "major",
+      "evidence": "Behavior section states 'If the file changed, the system sends a notification' with no specification of the detection method (modification time, content hash, file size, inode change, etc.).",
+      "feedback_id": "fb_r1_si_001",
+      "in_scope": true,
+      "invariant_violated": "All behavioral predicates must be fully defined before an implementation can be derived from the spec.",
+      "issue_fingerprint": "3c7f2a19e04b8d56a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+      "issue_id": "iss_3c7f2a19e04b8d56",
+      "issue_type": "undefined_behavior",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a subsection under Behavior defining the change detection method, e.g.: 'Change is determined by comparing the SHA-256 hash of the file contents at each poll interval against the hash recorded at the previous interval.'",
+      "rubric_impact": null,
+      "severity_rationale": "Change detection is the sole trigger for the system's primary function. Without a definition, independent implementations will diverge and the spec cannot serve as an authoritative reference."
+    },
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "First-run semantics are absent: the spec does not state whether the system establishes a baseline silently or treats the initial observation as a change and fires a notification.",
+      "determinism_impact": "major",
+      "evidence": "The Behavior section describes only the steady-state polling loop. No startup or initialization behavior is mentioned anywhere in the spec.",
+      "feedback_id": "fb_r1_si_002",
+      "in_scope": true,
+      "invariant_violated": "Initial and boundary states must be explicitly defined so steady-state behavior has a well-formed baseline.",
+      "issue_fingerprint": "7d9e1b3a5c2f8047a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+      "issue_id": "iss_7d9e1b3a5c2f8047",
+      "issue_type": "underspecified_behavior",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a Startup Behavior subsection specifying first-run handling, e.g.: 'On first run, the system records the current state of the file as the baseline without sending a notification. Subsequent polls compare against this baseline.'",
+      "rubric_impact": null,
+      "severity_rationale": "Undefined first-run behavior directly determines whether a spurious notification is sent on every fresh deployment or system restart, which is operationally significant."
+    },
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The failure record output is mentioned but not specified: destination, format, and required fields are all absent.",
+      "determinism_impact": "minor",
+      "evidence": "Failure Handling section states only 'the system records the failure' with no indication of where (log file, stderr, database), in what format, or with what required fields (timestamp, error message, destination, etc.).",
+      "feedback_id": "fb_r1_si_003",
+      "in_scope": true,
+      "invariant_violated": "All output artifacts must have a defined format, destination, and minimum field set.",
+      "issue_fingerprint": "c4e8a2f16b9d0573a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+      "issue_id": "iss_c4e8a2f16b9d0573",
+      "issue_type": "underspecified_interface",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify the failure record target and schema, e.g.: 'The system appends a newline-delimited JSON entry to a file named failure.log in the working directory. Each entry MUST include: timestamp (ISO 8601), destination (string), and error (string).'",
+      "rubric_impact": null,
+      "severity_rationale": "Underspecified failure output causes silent implementation divergence in observability tooling, but does not affect the primary notification path, keeping severity at minor."
+    },
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The Failure Handling section covers only send failures; file-not-found and file-unreadable error cases are entirely undefined.",
+      "determinism_impact": "nit",
+      "evidence": "Failure Handling covers only 'if sending fails'. No behavior is specified for: watch_path does not exist at startup, watch_path becomes inaccessible mid-operation, or watch_path is deleted after the system starts.",
+      "feedback_id": "fb_r1_si_004",
+      "in_scope": true,
+      "invariant_violated": "Failure handling must enumerate all failure modes that can arise from defined system inputs and configuration.",
+      "issue_fingerprint": "f1a5b7c3d2e09864a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+      "issue_id": "iss_f1a5b7c3d2e09864",
+      "issue_type": "missing_section",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Extend Failure Handling with explicit behavior for file access errors, e.g.: 'If watch_path does not exist or cannot be read at any poll interval, the system records the error using the same failure record mechanism and continues polling.'",
+      "rubric_impact": null,
+      "severity_rationale": "Missing file-access failure modes are a structural gap but do not affect the happy path; they are operationally important yet do not block the spec's core behavioral claims."
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Structural Integrity Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

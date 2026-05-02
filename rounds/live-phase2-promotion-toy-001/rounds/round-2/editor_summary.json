@@ -1,0 +1,16 @@
+{
+  "accepted_feedback_ids": [],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Approval Adapter 0.17\n\n## Purpose\n\nDefine a tiny approval adapter for Whetstone live smoke testing.\n\n## Adapter Contract\n\nThe adapter records approval requests and returns an approval status.\n\n**Status domain:** `PENDING | APPROVED | REJECTED`\n\n**Request identity:** A request is keyed by its unique `request_id` string.\n\n**Initial status:** Every newly recorded request begins in `PENDING`.\n\n**Duplicate handling:** Submitting a request whose `request_id` already exists returns the current recorded status without creating a new record.\n\n**Determinism rule:** For a given `request_id`, the adapter always returns the status currently recorded for that key. Status transitions (`PENDING \u2192 APPROVED` or `PENDING \u2192 REJECTED`) are externally driven and recorded atomically; once a terminal status (`APPROVED` or `REJECTED`) is set, it cannot change.",
+  "draft_after_hash": "8e8e4fcdad75bc00252fc37c253a307f0f36846cfdcee761315660d2407adb75",
+  "draft_before_hash": "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+  "modified_feedback_ids": [
+    "fb_001"
+  ],
+  "resolved_issue_ids": [
+    "iss_e1fa89ce7c0c1dd2"
+  ],
+  "round_number": 2,
+  "unresolved_issue_ids": []
+}

@@ -1,0 +1,20 @@
+{
+  "artifact_name": "reviewer_feedback.json",
+  "attempt_number": 1,
+  "client": {
+    "model": "gpt-5.5",
+    "name": "codex",
+    "version": "0.128.0"
+  },
+  "client_role": "reviewer",
+  "config_snapshot": {
+    "review_max_rounds": 3,
+    "target_mode": "strict",
+    "target_phase": "final"
+  },
+  "phase": "phase_1",
+  "profile": "determinism",
+  "prompt_text": "You are the Whetstone reviewer.\nReview profile: determinism\nPhase: phase_1\n\nReturn only a single JSON object. Do not return markdown, explanation, or fenced code.\nThe top-level object MUST match reviewer_feedback.json and include:\n- round_number: 2\n- profile: determinism\n- reviewer: object with concrete name, version, and model strings\n- draft_hash: 8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c\n- feedback: array of feedback items, or [] if no issues are found\n\nEach feedback item MUST represent exactly one issue and include all required schema fields.\nWhetstone computes issue_id, issue_fingerprint, and normalized_severity from the feedback semantic fields before persistence.\nThe reviewer should return schema-shaped placeholder values for issue_id and issue_fingerprint if required by the client.\nissue_id placeholders SHOULD match iss_[16 lowercase hex characters], for example iss_0123456789abcdef.\nissue_fingerprint placeholders SHOULD be exactly 64 lowercase hex characters.\ndraft_hash MUST exactly equal the draft_hash value supplied above.\nSeverity fields MUST use only blocker, major, minor, nit, or null. Do not use high, medium, low, none, n/a, or similar aliases.\nEach feedback item MUST include exactly these base fields:\n- feedback_id\n- issue_id\n- issue_fingerprint\n- issue_type\n- affected_sections\n- baseline_severity\n- authority_impact\n- determinism_impact\n- rubric_impact\n- normalized_severity\n- invariant_violated\n- claim\n- evidence\n- recommended_change\n- in_scope\n- severity_rationale\n- oscillation_key\nFor Phase 1, set oscillation_key to null.\n\nRubric:\n# Convergence Rubric\n\n- The spec has a clear purpose.\n- The adapter contract has no unresolved blocker or major issues.\n\n\n\nDraft:\n# Toy Approval Adapter 0.17\n\n## Purpose\n\nDefine a tiny approval adapter for Whetstone live smoke testing.\n\n## Adapter Contract\n\nThe adapter records approval requests and returns an approval status.\n",
+  "timestamp": "2026-05-02T03:58:12.239109+00:00",
+  "validation_errors": []
+}

@@ -1,0 +1,59 @@
+{
+  "draft_hash": "8af4bb382a912be9e655fa82f2653cfafeac13910602c98466595046047d90da",
+  "feedback": [
+    {
+      "affected_sections": [
+        "5. Approval Request",
+        "8. Replay Contract",
+        "11. Idempotency and Multi-Approver Behavior",
+        "14. Hash Handling"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The draft requires immutable request preservation, mutated-field rejection, replay from request plus response, and idempotent behavior, but does not specify the adapter's minimum durable storage obligations or recovery behavior.",
+      "determinism_impact": "major",
+      "evidence": "Section 5 says the adapter must treat authority-bearing fields as read-only and reject submissions when preserved authority-bearing fields differ. Section 8 says replayable approval data includes the immutable approval request and adapter response. Section 11 defines approval_request_id as the idempotency boundary and allows duplicate detection. However, the draft does not state whether the adapter must persist the received request context before presentation, whether persistence must survive process restart, what keying/indexing is required, or how duplicate/conflicting submissions are detected after recovery.",
+      "feedback_id": "fb_operability_001",
+      "in_scope": true,
+      "invariant_violated": "Replayable and idempotent approval capture requires durable operational state sufficient to survive retries and restarts.",
+      "issue_fingerprint": "88c2b47d3bdfe5e05e3d7f77cdf0f4136c1f31afe96be06c840fd8f7c7ceaebd",
+      "issue_id": "iss_88c2b47d3bdfe5e0",
+      "issue_type": "operability_gap",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add an operational persistence subsection defining the minimum adapter-side durability expectations for received approval requests, submitted responses, idempotency records, and restart recovery. If durability is intentionally Foreman-owned, state that explicitly and constrain adapter duplicate detection and preserved-field comparison to the current request envelope or Foreman-provided immutable request store.",
+      "rubric_impact": null,
+      "severity_rationale": "This is major for operability because independent implementations cannot reliably satisfy mutation rejection, replay contribution, or idempotent retry behavior under normal failures without a durability contract."
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling",
+        "16. Failure Handling",
+        "22. Reason-Code Boundary"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Adapter failure reporting is too underspecified to operate consistently because it gives a sample failed payload but no lifecycle, delivery target, retry classification, or required status/error vocabulary.",
+      "determinism_impact": "minor",
+      "evidence": "Section 16 defines an example with status failed and error_code HAG_ADAPTER_DELIVERY_FAILED, and Section 22 separates adapter diagnostics from Foreman reason codes. The draft does not define whether failure output is returned synchronously to Foreman, persisted as a receipt, emitted as telemetry, retried, or correlated with adapter receipts. It also does not define required versus example fields, terminal versus transient failures, or whether error_code values are registry-free but still enumerated by this specification.",
+      "feedback_id": "fb_operability_002",
+      "in_scope": true,
+      "invariant_violated": "Operational failures need unambiguous reporting semantics that do not leak Foreman transition authority.",
+      "issue_fingerprint": "15216e373a10b230a533b53d966f695acfe7774786be4624402dc83f02b9c759",
+      "issue_id": "iss_15216e373a10b230",
+      "issue_type": "operability_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a failure lifecycle subsection specifying required failure payload fields, correlation with approval_request_id and optional hag_receipt_id, delivery target, retryability classification, and whether error_code is an open adapter-local namespace or a fixed adapter-contract enum. Preserve the existing rule that Arbiter mapping is required before any Foreman reason code is emitted.",
+      "rubric_impact": null,
+      "severity_rationale": "This is minor because the authority boundary is clear, but operators still lack enough contract detail to monitor, retry, and diagnose adapter failures consistently."
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "GPT-5",
+    "name": "Codex Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 3
+}

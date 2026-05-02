@@ -1,0 +1,20 @@
+{
+  "artifact_name": "editor_summary.json",
+  "attempt_number": 1,
+  "client": {
+    "model": "default",
+    "name": "claude-code",
+    "version": "unknown"
+  },
+  "client_role": "editor",
+  "config_snapshot": {
+    "review_max_rounds": 3,
+    "target_mode": "strict",
+    "target_phase": "final"
+  },
+  "phase": "phase_2",
+  "profile": "convergence_strict_check",
+  "prompt_text": "You are the Whetstone editor.\nApply or decline feedback according to the spec authority model.\n\nReturn only a single JSON object matching editor_summary.json.\nDo not return markdown, explanation, fenced code, an editor object, or a decisions array.\nThe top-level object MUST set round_number to 4.\nThe draft_before_hash MUST be 7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081.\nThe draft_after_hash MUST be 7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081.\nThis live round is capture-only; do not assume the repository draft is mutated by this prompt.\nIn capture-only mode, feedback may be accepted in substance while its issue remains unresolved because no draft text changed.\nSet draft_after_content to null.\nThe top-level object MUST include exactly these fields:\n- round_number\n- draft_before_hash\n- draft_after_hash\n- accepted_feedback_ids\n- modified_feedback_ids\n- declined_feedback\n- created_conflict_ids\n- resolved_issue_ids\n- unresolved_issue_ids\n- draft_after_content\n\nUse accepted_feedback_ids for feedback accepted as written.\nUse modified_feedback_ids for feedback accepted in substance but implemented differently.\nUse declined_feedback only for feedback declined under the allowed decline taxonomy.\nUse resolved_issue_ids only when the current draft_after resolves the issue.\nUse unresolved_issue_ids for issues still unresolved in the current draft_after.\nIf there are no entries for an array field, return an empty array for that field.\n\nReviewer feedback JSON:\n{\n  \"draft_hash\": \"7c2619ab4cfd5f5d38e5536fecc207586b29267b8c7b40f2203d9559a27ca081\",\n  \"feedback\": [],\n  \"profile\": \"convergence_strict_check\",\n  \"reviewer\": {\n    \"model\": \"GPT-5\",\n    \"name\": \"Codex Whetstone Reviewer\",\n    \"version\": \"1.0\"\n  },\n  \"round_number\": 4\n}\n\nDraft:\n# Toy Approval Adapter 1.0\n\n## Purpose\n\nDefine a tiny approval adapter for Whetstone live smoke testing.\n\n## Adapter Contract\n\nThe adapter records approval requests and returns an approval status.\n\n**Status domain:** `PENDING | APPROVED | REJECTED`\n\n**Request identity:** A request is keyed by its unique `request_id` string.\n\n**Initial status:** Every newly recorded request begins in `PENDING`.\n\n**Duplicate handling:** Submitting a request whose `request_id` already exists returns the current recorded status without creating a new record.\n\n**Determinism rule:** For a given `request_id`, the adapter always returns the status currently recorded for that key. Status transitions (`PENDING \u2192 APPROVED` or `PENDING \u2192 REJECTED`) are externally driven and recorded atomically; once a terminal status (`APPROVED` or `REJECTED`) is set, it cannot change.",
+  "timestamp": "2026-05-02T03:59:55.730826+00:00",
+  "validation_errors": []
+}

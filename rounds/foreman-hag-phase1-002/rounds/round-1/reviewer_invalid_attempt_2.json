@@ -1,0 +1,3 @@
+{
+  "client_error": "$.feedback[1].issue_fingerprint: string does not match pattern '^[a-f0-9]{64}$'"
+}

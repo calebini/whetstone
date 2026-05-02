@@ -1,0 +1,21 @@
+{
+  "accepted_feedback_ids": [
+    "fb_002"
+  ],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Notification Spec\n\n## Purpose\n\nSend a notification when a watched file changes.\n\n## Roles\n\n- Watcher: observes file changes.\n- Sender: sends notifications.\n- Operator: configures the watched file and destination.\n\n## Behavior\n\nThe system polls `watch_path` every `poll_interval_seconds`.\n\nPoll scheduling is start-to-start: each poll cycle is scheduled to begin `poll_interval_seconds` after the start time of the previous poll cycle.\n\n### Change Definition\n\nA file is considered **changed** when the SHA-256 hash of its byte content differs from the hash recorded for the previous poll cycle.\n\n### First-Run Baseline\n\nOn the first poll cycle after startup, the system records the file's current SHA-256 hash as the baseline and MUST NOT send a notification.\n\nIf reading `watch_path` fails on the first poll cycle, the system MUST apply **Read Failure Handling** and MUST NOT establish a baseline until a successful read occurs.\n\n### Subsequent Cycles\n\nOn each subsequent poll cycle:\n\n1. Read the file bytes from `watch_path`.\n   - If the read fails, the system MUST apply **Read Failure Handling**.\n2. Compute `sha256_current` over those bytes.\n3. If `sha256_current != sha256_previous`, the system MUST attempt to send a notification (see **Notification Format**).\n   - On send success, the system MUST set `sha256_previous = sha256_current`.\n   - On send failure, the system MUST NOT update `sha256_previous`.\n4. If `sha256_current == sha256_previous`, no notification is sent.\n\n## Notification Format\n\n- Transport: an email message addressed to `destination`, which MUST be an email address.\n- Subject: `ToyNotify: file changed: {watch_path}`\n- Body (plain text):\n  - `watch_path: {watch_path}`\n  - `timestamp_utc: {RFC3339 UTC, Z suffix, no fractional seconds (e.g., 2026-05-02T12:00:00Z)}`\n  - `sha256: {sha256_current}`\n\n## Configuration\n\n```yaml\nwatch_path: ./input.txt\ndestination: ops@example.com\npoll_interval_seconds: 60\nfailure_log_path: ./toy_notify_failures.log\n```\n\nConfiguration constraints:\n\n- `poll_interval_seconds` MUST be an integer greater than or equal to 1. If this constraint is violated, the system MUST refuse to start.\n\n## Failure Handling\n\n### Send Failure Handling\n\nIf sending fails, the system MUST append a single-line JSON object to `failure_log_path` (JSONL format) with keys:\n\n- `timestamp_utc` (RFC3339 UTC, Z suffix, no fractional seconds)\n- `watch_path`\n- `destination`\n- `error`\n\nAfter recording the failure, the system MUST continue polling on the normal schedule.\n\n### Read Failure Handling\n\nIf reading `watch_path` fails (including file missing, permission denied, or I/O error), the system MUST:\n\n1. Append a single-line JSON object to `failure_log_path` (JSONL format) with keys:\n   - `timestamp_utc` (RFC3339 UTC, Z suffix, no fractional seconds)\n   - `watch_path`\n   - `destination`\n   - `error`\n   - `error_stage` with value `read`\n2. MUST NOT update `sha256_previous`.\n3. MUST continue polling on the normal schedule.\n\n### Log Growth\n\n`failure_log_path` is append-only. Log rotation, truncation, and disk-capacity management are the Operator's responsibility and are out of scope for this system.\n",
+  "draft_after_hash": "f4c465e215e1c392ea55c46d5f14fb74026f5bf842d4ac0d3bb9bcdd14ecc837",
+  "draft_before_hash": "48eee2c32c2dc1c93c20692a4821509e4052043249c73246cfd7cd1d5a10ad4e",
+  "modified_feedback_ids": [
+    "fb_001",
+    "fb_003"
+  ],
+  "resolved_issue_ids": [
+    "iss_a1b2c3d4e5f60011",
+    "iss_b2c3d4e5f6071122",
+    "iss_c3d4e5f607182233"
+  ],
+  "round_number": 3,
+  "unresolved_issue_ids": []
+}

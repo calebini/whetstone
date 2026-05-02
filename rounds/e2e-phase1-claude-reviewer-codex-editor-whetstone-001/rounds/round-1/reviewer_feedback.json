@@ -1,0 +1,188 @@
+{
+  "draft_hash": "d785b5da715198cc8cb656e21f1e119761a4cf7caa80956b6c436b1e3d3b08fb",
+  "feedback": [
+    {
+      "affected_sections": [
+        "STATE MACHINE (FULL TRANSITIONS)",
+        "ROUND SCHEDULING ALGORITHM"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The TECHNICAL_REVIEW -> TECHNICAL_STABLE transition specifies only 'if accepted draft' as its guard, but the ROUND SCHEDULING ALGORITHM defines a stricter dual condition: all non-skipped Phase 1 profiles must have valid clean status AND the current draft must be accepted. An implementation conforming only to the state machine guard would advance to TECHNICAL_STABLE\u2014and then to Phase 2\u2014without verifying clean profile status, bypassing a hard Phase 1 completion requirement.",
+      "determinism_impact": null,
+      "evidence": "State machine section: 'TECHNICAL_REVIEW -> TECHNICAL_STABLE (if accepted draft)'. Round Scheduling Algorithm section: 'Phase 1 completes only when: all non-skipped Phase 1 profiles have valid clean status, and the current draft is accepted.'",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "Every state machine transition guard must be complete and consistent with all authoritative definitions of the same transition condition elsewhere in the spec.",
+      "issue_fingerprint": "3a7c891f4e2bd05f6a1c3e8d7b9042f1e5c6a3d8b7e1f4a2c9d0e6b3f7a1c5e2",
+      "issue_id": "iss_3a7c891f4e2bd05f",
+      "issue_type": "cross_spec_consistency",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Update the state machine transition to read 'TECHNICAL_REVIEW -> TECHNICAL_STABLE (if accepted draft AND all non-skipped Phase 1 profiles have valid clean status)' to match the Phase 1 completion criteria defined in the ROUND SCHEDULING ALGORITHM section.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "HALT ARTIFACT MATRIX",
+        "CONFIGURATION"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The HALT ARTIFACT MATRIX enumerates required artifacts for four halt conditions but omits the CONFIG_INVALID terminal state, which is established both by the CONFIGURATION section ('the Orchestrator MUST halt before the first review round and produce /rounds/config_validation_error.json') and by the state machine ('INITIALIZED -> CONFIG_INVALID'). There is no authoritative artifact list for this halt path beyond the single artifact mentioned informally in the CONFIGURATION section, leaving the halt incompletely specified.",
+      "determinism_impact": null,
+      "evidence": "HALT ARTIFACT MATRIX defines entries for: clean convergence achieved, blocker-level conflict escalation, oscillation stop, max_rounds reached. No entry exists for CONFIG_INVALID. CONFIGURATION section states the halt requirement and names one artifact. State machine lists 'INITIALIZED -> CONFIG_INVALID (on preflight configuration validation failure)'.",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "Every terminal state must have a canonical entry in the HALT ARTIFACT MATRIX defining its required artifacts.",
+      "issue_fingerprint": "8e4f1a3c6b9d2e07f5a8c1e3d7b04926f1c8a5d3b6e9f2a7c4d0e8b5f3a1c9e6",
+      "issue_id": "iss_8e4f1a3c6b9d2e07",
+      "issue_type": "cross_spec_consistency",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a CONFIG_INVALID entry to the HALT ARTIFACT MATRIX with terminal_state: CONFIG_INVALID and required artifacts: [config_validation_error.json]. This makes the preflight halt consistent with the matrix pattern used for all other terminal states.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "PHASE-GATED FEEDBACK CLASSIFICATION",
+        "Oscillation Key Canonicalization"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "The spec states 'If section_id is not in the canonical section index, the reviewer artifact is invalid and MUST be retried or halted according to artifact validation policy', but no artifact validation policy is defined anywhere in the spec. The Orchestrator cannot deterministically choose between retry and halt, cannot determine the maximum retry count, cannot identify the terminal state when retries are exhausted, and cannot know what artifacts to produce at that boundary. This is a mandatory execution path with undefined branching behavior.",
+      "determinism_impact": "blocker",
+      "evidence": "Oscillation Key Canonicalization section: 'If section_id is not in the canonical section index, the reviewer artifact is invalid and MUST be retried or halted according to artifact validation policy.' No section titled artifact validation policy or equivalent exists anywhere in the spec. The DESIGN PRINCIPLE states: 'Every primitive MUST be computable. No implied behavior. No undefined behavior.'",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Every branching decision that affects Orchestrator halting behavior must be fully specified with computable criteria. No implied behavior.",
+      "issue_fingerprint": "c2a5e8f1b4d9703e6f1c5a8b3d2e7904f6a1c5e8b2d3f7a0c9e4b6d1f3a8c2e7",
+      "issue_id": "iss_c2a5e8f1b4d9703e",
+      "issue_type": "undefined_behavior",
+      "normalized_severity": "blocker",
+      "oscillation_key": null,
+      "recommended_change": "Define an artifact validation policy specifying: (1) the ordered decision between retry and halt; (2) the maximum number of retries before halting; (3) the terminal state when retries are exhausted (e.g., a new HALTED_ARTIFACT_INVALID state or mapping to an existing terminal state); and (4) the required artifacts at that halt boundary. Alternatively, add this policy as a named subsection and reference it by section name.",
+      "rubric_impact": null,
+      "severity_rationale": "Rated blocker because the undefined policy makes Orchestrator behavior non-deterministic on a mandatory Phase 2 execution path, directly violating the DESIGN PRINCIPLE requirements for computability and no undefined behavior. The gap cannot be resolved by inference without introducing implied behavior."
+    },
+    {
+      "affected_sections": [
+        "ROUND SCHEDULING ALGORITHM",
+        "REVIEW PROFILES"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The clean-status invalidation rule 'if the editor mutates any section in the profile focus, previous clean status for that profile is invalidated' is non-computable because profile focus fields list abstract concern types (e.g., authority_boundaries, state_machine_legality, cross_spec_consistency) rather than spec section identifiers. No mapping from concern types to spec sections is defined anywhere in the spec. The Orchestrator cannot deterministically evaluate whether a given editor mutation falls within a given profile's focus, making the invalidation rule unimplementable without implied behavior.",
+      "determinism_impact": "major",
+      "evidence": "Round Scheduling Algorithm: 'if the editor mutates any section in the profile focus, previous clean status for that profile is invalidated'. Review Profiles: 'structural_integrity: focus: [authority_boundaries, state_machine_legality, cross_spec_consistency]'. No section defines what spec sections correspond to authority_boundaries, state_machine_legality, or any other focus concern type. DESIGN PRINCIPLE: 'Every primitive MUST be computable.'",
+      "feedback_id": "fb_004",
+      "in_scope": true,
+      "invariant_violated": "Every condition used in Orchestrator scheduling decisions must be computable from defined spec primitives.",
+      "issue_fingerprint": "7f3b9c5a1e8d2064b6f3a1c8e5d9b204a3c6f1e8b5d2a9c0f7e4b3d6a1c8f5e2",
+      "issue_id": "iss_7f3b9c5a1e8d2064",
+      "issue_type": "cross_spec_consistency",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Either (a) replace the abstract focus labels in REVIEW PROFILES with explicit lists of spec section identifiers (e.g., by markdown heading slug), or (b) add a mapping table that defines which canonical spec sections correspond to each focus concern type. Either approach makes the invalidation rule computable from defined artifacts.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "CORE ROLES",
+        "ARTIFACT SCHEMAS (MINIMUM REQUIRED FIELDS)",
+        "CONFLICT MODEL"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The editor_summary.json schema includes created_conflict_ids, implying the Editor has authority to create conflicts. However, neither CORE ROLES, the CONFLICT MODEL, nor the CONFLICT ESCALATION section defines the conditions under which the Editor may create a conflict, what lifecycle a created conflict has before reaching escalation thresholds, or where created conflicts are persisted between creation and escalation. The CORE ROLES definition says the Editor 'resolves conflicts within defined authority' but 'defined authority' is never defined.",
+      "determinism_impact": null,
+      "evidence": "editor_summary.json schema: 'created_conflict_ids: [string]'. CORE ROLES Editor entry: 'resolves conflicts within defined authority.' CONFLICT MODEL: defines conflict types and severity but contains no description of conflict creation workflow. CONFLICT ESCALATION: describes threshold-based escalation from an existing conflict state but does not describe initial conflict creation.",
+      "feedback_id": "fb_005",
+      "in_scope": true,
+      "invariant_violated": "Every role's authority must be explicitly bounded, and every schema field implying a role action must have a corresponding authority definition.",
+      "issue_fingerprint": "4d8a2e6f1c3b9075e4a2c6f1d8b3e507a4c8f2d1b6e3a9c5d7f0e2b4a1c8d6f3",
+      "issue_id": "iss_4d8a2e6f1c3b9075",
+      "issue_type": "authority_violation",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Define the Editor's conflict creation authority: specify under what conditions the Editor may record a conflict via created_conflict_ids, how the Orchestrator tracks those IDs between rounds for escalation threshold counting, and what 'defined authority' means for conflict resolution scope. Alternatively, clarify that only the Orchestrator creates conflicts (with the Editor only triggering them via declined feedback) and remove created_conflict_ids from editor_summary.json if it is redundant.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "ISSUE AND CONFLICT IDENTITY",
+        "CONTENT NORMALIZATION AND HASHING"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The issue_fingerprint formula uses normalized(affected_sections) where affected_sections is an array, but no array-to-string serialization format is specified. Two implementations serializing the same array differently (e.g., newline-joined vs. JSON-encoded vs. comma-separated) will produce different fingerprints for the same logical issue, breaking cross-round fingerprint stability. The same gap applies to normalized(affected_sections) in the gap_fingerprint formula and normalized(sorted_participating_issue_fingerprints) in the conflict_fingerprint formula.",
+      "determinism_impact": "minor",
+      "evidence": "Issue fingerprint formula: 'issue_fingerprint = SHA256(normalized(issue_type) + \"\\n\" + normalized(affected_sections) + \"\\n\" + normalized(invariant_violated) + \"\\n\" + normalized(claim))'. Normalization rules specify only string-level operations (trim, collapse whitespace, lowercase, sort arrays when order-insensitive) with no definition of how an array is serialized to a byte sequence before hashing.",
+      "feedback_id": "fb_006",
+      "in_scope": true,
+      "invariant_violated": "All fingerprint hash inputs must have fully specified canonical serializations to ensure deterministic cross-implementation outputs.",
+      "issue_fingerprint": "b5e1c4a8f2d6903e7b1c4a9f2e6d8b305c7a3e1f8d2b6a9c4f0e7b3d1a5c8f2e",
+      "issue_id": "iss_b5e1c4a8f2d6903e",
+      "issue_type": "determinism_violation",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify a canonical array serialization format for all fingerprint inputs. For example: apply string normalization to each element, then join elements with a newline character. Document this as part of the normalization rules in the CONTENT NORMALIZATION AND HASHING section and reference it explicitly in each fingerprint formula.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "ROUND SCHEDULING ALGORITHM",
+        "ROUND STRATEGY (ADAPTIVE)"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The spec requires that for final/strict targets the Orchestrator must not declare clean convergence until 'every distinct Phase 2 profile in the configured sequence has produced at least one clean result'. The Phase 2 round strategy lists convergence_strict_check twice. It is unspecified whether 'distinct' means unique by profile name (two occurrences count as one required clean result) or unique by sequence position (each configured slot must independently produce a clean result). These interpretations produce different convergence gates.",
+      "determinism_impact": "minor",
+      "evidence": "Round Scheduling Algorithm: 'For target_phase = final and target_mode = strict, the Orchestrator MUST NOT declare clean convergence until every distinct Phase 2 profile in the configured sequence has produced at least one clean result in Phase 2 for the current draft lineage.' Round Strategy phase_2 sequence: [convergence_strict_check, adversarial, convergence_strict_check].",
+      "feedback_id": "fb_007",
+      "in_scope": true,
+      "invariant_violated": "Convergence gate conditions must be fully computable from defined terms.",
+      "issue_fingerprint": "e9a3c7f1b5d2806e4a7c3f1e9b5d2806c4a7e3f1b9d5c280a7e4f3c1b9d6a280",
+      "issue_id": "iss_e9a3c7f1b5d2806e",
+      "issue_type": "cross_spec_consistency",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Define 'distinct Phase 2 profile' explicitly as either (a) distinct by profile name, meaning repeated profiles count once toward the clean-result requirement, or (b) distinct by sequence position, meaning each configured slot must independently produce a clean result. Update the round strategy comment or the convergence criteria to state which interpretation applies.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "STATE MACHINE (FULL TRANSITIONS)"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The transitions CONVERGENCE_REVIEW -> CONVERGENCE_REVISION (if spec changes needed) and CONVERGENCE_REVIEW -> DECLARATION_REVISION (if declaration only) use guard phrases that are not defined as computable conditions anywhere in the spec. The Orchestrator cannot deterministically route between these two post-review states without an explicit rule distinguishing when reviewer feedback requires spec mutation versus declaration-only revision.",
+      "determinism_impact": "minor",
+      "evidence": "State machine section: 'CONVERGENCE_REVIEW -> CONVERGENCE_REVISION (if spec changes needed)' and 'CONVERGENCE_REVIEW -> DECLARATION_REVISION (if declaration only)'. Neither guard is defined in the ROUND SCHEDULING ALGORITHM, Phase 2 description, or any other section. DESIGN PRINCIPLE: 'No implied behavior.'",
+      "feedback_id": "fb_008",
+      "in_scope": true,
+      "invariant_violated": "Every state machine transition must have a fully specified, computable guard condition.",
+      "issue_fingerprint": "f1c6a3e9b8d4207a5c1f6a3e8b9d4207c5a1f8e3b6d9a024f5c1a8e3b6d9f024",
+      "issue_id": "iss_f1c6a3e9b8d4207a",
+      "issue_type": "state_machine_legality",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Define 'declaration only' and 'spec changes needed' as computable conditions. One possible definition: route to DECLARATION_REVISION when all in-scope reviewer feedback items in the current round have affected_sections that reference only convergence_declaration.md; route to CONVERGENCE_REVISION when any in-scope feedback item targets a non-declaration spec section. Document this rule in the ROUND SCHEDULING ALGORITHM Phase 2 description and reference it from the state machine.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "claude",
+    "version": "claude-sonnet-4-6"
+  },
+  "round_number": 1
+}

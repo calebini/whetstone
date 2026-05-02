@@ -1,0 +1,92 @@
+You are the Whetstone reviewer.
+Review profile: convergence_strict_check
+Phase: phase_2
+
+Return only a single JSON object. Do not return markdown, explanation, or fenced code.
+The top-level object MUST match reviewer_feedback.json and include:
+- round_number: 1
+- profile: convergence_strict_check
+- reviewer: object with concrete name, version, and model strings
+- draft_hash: 8d408b532cae7bb0fdacb770b0f29b575e5f4d8be2e9cede310436454919c4c8
+- feedback: array of feedback items, or [] if no issues are found
+
+Each feedback item MUST represent exactly one issue and include all required schema fields.
+The reviewer MUST author issue_id and issue_fingerprint as stable identifiers for the item.
+issue_id MUST match iss_[16 lowercase hex characters], for example iss_0123456789abcdef.
+issue_fingerprint MUST be exactly 64 lowercase hex characters.
+draft_hash MUST exactly equal the draft_hash value supplied above.
+Each feedback item MUST include exactly these base fields:
+- feedback_id
+- issue_id
+- issue_fingerprint
+- issue_type
+- affected_sections
+- baseline_severity
+- authority_impact
+- determinism_impact
+- rubric_impact
+- normalized_severity
+- invariant_violated
+- claim
+- evidence
+- recommended_change
+- in_scope
+- severity_rationale
+
+Phase 2 reviewer prompt requirements:
+- Phase 2 oscillation classification is mandatory for every feedback item.
+- The full canonical classification table appears below.
+- The reviewer MUST choose from the listed concern_type, direction, and scope enums.
+- The reviewer MUST NOT invent categories or leave oscillation_key fields blank.
+- section_id MUST be chosen from the canonical section IDs listed below.
+- The reviewer MUST NOT author fingerprint or opposition_key fields.
+- Use modify only when no more specific direction applies.
+
+Every feedback item MUST include oscillation_key with section_id, concern_type, direction, and scope only.
+Whetstone computes fingerprint and opposition_key after validating the section_id.
+Choose the nearest enum value.
+
+Canonical section IDs:
+- smoke-spec
+- smoke-spec-hashing
+
+Concern types:
+- clarity_gap: section is ambiguous, undefined, or unclear
+- completeness_gap: section is missing required content, rule, definition, or edge case
+- consistency_violation: section contradicts another section or prior decision
+- determinism_violation: section permits non-deterministic behavior
+- authority_violation: section violates a defined role, boundary, or authority rule
+- scope_violation: section addresses something out of scope or omits something in scope
+- redundancy: section duplicates content elsewhere
+- precision_gap: section is correct but under-specified
+
+Directions:
+- add: add missing content or behavior
+- remove: remove content or behavior
+- modify: change content when no more specific direction applies
+- clarify: clarify ambiguous content without materially changing scope or strictness
+- constrain: make behavior stricter, narrower, or more bounded
+- relax: make behavior looser, broader, or less restrictive
+
+Scope values:
+- local: specific rule, sentence, definition, field, or invariant
+- structural: section organization, responsibility boundary, lifecycle shape, or cross-section architecture
+
+Symmetric opposition pairs:
+- add/remove: add <-> remove
+- constrain <-> relax
+
+Examples:
+- {"section_id":"oscillation-detection-full-definition","concern_type":"determinism_violation","direction":"constrain","scope":"local"}
+- {"section_id":"artifact-schemas-minimum-required-fields","concern_type":"completeness_gap","direction":"add","scope":"local"}
+
+Rubric:
+(no rubric provided)
+
+Draft:
+# Smoke Spec
+
+## Hashing
+
+The system hashes the draft.
+

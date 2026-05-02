@@ -1,0 +1,26 @@
+spec_path: spec.md
+history_path: spec.history.md
+rounds_dir: rounds
+declaration_path: convergence_declaration.md
+clients:
+  editor:
+    name: claude-code
+    command: claude
+    version: "unknown"
+    model: "default"
+  reviewer:
+    name: codex
+    command: codex
+    version: "0.128.0"
+    model: "gpt-5.5"
+review:
+  max_rounds: 3
+convergence:
+  enabled: true
+  target_phase: final
+  target_mode: strict
+  rubric_path: convergence_rubric.md
+  max_rounds: 2
+decision_points:
+  enabled: true
+  mode: end_of_cycle

@@ -1,0 +1,28 @@
+{
+  "draft_hash": "3cdba751fe524aceeb4d9a8a4fea0b0470b1dc033846b7f1f61e1014f4bcf6c5",
+  "round_number": 1,
+  "unresolved_issues": [
+    {
+      "affected_sections": [
+        "tiny-spec"
+      ],
+      "blocking_acceptance": true,
+      "claim": "The Tiny Spec is too incomplete to support convergence checking; it contains only a single hashing statement and omits required normative details (scope/purpose, definitions, inputs/outputs, required behavior, and error/edge-case handling).",
+      "in_scope": true,
+      "issue_fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+      "issue_id": "iss_0f1e2d3c4b5a6978",
+      "normalized_severity": "major"
+    },
+    {
+      "affected_sections": [
+        "tiny-spec-hashing"
+      ],
+      "blocking_acceptance": true,
+      "claim": "The hashing requirement is non-deterministic/under-specified because it does not define the hash algorithm, canonicalization, encoding, or output format.",
+      "in_scope": true,
+      "issue_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+      "issue_id": "iss_89abcdef01234567",
+      "normalized_severity": "major"
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "decision_points": [
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_a1345c0cd4623cf9",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check."
+      ],
+      "options_considered": [
+        {
+          "description": "For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (tighten requirement, choose policy, scope change): For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_2649a7fecdcd21d8",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (scope change): Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_a0197f10d3f01366",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp."
+      ],
+      "options_considered": [
+        {
+          "description": "The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `10. Expiration Handling` adopt this change (choose policy, scope change): The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_ce2ef37cfb2578aa",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted."
+      ],
+      "options_considered": [
+        {
+          "description": "Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `10. Expiration Handling` adopt this change (add operational requirement, choose policy, scope change): Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "add_operational_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "17. Audit Contribution"
+      ],
+      "decision_id": "dec_b39c972bf3bc80c8",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings)."
+      ],
+      "options_considered": [
+        {
+          "description": "- MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `17. Audit Contribution` adopt this change (tighten requirement, choose policy, scope change): MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "17. Audit Contribution"
+      ],
+      "decision_id": "dec_fa7dbb764a17e774",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned)."
+      ],
+      "options_considered": [
+        {
+          "description": "- MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `17. Audit Contribution` adopt this change (tighten requirement, scope change): MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    }
+  ],
+  "draft_hash": "8af4bb382a912be9e655fa82f2653cfafeac13910602c98466595046047d90da",
+  "round_number": 2
+}

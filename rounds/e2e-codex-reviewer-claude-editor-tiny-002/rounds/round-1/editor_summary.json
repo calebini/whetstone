@@ -1,0 +1,17 @@
+{
+  "accepted_feedback_ids": [
+    "fb_0001",
+    "fb_0002"
+  ],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_hash": "3cdba751fe524aceeb4d9a8a4fea0b0470b1dc033846b7f1f61e1014f4bcf6c5",
+  "draft_before_hash": "3cdba751fe524aceeb4d9a8a4fea0b0470b1dc033846b7f1f61e1014f4bcf6c5",
+  "modified_feedback_ids": [],
+  "resolved_issue_ids": [],
+  "round_number": 1,
+  "unresolved_issue_ids": [
+    "iss_0f1e2d3c4b5a6978",
+    "iss_89abcdef01234567"
+  ]
+}

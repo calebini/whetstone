@@ -1,0 +1,1735 @@
+{
+  "decision_points": [
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_d61cf6458cd83d65",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Required preserved fields (copied from the immutable request):"
+      ],
+      "options_considered": [
+        {
+          "description": "Required preserved fields (copied from the immutable request):",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "structural_integrity",
+      "question": "Should `7. Approval Response` adopt this change (choose policy): Required preserved fields (copied from the immutable request):",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "fb_001"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_0b2295f0c147b780",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Required response fields (supplied by adapter runtime and human input):"
+      ],
+      "options_considered": [
+        {
+          "description": "Required response fields (supplied by adapter runtime and human input):",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "structural_integrity",
+      "question": "Should `7. Approval Response` adopt this change (scope change): Required response fields (supplied by adapter runtime and human input):",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "fb_001"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_c8ded64e7b2865b7",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `approver_id` (MUST be sourced from authenticated identity, not from the request)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `approver_id` (MUST be sourced from authenticated identity, not from the request)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "structural_integrity",
+      "question": "Should `7. Approval Response` adopt this change (tighten requirement): `approver_id` (MUST be sourced from authenticated identity, not from the request)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "fb_001"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "22. Reason-Code Boundary"
+      ],
+      "decision_id": "dec_218754ad04aaab25",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapter operational errors MUST NOT be used as Foreman reason codes."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapter operational errors MUST NOT be used as Foreman reason codes.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "structural_integrity",
+      "question": "Should `22. Reason-Code Boundary` adopt this change (tighten requirement, scope change): Adapter operational errors MUST NOT be used as Foreman reason codes.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "fb_001"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_a1345c0cd4623cf9",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check."
+      ],
+      "options_considered": [
+        {
+          "description": "For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (tighten requirement, choose policy, scope change): For expiration validity, Foreman uses Foreman-side response ingestion time as the authoritative clock. Foreman MUST persist the specific `response_received_at` timestamp used for expiration comparison as part of Arbiter decision material, and Foreman replay MUST use that persisted timestamp for the expiration check.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_2649a7fecdcd21d8",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (scope change): Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_a0197f10d3f01366",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp."
+      ],
+      "options_considered": [
+        {
+          "description": "The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `10. Expiration Handling` adopt this change (choose policy, scope change): The Arbiter performs the canonical expiration check using Foreman-persisted `response_received_at` as the comparison timestamp.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_ce2ef37cfb2578aa",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted."
+      ],
+      "options_considered": [
+        {
+          "description": "Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `10. Expiration Handling` adopt this change (add operational requirement, choose policy, scope change): Foreman, Arbiter, and policy diagnostics use `FOREMAN_APPROVAL_STALE` for stale approval when that reason code is emitted.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "add_operational_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "17. Audit Contribution"
+      ],
+      "decision_id": "dec_b39c972bf3bc80c8",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings)."
+      ],
+      "options_considered": [
+        {
+          "description": "- MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `17. Audit Contribution` adopt this change (tighten requirement, choose policy, scope change): MUST be preserved without semantic mutation by the adapter (no key insertion/removal, value rewriting, type coercion, or normalization of strings).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "17. Audit Contribution"
+      ],
+      "decision_id": "dec_fa7dbb764a17e774",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned)."
+      ],
+      "options_considered": [
+        {
+          "description": "- MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `17. Audit Contribution` adopt this change (tighten requirement, scope change): MUST NOT be canonicalized by the adapter (canonicalization, if any, is Foreman-owned).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_det_001",
+        "fb_det_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1 Operational Persistence and Recovery"
+      ],
+      "decision_id": "dec_ac2d42756277ef56",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The adapter MUST behave deterministically across retries and restarts with respect to:"
+      ],
+      "options_considered": [
+        {
+          "description": "The adapter MUST behave deterministically across retries and restarts with respect to:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1 Operational Persistence and Recovery` adopt this change (tighten requirement, scope change): The adapter MUST behave deterministically across retries and restarts with respect to:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1 Operational Persistence and Recovery"
+      ],
+      "decision_id": "dec_1b55eba73bf3cce3",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- preserved authority-bearing request fields"
+      ],
+      "options_considered": [
+        {
+          "description": "- preserved authority-bearing request fields",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1 Operational Persistence and Recovery` adopt this change (choose policy): preserved authority-bearing request fields",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1 Operational Persistence and Recovery"
+      ],
+      "decision_id": "dec_d219bb889ef9f9af",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- idempotency at the `approval_request_id` boundary"
+      ],
+      "options_considered": [
+        {
+          "description": "- idempotency at the `approval_request_id` boundary",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1 Operational Persistence and Recovery` adopt this change (choose policy): idempotency at the `approval_request_id` boundary",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.1 Minimum Durable State (When Applicable)"
+      ],
+      "decision_id": "dec_3677c6aadd40764b",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If the adapter can receive the same `approval_request_id` more than once over time (including after process restart) and is expected to perform preserved-field comparison or duplicate/conflict detection beyond the immediate in-memory lifecycle, it MUST durably persist, at minimum:"
+      ],
+      "options_considered": [
+        {
+          "description": "If the adapter can receive the same `approval_request_id` more than once over time (including after process restart) and is expected to perform preserved-field comparison or duplicate/conflict detection beyond the immediate in-memory lifecycle, it MUST durably persist, at minimum:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.1 Minimum Durable State (When Applicable)` adopt this change (tighten requirement, choose policy, scope change): If the adapter can receive the same `approval_request_id` more than once over time (including after process restart) and is expected to perform preserved-field comparison or duplicate/conflict detection beyond the immediate in-memory lifecycle, it MUST durably persist, at minimum:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.1 Minimum Durable State (When Applicable)"
+      ],
+      "decision_id": "dec_3edde5beda829c04",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- the received immutable approval request (all authority-bearing fields, plus `created_at` and `display_context` if the adapter chooses to retain them)"
+      ],
+      "options_considered": [
+        {
+          "description": "- the received immutable approval request (all authority-bearing fields, plus `created_at` and `display_context` if the adapter chooses to retain them)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.1 Minimum Durable State (When Applicable)` adopt this change (choose policy, scope change): the received immutable approval request (all authority-bearing fields, plus `created_at` and `display_context` if the adapter chooses to retain them)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.1 Minimum Durable State (When Applicable)"
+      ],
+      "decision_id": "dec_787f5617ee5229a5",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Durable persistence MUST survive normal process restart and crash recovery for the adapter to claim restart-safe idempotency and mutated-field rejection."
+      ],
+      "options_considered": [
+        {
+          "description": "Durable persistence MUST survive normal process restart and crash recovery for the adapter to claim restart-safe idempotency and mutated-field rejection.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.1 Minimum Durable State (When Applicable)` adopt this change (tighten requirement, scope change): Durable persistence MUST survive normal process restart and crash recovery for the adapter to claim restart-safe idempotency and mutated-field rejection.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_00cdb3fcb12860e5",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "#### 11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "options_considered": [
+        {
+          "description": "#### 11.1.2 Stateless Profile (Foreman-Owned Durability)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (scope change): #### 11.1.2 Stateless Profile (Foreman-Owned Durability)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_d1271b8763e802ff",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "An adapter MAY be stateless with respect to durable storage if and only if:"
+      ],
+      "options_considered": [
+        {
+          "description": "An adapter MAY be stateless with respect to durable storage if and only if:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (relax requirement, scope change): An adapter MAY be stateless with respect to durable storage if and only if:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_bbe9316c6cf6e5ba",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- Foreman provides the immutable approval request on each presentation/submission attempt, or provides an immutable request store reference that the adapter can dereference reliably at time of presentation, and"
+      ],
+      "options_considered": [
+        {
+          "description": "- Foreman provides the immutable approval request on each presentation/submission attempt, or provides an immutable request store reference that the adapter can dereference reliably at time of presentation, and",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (choose policy, scope change): Foreman provides the immutable approval request on each presentation/submission attempt, or provides an immutable request store reference that the adapter can dereference reliably at time of presentation, and",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_1350b855f9d77201",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- Foreman (or an upstream gateway owned by Foreman) provides the canonical idempotency and duplicate/conflict handling."
+      ],
+      "options_considered": [
+        {
+          "description": "- Foreman (or an upstream gateway owned by Foreman) provides the canonical idempotency and duplicate/conflict handling.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (scope change): Foreman (or an upstream gateway owned by Foreman) provides the canonical idempotency and duplicate/conflict handling.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_85b6b5f606883d57",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- the adapter MUST still treat authority-bearing fields in the received request as read-only within the current request envelope"
+      ],
+      "options_considered": [
+        {
+          "description": "- the adapter MUST still treat authority-bearing fields in the received request as read-only within the current request envelope",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (tighten requirement, choose policy, scope change): the adapter MUST still treat authority-bearing fields in the received request as read-only within the current request envelope",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_49dfdab2630230a9",
+      "decision_type": "relax_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- mutated-field rejection and duplicate/conflict detection MAY be limited to what is detectable within that envelope and that single submission attempt"
+      ],
+      "options_considered": [
+        {
+          "description": "- mutated-field rejection and duplicate/conflict detection MAY be limited to what is detectable within that envelope and that single submission attempt",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (relax requirement): mutated-field rejection and duplicate/conflict detection MAY be limited to what is detectable within that envelope and that single submission attempt",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.2 Stateless Profile (Foreman-Owned Durability)"
+      ],
+      "decision_id": "dec_d665be73e2cc5dbe",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "In all cases, Foreman remains responsible for authoritative replay, audit, and arbitration."
+      ],
+      "options_considered": [
+        {
+          "description": "In all cases, Foreman remains responsible for authoritative replay, audit, and arbitration.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.2 Stateless Profile (Foreman-Owned Durability)` adopt this change (choose policy, scope change): In all cases, Foreman remains responsible for authoritative replay, audit, and arbitration.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.3 Recovery Behavior"
+      ],
+      "decision_id": "dec_a46853765670b55d",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If the adapter uses durable state (Section 11.1.1), then after restart it MUST:"
+      ],
+      "options_considered": [
+        {
+          "description": "If the adapter uses durable state (Section 11.1.1), then after restart it MUST:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.3 Recovery Behavior` adopt this change (tighten requirement, scope change): If the adapter uses durable state (Section 11.1.1), then after restart it MUST:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.3 Recovery Behavior"
+      ],
+      "decision_id": "dec_42c8f37d139f4217",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- reject submissions for an `approval_request_id` when the preserved authority-bearing fields differ from the originally received request for that `approval_request_id`"
+      ],
+      "options_considered": [
+        {
+          "description": "- reject submissions for an `approval_request_id` when the preserved authority-bearing fields differ from the originally received request for that `approval_request_id`",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.3 Recovery Behavior` adopt this change (choose policy): reject submissions for an `approval_request_id` when the preserved authority-bearing fields differ from the originally received request for that `approval_request_id`",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.3 Recovery Behavior"
+      ],
+      "decision_id": "dec_f44409387e2e0725",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- treat duplicate submissions for an already-recorded (`approval_request_id`, `approver_id`) as idempotent or reject them, but MUST NOT reinterpret them as a Foreman transition"
+      ],
+      "options_considered": [
+        {
+          "description": "- treat duplicate submissions for an already-recorded (`approval_request_id`, `approver_id`) as idempotent or reject them, but MUST NOT reinterpret them as a Foreman transition",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.3 Recovery Behavior` adopt this change (tighten requirement, scope change): treat duplicate submissions for an already-recorded (`approval_request_id`, `approver_id`) as idempotent or reject them, but MUST NOT reinterpret them as a Foreman transition",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11.1.3 Recovery Behavior"
+      ],
+      "decision_id": "dec_bda7280f9a9ed5cf",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If durable state is unavailable or corrupted, the adapter MAY fail closed by emitting an adapter failure output (Section 16) rather than accepting a potentially non-deterministic submission."
+      ],
+      "options_considered": [
+        {
+          "description": "If durable state is unavailable or corrupted, the adapter MAY fail closed by emitting an adapter failure output (Section 16) rather than accepting a potentially non-deterministic submission.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `11.1.3 Recovery Behavior` adopt this change (relax requirement, scope change): If durable state is unavailable or corrupted, the adapter MAY fail closed by emitting an adapter failure output (Section 16) rather than accepting a potentially non-deterministic submission.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.1 Failure Lifecycle and Delivery Semantics"
+      ],
+      "decision_id": "dec_d25d63bac0fe2838",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Failure output is the adapter's contract-level error reporting to Foreman when the adapter cannot:"
+      ],
+      "options_considered": [
+        {
+          "description": "Failure output is the adapter's contract-level error reporting to Foreman when the adapter cannot:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.1 Failure Lifecycle and Delivery Semantics` adopt this change (scope change): Failure output is the adapter's contract-level error reporting to Foreman when the adapter cannot:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.1 Failure Lifecycle and Delivery Semantics"
+      ],
+      "decision_id": "dec_7492d81f6d2b8be5",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- deliver a captured response to Foreman as required by the deployment."
+      ],
+      "options_considered": [
+        {
+          "description": "- deliver a captured response to Foreman as required by the deployment.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.1 Failure Lifecycle and Delivery Semantics` adopt this change (scope change): deliver a captured response to Foreman as required by the deployment.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.1 Failure Lifecycle and Delivery Semantics"
+      ],
+      "decision_id": "dec_8c25c6cd6fd04c88",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Unless otherwise negotiated by deployment integration, a failure output is returned to Foreman synchronously on the same channel used for request/response exchange."
+      ],
+      "options_considered": [
+        {
+          "description": "Unless otherwise negotiated by deployment integration, a failure output is returned to Foreman synchronously on the same channel used for request/response exchange.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.1 Failure Lifecycle and Delivery Semantics` adopt this change (scope change): Unless otherwise negotiated by deployment integration, a failure output is returned to Foreman synchronously on the same channel used for request/response exchange.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.1 Failure Lifecycle and Delivery Semantics"
+      ],
+      "decision_id": "dec_738aef311e60722b",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The adapter MAY additionally emit telemetry/logging, but telemetry is not a substitute for returning a contract failure output to Foreman when Foreman is the delivery target."
+      ],
+      "options_considered": [
+        {
+          "description": "The adapter MAY additionally emit telemetry/logging, but telemetry is not a substitute for returning a contract failure output to Foreman when Foreman is the delivery target.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.1 Failure Lifecycle and Delivery Semantics` adopt this change (relax requirement, scope change): The adapter MAY additionally emit telemetry/logging, but telemetry is not a substitute for returning a contract failure output to Foreman when Foreman is the delivery target.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_42e67a51c453fa23",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "A failure output MUST include:"
+      ],
+      "options_considered": [
+        {
+          "description": "A failure output MUST include:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (tighten requirement): A failure output MUST include:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_596e83035bce6c02",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `status` (MUST be `failed`)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `status` (MUST be `failed`)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (tighten requirement): `status` (MUST be `failed`)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_089c18f595e357b4",
+      "decision_type": "relax_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "A failure output SHOULD include when available:"
+      ],
+      "options_considered": [
+        {
+          "description": "A failure output SHOULD include when available:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (relax requirement): A failure output SHOULD include when available:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_88b8db2532c28232",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `hag_receipt_id` (to correlate with adapter receipts, if receipts are emitted)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `hag_receipt_id` (to correlate with adapter receipts, if receipts are emitted)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (scope change): `hag_receipt_id` (to correlate with adapter receipts, if receipts are emitted)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_90cdbcf1e3c6a09d",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `retryable` (boolean; whether Foreman can retry the same operation)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `retryable` (boolean; whether Foreman can retry the same operation)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (scope change): `retryable` (boolean; whether Foreman can retry the same operation)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_9b5481cebc97b67b",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `details` (JSON object; adapter-local diagnostic data)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `details` (JSON object; adapter-local diagnostic data)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (scope change): `details` (JSON object; adapter-local diagnostic data)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.2 Required Failure Fields"
+      ],
+      "decision_id": "dec_40a2fcae732a8bfd",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If included, `details` MUST NOT contain Foreman reason codes, MUST NOT claim approval validity, and MUST NOT be interpreted as transition authority."
+      ],
+      "options_considered": [
+        {
+          "description": "If included, `details` MUST NOT contain Foreman reason codes, MUST NOT claim approval validity, and MUST NOT be interpreted as transition authority.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.2 Required Failure Fields` adopt this change (tighten requirement, choose policy, scope change): If included, `details` MUST NOT contain Foreman reason codes, MUST NOT claim approval validity, and MUST NOT be interpreted as transition authority.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.3 Retry Classification"
+      ],
+      "decision_id": "dec_e4224b4a0f94cc42",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If the adapter includes `retryable`:"
+      ],
+      "options_considered": [
+        {
+          "description": "If the adapter includes `retryable`:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.3 Retry Classification` adopt this change (scope change): If the adapter includes `retryable`:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.3 Retry Classification"
+      ],
+      "decision_id": "dec_a4892c0d949c0031",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `retryable = true` indicates a transient adapter-side failure where Foreman may retry without changing the approval request."
+      ],
+      "options_considered": [
+        {
+          "description": "- `retryable = true` indicates a transient adapter-side failure where Foreman may retry without changing the approval request.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.3 Retry Classification` adopt this change (relax requirement, scope change): `retryable = true` indicates a transient adapter-side failure where Foreman may retry without changing the approval request.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.3 Retry Classification"
+      ],
+      "decision_id": "dec_d4f4a06ffdc2cb01",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `retryable = false` indicates a terminal adapter-side failure for that adapter instance/configuration, where retry without remediation is unlikely to succeed."
+      ],
+      "options_considered": [
+        {
+          "description": "- `retryable = false` indicates a terminal adapter-side failure for that adapter instance/configuration, where retry without remediation is unlikely to succeed.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.3 Retry Classification` adopt this change (scope change): `retryable = false` indicates a terminal adapter-side failure for that adapter instance/configuration, where retry without remediation is unlikely to succeed.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.3 Retry Classification"
+      ],
+      "decision_id": "dec_4bf700aa5127b3e5",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Retry classification is operational guidance only and does not grant authority to emit Foreman reason codes."
+      ],
+      "options_considered": [
+        {
+          "description": "Retry classification is operational guidance only and does not grant authority to emit Foreman reason codes.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.3 Retry Classification` adopt this change (choose policy, scope change): Retry classification is operational guidance only and does not grant authority to emit Foreman reason codes.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.4 `error_code` Namespace"
+      ],
+      "decision_id": "dec_34330b87f26c0dab",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "`error_code` is an adapter-local namespace and is not registry-bound."
+      ],
+      "options_considered": [
+        {
+          "description": "`error_code` is an adapter-local namespace and is not registry-bound.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.4 `error_code` Namespace` adopt this change (scope change): `error_code` is an adapter-local namespace and is not registry-bound.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16.4 `error_code` Namespace"
+      ],
+      "decision_id": "dec_f81a2ff8497843ae",
+      "decision_type": "relax_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "This specification does not define an exhaustive enum. Implementations SHOULD use stable, documented string constants (for example, `HAG_ADAPTER_*`) to support consistent operations."
+      ],
+      "options_considered": [
+        {
+          "description": "This specification does not define an exhaustive enum. Implementations SHOULD use stable, documented string constants (for example, `HAG_ADAPTER_*`) to support consistent operations.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `16.4 `error_code` Namespace` adopt this change (relax requirement): This specification does not define an exhaustive enum. Implementations SHOULD use stable, documented string constants (for example, `HAG_ADAPTER_*`) to support consistent operations.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "relax_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_412ad4e5a6aeea26",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.16 Adapter defines restart-safe behavior for preserved-field comparison and best-effort duplicate/conflict detection (Section 11.1)."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.16 Adapter defines restart-safe behavior for preserved-field comparison and best-effort duplicate/conflict detection (Section 11.1).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `23. Acceptance Criteria` adopt this change (choose policy, scope change): AC 1.16 Adapter defines restart-safe behavior for preserved-field comparison and best-effort duplicate/conflict detection (Section 11.1).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_6610c552b4445b5a",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.17 Adapter failure outputs include required fields and retry classification guidance without leaking Foreman authority (Section 16)."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.17 Adapter failure outputs include required fields and retry classification guidance without leaking Foreman authority (Section 16).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "operability",
+      "question": "Should `23. Acceptance Criteria` adopt this change (choose policy, scope change): AC 1.17 Adapter failure outputs include required fields and retry classification guidance without leaking Foreman authority (Section 16).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 3,
+      "source_feedback_ids": [
+        "fb_operability_001",
+        "fb_operability_002"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    }
+  ],
+  "generated_at": "2026-05-01T22:55:17.896384+00:00",
+  "mode": "end_of_cycle",
+  "terminal_state": "PHASE_1_STABLE",
+  "unresolved_human_decision_count": 46
+}

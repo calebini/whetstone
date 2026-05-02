@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/phase2_reviewer_feedback_input.codex.schema.json",
+  "title": "Whetstone Phase 2 Reviewer Feedback Input For Codex",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round_number", "profile", "reviewer", "draft_hash", "feedback"],
+  "properties": {
+    "round_number": { "type": "integer" },
+    "profile": { "type": "string" },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "model"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "model": { "type": "string" }
+      }
+    },
+    "draft_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "feedback_id",
+          "issue_id",
+          "issue_fingerprint",
+          "issue_type",
+          "affected_sections",
+          "baseline_severity",
+          "authority_impact",
+          "determinism_impact",
+          "rubric_impact",
+          "normalized_severity",
+          "invariant_violated",
+          "claim",
+          "evidence",
+          "recommended_change",
+          "in_scope",
+          "severity_rationale",
+          "oscillation_key"
+        ],
+        "properties": {
+          "feedback_id": { "type": "string" },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^iss_[a-f0-9]{16}$"
+          },
+          "issue_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "issue_type": { "type": "string" },
+          "affected_sections": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "baseline_severity": {
+            "type": ["string", "null"],
+            "enum": ["blocker", "major", "minor", "nit", null]
+          },
+          "authority_impact": {
+            "type": ["string", "null"],
+            "enum": ["blocker", "major", "minor", "nit", null]
+          },
+          "determinism_impact": {
+            "type": ["string", "null"],
+            "enum": ["blocker", "major", "minor", "nit", null]
+          },
+          "rubric_impact": {
+            "type": ["string", "null"],
+            "enum": ["blocker", "major", "minor", "nit", null]
+          },
+          "normalized_severity": {
+            "type": "string",
+            "enum": ["blocker", "major", "minor", "nit"]
+          },
+          "invariant_violated": { "type": ["string", "null"] },
+          "claim": { "type": "string" },
+          "evidence": { "type": "string" },
+          "recommended_change": { "type": "string" },
+          "in_scope": { "type": "boolean" },
+          "severity_rationale": { "type": ["string", "null"] },
+          "oscillation_key": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["section_id", "concern_type", "direction", "scope"],
+            "properties": {
+              "section_id": { "type": "string" },
+              "concern_type": {
+                "type": "string",
+                "enum": [
+                  "clarity_gap",
+                  "completeness_gap",
+                  "consistency_violation",
+                  "determinism_violation",
+                  "authority_violation",
+                  "scope_violation",
+                  "redundancy",
+                  "precision_gap"
+                ]
+              },
+              "direction": {
+                "type": "string",
+                "enum": ["add", "remove", "modify", "clarify", "constrain", "relax"]
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["local", "structural"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

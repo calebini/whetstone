@@ -1,0 +1,79 @@
+{
+  "draft_hash": "f815401766c93c3cca3b3db4779bd43f06d7ebc2c28782b5f9004beec64e70b2",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Request",
+        "Validation"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The spec says invalid decisions should be rejected but never defines the valid decision set or the rejection behavior.",
+      "determinism_impact": "major",
+      "evidence": "The Request section names a `decision` field, and the Validation section only states: `The adapter should reject invalid decisions.` No enum, allowed values, case-sensitivity, null handling, or error response is specified.",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "Validation rules must be concrete enough to implement and test deterministically.",
+      "issue_fingerprint": "0390370a3c5775f34d4e1d573af77175b5ace9d13e5e43c66a7dc25d50281b88",
+      "issue_id": "iss_0390370a3c5775f3",
+      "issue_type": "operability_gap",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define the allowed `decision` values and exact invalid-decision handling, including error shape/status and whether validation is case-sensitive.",
+      "rubric_impact": null,
+      "severity_rationale": "Without a valid decision enum and rejection contract, independent implementations and smoke tests cannot determine whether the adapter is operating correctly."
+    },
+    {
+      "affected_sections": [
+        "Purpose",
+        "Request",
+        "Response"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The draft does not define how the adapter is invoked, so it is not directly runnable as a smoke-test contract.",
+      "determinism_impact": "major",
+      "evidence": "The draft says the adapter `receives an approval request` and `returns` fields, but provides no endpoint, function signature, HTTP method, CLI command, queue topic, schema format, or synchronous/asynchronous behavior.",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "An operable adapter contract must specify its callable interface and message encoding.",
+      "issue_fingerprint": "7039c5b2cf2fa736797f456f7eea097d1a6248131e7b7e4404052a95ba5b2e39",
+      "issue_id": "iss_7039c5b2cf2fa736",
+      "issue_type": "operability_gap",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a minimal invocation contract, such as an HTTP endpoint or function signature, with request/response JSON schemas and the expected success status or return convention.",
+      "rubric_impact": null,
+      "severity_rationale": "A smoke-test adapter needs a concrete callable surface; otherwise test harnesses cannot know how to send the request or capture the response."
+    },
+    {
+      "affected_sections": [
+        "Request",
+        "Response"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The timestamp fields are underspecified, which can cause incompatible implementations and flaky tests.",
+      "determinism_impact": "minor",
+      "evidence": "The draft lists `expires_at` and `submitted_at` but does not specify timestamp format, timezone requirements, precision, whether `expires_at` is enforced, or how `submitted_at` is generated.",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Time fields used in operational contracts must have explicit format and clock semantics.",
+      "issue_fingerprint": "db1c1e71d548e95825c77e5fe0551f86b283b386e9e3bbc0a24828da1d76767c",
+      "issue_id": "iss_db1c1e71d548e958",
+      "issue_type": "operability_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify timestamp format, preferably RFC 3339 UTC, precision expectations, whether expired requests are rejected, and whether `submitted_at` is adapter-generated at acceptance time.",
+      "rubric_impact": null,
+      "severity_rationale": "This is less blocking than the missing interface, but timestamp ambiguity can still break interoperability and deterministic smoke assertions."
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "gpt-5",
+    "name": "Codex Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

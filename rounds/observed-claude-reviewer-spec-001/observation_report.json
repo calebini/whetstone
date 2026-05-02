@@ -1,0 +1,15 @@
+{
+  "client": "claude-code",
+  "extracted_result_json": true,
+  "extraction_source": "fenced_result_json",
+  "feedback_count": 7,
+  "phase": "phase_2",
+  "profile": "convergence_strict_check",
+  "prompt_path": "rounds/observed-claude-reviewer-spec-001/prompt.txt",
+  "raw_response_path": "rounds/observed-claude-reviewer-spec-001/raw_response.json",
+  "returncode": 0,
+  "schema_path": "/Users/cwattles/Desktop/Agent-Workspace/repos/personal/cortext1/whetstone/contracts/schemas/phase2_reviewer_feedback_input.codex.schema.json",
+  "target": "spec.md",
+  "validated_as_raw_phase2_input": true,
+  "validation_error": null
+}

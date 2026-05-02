@@ -1,0 +1,33 @@
+{
+  "draft_hash": "4748e2b199cd1862b3af8db2633cdb32e820b8d6b371d55eca9a1748768768e7",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The `timestamp` field is specified as 'ISO 8601 timestamp in UTC' but ISO 8601 permits many valid representations of the same instant. Without a canonical format, implementations will produce divergent timestamp strings for identical events.",
+      "determinism_impact": "minor",
+      "evidence": "ISO 8601 allows '2026-05-02T10:00:00Z', '2026-05-02T10:00:00.000Z', '20260502T100000Z', and '2026-05-02T10:00:00+00:00' for the same moment. The spec text does not select among these representations.",
+      "feedback_id": "fb_det_001",
+      "in_scope": true,
+      "invariant_violated": "Output fields with multiple valid representations must specify a canonical form to ensure deterministic output across implementations.",
+      "issue_fingerprint": "a1b2c3d4e5f60001a1b2c3d4e5f60001a1b2c3d4e5f60001a1b2c3d4e5f60001",
+      "issue_id": "iss_a1b2c3d4e5f60001",
+      "issue_type": "underspecification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify a canonical format, e.g.: 'ISO 8601 combined date-time in UTC formatted as YYYY-MM-DDTHH:MM:SS.sssZ (millisecond precision, Z suffix).'",
+      "rubric_impact": null,
+      "severity_rationale": "Different implementations will produce different timestamp strings for the same event, making failure logs non-deterministically formatted. This is minor because it does not affect core notification or change-detection behavior."
+    }
+  ],
+  "profile": "determinism",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Determinism Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 2
+}

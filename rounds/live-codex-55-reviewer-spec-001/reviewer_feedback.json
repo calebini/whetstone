@@ -1,0 +1,80 @@
+{
+  "draft_hash": "7a40d057734609fad3a5200199b81985b905d44c12e0cecfb9499680d5737e27",
+  "feedback": [
+    {
+      "affected_sections": [
+        "primary-outputs",
+        "halt-artifact-matrix",
+        "phase-1-failure-handling"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The draft requires `/rounds/technical_failure_report.json` for Phase 1 max-round and artifact-validation failures, but omits it from the PRIMARY OUTPUTS list, making the operational artifact contract incomplete.",
+      "determinism_impact": null,
+      "evidence": "PRIMARY OUTPUTS lists convergence_failure_report.json, config_validation_error.json, artifact_validation_error.json, decision artifacts, conflict_report.json, and oscillation_report.json, but not technical_failure_report.json. HALT ARTIFACT MATRIX and PHASE 1 FAILURE HANDLING both require technical_failure_report.json.",
+      "feedback_id": "fb_operability_001",
+      "in_scope": true,
+      "invariant_violated": "required failure artifact is referenced outside the primary output inventory",
+      "issue_fingerprint": "0194a28068d4f802aea9de7a7745ef2c873b06a87561bf5bed7a6b67b7281614",
+      "issue_id": "iss_0194a28068d4f802",
+      "issue_type": "missing_required_artifact_inventory",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add `/rounds/technical_failure_report.json` to PRIMARY OUTPUTS and keep its conditions aligned with the halt artifact matrix and Phase 1 failure handling section.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "halt-artifact-matrix",
+        "artifact-validation-policy"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The halt matrix requires `latest draft_after.md` for exhausted artifact validation failures, but reviewer artifact validation can fail before any editor revision produces a draft_after.md for the round.",
+      "determinism_impact": null,
+      "evidence": "ARTIFACT VALIDATION POLICY applies to every client-produced artifact, including reviewer feedback before editor mutation. HALT ARTIFACT MATRIX requires `latest draft_after.md` for `artifact validation failure exhausted`, without defining what to emit when no draft_after.md exists in the failed round.",
+      "feedback_id": "fb_operability_002",
+      "in_scope": true,
+      "invariant_violated": "failure recovery artifact requirements must be producible in every failure mode",
+      "issue_fingerprint": "f53d4697bb8223529f86dc15f9ff75b661c88d3a8aa9666ea88f479c50f620e5",
+      "issue_id": "iss_f53d4697bb822352",
+      "issue_type": "unavailable_halt_artifact",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define the fallback artifact precisely, such as `latest validated draft_after.md if one exists, otherwise the current round draft_before.md copied or referenced as the last valid draft`, and reflect that path in artifact_validation_error.json.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "primary-outputs",
+        "artifact-validation-policy",
+        "reproducibility"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The draft names a single per-round `prompt_snapshot.json`, but a round can involve reviewer prompts, editor prompts, and validation retry prompts, so the artifact contract can overwrite or lose the exact prompt context needed for operational debugging.",
+      "determinism_impact": null,
+      "evidence": "PRIMARY OUTPUTS lists one `/rounds/round-N/prompt_snapshot.json`. ARTIFACT VALIDATION POLICY allows one validation retry using the same prompt context plus validation errors. REPRODUCIBILITY requires prompt_snapshot.json to include prompt text, profile, client, version, model, timestamp, config, rubric hash, draft hash, and sometimes semantic_change_hash, but does not define multiple snapshots per client role or attempt.",
+      "feedback_id": "fb_operability_003",
+      "in_scope": true,
+      "invariant_violated": "audit artifacts must preserve enough context for validation retry and recovery",
+      "issue_fingerprint": "0d4274b6cb9c0b06a0efe159bcfae514c44f8538df8d5904485a774d172812b5",
+      "issue_id": "iss_0d4274b6cb9c0b06",
+      "issue_type": "ambiguous_prompt_snapshot_retention",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Replace the single snapshot with a deterministic collection, for example `/rounds/round-N/prompt_snapshots/{client_role}-{artifact_name}-attempt-{attempt_number}.json`, or define `prompt_snapshot.json` as an array keyed by client role, artifact name, and attempt number.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "gpt-5",
+    "name": "Codex Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

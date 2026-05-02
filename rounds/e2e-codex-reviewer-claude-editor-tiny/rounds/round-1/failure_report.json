@@ -1,0 +1,7 @@
+{
+  "client_path": "codex reviewer -> claude-code editor",
+  "failed_stage": "editor_validation",
+  "message": "Codex reviewer output validated and was persisted, but Claude editor output failed editor_summary schema validation.",
+  "schema_error": "$: missing required property 'accepted_feedback_ids'",
+  "spec_mutated": false
+}

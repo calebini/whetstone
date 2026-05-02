@@ -1,0 +1,59 @@
+{
+  "draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "feedback": [
+    {
+      "affected_sections": [
+        "7",
+        "5",
+        "19"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "Section 7 lists `approver_id` under 'Required preserved fields', but `approver_id` is absent from the approval request schema in Section 5 and is explicitly obtained from the deployment auth layer per Section 19. It cannot be a preserved field.",
+      "determinism_impact": null,
+      "evidence": "Section 7 'Required preserved fields' includes `approver_id`. The Section 5 approval request JSON contains no `approver_id` field. Section 19 states the adapter must 'receive an authenticated approver identity from the deployment auth layer' and 'include that identity as approver_id'.",
+      "feedback_id": "fb_r1_si_001",
+      "in_scope": true,
+      "invariant_violated": "Response contract fields must be accurately categorized as preserved (echoed from request) or generated (produced by the adapter).",
+      "issue_fingerprint": "a3f2c891d45e6b07b9c4e219f38d0a65d7e8f1a2c3b4e5f6a7b8c9d0e1f2a3b4",
+      "issue_id": "iss_a3f2c891d45e6b07",
+      "issue_type": "schema_inconsistency",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Rename the Section 7 list to 'Required response fields' or split it into 'Required preserved fields' and 'Required generated fields'. Move `approver_id` into a generated/injected category with a note that it is obtained from the deployment auth identity, not echoed from the request.",
+      "rubric_impact": null,
+      "severity_rationale": "The mislabeling is a factual contract error: the field categorization contradicts both the request schema (Section 5) and the security requirement (Section 19). An implementer reading only Section 7 could incorrectly attempt to copy approver_id from request material rather than inject it from authenticated identity, creating an authority bypass risk."
+    },
+    {
+      "affected_sections": [
+        "7",
+        "9",
+        "13",
+        "17"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Section 7 provides no field rules, required/optional designations, or semantic descriptions for `decision`, `submitted_at`, `metadata`, and `signature`, all of which appear in the response example JSON. Their definitions are distributed across Sections 9 (submitted_at semantics), 13 (signature model), and 17 (metadata rules and decision audit requirement).",
+      "determinism_impact": null,
+      "evidence": "Section 7 response JSON shows `decision`, `submitted_at`, `metadata`, and `signature` but the field rules block addresses only 'Required preserved fields'. `decision` semantics appear in Section 7 prose but lack an explicit required designation. `submitted_at` field rules appear in Section 9. `metadata` rules (MUST be JSON object, MAY be empty, MUST be preserved verbatim, MUST NOT be canonicalized) appear in Section 17. `signature` is covered in Section 13.",
+      "feedback_id": "fb_r1_si_002",
+      "in_scope": true,
+      "invariant_violated": "A contract section must define the full required field set with explicit designations; scattering partial definitions across non-contract sections undermines the section's authority as the primary reference.",
+      "issue_fingerprint": "c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7",
+      "issue_id": "iss_c6d7e8f9a0b1c2d3",
+      "issue_type": "incomplete_contract_definition",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a 'Required generated fields' or 'All response fields' block in Section 7 that explicitly designates each response field (decision, submitted_at, metadata, signature) as required or optional with a brief semantic note, and cross-reference the detailed rules in Sections 9, 13, and 17.",
+      "rubric_impact": null,
+      "severity_rationale": "The response contract is incomplete at its primary definition location, requiring readers to assemble the full contract from four sections. This is a structural organization deficiency but not a contradiction; all information exists somewhere in the document."
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Structural Integrity Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

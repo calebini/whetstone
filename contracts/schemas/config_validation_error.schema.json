@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/config_validation_error.schema.json",
+  "title": "Whetstone Config Validation Error",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["terminal_state", "generated_at", "invalid_fields"],
+  "properties": {
+    "terminal_state": { "const": "CONFIG_INVALID" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "invalid_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "reason": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    }
+  }
+}

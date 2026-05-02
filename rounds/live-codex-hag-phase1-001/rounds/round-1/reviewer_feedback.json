@@ -1,0 +1,34 @@
+{
+  "draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "feedback": [
+    {
+      "affected_sections": [
+        "7. Approval Response",
+        "19. Security Requirements"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "Section 7 incorrectly classifies `approver_id` as a required preserved field even though the approval request schema does not contain `approver_id` and Section 19 says the adapter receives authenticated identity from the deployment auth layer and includes it as `approver_id`.",
+      "determinism_impact": "minor",
+      "evidence": "The canonical approval request in Section 5 contains `approver_role` but no `approver_id`. Section 7 lists `approver_id` under \"Required preserved fields.\" Section 19 separately requires the adapter to \"receive an authenticated approver identity from the deployment auth layer\" and \"include that identity as `approver_id`.\"",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "Response fields labeled as preserved must originate in the immutable request or be clearly separated from fields supplied by authenticated runtime identity.",
+      "issue_fingerprint": "fa27fb859da5c7b9cd9e3fc2e8243c4dd7a6c2db0eba4f5b30b048326a1c5008",
+      "issue_id": "iss_fa27fb859da5c7b9",
+      "issue_type": "internal_contract_inconsistency",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Revise Section 7 so `approver_id` is a required response field sourced from authenticated identity, not a preserved request field. Keep only fields actually present in the immutable request, such as `approval_request_id`, `approver_role`, and `requested_transition`, in the preserved-field list.",
+      "rubric_impact": null,
+      "severity_rationale": "This is a major structural issue because it blurs whether approver identity is copied from Foreman input or asserted by the authenticated adapter runtime, which affects the authority boundary and implementation contract."
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "gpt-5",
+    "name": "Codex Structural Integrity Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

@@ -1,0 +1,77 @@
+{
+  "draft_hash": "0d51e4de4caebe403d883bd09389d62dfe8cca5044d2e69cad9e8b0e57a41041",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Failure Handling",
+        "Subsequent Cycles"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "blocker",
+      "claim": "The spec does not define whether sha256_previous is updated when a notification send fails, so conforming implementations will diverge on all subsequent poll cycles after any failure.",
+      "determinism_impact": "major",
+      "evidence": "Subsequent Cycles step 3 states 'MUST send a notification \u2026 and then set sha256_previous = sha256_current', which implies the update follows a successful send. The Failure Handling section instructs the system to log and continue polling but is entirely silent on sha256_previous. If sha256_previous is not updated the system will reattempt notification on the next cycle whenever the hash still differs; if it is updated no retry ever occurs. Both readings are consistent with the written text.",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "State transitions must be fully specified for all execution paths so that independent implementations converge on identical behavior.",
+      "issue_fingerprint": "a7f3c2d1e5b9084620fd3a1c7e9b52f6d0e3a1b7c9f528d4067e3c1a5b9f20d4",
+      "issue_id": "iss_3c9ab1f7e20d5864",
+      "issue_type": "under_specified",
+      "normalized_severity": "blocker",
+      "oscillation_key": null,
+      "recommended_change": "Add an explicit sentence to Failure Handling, for example: 'On send failure, sha256_previous MUST NOT be updated; the system will reattempt notification on the next poll cycle if the hash still differs.' Alternatively, if retry is undesired: 'On send failure, sha256_previous MUST be set to sha256_current so that no duplicate notification is attempted.'",
+      "rubric_impact": null,
+      "severity_rationale": "Two strictly conforming implementations will produce different observable outputs\u2014repeated vs. one-shot notifications\u2014after a single send failure. This is a hard determinism blocker."
+    },
+    {
+      "affected_sections": [
+        "Notification Format",
+        "Failure Handling"
+      ],
+      "authority_impact": "nit",
+      "baseline_severity": "minor",
+      "claim": "RFC3339 permits multiple valid string representations of the same UTC instant, so two implementations can produce different timestamp strings in the notification body and failure log for the same moment.",
+      "determinism_impact": "minor",
+      "evidence": "Notification Format specifies 'timestamp_utc: {RFC3339 timestamp}'; Failure Handling specifies 'timestamp_utc (RFC3339)' in the JSONL record. RFC3339 section 4.1 permits both 'Z' and '+00:00' for UTC offset, and section 5.6 allows optional fractional seconds with any number of digits. For the same instant, '2026-05-02T12:00:00Z', '2026-05-02T12:00:00.000Z', and '2026-05-02T12:00:00+00:00' are all valid RFC3339 strings.",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "Output formats must be narrowed to a single canonical representation so that byte-identical output is achievable across implementations.",
+      "issue_fingerprint": "b8e4d2a0f6c3951748b2e0d4a8f1c7b3952e6d0a4f8b2e1c9d7a5f3b0e8c4a2f",
+      "issue_id": "iss_7b2e4f9c1a3d5e8f",
+      "issue_type": "ambiguous_format",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Narrow to a canonical sub-profile, for example: 'RFC3339 UTC using the Z suffix with no fractional seconds, e.g., 2026-05-02T12:00:00Z.'",
+      "rubric_impact": null,
+      "severity_rationale": "Semantic meaning is preserved across all valid representations; this is a string-level rather than behavioral divergence, warranting minor rather than blocker."
+    },
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "nit",
+      "baseline_severity": "nit",
+      "claim": "'Polls watch_path every poll_interval_seconds' does not state whether the interval is measured from poll start to next poll start or from poll end to next poll start.",
+      "determinism_impact": "nit",
+      "evidence": "The Behavior section states only 'The system polls watch_path every poll_interval_seconds.' Two common scheduling models\u2014fixed-period (start-to-start) and sleep-after-completion (end-to-start)\u2014are both consistent with this phrasing and will produce different poll timestamps whenever a poll cycle takes non-negligible time.",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Timing semantics must be unambiguous so that scheduling behavior is reproducible across implementations.",
+      "issue_fingerprint": "c1d3e5f7a9b1c3d5e7f9a1b3c5d7e9f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3",
+      "issue_id": "iss_5e1c7f3a9b2d4e6f",
+      "issue_type": "under_specified",
+      "normalized_severity": "nit",
+      "oscillation_key": null,
+      "recommended_change": "Specify the reference point, for example: 'The system schedules each poll to begin poll_interval_seconds after the start of the previous poll, independently of how long the poll itself takes.'",
+      "rubric_impact": null,
+      "severity_rationale": "For typical poll durations much shorter than the interval the observable difference is negligible; this is a determinism nit rather than a functional gap."
+    }
+  ],
+  "profile": "determinism",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Determinism Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 2
+}

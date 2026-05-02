@@ -1,0 +1,44 @@
+{
+  "decision_points": [
+    {
+      "affected_sections": [
+        "Adapter Contract"
+      ],
+      "decision_id": "dec_ecafc11b4d5c95c9",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "**Determinism rule:** For a given `request_id`, the adapter always returns the status currently recorded for that key. Status transitions (`PENDING \u2192 APPROVED` or `PENDING \u2192 REJECTED`) are externally driven and recorded atomically; once a terminal status (`APPROVED` or `REJECTED`) is set, it cannot change."
+      ],
+      "options_considered": [
+        {
+          "description": "**Determinism rule:** For a given `request_id`, the adapter always returns the status currently recorded for that key. Status transitions (`PENDING \u2192 APPROVED` or `PENDING \u2192 REJECTED`) are externally driven and recorded atomically; once a terminal status (`APPROVED` or `REJECTED`) is set, it cannot change.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "determinism",
+      "question": "Should `Adapter Contract` adopt this change (scope change): **Determinism rule:** For a given `request_id`, the adapter always returns the status currently recorded for that key. Status transitions (`PENDING \u2192 APPROVED` or `PENDING \u2192 REJECTED`) are externally driven and recorded atomically; once a terminal status (`APPROVED` or `REJECTED`) is set, it cannot change.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 2,
+      "source_feedback_ids": [
+        "fb_001"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    }
+  ],
+  "generated_at": "2026-05-02T03:59:17.446378+00:00",
+  "mode": "end_of_cycle",
+  "terminal_state": "PHASE_1_STABLE",
+  "unresolved_human_decision_count": 1
+}

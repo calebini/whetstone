@@ -1,0 +1,14 @@
+{
+  "active_profile": "structural_integrity",
+  "current_draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "current_round": 1,
+  "last_accepted_draft_hash": null,
+  "phase": "phase_1",
+  "ready_for_phase_2": false,
+  "resumable": false,
+  "seen_draft_hashes": [
+    "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a"
+  ],
+  "terminal_state": "HALTED_ARTIFACT_INVALID",
+  "updated_at": "2026-05-01T20:45:15.593475+00:00"
+}

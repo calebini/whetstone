@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/common.schema.json",
+  "title": "Whetstone Common Schema Definitions",
+  "type": "object",
+  "$defs": {
+    "severity": {
+      "type": "string",
+      "enum": ["blocker", "major", "minor", "nit"]
+    },
+    "nullableSeverity": {
+      "anyOf": [
+        { "$ref": "#/$defs/severity" },
+        { "type": "null" }
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "issueId": {
+      "type": "string",
+      "pattern": "^iss_[a-f0-9]{16}$"
+    },
+    "conflictId": {
+      "type": "string",
+      "pattern": "^con_[a-f0-9]{16}$"
+    },
+    "feedbackId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "terminalState": {
+      "type": "string",
+      "enum": [
+        "CONVERGED",
+        "HALTED_CONFLICT",
+        "HALTED_OSCILLATION",
+        "HALTED_ARTIFACT_INVALID",
+        "PAUSED_DECISION",
+        "TARGET_NOT_REACHED",
+        "CONFIG_INVALID"
+      ]
+    },
+    "targetPhase": {
+      "type": "string",
+      "enum": ["mid", "final"]
+    },
+    "targetMode": {
+      "type": "string",
+      "enum": ["permissive", "strict"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "issueSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_id",
+        "issue_fingerprint",
+        "normalized_severity",
+        "affected_sections",
+        "claim"
+      ],
+      "properties": {
+        "issue_id": { "$ref": "#/$defs/issueId" },
+        "issue_fingerprint": { "$ref": "#/$defs/sha256" },
+        "normalized_severity": { "$ref": "#/$defs/severity" },
+        "affected_sections": { "$ref": "#/$defs/stringArray" },
+        "claim": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "conflictSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conflict_id",
+        "conflict_fingerprint",
+        "conflict_type",
+        "conflict_severity",
+        "participating_issue_ids",
+        "conflict_claim"
+      ],
+      "properties": {
+        "conflict_id": { "$ref": "#/$defs/conflictId" },
+        "conflict_fingerprint": { "$ref": "#/$defs/sha256" },
+        "conflict_type": {
+          "type": "string",
+          "enum": [
+            "architectural_conflict",
+            "prior_decision_conflict",
+            "profile_conflict",
+            "rubric_conflict",
+            "ambiguous_feedback",
+            "out_of_scope_feedback"
+          ]
+        },
+        "conflict_severity": { "$ref": "#/$defs/severity" },
+        "participating_issue_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/issueId" }
+        },
+        "conflict_claim": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "oscillationKeyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "concern_type", "direction", "scope"],
+      "properties": {
+        "section_id": { "$ref": "#/$defs/nonEmptyString" },
+        "concern_type": {
+          "type": "string",
+          "enum": [
+            "clarity_gap",
+            "completeness_gap",
+            "consistency_violation",
+            "determinism_violation",
+            "authority_violation",
+            "scope_violation",
+            "redundancy",
+            "precision_gap"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["add", "remove", "modify", "clarify", "constrain", "relax"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["local", "structural"]
+        }
+      }
+    },
+    "oscillationKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "concern_type",
+        "direction",
+        "scope",
+        "fingerprint",
+        "opposition_key"
+      ],
+      "properties": {
+        "section_id": { "$ref": "#/$defs/nonEmptyString" },
+        "concern_type": {
+          "type": "string",
+          "enum": [
+            "clarity_gap",
+            "completeness_gap",
+            "consistency_violation",
+            "determinism_violation",
+            "authority_violation",
+            "scope_violation",
+            "redundancy",
+            "precision_gap"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["add", "remove", "modify", "clarify", "constrain", "relax"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["local", "structural"]
+        },
+        "fingerprint": { "$ref": "#/$defs/sha256" },
+        "opposition_key": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "decisionPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "round_number",
+        "profile",
+        "source_feedback_ids",
+        "affected_sections",
+        "decision_type",
+        "trigger_types",
+        "evidence_lines",
+        "question",
+        "options_considered",
+        "editor_selected_option_id",
+        "editor_rationale",
+        "risk_if_wrong",
+        "requires_human_decision",
+        "orchestrator_action"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^dec_[a-f0-9]{16}$"
+        },
+        "round_number": { "type": "integer", "minimum": 1 },
+        "profile": { "$ref": "#/$defs/nonEmptyString" },
+        "source_feedback_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "affected_sections": { "$ref": "#/$defs/stringArray" },
+        "decision_type": {
+          "type": "string",
+          "enum": [
+            "tighten_requirement",
+            "relax_requirement",
+            "choose_policy",
+            "define_default",
+            "resolve_conflict",
+            "add_operational_requirement",
+            "scope_change"
+          ]
+        },
+        "trigger_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "tighten_requirement",
+              "relax_requirement",
+              "choose_policy",
+              "define_default",
+              "resolve_conflict",
+              "add_operational_requirement",
+              "scope_change"
+            ]
+          }
+        },
+        "evidence_lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "question": { "$ref": "#/$defs/nonEmptyString" },
+        "options_considered": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["option_id", "label", "description"],
+            "properties": {
+              "option_id": { "$ref": "#/$defs/nonEmptyString" },
+              "label": { "$ref": "#/$defs/nonEmptyString" },
+              "description": { "$ref": "#/$defs/nonEmptyString" }
+            }
+          }
+        },
+        "editor_selected_option_id": {
+          "anyOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "editor_rationale": { "$ref": "#/$defs/nonEmptyString" },
+        "risk_if_wrong": { "$ref": "#/$defs/nonEmptyString" },
+        "requires_human_decision": { "type": "boolean" },
+        "orchestrator_action": {
+          "type": "string",
+          "enum": ["record_only", "present_at_end", "pause_for_input"]
+        }
+      }
+    }
+  }
+}

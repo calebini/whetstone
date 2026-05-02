@@ -1,0 +1,29 @@
+{
+  "accepted_feedback_ids": [
+    "fb_001",
+    "fb_002",
+    "fb_003",
+    "fb_004",
+    "fb_005",
+    "fb_006",
+    "fb_007",
+    "fb_008"
+  ],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_hash": "d785b5da715198cc8cb656e21f1e119761a4cf7caa80956b6c436b1e3d3b08fb",
+  "draft_before_hash": "d785b5da715198cc8cb656e21f1e119761a4cf7caa80956b6c436b1e3d3b08fb",
+  "modified_feedback_ids": [],
+  "resolved_issue_ids": [],
+  "round_number": 1,
+  "unresolved_issue_ids": [
+    "iss_3a7c891f4e2bd05f",
+    "iss_8e4f1a3c6b9d2e07",
+    "iss_c2a5e8f1b4d9703e",
+    "iss_7f3b9c5a1e8d2064",
+    "iss_4d8a2e6f1c3b9075",
+    "iss_b5e1c4a8f2d6903e",
+    "iss_e9a3c7f1b5d2806e",
+    "iss_f1c6a3e9b8d4207a"
+  ]
+}

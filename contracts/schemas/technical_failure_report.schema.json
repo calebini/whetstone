@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/technical_failure_report.schema.json",
+  "title": "Whetstone Technical Failure Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "terminal_state",
+    "generated_at",
+    "round_number",
+    "draft_hash",
+    "final_draft_path",
+    "unresolved_blockers",
+    "unresolved_major_issues",
+    "unresolved_conflicts",
+    "unresolved_oscillation",
+    "last_accepted_draft_hash",
+    "last_draft_hash",
+    "exit_reason",
+    "recommendation"
+  ],
+  "properties": {
+    "terminal_state": { "$ref": "common.schema.json#/$defs/terminalState" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "final_draft_path": { "$ref": "common.schema.json#/$defs/path" },
+    "unresolved_blockers": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+    },
+    "unresolved_major_issues": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+    },
+    "unresolved_conflicts": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/conflictSummary" }
+    },
+    "unresolved_oscillation": {
+      "anyOf": [
+        { "$ref": "oscillation_report.schema.json" },
+        { "type": "null" }
+      ]
+    },
+    "last_accepted_draft_hash": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "last_draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "exit_reason": { "type": "string", "minLength": 1 },
+    "recommendation": {
+      "type": "string",
+      "enum": ["continue_phase_1", "narrow_scope", "manual_review_required"]
+    }
+  }
+}
+

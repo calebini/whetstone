@@ -1,0 +1,34 @@
+{
+  "attempts": [
+    {
+      "artifact_name": "editor_summary.json",
+      "attempt_number": 1,
+      "raw_response_path": "rounds/round-1/editor_invalid_attempt_1.json",
+      "validation_errors": [
+        "editor_summary draft_after_hash mismatch: expected computed content hash 'ed16136a931c8a12208325310b193b45ee914a72b2babe38fe4eaea0cbac01f3', got 'e42cb5b1675c25bdb489e2649e74dcc7fc0a66b72ed96fba50526aa0563906eb'"
+      ]
+    },
+    {
+      "artifact_name": "editor_summary.json",
+      "attempt_number": 2,
+      "raw_response_path": "rounds/round-1/editor_invalid_attempt_2.json",
+      "validation_errors": [
+        "'codex' exec timed out after 420 seconds"
+      ]
+    }
+  ],
+  "client": {
+    "model": "gpt-5.2",
+    "name": "codex",
+    "version": "0.128.0"
+  },
+  "client_role": "editor",
+  "generated_at": "2026-05-01T20:30:23.732075+00:00",
+  "last_valid_draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "phase": "phase_1",
+  "profile": "structural_integrity",
+  "recommendation": "manual_review_required",
+  "retry_exhausted": true,
+  "round_number": 1,
+  "terminal_state": "HALTED_ARTIFACT_INVALID"
+}

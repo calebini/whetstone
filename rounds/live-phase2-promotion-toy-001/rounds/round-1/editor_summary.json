@@ -1,0 +1,12 @@
+{
+  "accepted_feedback_ids": [],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Approval Adapter 0.17\n\n## Purpose\n\nDefine a tiny approval adapter for Whetstone live smoke testing.\n\n## Adapter Contract\n\nThe adapter records approval requests and returns an approval status.\n",
+  "draft_after_hash": "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+  "draft_before_hash": "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+  "modified_feedback_ids": [],
+  "resolved_issue_ids": [],
+  "round_number": 1,
+  "unresolved_issue_ids": []
+}

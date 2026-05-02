@@ -1,0 +1,118 @@
+{
+  "draft_hash": "d249b704ceef03438c9dc603ee3393e3824c22f433ff076f94c55e0c2792144d",
+  "feedback": [
+    {
+      "affected_sections": [
+        "9"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "Section 9 specifies 'Foreman-side response ingestion or arbitration time' as the authoritative clock, but the disjunction permits two distinct clocks. When ingestion and arbitration occur at different times, responses submitted near expires_at will be accepted under one clock and rejected under the other, making expiration decisions non-deterministic for the same input pair.",
+      "determinism_impact": "major",
+      "evidence": "Section 9: 'For expiration validity, Foreman uses Foreman-side response ingestion or arbitration time as the authoritative clock.'",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "The canonical expiration check must derive from a single pinned clock so that the same response always produces the same validity outcome regardless of processing lag.",
+      "issue_fingerprint": "19252355277dbb7fad23c9caff88093d03d13b6bffef6ae0819f3ed65d8b2d82",
+      "issue_id": "iss_19252355277dbb7f",
+      "issue_type": "ambiguity",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Replace the disjunction with a single pinned clock. Recommended: 'Foreman uses Foreman-side arbitration time as the authoritative clock for expiration validity.' If ingestion timestamp must be recorded, specify that it is captured as an audit-only field and is not used for expiration determination.",
+      "rubric_impact": null,
+      "severity_rationale": "Responses submitted close to expires_at will be accepted or rejected differently depending on which clock an implementation chooses, producing non-reproducible arbitration outcomes for the same request-response pair."
+    },
+    {
+      "affected_sections": [
+        "11",
+        "19"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "Sections 11 and 19 require that conflicting duplicate submissions 'MUST be rejected when detectable,' but 'detectable' is never defined. Different implementations may apply different detection criteria, causing the same conflicting submission to be rejected by one adapter and accepted by another, and making the MUST obligation unevaluable for conformance.",
+      "determinism_impact": "major",
+      "evidence": "Section 11: 'conflicting submissions from the same approver for the same request MUST be rejected when detectable.' Section 19: 'reject conflicting duplicate submissions from the same approver for the same request when detectable.'",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "Adapter rejection conditions must be objectively defined so that all conforming implementations produce the same rejection decision for the same input state.",
+      "issue_fingerprint": "65770dece865770b71d95f131b8398df741f0fa635e8a36990c79b1df78709fc",
+      "issue_id": "iss_65770dece865770b",
+      "issue_type": "underspecification",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define a concrete detectable condition. For example: 'A conflict is detectable when the adapter's local submission store contains a prior submission for the same approval_request_id from the same approver_id with a different decision value.' Alternatively, if detection is inherently best-effort, downgrade MUST to SHOULD and explicitly acknowledge that canonical conflict resolution belongs to the Arbiter regardless of adapter behavior.",
+      "rubric_impact": null,
+      "severity_rationale": "Without an objective definition of 'detectable,' two conforming implementations will accept or reject the same conflicting submission differently, and the MUST obligation creates an unverifiable conformance claim."
+    },
+    {
+      "affected_sections": [
+        "12"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Section 12 shows 'presented' and 'submitted' as example values for delivery_status and response_status in adapter receipts but defines no formal enum and does not state that these fields are implementation-defined, allowing different adapter implementations to emit different strings for the same semantic state and making receipt signals non-comparable across implementations.",
+      "determinism_impact": "minor",
+      "evidence": "Section 12: receipt example shows 'delivery_status': 'presented' and 'response_status': 'submitted' with no enumeration of allowed values and no explicit statement that these are implementation-defined strings.",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Observable output fields shared across implementations must have defined value sets to allow consistent cross-implementation interpretation.",
+      "issue_fingerprint": "d2559feb39be4458f4206e89dfc8d3e1a74ae4a19de33ac7e00ce99cc136207d",
+      "issue_id": "iss_d2559feb39be4458",
+      "issue_type": "underspecification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Either define the allowed enum values for both fields (e.g., delivery_status: [presented, delivery_failed, expired]; response_status: [pending, submitted, locally_rejected, timed_out]) or explicitly state that these fields are implementation-defined opaque strings with no cross-adapter semantic guarantee.",
+      "rubric_impact": null,
+      "severity_rationale": "Receipts are non-authoritative observability artifacts so undefined enums do not affect approval validity, but they produce inconsistent monitoring and audit signals across implementations that consume receipts."
+    },
+    {
+      "affected_sections": [
+        "11"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "Section 11 lists four mutually exclusive Arbiter resolution strategies (first-write-wins, role-based precedence, quorum requirements, duplicate rejection) without specifying which applies or how the active strategy is selected, leaving multi-approver conflict resolution non-deterministic across deployments and making replay of multi-approver scenarios unreproducible.",
+      "determinism_impact": "minor",
+      "evidence": "Section 11: 'The Arbiter owns the resolution strategy, such as first-write-wins, role-based precedence, quorum requirements, or duplicate rejection.'",
+      "feedback_id": "fb_004",
+      "in_scope": true,
+      "invariant_violated": "Multi-approver conflict resolution must be governed by a pinned strategy or a defined configuration mechanism rather than an open-ended list of alternatives.",
+      "issue_fingerprint": "6a8bc80cd911ce2c785404157f38a695ee670eb8473713546d667e10b1f8d2c3",
+      "issue_id": "iss_6a8bc80cd911ce2c",
+      "issue_type": "underspecification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify the MVP default resolution strategy (e.g., 'The MVP Arbiter uses first-write-wins resolution for same-role conflicts') or state that the strategy is policy-configured and identify the configuration location. Listing alternatives without a selection criterion is insufficient for a locked specification.",
+      "rubric_impact": null,
+      "severity_rationale": "Different deployments applying different resolution strategies to the same multi-approver scenario will produce different state transitions, undermining replay determinism and cross-environment consistency."
+    },
+    {
+      "affected_sections": [
+        "6"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "nit",
+      "claim": "Section 6 permits nested display_context fields to reuse authority-bearing field names 'only when they are clearly presentation data and cannot be confused with the authority-bearing request fields,' but both 'clearly' and 'cannot be confused' are subjective, creating a non-deterministic conformance boundary that different adapter authors will resolve differently for the same nested field structure.",
+      "determinism_impact": "nit",
+      "evidence": "Section 6: 'Nested display fields MAY reuse generic names such as intent_id or expires_at only when they are clearly presentation data and cannot be confused with the authority-bearing request fields.'",
+      "feedback_id": "fb_005",
+      "in_scope": true,
+      "invariant_violated": "Conformance boundaries for adapter behavior must be objective; subjective qualifiers produce non-deterministic conformance judgments across implementations.",
+      "issue_fingerprint": "3368b53d72837ff216f31c85883ef731cc36f848663098b391a28929c1c63270",
+      "issue_id": "iss_3368b53d72837ff2",
+      "issue_type": "ambiguity",
+      "normalized_severity": "nit",
+      "oscillation_key": null,
+      "recommended_change": "Replace the subjective qualifier with a structural rule. For example, prohibit authority-bearing field names at any nesting depth within display_context, or require that any display-copy values be placed under a reserved sub-key (e.g., display_copy or labels) to establish an unambiguous structural boundary that is evaluable without judgment.",
+      "rubric_impact": null,
+      "severity_rationale": "The ambiguity affects only non-authoritative display_context nested fields and has no direct impact on approval validity, but it creates an inconsistent conformance surface that different adapter implementations will interpret differently."
+    }
+  ],
+  "profile": "determinism",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Determinism Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 2
+}

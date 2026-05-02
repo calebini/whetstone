@@ -1,0 +1,214 @@
+{
+  "draft_hash": "63676db0c26c6223f65489a9e2992b296fa0723f9bb6fca96b00e7f61a798a0c",
+  "feedback": [
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-artifact-schemas-minimum-required-fields",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-convergence-declaration",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-target-matrix-precedence"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "`blocking_convergence` in `rubric_gaps.json` has no defined computation rule. The spec defines `unresolved_rubric_gaps` as the subset where `status = unresolved` and `blocking_convergence = true`, but nowhere specifies what conditions cause `blocking_convergence` to be set true versus false. This makes convergence evaluation non-deterministic.",
+      "determinism_impact": "major",
+      "evidence": "ARTIFACT SCHEMAS defines `rubric_gaps.json` with field `blocking_convergence: boolean` and filters on it for `unresolved_rubric_gaps`, but no computation rule appears anywhere in the spec. TARGET MATRIX PRECEDENCE specifies per-mode gap tolerance but does not map those conditions to `blocking_convergence`. CONVERGENCE DECLARATION requires 'zero unresolved blocking rubric gaps' for final/strict and depends entirely on this undefined field. DESIGN PRINCIPLE states every primitive must be computable.",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "Every primitive MUST be computable. No undefined aggregation.",
+      "issue_fingerprint": "a4f2e8c91b3d7054e6a2f8c0d91b3074a5f2e8c01b3d7054e6a2f8c0d91b3074",
+      "issue_id": "iss_a4f2e8c91b3d7054",
+      "issue_type": "precision_gap",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "precision_gap",
+        "direction": "add",
+        "fingerprint": "494b283a450db48018378595792a5bbc12c1c448772bf9bc076b026c3d36eb4e",
+        "opposition_key": "98d8b09e8085c9122ad14271d25f0adabc334d131b0080dadf2f819de7bcb1ca",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-artifact-schemas-minimum-required-fields"
+      },
+      "recommended_change": "Add an explicit normative rule assigning `blocking_convergence`. For example: for `final/strict` targets, all rubric gaps with `status = unresolved` are `blocking_convergence = true`; for permissive targets, gaps with `status = accepted` are `blocking_convergence = false` and gaps with `status = unresolved` are `blocking_convergence = true` unless the target matrix explicitly permits them. The assignment rule must be fully computable from `status`, `normalized_severity`, and `target_mode`.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-convergence-declaration"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The convergence declaration acceptance criteria use the phrase 'against the declaration' to scope zero-blocker and zero-major requirements from `convergence_strict_check`, but the review scope for that check includes the full draft, rubric, and multiple artifacts. It is undefined whether 'against the declaration' means issues where `affected_sections` is the declaration document specifically, or all in-scope issues returned by the review. For permissive targets that allow documented major spec-body issues, the two interpretations yield different acceptance outcomes.",
+      "determinism_impact": "major",
+      "evidence": "CONVERGENCE DECLARATION: '`convergence_strict_check` returns zero in-scope blocker issues against the declaration' and '`convergence_strict_check` returns zero in-scope major issues against the declaration.' The same section defines the review scope as 'convergence_declaration.md, the current draft, the current rubric hash, the target matrix, unresolved_issues.json, and rubric_gaps.json.' The scope qualifier 'against the declaration' is not anchored to a field in `reviewer_feedback.json`, making automated evaluation ambiguous.",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "No undefined behavior.",
+      "issue_fingerprint": "b7c3f1d82e4a6059f7b3d1c82e4a6059f7b3d1c82e4a6059f7b3d1c82e4a6059",
+      "issue_id": "iss_b7c3f1d82e4a6059",
+      "issue_type": "clarity_gap",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "clarity_gap",
+        "direction": "clarify",
+        "fingerprint": "c498292b7f99876909dfcff02073981b84c8563bbaf47f807ad808323c97f01f",
+        "opposition_key": "4470800abead0cc2cf8f1def25f8b42ef9fc3f517a842b3fc50ae450eee0180d",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-convergence-declaration"
+      },
+      "recommended_change": "Clarify which issues are counted. Either (a) state that only issues whose primary `affected_sections` entry is `convergence_declaration.md` are counted, so spec-body issues found during this review do not block declaration acceptance, or (b) remove 'against the declaration' and state 'returns zero in-scope blocker issues' without qualification, meaning all issues returned by the review are counted. Whichever interpretation is chosen must be expressed in terms of computable fields in `reviewer_feedback.json`.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-phase-2-failure-handling",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-convergence-declaration"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "`reviewer_final_status = accepted` is defined in PHASE 2 FAILURE HANDLING as requiring no blocker, major, or blocking rubric-gap issue 'against the target matrix', but the CONVERGENCE DECLARATION acceptance criteria require zero in-scope blocker and major issues 'against the declaration'. These scope qualifiers are not synonymous and produce inconsistent acceptance conditions depending on interpretation.",
+      "determinism_impact": "major",
+      "evidence": "PHASE 2 FAILURE HANDLING: '`reviewer_final_status = accepted` means the final Phase 2 `convergence_strict_check` review accepted the declaration and reported no blocker, major, or blocking rubric-gap issue against the target matrix.' CONVERGENCE DECLARATION acceptance criteria: '`convergence_strict_check` returns zero in-scope blocker issues against the declaration' and '`convergence_strict_check` returns zero in-scope major issues against the declaration.' 'Against the target matrix' implies issues that violate target matrix requirements; 'against the declaration' implies issues scoped to the declaration document. Neither phrase is anchored to a computable field.",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Cross-spec consistency. No undefined behavior.",
+      "issue_fingerprint": "c8d4a2b93f5e7160a8c4d2b93f5e7160a8c4d2b93f5e7160a8c4d2b93f5e7160",
+      "issue_id": "iss_c8d4a2b93f5e7160",
+      "issue_type": "consistency_violation",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "consistency_violation",
+        "direction": "clarify",
+        "fingerprint": "0960a7bd139fb3ff068392e83a2ec075eb463418cbb6aaf4de9b8ffeb2773c7b",
+        "opposition_key": "394b9e897a0b815ddfa776c4030cbf3c6a1cc5b02f54ddbdb1329cd73cb3de5e",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-phase-2-failure-handling"
+      },
+      "recommended_change": "Align the scope qualifiers in both sections to use identical language, anchored to computable fields in `reviewer_feedback.json`. One acceptable resolution: define a boolean field or filter condition (e.g., issues where `affected_sections` includes `convergence_declaration.md` or where `rubric_impact` is non-null against target matrix requirements) and reference that same filter in both the declaration acceptance criteria and the `reviewer_final_status` definition.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-round-scheduling-algorithm",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-round-strategy-adaptive"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The Phase 2 profile sequence (convergence_strict_check -> adversarial -> convergence_strict_check) permits convergence to be declared after the first `convergence_strict_check`, permanently skipping the `adversarial` review. No rule requires the adversarial profile to complete before convergence may be declared. For a final/strict target, this is a strictness gap: adversarial issues that would have been surfaced are never discovered.",
+      "determinism_impact": null,
+      "evidence": "ROUND STRATEGY defines Phase 2 as: convergence_strict_check, adversarial, convergence_strict_check. ROUND SCHEDULING ALGORITHM states: 'Phase 2 completion is checked after each validated Phase 2 review cycle and any resulting declaration revision, not only after the full configured Phase 2 profile sequence has been exhausted.' This rule explicitly permits convergence declaration after the first profile. If the declaration is accepted after the first convergence_strict_check, the adversarial profile and second convergence_strict_check never run. The spec does not restrict this for final/strict targets.",
+      "feedback_id": "fb_004",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "d9e5b3c04a6f8271b9d5e3c04a6f8271b9d5e3c04a6f8271b9d5e3c04a6f8271",
+      "issue_id": "iss_d9e5b3c04a6f8271",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "2a04e92354b4e0a2ecbfa797033ed67d3a94608f2f4af6a7b369b26cecd77089",
+        "opposition_key": "3f83d986fc35635ca5e665bb8532bd1a464c9c79aeca578fb6d485a8a8ac38a8",
+        "scope": "structural",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-round-scheduling-algorithm"
+      },
+      "recommended_change": "For final/strict targets, add a rule that the Orchestrator MUST NOT declare convergence until every distinct Phase 2 profile in the configured sequence has produced at least one clean result in Phase 2, or has been skipped by an explicit skip condition. Alternatively, explicitly acknowledge in the ROUND SCHEDULING ALGORITHM that the adversarial profile is optional under early convergence and document the accepted risk for final/strict targets.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-oscillation-detection-full-definition",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-phase-gated-feedback-classification"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "Feedback churn detection requires 3 cumulative Phase 2 appearances of the same `oscillation_opposition_key` 'without intervening resolution', but 'intervening resolution' is never defined. It is ambiguous whether resolution requires the editor to explicitly accept feedback, an issue to be removed from `unresolved_issues.json`, a round to pass without the opposition key appearing, or some other condition. This makes the churn counter non-deterministic.",
+      "determinism_impact": "major",
+      "evidence": "OSCILLATION DETECTION: 'Feedback churn (Phase 2 only): same `oscillation_opposition_key` appears cumulatively 3 times in Phase 2 with `modify` or `clarify` and without intervening resolution.' Recommendation logic: 'feedback_churn involving `modify` or `clarify` for 3 cumulative Phase 2 appearances of the same opposition key without intervening resolution => escalate_conflict.' The term 'intervening resolution' appears twice in the spec with no definition, no reference to any artifact field, and no algorithmic description of how it resets the churn counter.",
+      "feedback_id": "fb_005",
+      "in_scope": true,
+      "invariant_violated": "Every primitive MUST be computable. No undefined behavior.",
+      "issue_fingerprint": "e0f6c4d15b7a9382c0e6f4d15b7a9382c0e6f4d15b7a9382c0e6f4d15b7a9382",
+      "issue_id": "iss_e0f6c4d15b7a9382",
+      "issue_type": "precision_gap",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "precision_gap",
+        "direction": "add",
+        "fingerprint": "5f8bb01836a1465ff5cf152253697f1a727df4fcc472d28193029054783320c5",
+        "opposition_key": "4b8f3d2f1a3d24ad036ec917acc3e5ef77ddac38627b2fa68c715d3e4d506783",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-oscillation-detection-full-definition"
+      },
+      "recommended_change": "Define 'intervening resolution' as a computable condition anchored to existing artifacts. Recommended: an intervening resolution occurs between Phase 2 rounds R and R+1 when, in the editor_summary.json for round R, the `accepted_feedback_ids` or `modified_feedback_ids` set contains a feedback item whose `oscillation_key.opposition_key` matches the tracked key, and that item is absent from `unresolved_issues.json` at the start of round R+1. The churn counter MUST reset to zero when this condition is met.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-configuration"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The configuration schema requires concrete non-empty `version` and `model` strings for both editor and reviewer clients, as stated in inline YAML comments, but the spec provides no normative rule defining what the Orchestrator MUST do when these fields are left as empty strings at runtime. No startup validation phase, validation failure behavior, or resulting terminal state is specified.",
+      "determinism_impact": "minor",
+      "evidence": "CONFIGURATION section: `version: \"\"  # MUST be a concrete version string` and `model: \"\"  # MUST be a concrete model identifier` for both editor and reviewer. The MUST constraint appears only as a YAML comment, not as a normative prose rule. No section of the spec defines startup validation or specifies a failure mode for invalid configuration fields. The STATE MACHINE begins at INITIALIZED -> TECHNICAL_REVIEW with no pre-flight validation state.",
+      "feedback_id": "fb_006",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "f1a7d5e26c8b0493d1f7a5e26c8b0493d1f7a5e26c8b0493d1f7a5e26c8b0493",
+      "issue_id": "iss_f1a7d5e26c8b0493",
+      "issue_type": "precision_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": {
+        "concern_type": "precision_gap",
+        "direction": "add",
+        "fingerprint": "8e9223abd298457d154aac332427a83831e981ecb82ff8f2578061d5a12f6888",
+        "opposition_key": "0faed6734edf173e547e91a7e5a0933778b161cca2239ee2205e4cf69807d94d",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-configuration"
+      },
+      "recommended_change": "Add a normative rule: 'Before beginning any review round, the Orchestrator MUST validate that `version` and `model` are non-empty strings for all configured clients. If validation fails, the Orchestrator MUST halt before entering TECHNICAL_REVIEW and produce an error artifact identifying the invalid fields.' Optionally, introduce a PRE_FLIGHT state in the state machine between INITIALIZED and TECHNICAL_REVIEW to represent this validation step.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-editor-decline-taxonomy",
+        "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-artifact-schemas-minimum-required-fields"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The EDITOR DECLINE TAXONOMY states that `deferred_to_later_round` requires `target_profile` and `target_round_or_phase`, but the `editor_summary.json` schema in ARTIFACT SCHEMAS declares both as `string | null`, unconditionally permitting null. The taxonomy rule (required) and the schema type (nullable) are inconsistent.",
+      "determinism_impact": "minor",
+      "evidence": "EDITOR DECLINE TAXONOMY: 'deferred_to_later_round requires: target_profile, target_round_or_phase, rationale.' ARTIFACT SCHEMAS `editor_summary.json`: 'target_profile: string | null' and 'target_round_or_phase: string | null'. These nullable types apply to all declined feedback rows regardless of `decline_reason`, making it impossible to enforce the taxonomy's required-field constraint from the schema alone.",
+      "feedback_id": "fb_007",
+      "in_scope": true,
+      "invariant_violated": "Cross-spec consistency.",
+      "issue_fingerprint": "a2b8e6f37d9c1504e2a8b6f37d9c1504e2a8b6f37d9c1504e2a8b6f37d9c1504",
+      "issue_id": "iss_a2b8e6f37d9c1504",
+      "issue_type": "consistency_violation",
+      "normalized_severity": "minor",
+      "oscillation_key": {
+        "concern_type": "consistency_violation",
+        "direction": "constrain",
+        "fingerprint": "ee65587f973c3f8c33f97d41482703d12137cba54624f41a8e438241cae1d8a8",
+        "opposition_key": "cd3d050252134ffbf8af639afe03a86753ec9856964d83a34ac3fe8d623380fa",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-09-strict-candidate-artifact-schemas-minimum-required-fields"
+      },
+      "recommended_change": "Update the `editor_summary.json` schema with a conditional non-null constraint: 'When `decline_reason = deferred_to_later_round`, `target_profile` and `target_round_or_phase` MUST NOT be null.' This can be expressed as a normative prose rule accompanying the schema, or as a schema-level conditional. The taxonomy section SHOULD cross-reference the schema constraint to make the relationship explicit.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    }
+  ],
+  "profile": "convergence_strict_check",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "whetstone-reviewer",
+    "version": "0.09-strict-candidate"
+  },
+  "round_number": 1
+}

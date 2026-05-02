@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/phase2_reviewer_feedback.schema.json",
+  "title": "Whetstone Phase 2 Reviewer Feedback",
+  "type": "object",
+  "allOf": [
+    { "$ref": "reviewer_feedback.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "feedback": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oscillation_key": { "$ref": "common.schema.json#/$defs/oscillationKey" }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

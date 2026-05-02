@@ -1,0 +1,16 @@
+{
+  "accepted_feedback_ids": [],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Notification Spec\n\n## Purpose\n\nSend a notification when a watched file changes.\n\n## Roles\n\n- Watcher: observes file changes.\n- Sender: sends notifications.\n- Operator: configures the watched file and destination.\n\n## Behavior\n\nThe system checks `watch_path` every `poll_interval_seconds`.\n\n### Change Detection\n\nA file is considered \"changed\" at a poll interval if the SHA-256 hash of the file's byte contents differs from the SHA-256 hash recorded at the previous successful read.\n\n### Startup Behavior\n\nOn startup, the system attempts to read `watch_path`.\n\n- If the read succeeds, the system records the file's SHA-256 hash as the baseline and MUST NOT send a notification.\n- If the read fails, the system records the failure (see Failure Handling), does not establish a baseline, and continues polling.\n\n### Notification\n\nAt each poll interval after a baseline is established:\n\n- If the current SHA-256 hash equals the baseline, the system does nothing.\n- If the current SHA-256 hash differs from the baseline, the system attempts to send a notification to `destination` and:\n  - on success, updates the baseline to the current hash\n  - on failure, records the failure and MUST NOT update the baseline\n\n## Configuration\n\n```yaml\nwatch_path: ./input.txt\ndestination: ops@example.com\npoll_interval_seconds: 60\n```\n\n## Failure Handling\n\nThe system records failures by appending a newline-delimited JSON (NDJSON) record to `failure.log` in the working directory.\n\nEach failure record MUST include:\n\n- `timestamp`: ISO 8601 combined date-time in UTC formatted as `YYYY-MM-DDTHH:MM:SS.sssZ` (millisecond precision, `Z` suffix)\n- `watch_path`: the configured watch path\n- `destination`: the configured destination\n- `phase`: one of `read` or `send`\n- `error`: a human-readable error string\n\nIf reading `watch_path` fails at startup or at any poll interval, the system records a failure with `phase: read` and continues polling.\n\nIf sending fails, the system records a failure with `phase: send` and continues polling.\n",
+  "draft_after_hash": "7151f72eeb25b8e9200041ca7d61e96d6a35898df946f75c607799ba6271617b",
+  "draft_before_hash": "4748e2b199cd1862b3af8db2633cdb32e820b8d6b371d55eca9a1748768768e7",
+  "modified_feedback_ids": [
+    "fb_det_001"
+  ],
+  "resolved_issue_ids": [
+    "iss_a1b2c3d4e5f60001"
+  ],
+  "round_number": 2,
+  "unresolved_issue_ids": []
+}

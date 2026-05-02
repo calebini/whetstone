@@ -1,0 +1,1540 @@
+{
+  "decision_points": [
+    {
+      "affected_sections": [
+        "2. Alignment With Foreman Specs"
+      ],
+      "decision_id": "dec_941b891a3b084d61",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The High-Level Design (HLD) remains authoritative for:"
+      ],
+      "options_considered": [
+        {
+          "description": "The High-Level Design (HLD) remains authoritative for:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `2. Alignment With Foreman Specs` adopt this change (choose policy): The High-Level Design (HLD) remains authoritative for:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "5. Approval Request"
+      ],
+      "decision_id": "dec_9cf50a5f725ac4a9",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `trace_id` is OPTIONAL and MUST be treated as an opaque string. It is non-authoritative correlation context."
+      ],
+      "options_considered": [
+        {
+          "description": "- `trace_id` is OPTIONAL and MUST be treated as an opaque string. It is non-authoritative correlation context.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `5. Approval Request` adopt this change (tighten requirement, choose policy): `trace_id` is OPTIONAL and MUST be treated as an opaque string. It is non-authoritative correlation context.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "5. Approval Request"
+      ],
+      "decision_id": "dec_e509873363b8b2a2",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- If `trace_id` is present in the request, the adapter MUST echo the same `trace_id` value into any approval response (Section 7) without modification."
+      ],
+      "options_considered": [
+        {
+          "description": "- If `trace_id` is present in the request, the adapter MUST echo the same `trace_id` value into any approval response (Section 7) without modification.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `5. Approval Request` adopt this change (tighten requirement, scope change): If `trace_id` is present in the request, the adapter MUST echo the same `trace_id` value into any approval response (Section 7) without modification.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "5. Approval Request"
+      ],
+      "decision_id": "dec_a773f6ac4a1c8348",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The adapter MUST treat all authority-bearing fields in the received request as read-only after request receipt."
+      ],
+      "options_considered": [
+        {
+          "description": "The adapter MUST treat all authority-bearing fields in the received request as read-only after request receipt.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `5. Approval Request` adopt this change (tighten requirement, choose policy, scope change): The adapter MUST treat all authority-bearing fields in the received request as read-only after request receipt.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "5. Approval Request"
+      ],
+      "decision_id": "dec_122c50a480036fce",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "On submission, the adapter MUST reject the submission if any request-bound preserved field in the response differs from the received request. The request-bound preserved field set is:"
+      ],
+      "options_considered": [
+        {
+          "description": "On submission, the adapter MUST reject the submission if any request-bound preserved field in the response differs from the received request. The request-bound preserved field set is:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `5. Approval Request` adopt this change (tighten requirement, choose policy, scope change): On submission, the adapter MUST reject the submission if any request-bound preserved field in the response differs from the received request. The request-bound preserved field set is:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "6. Display Context"
+      ],
+      "decision_id": "dec_3fa72cf8fefd5186",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- Nested fields within `display_context` MUST NOT use keys that match authority-bearing field names at any depth."
+      ],
+      "options_considered": [
+        {
+          "description": "- Nested fields within `display_context` MUST NOT use keys that match authority-bearing field names at any depth.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `6. Display Context` adopt this change (tighten requirement, choose policy): Nested fields within `display_context` MUST NOT use keys that match authority-bearing field names at any depth.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_63d3d281413778df",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Request-bound preserved fields:"
+      ],
+      "options_considered": [
+        {
+          "description": "Request-bound preserved fields:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `7. Approval Response` adopt this change (choose policy): Request-bound preserved fields:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_0ba19025ce6413f6",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "These response fields MUST match the received immutable approval request, and the adapter MUST reject on mismatch:"
+      ],
+      "options_considered": [
+        {
+          "description": "These response fields MUST match the received immutable approval request, and the adapter MUST reject on mismatch:",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `7. Approval Response` adopt this change (tighten requirement, choose policy, scope change): These response fields MUST match the received immutable approval request, and the adapter MUST reject on mismatch:",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_9a5b3be53f2d30d6",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- If the received request includes `trace_id`, the response MUST include the identical `trace_id` value."
+      ],
+      "options_considered": [
+        {
+          "description": "- If the received request includes `trace_id`, the response MUST include the identical `trace_id` value.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `7. Approval Response` adopt this change (tighten requirement): If the received request includes `trace_id`, the response MUST include the identical `trace_id` value.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "7. Approval Response"
+      ],
+      "decision_id": "dec_88b24e3db1bd26db",
+      "decision_type": "relax_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- If the received request does not include `trace_id`, the response MAY omit `trace_id`."
+      ],
+      "options_considered": [
+        {
+          "description": "- If the received request does not include `trace_id`, the response MAY omit `trace_id`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `7. Approval Response` adopt this change (relax requirement): If the received request does not include `trace_id`, the response MAY omit `trace_id`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_d58faa06e77cbc76",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "For expiration validity, Foreman uses Foreman-side arbitration time as the authoritative clock."
+      ],
+      "options_considered": [
+        {
+          "description": "For expiration validity, Foreman uses Foreman-side arbitration time as the authoritative clock.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (choose policy, scope change): For expiration validity, Foreman uses Foreman-side arbitration time as the authoritative clock.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_f29d758c98524678",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Foreman SHOULD record a Foreman-side response ingestion timestamp for every received adapter response as an audit/observability field named `foreman_ingested_at`, but it MUST NOT be used for expiration validity."
+      ],
+      "options_considered": [
+        {
+          "description": "Foreman SHOULD record a Foreman-side response ingestion timestamp for every received adapter response as an audit/observability field named `foreman_ingested_at`, but it MUST NOT be used for expiration validity.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (tighten requirement, scope change): Foreman SHOULD record a Foreman-side response ingestion timestamp for every received adapter response as an audit/observability field named `foreman_ingested_at`, but it MUST NOT be used for expiration validity.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary"
+      ],
+      "decision_id": "dec_2649a7fecdcd21d8",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `9. Arbiter Validation Boundary` adopt this change (scope change): Adapter-provided `submitted_at` is a captured claim and audit field; it does not by itself prove that a response was submitted before `expires_at`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_388da444dae804ff",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "If the adapter blocks submission after expiration, it does not need to send a special expired response to Foreman."
+      ],
+      "options_considered": [
+        {
+          "description": "If the adapter blocks submission after expiration, it does not need to send a special expired response to Foreman.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `10. Expiration Handling` adopt this change (scope change): If the adapter blocks submission after expiration, it does not need to send a special expired response to Foreman.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_eb0154632905e4e9",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "However, when a submission attempt is blocked due to adapter-local expiration detection, the adapter SHOULD emit an adapter receipt (Section 12) with `response_status = \"locally_rejected\"` and `reason = \"adapter_expiration_block\"`."
+      ],
+      "options_considered": [
+        {
+          "description": "However, when a submission attempt is blocked due to adapter-local expiration detection, the adapter SHOULD emit an adapter receipt (Section 12) with `response_status = \"locally_rejected\"` and `reason = \"adapter_expiration_block\"`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `10. Expiration Handling` adopt this change (relax requirement, scope change): However, when a submission attempt is blocked due to adapter-local expiration detection, the adapter SHOULD emit an adapter receipt (Section 12) with `response_status = \"locally_rejected\"` and `reason = \"adapter_expiration_block\"`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "10. Expiration Handling"
+      ],
+      "decision_id": "dec_72cceb2d20b54af5",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Foreman can discover expiration from the immutable approval request's `expires_at` during candidate selection and arbitration."
+      ],
+      "options_considered": [
+        {
+          "description": "Foreman can discover expiration from the immutable approval request's `expires_at` during candidate selection and arbitration.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `10. Expiration Handling` adopt this change (choose policy, scope change): Foreman can discover expiration from the immutable approval request's `expires_at` during candidate selection and arbitration.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11. Idempotency and Multi-Approver Behavior"
+      ],
+      "decision_id": "dec_f2cab6b440a8a291",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- conflicting duplicate submissions from the same `approver_id` for the same `approval_request_id` MUST be rejected when detectable"
+      ],
+      "options_considered": [
+        {
+          "description": "- conflicting duplicate submissions from the same `approver_id` for the same `approval_request_id` MUST be rejected when detectable",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `11. Idempotency and Multi-Approver Behavior` adopt this change (tighten requirement): conflicting duplicate submissions from the same `approver_id` for the same `approval_request_id` MUST be rejected when detectable",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11. Idempotency and Multi-Approver Behavior"
+      ],
+      "decision_id": "dec_d3401684f8bdb638",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- A conflict is detectable iff the adapter's local submission store contains a prior submission for the same (`approval_request_id`, `approver_id`) at the time the new submission is evaluated."
+      ],
+      "options_considered": [
+        {
+          "description": "- A conflict is detectable iff the adapter's local submission store contains a prior submission for the same (`approval_request_id`, `approver_id`) at the time the new submission is evaluated.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `11. Idempotency and Multi-Approver Behavior` adopt this change (scope change): A conflict is detectable iff the adapter's local submission store contains a prior submission for the same (`approval_request_id`, `approver_id`) at the time the new submission is evaluated.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "11. Idempotency and Multi-Approver Behavior"
+      ],
+      "decision_id": "dec_520d1083a37f374e",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST apply first-write-wins per (`approval_request_id`, `approver_id`) using arbitration time ordering; later responses for the same pair are ignored for normalization and transition decisions."
+      ],
+      "options_considered": [
+        {
+          "description": "The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST apply first-write-wins per (`approval_request_id`, `approver_id`) using arbitration time ordering; later responses for the same pair are ignored for normalization and transition decisions.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `11. Idempotency and Multi-Approver Behavior` adopt this change (tighten requirement, choose policy, scope change): The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST apply first-write-wins per (`approval_request_id`, `approver_id`) using arbitration time ordering; later responses for the same pair are ignored for normalization and transition decisions.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement",
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_0eb8a3144ab711c2",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapter receipts are observability artifacts."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapter receipts are observability artifacts.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (scope change): Adapter receipts are observability artifacts.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_b905dec2674a9f33",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapters SHOULD emit a receipt for every approval request presentation attempt and for every approval response submission outcome (including adapter-local rejection outcomes)."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapters SHOULD emit a receipt for every approval request presentation attempt and for every approval response submission outcome (including adapter-local rejection outcomes).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (relax requirement, scope change): Adapters SHOULD emit a receipt for every approval request presentation attempt and for every approval response submission outcome (including adapter-local rejection outcomes).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_2dc352ce39d60704",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "Adapters MUST emit a receipt when `delivery_status = \"delivery_failed\"`."
+      ],
+      "options_considered": [
+        {
+          "description": "Adapters MUST emit a receipt when `delivery_status = \"delivery_failed\"`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (tighten requirement): Adapters MUST emit a receipt when `delivery_status = \"delivery_failed\"`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_d58a8432721cde1e",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `delivery_status` MUST be one of: `presented`, `delivery_failed`"
+      ],
+      "options_considered": [
+        {
+          "description": "- `delivery_status` MUST be one of: `presented`, `delivery_failed`",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (tighten requirement): `delivery_status` MUST be one of: `presented`, `delivery_failed`",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_17fcfc5a406179b0",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `response_status` MUST be one of: `submitted`, `locally_rejected`"
+      ],
+      "options_considered": [
+        {
+          "description": "- `response_status` MUST be one of: `submitted`, `locally_rejected`",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (tighten requirement): `response_status` MUST be one of: `submitted`, `locally_rejected`",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_85793aa012968f17",
+      "decision_type": "tighten_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `reason` is OPTIONAL. If present, it MUST be an opaque string suitable for operator diagnostics."
+      ],
+      "options_considered": [
+        {
+          "description": "- `reason` is OPTIONAL. If present, it MUST be an opaque string suitable for operator diagnostics.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (tighten requirement): `reason` is OPTIONAL. If present, it MUST be an opaque string suitable for operator diagnostics.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "tighten_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_45fd36674b073669",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- When `response_status = \"locally_rejected\"` due to adapter-local expiration detection, adapters SHOULD set `reason = \"adapter_expiration_block\"`."
+      ],
+      "options_considered": [
+        {
+          "description": "- When `response_status = \"locally_rejected\"` due to adapter-local expiration detection, adapters SHOULD set `reason = \"adapter_expiration_block\"`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (relax requirement, scope change): When `response_status = \"locally_rejected\"` due to adapter-local expiration detection, adapters SHOULD set `reason = \"adapter_expiration_block\"`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_71c0e2c144ee5c63",
+      "decision_type": "relax_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- Adapters SHOULD emit receipts to a well-known structured log sink configured by the deployment environment."
+      ],
+      "options_considered": [
+        {
+          "description": "- Adapters SHOULD emit receipts to a well-known structured log sink configured by the deployment environment.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (relax requirement): Adapters SHOULD emit receipts to a well-known structured log sink configured by the deployment environment.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "12. Adapter Receipt"
+      ],
+      "decision_id": "dec_6bc497f1de87770e",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- If an adapter exposes a programmatic receipt retrieval surface, it SHOULD support querying by `approval_request_id`."
+      ],
+      "options_considered": [
+        {
+          "description": "- If an adapter exposes a programmatic receipt retrieval surface, it SHOULD support querying by `approval_request_id`.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `12. Adapter Receipt` adopt this change (relax requirement, scope change): If an adapter exposes a programmatic receipt retrieval surface, it SHOULD support querying by `approval_request_id`.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "relax_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16. Failure Handling"
+      ],
+      "decision_id": "dec_f76e2223d7b7d50b",
+      "decision_type": "add_operational_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `HAG_ADAPTER_REQUEST_RETRIEVAL_FAILED` (failed to retrieve or receive the approval request)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `HAG_ADAPTER_REQUEST_RETRIEVAL_FAILED` (failed to retrieve or receive the approval request)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `16. Failure Handling` adopt this change (add operational requirement): `HAG_ADAPTER_REQUEST_RETRIEVAL_FAILED` (failed to retrieve or receive the approval request)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "add_operational_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16. Failure Handling"
+      ],
+      "decision_id": "dec_e7084af7c53b8923",
+      "decision_type": "add_operational_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `HAG_ADAPTER_PRESENTATION_FAILED` (failed to present the request to the human)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `HAG_ADAPTER_PRESENTATION_FAILED` (failed to present the request to the human)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `16. Failure Handling` adopt this change (add operational requirement): `HAG_ADAPTER_PRESENTATION_FAILED` (failed to present the request to the human)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "add_operational_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16. Failure Handling"
+      ],
+      "decision_id": "dec_63cad918f9153edf",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `HAG_ADAPTER_SUBMISSION_FAILED` (failed to submit a captured response to Foreman)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `HAG_ADAPTER_SUBMISSION_FAILED` (failed to submit a captured response to Foreman)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `16. Failure Handling` adopt this change (add operational requirement, scope change): `HAG_ADAPTER_SUBMISSION_FAILED` (failed to submit a captured response to Foreman)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "add_operational_requirement",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16. Failure Handling"
+      ],
+      "decision_id": "dec_897a228e645242b9",
+      "decision_type": "add_operational_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `HAG_ADAPTER_AUTH_FAILED` (authentication/authorization or identity-layer failure)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `HAG_ADAPTER_AUTH_FAILED` (authentication/authorization or identity-layer failure)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `16. Failure Handling` adopt this change (add operational requirement): `HAG_ADAPTER_AUTH_FAILED` (authentication/authorization or identity-layer failure)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "add_operational_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "16. Failure Handling"
+      ],
+      "decision_id": "dec_99c958ca52639329",
+      "decision_type": "add_operational_requirement",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "- `HAG_ADAPTER_DELIVERY_FAILED` (generic delivery failure when a more specific code is unavailable)"
+      ],
+      "options_considered": [
+        {
+          "description": "- `HAG_ADAPTER_DELIVERY_FAILED` (generic delivery failure when a more specific code is unavailable)",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `16. Failure Handling` adopt this change (add operational requirement): `HAG_ADAPTER_DELIVERY_FAILED` (generic delivery failure when a more specific code is unavailable)",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "add_operational_requirement"
+      ]
+    },
+    {
+      "affected_sections": [
+        "20. Execution Flow"
+      ],
+      "decision_id": "dec_d0540ba9b9a25905",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "6. Adapter validates request-bound preserved fields; rejects submission on mismatch."
+      ],
+      "options_considered": [
+        {
+          "description": "6. Adapter validates request-bound preserved fields; rejects submission on mismatch.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `20. Execution Flow` adopt this change (choose policy, scope change): 6. Adapter validates request-bound preserved fields; rejects submission on mismatch.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "20. Execution Flow"
+      ],
+      "decision_id": "dec_3c37f5d265e8007c",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "7. Adapter returns response to Foreman."
+      ],
+      "options_considered": [
+        {
+          "description": "7. Adapter returns response to Foreman.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `20. Execution Flow` adopt this change (scope change): 7. Adapter returns response to Foreman.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_cf5e9fc697e3f329",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.13 Adapter error codes are never emitted as Foreman transition reason codes."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.13 Adapter error codes are never emitted as Foreman transition reason codes.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (scope change): AC 1.13 Adapter error codes are never emitted as Foreman transition reason codes.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_2290b94c91cad0e7",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.15 Adapter does not decide whether migration, rebind, graph changes, or hash changes stale an approval."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.15 Adapter does not decide whether migration, rebind, graph changes, or hash changes stale an approval.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (scope change): AC 1.15 Adapter does not decide whether migration, rebind, graph changes, or hash changes stale an approval.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_d6b6a50866974aa5",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.16 Foreman does not place authority-bearing field names as top-level `display_context` keys (or adapter rejects such requests)."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.16 Foreman does not place authority-bearing field names as top-level `display_context` keys (or adapter rejects such requests).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (choose policy, scope change): AC 1.16 Foreman does not place authority-bearing field names as top-level `display_context` keys (or adapter rejects such requests).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_a111c394677d54ed",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.17 Adapter receipts (if emitted) are not approval records and do not establish approval validity."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.17 Adapter receipts (if emitted) are not approval records and do not establish approval validity.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (scope change): AC 1.17 Adapter receipts (if emitted) are not approval records and do not establish approval validity.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_aba3eaa573863e2b",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.18 MVP adapter output sets `signature` to null."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.18 MVP adapter output sets `signature` to null.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (scope change): AC 1.18 MVP adapter output sets `signature` to null.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_8be54d9c3e26e05d",
+      "decision_type": "choose_policy",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.19 When signatures are enforced, signature verification authority is Arbiter-owned (adapter does not establish approval validity)."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.19 When signatures are enforced, signature verification authority is Arbiter-owned (adapter does not establish approval validity).",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (choose policy, scope change): AC 1.19 When signatures are enforced, signature verification authority is Arbiter-owned (adapter does not establish approval validity).",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "choose_policy",
+        "scope_change"
+      ]
+    },
+    {
+      "affected_sections": [
+        "23. Acceptance Criteria"
+      ],
+      "decision_id": "dec_4cf678f4216fa63e",
+      "decision_type": "scope_change",
+      "editor_rationale": "Detected from the editor-produced draft diff.",
+      "editor_selected_option_id": "selected",
+      "evidence_lines": [
+        "AC 1.20 Adapter failure output conforms to the specified failure shape and uses an adapter error-code namespace distinct from Foreman reason codes."
+      ],
+      "options_considered": [
+        {
+          "description": "AC 1.20 Adapter failure output conforms to the specified failure shape and uses an adapter error-code namespace distinct from Foreman reason codes.",
+          "label": "Keep editor change",
+          "option_id": "selected"
+        },
+        {
+          "description": "Require human review before treating this choice as settled.",
+          "label": "Revisit decision",
+          "option_id": "revisit"
+        }
+      ],
+      "orchestrator_action": "present_at_end",
+      "profile": "decision_scan",
+      "question": "Should `23. Acceptance Criteria` adopt this change (scope change): AC 1.20 Adapter failure output conforms to the specified failure shape and uses an adapter error-code namespace distinct from Foreman reason codes.",
+      "requires_human_decision": true,
+      "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
+      "round_number": 1,
+      "source_feedback_ids": [
+        "decision-scan"
+      ],
+      "trigger_types": [
+        "scope_change"
+      ]
+    }
+  ],
+  "draft_hash": "14d21efac686f063f658f987d321d2af531308885d17892a463d245c9263f6ca",
+  "round_number": 1
+}

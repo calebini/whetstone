@@ -1,0 +1,22 @@
+{
+  "accepted_feedback_ids": [],
+  "created_conflict_ids": [],
+  "declined_feedback": [],
+  "draft_after_content": "# Toy Notification Spec\n\n## Purpose\n\nSend a notification when a watched file changes.\n\n## Roles\n\n- Watcher: observes file changes.\n- Sender: sends notifications.\n- Operator: configures the watched file and destination.\n\n## Behavior\n\nThe system polls `watch_path` every `poll_interval_seconds`.\n\n### Change Definition\n\nA file is considered **changed** when the SHA-256 hash of its byte content differs from the hash recorded for the previous poll cycle.\n\n### First-Run Baseline\n\nOn the first poll cycle after startup, the system records the file's current SHA-256 hash as the baseline and MUST NOT send a notification.\n\n### Subsequent Cycles\n\nOn each subsequent poll cycle:\n\n1. Read the file bytes from `watch_path`.\n2. Compute `sha256_current` over those bytes.\n3. If `sha256_current != sha256_previous`, the system MUST send a notification (see **Notification Format**) and then set `sha256_previous = sha256_current`.\n4. If `sha256_current == sha256_previous`, no notification is sent.\n\n## Notification Format\n\n- Transport: an email message addressed to `destination`, which MUST be an email address.\n- Subject: `ToyNotify: file changed: {watch_path}`\n- Body (plain text):\n  - `watch_path: {watch_path}`\n  - `timestamp_utc: {RFC3339 timestamp}`\n  - `sha256: {sha256_current}`\n\n## Configuration\n\n```yaml\nwatch_path: ./input.txt\ndestination: ops@example.com\npoll_interval_seconds: 60\nfailure_log_path: ./toy_notify_failures.log\n```\n\n## Failure Handling\n\nIf sending fails, the system MUST append a single-line JSON object to `failure_log_path` (JSONL format) with keys:\n\n- `timestamp_utc` (RFC3339)\n- `watch_path`\n- `destination`\n- `error`\n\nAfter recording the failure, the system MUST continue polling on the normal schedule.\n",
+  "draft_after_hash": "0d51e4de4caebe403d883bd09389d62dfe8cca5044d2e69cad9e8b0e57a41041",
+  "draft_before_hash": "26912b5b4333f684b449cab3d5fdf610005301b00ff5a4442b3e92ec85b58801",
+  "modified_feedback_ids": [
+    "fb_a3f1c8b2e5d04769",
+    "fb_b7e2d9c4f1035872",
+    "fb_c9a4e0b6d2146783",
+    "fb_d0b5f1c7e3257894"
+  ],
+  "resolved_issue_ids": [
+    "iss_a3f1c8b2e5d04769",
+    "iss_b7e2d9c4f1035872",
+    "iss_c9a4e0b6d2146783",
+    "iss_d0b5f1c7e3257894"
+  ],
+  "round_number": 1,
+  "unresolved_issue_ids": []
+}

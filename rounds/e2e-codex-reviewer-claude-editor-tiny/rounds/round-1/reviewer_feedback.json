@@ -1,0 +1,97 @@
+{
+  "draft_hash": "3cdba751fe524aceeb4d9a8a4fea0b0470b1dc033846b7f1f61e1014f4bcf6c5",
+  "feedback": [
+    {
+      "affected_sections": [
+        "tiny-spec-hashing"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "The spec requires hashing but does not define a deterministic hashing procedure (algorithm, encoding/canonicalization, and exact input), allowing different implementations to produce different hashes for the same draft content.",
+      "determinism_impact": "major",
+      "evidence": "Draft states only: \"The system hashes the draft.\"",
+      "feedback_id": "fb_0001",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "1f3d9c0a4b7e2d1c9a0b4e7d2c1f3d9c0a4b7e2d1c9a0b4e7d2c1f3d9c0a4b7e",
+      "issue_id": "iss_4a1c9d2e7b0f3c6a",
+      "issue_type": "hashing_spec_incomplete",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "determinism_violation",
+        "direction": "constrain",
+        "fingerprint": "61a642dce7e2e2955183a56fe36591ad1d97e959c7cd26d5847808d09a6582c9",
+        "opposition_key": "52b1db7e9fc50cf62ef5bab85fbf19b30edf67c6e2531fa237e35f454435a26e",
+        "scope": "local",
+        "section_id": "tiny-spec-hashing"
+      },
+      "recommended_change": "In `tiny-spec-hashing`, specify (at minimum): (1) the hash algorithm (e.g., SHA-256), (2) the exact bytes hashed (e.g., UTF-8 encoding of the full draft text), (3) canonicalization rules (newline normalization, trimming rules, whether headings/whitespace are preserved), and (4) output format (hex lowercase).",
+      "rubric_impact": null,
+      "severity_rationale": "Without a defined hashing procedure, the artifact hash is not reliably reproducible across environments, creating a direct determinism and convergence risk."
+    },
+    {
+      "affected_sections": [
+        "tiny-spec",
+        "tiny-spec-hashing"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "The spec does not define where the computed hash is recorded (field name) nor when/how it is verified, leaving the hashing requirement non-actionable for artifact production and validation.",
+      "determinism_impact": "major",
+      "evidence": "Only requirement present is: \"The system hashes the draft.\" No field names or verification steps are described.",
+      "feedback_id": "fb_0002",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "6a2c0f1d9b3e7c4a6a2c0f1d9b3e7c4a6a2c0f1d9b3e7c4a6a2c0f1d9b3e7c4a",
+      "issue_id": "iss_c3e8a1f04d9b2c7e",
+      "issue_type": "hash_placement_and_verification_missing",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "ac217fbe586f6f3d3d9ff16fbe63b0811750fa4589376b3f7e4f66e30d5d0d04",
+        "opposition_key": "f55bca3dc034b56f54fae8d235004069552ccd554328ff5e6de4db31a243a005",
+        "scope": "structural",
+        "section_id": "tiny-spec"
+      },
+      "recommended_change": "Add to `tiny-spec` and/or `tiny-spec-hashing`: define the required artifact field (e.g., `draft_hash`), when it must be computed, and a verification rule (recompute from the canonical draft input and compare; fail if mismatch).",
+      "rubric_impact": null,
+      "severity_rationale": "A hash requirement without explicit artifact linkage and verification steps cannot reliably drive convergent behavior across implementations."
+    },
+    {
+      "affected_sections": [
+        "tiny-spec-hashing"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The phrase \"The system hashes the draft\" is ambiguous about which role/component is responsible for hashing and at what lifecycle point, which can cause inconsistent responsibility boundaries.",
+      "determinism_impact": null,
+      "evidence": "Hashing section contains only: \"The system hashes the draft.\"",
+      "feedback_id": "fb_0003",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "b4e7d2c1f3d9c0a4b4e7d2c1f3d9c0a4b4e7d2c1f3d9c0a4b4e7d2c1f3d9c0a4",
+      "issue_id": "iss_8d5f0a2c1e7b3c9a",
+      "issue_type": "system_actor_ambiguous",
+      "normalized_severity": "minor",
+      "oscillation_key": {
+        "concern_type": "authority_violation",
+        "direction": "clarify",
+        "fingerprint": "01128cf0102325423c891b723000312fd6f53a78fd9a498d85926a508ee9a156",
+        "opposition_key": "ec9d3667ecedf6e6b539a10dd30565b76f64e0888164cdd7e6b8b4efac2849df",
+        "scope": "local",
+        "section_id": "tiny-spec-hashing"
+      },
+      "recommended_change": "Clarify in `tiny-spec-hashing` which actor performs hashing (e.g., reviewer, runner, or pipeline) and when (e.g., before evaluation begins, at artifact emission time).",
+      "rubric_impact": null,
+      "severity_rationale": "Ambiguous authority boundaries can lead to divergent implementations and inconsistent enforcement, though it is less severe than an unspecified hashing algorithm."
+    }
+  ],
+  "profile": "convergence_strict_check",
+  "reviewer": {
+    "model": "gpt-5.2",
+    "name": "whetstone_reviewer_gpt52",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

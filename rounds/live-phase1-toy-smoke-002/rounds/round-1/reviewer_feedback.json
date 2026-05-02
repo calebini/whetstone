@@ -1,0 +1,96 @@
+{
+  "draft_hash": "26912b5b4333f684b449cab3d5fdf610005301b00ff5a4442b3e92ec85b58801",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "The term 'changed' in the core triggering condition is undefined, leaving the change-detection mechanism entirely unspecified.",
+      "determinism_impact": "major",
+      "evidence": "\"If the file changed, the system sends a notification.\" \u2014 no definition of what constitutes a change (mtime, content hash, file size, or other signal) is provided anywhere in the spec.",
+      "feedback_id": "fb_a3f1c8b2e5d04769",
+      "in_scope": true,
+      "invariant_violated": "All triggering conditions must be precisely defined with no ambiguity across implementations.",
+      "issue_fingerprint": "a3f1c8b2e5d04769abcdef1234567890aabbccddeeff00112233445566778899",
+      "issue_id": "iss_a3f1c8b2e5d04769",
+      "issue_type": "undefined_term",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a definition of 'changed' to the Behavior section, e.g.: 'A file is considered changed when its SHA-256 content hash differs from the hash recorded on the previous poll cycle.'",
+      "rubric_impact": null,
+      "severity_rationale": "Two implementers reading this spec would produce incompatible change-detection logic. This is a core behavioral ambiguity, not a stylistic gap."
+    },
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "Notification content and format are entirely unspecified, leaving the Sender role without a definition of what to send.",
+      "determinism_impact": "minor",
+      "evidence": "The Behavior section states 'the system sends a notification' but specifies no subject, body, payload structure, or transport protocol beyond a bare destination address in config.",
+      "feedback_id": "fb_b7e2d9c4f1035872",
+      "in_scope": true,
+      "invariant_violated": "Every role's output must be fully specified, including content and format.",
+      "issue_fingerprint": "b7e2d9c4f1035872abcdef0123456789aabbccddeeff99887766554433221100",
+      "issue_id": "iss_b7e2d9c4f1035872",
+      "issue_type": "missing_specification",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a Notification Format section specifying at minimum: the subject or title template, the body content (e.g., which file changed and at what time), and the transport protocol implied by the destination address format.",
+      "rubric_impact": null,
+      "severity_rationale": "Without specifying notification content, the Sender role is an empty contract. Implementations will structurally diverge on what information is communicated."
+    },
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "'Records the failure' is a dangling reference with no specification of where, how, or in what format the failure is recorded.",
+      "determinism_impact": "minor",
+      "evidence": "\"If sending fails, the system records the failure.\" \u2014 no log destination, entry schema, retention policy, or post-failure polling behavior is described.",
+      "feedback_id": "fb_c9a4e0b6d2146783",
+      "in_scope": true,
+      "invariant_violated": "Failure handling must specify the recording mechanism, destination, and subsequent system state.",
+      "issue_fingerprint": "c9a4e0b6d214678301234567fedcba98aabb99887766554433221100ffeeddcc",
+      "issue_id": "iss_c9a4e0b6d2146783",
+      "issue_type": "incomplete_specification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify the failure recording mechanism (e.g., append to a local log file at a configurable path) and state whether the system continues polling after a send failure.",
+      "rubric_impact": null,
+      "severity_rationale": "Failure handling is present but hollow; it creates the appearance of specified behavior without actionable detail. Rated minor because it does not affect the happy path."
+    },
+    {
+      "affected_sections": [
+        "Behavior"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The spec does not define the initial baseline state on first run, leaving ambiguous whether a notification is sent on the first poll cycle.",
+      "determinism_impact": "major",
+      "evidence": "The Behavior section describes change detection relative to a prior state, but no mechanism for establishing or persisting the initial baseline is defined anywhere in the spec.",
+      "feedback_id": "fb_d0b5f1c7e3257894",
+      "in_scope": true,
+      "invariant_violated": "Initial system state and baseline conditions must be explicitly defined.",
+      "issue_fingerprint": "d0b5f1c7e32578940123456789abcdef11223344556677889900aabbccddeeff",
+      "issue_id": "iss_d0b5f1c7e3257894",
+      "issue_type": "missing_specification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a statement specifying first-run behavior, e.g.: 'On the first poll cycle, the system establishes a baseline and does not send a notification. Subsequent cycles compare against this baseline.'",
+      "rubric_impact": null,
+      "severity_rationale": "Determinism impact is major for first-run behavior, but this is a single bounded edge case rather than a continuous ambiguity across all cycles, so normalized severity is minor."
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Structural Integrity Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

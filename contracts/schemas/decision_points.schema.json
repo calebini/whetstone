@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/decision_points.schema.json",
+  "title": "Whetstone Round Decision Points",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round_number", "draft_hash", "decision_points"],
+  "properties": {
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "decision_points": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/decisionPoint" }
+    }
+  }
+}

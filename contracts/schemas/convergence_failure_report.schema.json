@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/convergence_failure_report.schema.json",
+  "title": "Whetstone Convergence Failure Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "terminal_state",
+    "generated_at",
+    "round_number",
+    "draft_hash",
+    "final_draft_path",
+    "final_declaration_path",
+    "target_phase",
+    "target_mode",
+    "unresolved_blockers",
+    "unresolved_major_issues",
+    "unresolved_rubric_gaps",
+    "reviewer_final_status",
+    "last_accepted_draft_hash",
+    "last_draft_hash",
+    "exit_reason",
+    "recommendation"
+  ],
+  "properties": {
+    "terminal_state": { "$ref": "common.schema.json#/$defs/terminalState" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "final_draft_path": { "$ref": "common.schema.json#/$defs/path" },
+    "final_declaration_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "target_phase": { "$ref": "common.schema.json#/$defs/targetPhase" },
+    "target_mode": { "$ref": "common.schema.json#/$defs/targetMode" },
+    "unresolved_blockers": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+    },
+    "unresolved_major_issues": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+    },
+    "unresolved_rubric_gaps": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+    },
+    "reviewer_final_status": { "type": "string", "minLength": 1 },
+    "last_accepted_draft_hash": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "last_draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "exit_reason": { "type": "string", "minLength": 1 },
+    "recommendation": {
+      "type": "string",
+      "enum": ["return_to_phase_1", "continue_convergence", "lower_target", "manual_review_required"]
+    }
+  }
+}
+

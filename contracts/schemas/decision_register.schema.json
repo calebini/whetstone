@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/decision_register.schema.json",
+  "title": "Whetstone Decision Register",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generated_at", "mode", "terminal_state", "decision_points", "unresolved_human_decision_count"],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "mode": {
+      "type": "string",
+      "enum": ["end_of_cycle", "intervention"]
+    },
+    "terminal_state": { "type": "string", "minLength": 1 },
+    "decision_points": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/decisionPoint" }
+    },
+    "unresolved_human_decision_count": { "type": "integer", "minimum": 0 }
+  }
+}

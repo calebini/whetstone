@@ -1,0 +1,77 @@
+{
+  "draft_hash": "48eee2c32c2dc1c93c20692a4821509e4052043249c73246cfd7cd1d5a10ad4e",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Behavior",
+        "Subsequent Cycles"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "The spec does not define behavior when reading watch_path fails (file missing, permission denied, I/O error). Implementations will diverge and operators cannot predict or reason about what the system will do.",
+      "determinism_impact": "major",
+      "evidence": "Section 'Subsequent Cycles' step 1 says 'Read the file bytes from watch_path' but specifies no error handling for read failures. Section 'Failure Handling' only addresses notification send failures, not file read failures.",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "Operators must be able to predict and observe system behavior under all runtime conditions",
+      "issue_fingerprint": "a1b2c3d4e5f60011223344556677889900aabbccddeeff0011223344556677aa",
+      "issue_id": "iss_a1b2c3d4e5f60011",
+      "issue_type": "spec_gap",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a 'Read Failure Handling' subsection specifying: (1) the system MUST log the read error to failure_log_path using the same JSONL format with an appropriate error key, (2) the system MUST NOT update sha256_previous, and (3) the system MUST continue polling on the normal schedule.",
+      "rubric_impact": "major",
+      "severity_rationale": "A file read failure is a common operational event (file rotated, permissions changed, path misconfigured). Without defined behavior, operators cannot write runbooks or set alerts, and implementations are non-deterministic."
+    },
+    {
+      "affected_sections": [
+        "Configuration",
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The failure_log_path file has no defined size limit or rotation policy, making disk exhaustion a production risk with no specified mitigation.",
+      "determinism_impact": null,
+      "evidence": "The 'Failure Handling' section specifies MUST append to failure_log_path with no mention of size bounds, rotation, or truncation behavior.",
+      "feedback_id": "fb_002",
+      "in_scope": true,
+      "invariant_violated": "Operator-managed resources must have defined lifecycle bounds",
+      "issue_fingerprint": "b2c3d4e5f607182233445566778899001122334455667788aabbccddeeff0011",
+      "issue_id": "iss_b2c3d4e5f6071122",
+      "issue_type": "spec_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a note or configuration field specifying a maximum file size or rotation policy, or explicitly state that log rotation is the operator's responsibility and out of scope for this system.",
+      "rubric_impact": "minor",
+      "severity_rationale": "Unbounded append-only log files are a well-known operational hazard. The spec should either bound the growth or explicitly delegate responsibility to the operator."
+    },
+    {
+      "affected_sections": [
+        "Configuration"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "poll_interval_seconds has no defined minimum value. A value of 0 or negative would cause a tight polling loop or undefined behavior, giving operators no spec-level protection.",
+      "determinism_impact": "minor",
+      "evidence": "The Configuration section lists poll_interval_seconds: 60 as an example but specifies no valid range or minimum. The Behavior section uses the value without asserting it is positive.",
+      "feedback_id": "fb_003",
+      "in_scope": true,
+      "invariant_violated": "Configuration parameters must have validated bounds to prevent degenerate operational states",
+      "issue_fingerprint": "c3d4e5f60718223344556677889900112233445566778899aabbccddeeff0022",
+      "issue_id": "iss_c3d4e5f607182233",
+      "issue_type": "spec_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a constraint: poll_interval_seconds MUST be a positive integer greater than or equal to 1.",
+      "rubric_impact": "minor",
+      "severity_rationale": "Missing lower bounds on timing parameters are a known operability gap that can cause resource exhaustion or undefined scheduling behavior in degenerate configurations."
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 3
+}

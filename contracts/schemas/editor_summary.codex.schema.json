@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/editor_summary.codex.schema.json",
+  "title": "Whetstone Editor Summary For Codex",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "round_number",
+    "draft_before_hash",
+    "draft_after_hash",
+    "accepted_feedback_ids",
+    "modified_feedback_ids",
+    "declined_feedback",
+    "created_conflict_ids",
+    "resolved_issue_ids",
+    "unresolved_issue_ids",
+    "draft_after_content"
+  ],
+  "properties": {
+    "round_number": { "type": "integer" },
+    "draft_before_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "draft_after_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "accepted_feedback_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "modified_feedback_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "declined_feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["feedback_id", "decline_reason", "rationale", "target_profile", "target_round_or_phase"],
+        "properties": {
+          "feedback_id": { "type": "string" },
+          "decline_reason": {
+            "type": "string",
+            "enum": [
+              "architectural_conflict",
+              "contradicts_source_authority",
+              "out_of_scope",
+              "factually_incorrect",
+              "already_satisfied",
+              "ambiguous",
+              "superseded_by_better_fix",
+              "deferred_to_later_round",
+              "nit_declined"
+            ]
+          },
+          "rationale": { "type": "string" },
+          "target_profile": { "type": ["string", "null"] },
+          "target_round_or_phase": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "created_conflict_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^con_[a-f0-9]{16}$"
+      }
+    },
+    "resolved_issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^iss_[a-f0-9]{16}$"
+      }
+    },
+    "unresolved_issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^iss_[a-f0-9]{16}$"
+      }
+    },
+    "draft_after_content": {
+      "type": ["string", "null"]
+    }
+  }
+}

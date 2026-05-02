@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/artifact_validation_error.schema.json",
+  "title": "Whetstone Artifact Validation Error",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "terminal_state",
+    "generated_at",
+    "round_number",
+    "phase",
+    "profile",
+    "client_role",
+    "client",
+    "attempts",
+    "retry_exhausted",
+    "last_valid_draft_hash",
+    "last_valid_draft_path",
+    "recommendation"
+  ],
+  "properties": {
+    "terminal_state": { "const": "HALTED_ARTIFACT_INVALID" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "phase": { "type": "string", "enum": ["phase_1", "phase_2"] },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "client_role": { "type": "string", "enum": ["reviewer", "editor"] },
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "model"],
+      "properties": {
+        "name": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["attempt_number", "artifact_name", "validation_errors", "raw_response_path"],
+        "properties": {
+          "attempt_number": { "type": "integer", "minimum": 1 },
+          "artifact_name": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "validation_errors": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          },
+          "raw_response_path": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/path" },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    },
+    "retry_exhausted": { "type": "boolean" },
+    "last_valid_draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "last_valid_draft_path": { "$ref": "common.schema.json#/$defs/path" },
+    "recommendation": {
+      "type": "string",
+      "enum": ["retry_with_simpler_schema", "switch_client", "manual_review_required"]
+    }
+  }
+}

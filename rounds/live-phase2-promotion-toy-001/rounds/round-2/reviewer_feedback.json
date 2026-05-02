@@ -1,0 +1,33 @@
+{
+  "draft_hash": "8aba59873beb4d68639248cbfac8dcf47cb4b742e27f2dd64b2c108e2cc36c3c",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Adapter Contract"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The adapter contract does not define the deterministic status domain or the rule for deriving the returned approval status from a recorded request.",
+      "determinism_impact": "major",
+      "evidence": "The contract says only: \"The adapter records approval requests and returns an approval status.\" It does not specify allowed status values, default status, request identity, duplicate handling, ordering, or whether the same request must always return the same status.",
+      "feedback_id": "fb_001",
+      "in_scope": true,
+      "invariant_violated": "adapter contract deterministically defines observable behavior",
+      "issue_fingerprint": "e1fa89ce7c0c1dd2a2b4469a88b6a16211e79caf343807d5ebdf7ae623b3e95f",
+      "issue_id": "iss_e1fa89ce7c0c1dd2",
+      "issue_type": "underspecified_contract",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define the exact approval status enum and deterministic transition/return rules, including initial status, how requests are keyed, how repeated identical requests are handled, and what is recorded for each request.",
+      "rubric_impact": "major",
+      "severity_rationale": "This is a major determinism issue because independent implementations could return different status values or apply different state rules while still satisfying the current text, leaving the adapter contract with unresolved major ambiguity."
+    }
+  ],
+  "profile": "determinism",
+  "reviewer": {
+    "model": "gpt-5-codex",
+    "name": "Whetstone Determinism Reviewer",
+    "version": "1.0"
+  },
+  "round_number": 2
+}

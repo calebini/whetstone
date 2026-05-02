@@ -1,0 +1,120 @@
+{
+  "draft_hash": "7151f72eeb25b8e9200041ca7d61e96d6a35898df946f75c607799ba6271617b",
+  "feedback": [
+    {
+      "affected_sections": [
+        "Failure Handling",
+        "Behavior"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "The spec defines failure logging but provides no mechanism for operators to observe successful polls, baseline establishment, or successful notification delivery.",
+      "determinism_impact": "nit",
+      "evidence": "The Failure Handling section defines NDJSON records only for read and send failures. No success-path event logging is defined anywhere. An operator watching failure.log during normal healthy operation sees nothing, making it impossible to distinguish a healthy idle system from a crashed one or to audit that notifications were actually sent.",
+      "feedback_id": "fb_op_r3_001",
+      "in_scope": true,
+      "invariant_violated": "Operators must be able to observe normal system operation, not only failures.",
+      "issue_fingerprint": "a1b2c3d4e5f607189a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+      "issue_id": "iss_a1b2c3d4e5f60718",
+      "issue_type": "missing_specification",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a specification for operational event logging covering at minimum: (1) baseline established on startup with the recorded hash, (2) no-change result at each poll interval or equivalent, (3) change detected and notification sent successfully. Define the log format, destination, and required fields for these events, analogous to the failure record definition.",
+      "rubric_impact": "minor",
+      "severity_rationale": "Without any success-path observability, operators cannot audit system behavior, verify notifications were delivered, or distinguish idle-but-healthy from silent-failure. This is a major gap for any production deployment of a long-running daemon."
+    },
+    {
+      "affected_sections": [
+        "Behavior",
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "major",
+      "claim": "The spec provides no liveness signal, making it impossible to distinguish the state 'no file changes have occurred' from 'the system has crashed or hung'.",
+      "determinism_impact": "nit",
+      "evidence": "The Behavior section describes polling at each interval but defines no heartbeat log entry, no last-poll timestamp file, and no health-check endpoint. failure.log is only written on errors. If the process crashes cleanly after startup, failure.log remains empty and unmodified\u2014identical to healthy operation with zero changes.",
+      "feedback_id": "fb_op_r3_002",
+      "in_scope": true,
+      "invariant_violated": "Operators must have a verifiable mechanism to confirm the system is alive and actively polling.",
+      "issue_fingerprint": "b2c3d4e5f60718190b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a",
+      "issue_id": "iss_b2c3d4e5f6071819",
+      "issue_type": "missing_specification",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Specify a periodic liveness indicator: for example, a heartbeat record written to a status log at each poll interval, a last-poll-time file updated each cycle, or an explicit statement that liveness monitoring is delegated to the process supervisor (systemd WatchdogUSec, etc.) and document what signal the system must emit. Any mechanism is acceptable; the omission is the problem.",
+      "rubric_impact": "minor",
+      "severity_rationale": "The inability to distinguish idle-but-healthy from dead-but-silent is a fundamental operability gap in any long-running daemon. Major severity because it prevents reliable monitoring without additional out-of-band instrumentation not described in the spec."
+    },
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": "nit",
+      "baseline_severity": "major",
+      "claim": "failure.log has no defined rotation policy, size cap, or retention limit, making it unsuitable for sustained production operation.",
+      "determinism_impact": "nit",
+      "evidence": "The Failure Handling section specifies only 'appending a newline-delimited JSON record to failure.log'. No maximum file size, rotation trigger, retention period, or truncation behavior is defined. In a system polling every 60 seconds against an intermittently unavailable file or destination, this log will grow without limit over weeks or months.",
+      "feedback_id": "fb_op_r3_003",
+      "in_scope": true,
+      "invariant_violated": "Operational log files must not be allowed to grow without bound in production deployments.",
+      "issue_fingerprint": "c3d4e5f6071819200c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b",
+      "issue_id": "iss_c3d4e5f607181920",
+      "issue_type": "missing_specification",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define a log management policy for failure.log: either a maximum file size with rotation behavior (e.g., rename to failure.log.1 and open a new failure.log), a maximum retained record count, or an explicit statement that log rotation is the operator's responsibility via an external tool (e.g., logrotate) and that the system reopens the file handle on SIGHUP or equivalent.",
+      "rubric_impact": "minor",
+      "severity_rationale": "Unbounded log growth is a common cause of disk-exhaustion incidents in production. Major because it can exhaust host disk space during sustained failure scenarios, potentially impacting other services on the same host."
+    },
+    {
+      "affected_sections": [
+        "Configuration",
+        "Failure Handling"
+      ],
+      "authority_impact": "nit",
+      "baseline_severity": "minor",
+      "claim": "failure.log is hardcoded to the working directory with no configuration option, preventing operators from directing logs to standard system log paths or centralized logging agents.",
+      "determinism_impact": "nit",
+      "evidence": "The Failure Handling section states the log is written to 'failure.log in the working directory'. The Configuration section shows no corresponding config key. Operators deploying to environments with strict log path conventions (e.g., /var/log/, a sidecar expecting /data/logs/) cannot redirect the log without controlling or symlinking the working directory.",
+      "feedback_id": "fb_op_r3_004",
+      "in_scope": true,
+      "invariant_violated": "Configurable resources should be configurable to support varied deployment environments.",
+      "issue_fingerprint": "d4e5f607181920210d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+      "issue_id": "iss_d4e5f60718192021",
+      "issue_type": "missing_specification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a 'failure_log_path' configuration key with a default of './failure.log'. This allows operators to direct the log to any path without workarounds and makes the location explicit rather than implicit.",
+      "rubric_impact": "nit",
+      "severity_rationale": "Minor because workarounds exist (control the working directory, use a symlink), but the lack of configurability is a friction point for standard deployment patterns and makes the log location surprising to operators who expect all outputs to be configurable."
+    },
+    {
+      "affected_sections": [
+        "Failure Handling"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The spec does not define what the system does if the failure.log append itself fails.",
+      "determinism_impact": "minor",
+      "evidence": "The Failure Handling section requires appending to failure.log on read or send failure but is silent on what happens when that append fails (e.g., disk full, permissions error, read-only filesystem). Without this, implementations will diverge: some will raise an unhandled exception and terminate, others will swallow the error and continue, and others will retry indefinitely.",
+      "feedback_id": "fb_op_r3_005",
+      "in_scope": true,
+      "invariant_violated": "Failure-handling paths must themselves define behavior when they fail.",
+      "issue_fingerprint": "e5f60718192021220e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d",
+      "issue_id": "iss_e5f6071819202122",
+      "issue_type": "missing_specification",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add a clause specifying behavior when the failure.log append fails. For example: 'If writing to failure.log fails, the system MUST emit the failure record to stderr and continue polling.' Alternatively, treat it as fatal and terminate with a non-zero exit code. Either is acceptable; the current silence creates non-determinism.",
+      "rubric_impact": "nit",
+      "severity_rationale": "Minor because this is a secondary failure path, but the silence creates implementation divergence and can lead to silent loss of failure records in disk-full scenarios, undermining the spec's observability guarantees."
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 3
+}

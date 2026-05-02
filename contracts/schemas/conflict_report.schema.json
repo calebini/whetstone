@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/conflict_report.schema.json",
+  "title": "Whetstone Conflict Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "terminal_state",
+    "generated_at",
+    "round_number",
+    "draft_hash",
+    "conflicts",
+    "exit_reason",
+    "recommendation"
+  ],
+  "properties": {
+    "terminal_state": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/terminalState" },
+        { "type": "null" }
+      ]
+    },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "conflicts": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/conflictSummary" }
+    },
+    "exit_reason": { "type": "string", "minLength": 1 },
+    "recommendation": {
+      "type": "string",
+      "enum": ["manual_review_required", "freeze_prior_decision", "narrow_scope"]
+    }
+  }
+}

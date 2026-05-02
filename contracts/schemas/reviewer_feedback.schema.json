@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/reviewer_feedback.schema.json",
+  "title": "Whetstone Reviewer Feedback",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round_number", "profile", "reviewer", "draft_hash", "feedback"],
+  "properties": {
+    "round_number": { "type": "integer", "minimum": 1 },
+    "profile": { "type": "string", "minLength": 1 },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "model"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "feedback_id",
+          "issue_id",
+          "issue_fingerprint",
+          "issue_type",
+          "affected_sections",
+          "baseline_severity",
+          "authority_impact",
+          "determinism_impact",
+          "rubric_impact",
+          "normalized_severity",
+          "invariant_violated",
+          "claim",
+          "evidence",
+          "recommended_change",
+          "in_scope",
+          "severity_rationale",
+          "oscillation_key"
+        ],
+        "properties": {
+          "feedback_id": { "$ref": "common.schema.json#/$defs/feedbackId" },
+          "issue_id": { "$ref": "common.schema.json#/$defs/issueId" },
+          "issue_fingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+          "issue_type": { "type": "string", "minLength": 1 },
+          "affected_sections": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "baseline_severity": { "$ref": "common.schema.json#/$defs/nullableSeverity" },
+          "authority_impact": { "$ref": "common.schema.json#/$defs/nullableSeverity" },
+          "determinism_impact": { "$ref": "common.schema.json#/$defs/nullableSeverity" },
+          "rubric_impact": { "$ref": "common.schema.json#/$defs/nullableSeverity" },
+          "normalized_severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "invariant_violated": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          },
+          "claim": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "recommended_change": { "type": "string", "minLength": 1 },
+          "in_scope": { "type": "boolean" },
+          "severity_rationale": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          },
+          "oscillation_key": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/oscillationKey" },
+              { "$ref": "common.schema.json#/$defs/oscillationKeyInput" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "baseline_severity": { "type": "null" } },
+              "required": ["baseline_severity"]
+            },
+            "then": {
+              "properties": { "severity_rationale": { "type": "string", "minLength": 1 } }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "reviewer_feedback": {
+      "profile": "structural_integrity",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    }
+  },
+  {
+    "reviewer_feedback": {
+      "profile": "determinism",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    }
+  },
+  {
+    "reviewer_feedback": {
+      "profile": "operability",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    }
+  },
+  {
+    "reviewer_feedback": {
+      "profile": "convergence_strict_check",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    }
+  },
+  {
+    "reviewer_feedback": {
+      "profile": "adversarial",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    }
+  },
+  {
+    "reviewer_feedback": {
+      "profile": "convergence_strict_check",
+      "reviewer": { "name": "fixture-reviewer", "version": "0.0.0", "model": "fixture" },
+      "feedback": []
+    },
+    "editor_summary": {
+      "accepted_feedback_ids": [],
+      "modified_feedback_ids": [],
+      "declined_feedback": [],
+      "created_conflict_ids": [],
+      "resolved_issue_ids": [],
+      "unresolved_issue_ids": []
+    },
+    "declaration_accepted": true
+  }
+]
+

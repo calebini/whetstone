@@ -1,0 +1,12 @@
+# Local system files
+.DS_Store
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local runtime/output
+rounds/round-*/
+rounds/*.json
+tmp/

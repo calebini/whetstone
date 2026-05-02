@@ -1,0 +1,55 @@
+{
+  "draft_hash": "2dd1b240a8e266a1ad6b318f97781db4a146ba79779d5788f7b58aec3439948c",
+  "feedback": [
+    {
+      "affected_sections": [
+        "9. Arbiter Validation Boundary",
+        "10. Expiration Handling"
+      ],
+      "authority_impact": null,
+      "baseline_severity": null,
+      "claim": "Expiration validity is under-specified because the authoritative clock may be either Foreman-side response ingestion time or arbitration time, which can produce different approval validity outcomes for the same response depending on scheduling delay.",
+      "determinism_impact": "major",
+      "evidence": "Section 9 states: \"For expiration validity, Foreman uses Foreman-side response ingestion or arbitration time as the authoritative clock.\" Section 10 states that the Arbiter performs the canonical expiration check. If a response is ingested before expires_at but arbitrated after expires_at, the draft permits both valid and stale outcomes.",
+      "feedback_id": "fb_det_001",
+      "in_scope": true,
+      "invariant_violated": "Replay and validation outcomes must be stable for the same approval request and response material.",
+      "issue_fingerprint": "c2a7d0aecec969ba0640e920e59402d19f0e0d60a23b87a5ef8741220477e3d3",
+      "issue_id": "iss_c2a7d0aecec969ba",
+      "issue_type": "nondeterministic_time_anchor",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Select exactly one canonical expiration comparison timestamp, such as Foreman response ingestion time, and require Arbiter replay to use the persisted value. If arbitration time is intended, state that explicitly and require replay to persist the arbitration timestamp used for the decision.",
+      "rubric_impact": null,
+      "severity_rationale": "This can change approval validity and downstream transitions for identical approval materials, so it is a major determinism issue."
+    },
+    {
+      "affected_sections": [
+        "17. Audit Contribution"
+      ],
+      "authority_impact": null,
+      "baseline_severity": null,
+      "claim": "The metadata preservation rule is ambiguous because it requires JSON object metadata to be preserved verbatim while also forbidding adapter canonicalization, but JSON object parsing does not preserve a unique byte representation or member order across implementations.",
+      "determinism_impact": "minor",
+      "evidence": "Section 17 says metadata \"MUST be a JSON object,\" \"MUST be preserved verbatim by the adapter,\" and \"MUST NOT be canonicalized by the adapter.\" Different adapters can preserve parsed JSON values while losing original byte layout or key order, creating inconsistent audit material expectations.",
+      "feedback_id": "fb_det_002",
+      "in_scope": true,
+      "invariant_violated": "Replayable audit material must define whether equality is byte-level or semantic JSON-value equality.",
+      "issue_fingerprint": "37a879e0b3d60898389527e81118bd01652f83cb258126ae68ed5adb4a4d0a26",
+      "issue_id": "iss_37a879e0b3d60898",
+      "issue_type": "ambiguous_verbatim_preservation",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Replace \"preserved verbatim\" with a deterministic requirement, such as preserving the parsed JSON value without semantic mutation, or require storing the original raw JSON bytes alongside the parsed object if byte-for-byte audit preservation is required.",
+      "rubric_impact": null,
+      "severity_rationale": "This affects audit and replay comparability but not the core approval transition authority, so minor severity is appropriate."
+    }
+  ],
+  "profile": "determinism",
+  "reviewer": {
+    "model": "gpt-5",
+    "name": "Codex Whetstone Determinism Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 2
+}

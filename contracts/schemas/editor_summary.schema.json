@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/editor_summary.schema.json",
+  "title": "Whetstone Editor Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "round_number",
+    "draft_before_hash",
+    "draft_after_hash",
+    "accepted_feedback_ids",
+    "modified_feedback_ids",
+    "declined_feedback",
+    "created_conflict_ids",
+    "resolved_issue_ids",
+    "unresolved_issue_ids"
+  ],
+  "properties": {
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_before_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "draft_after_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "accepted_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/feedbackId" }
+    },
+    "modified_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/feedbackId" }
+    },
+    "declined_feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["feedback_id", "decline_reason", "rationale", "target_profile", "target_round_or_phase"],
+        "properties": {
+          "feedback_id": { "$ref": "common.schema.json#/$defs/feedbackId" },
+          "decline_reason": {
+            "type": "string",
+            "enum": [
+              "architectural_conflict",
+              "contradicts_source_authority",
+              "out_of_scope",
+              "factually_incorrect",
+              "already_satisfied",
+              "ambiguous",
+              "superseded_by_better_fix",
+              "deferred_to_later_round",
+              "nit_declined"
+            ]
+          },
+          "rationale": { "type": "string", "minLength": 1 },
+          "target_profile": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          },
+          "target_round_or_phase": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "decline_reason": { "const": "deferred_to_later_round" } },
+              "required": ["decline_reason"]
+            },
+            "then": {
+              "properties": {
+                "target_profile": { "type": "string", "minLength": 1 },
+                "target_round_or_phase": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "created_conflict_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/conflictId" }
+    },
+    "resolved_issue_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueId" }
+    },
+    "unresolved_issue_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/issueId" }
+    },
+    "draft_after_content": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

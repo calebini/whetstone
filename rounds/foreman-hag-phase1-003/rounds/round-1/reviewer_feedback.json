@@ -1,0 +1,119 @@
+{
+  "draft_hash": "865458da2bf8261bd6d72a11e9b7912c5b7abd3de9ffa18a56a5033a16d35d2a",
+  "feedback": [
+    {
+      "affected_sections": [
+        "11",
+        "19"
+      ],
+      "authority_impact": "major",
+      "baseline_severity": "major",
+      "claim": "Section 11 and Section 19 assign irreconcilable normative strengths to the same behavior \u2014 rejection of conflicting duplicate submissions from the same approver. SHOULD permits non-compliance when a valid reason exists; MUST prohibits non-compliance unconditionally. A conforming implementation may satisfy Section 11 by omitting conflict detection while simultaneously violating Section 19, or vice versa.",
+      "determinism_impact": "major",
+      "evidence": "Section 11: 'conflicting submissions from the same approver for the same request SHOULD be rejected when detectable.' Section 19 MUST list: 'prevent conflicting duplicate submissions when detectable.' Both conditions are predicated on detectability, making the only difference the normative strength. These are mutually exclusive obligations for the same adapter behavior.",
+      "feedback_id": "f_001",
+      "in_scope": true,
+      "invariant_violated": "Normative requirements governing the same adapter behavior must use consistent RFC 2119 keyword strength across all sections of the specification.",
+      "issue_fingerprint": "d82612973e21aacdbbfc38ab42db2e0355f3af2f1b7b5d3857bd4eef176bbe4b",
+      "issue_id": "iss_d82612973e21aacd",
+      "issue_type": "normative_contradiction",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Align both sections to a single normative keyword. If the security requirement in Section 19 is authoritative, change Section 11 SHOULD to MUST. If the conditional character of Section 11 is intentional \u2014 because some adapters genuinely cannot detect conflicts \u2014 add equivalent conditioning to Section 19 or downgrade Section 19 to SHOULD with a note explaining why MUST is not achievable universally.",
+      "rubric_impact": null,
+      "severity_rationale": "A SHOULD/MUST conflict on a security-related behavior directly undermines implementation determinism and the authority model. Different conforming implementations may choose opposite behaviors, weakening the approval capture integrity the spec is designed to enforce. The impact is not bounded to UX \u2014 it affects whether duplicate conflicting approvals can silently enter the Arbiter pipeline."
+    },
+    {
+      "affected_sections": [
+        "5",
+        "7"
+      ],
+      "authority_impact": "minor",
+      "baseline_severity": "minor",
+      "claim": "The phrase 'preserved authority-bearing field' in the Section 5 adapter invariant has two plausible referents: all ten authority-bearing fields listed in Section 5 (including intent_id), or the four fields listed as 'Required preserved fields' in Section 7. intent_id is explicitly classified as authority-bearing in Section 5 but is absent from the Section 7 Required preserved fields list, leaving implementers unable to determine whether the adapter must verify intent_id consistency when rejecting a mismatched submission.",
+      "determinism_impact": "minor",
+      "evidence": "Section 5 authority-bearing fields list includes `intent_id` with the note 'It is authority-bearing as a routing identifier but is not part of the hash binding set.' Section 5 adapter invariant: 'The adapter MUST treat authority-bearing fields as read-only after request receipt and MUST reject a submission when any preserved authority-bearing field differs from the received request.' Section 7 Required preserved fields: `approval_request_id`, `approver_id`, `approver_role`, `requested_transition` \u2014 `intent_id` is absent with no explanation of why it is excluded from the preservation check.",
+      "feedback_id": "f_002",
+      "in_scope": true,
+      "invariant_violated": "Terms used in normative invariants must have a single unambiguous referent throughout the specification.",
+      "issue_fingerprint": "04ba49f9455767424d0639f4ecf51a46b661c9b381b5f96797e3c900fba4389f",
+      "issue_id": "iss_04ba49f945576742",
+      "issue_type": "terminology_ambiguity",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Define 'preserved authority-bearing fields' as an explicit named set. Either: (a) add intent_id to the Section 7 required preserved fields list if the adapter must echo and verify it, or (b) clarify in Section 5 that 'preserved' means session-state immutability (not response-echo obligation) and that the Section 7 list governs which fields must appear in the response envelope and are subject to the mismatch rejection check.",
+      "rubric_impact": null,
+      "severity_rationale": "The ambiguity spans a normative MUST invariant and could produce divergent implementations \u2014 one verifying all ten authority-bearing fields on submission versus one verifying only four. Either reading is defensible from the current text. The impact is bounded to the adapter validation step and does not affect the Arbiter authority boundary, keeping severity at minor."
+    },
+    {
+      "affected_sections": [
+        "20"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "The Section 20 Adapter scope execution flow omits the mandatory authority-bearing field mismatch rejection step. Section 5 specifies a MUST-level obligation to reject submissions when preserved authority-bearing fields differ from the received request, but no corresponding step appears in the six-step adapter flow, making a mandatory guard invisible to implementers referencing the flow diagram.",
+      "determinism_impact": "minor",
+      "evidence": "Section 5 adapter invariant: 'The adapter MUST treat authority-bearing fields as read-only after request receipt and MUST reject a submission when any preserved authority-bearing field differs from the received request.' Section 20 Adapter scope steps: (1) Foreman creates immutable approval request, (2) Adapter retrieves or receives request, (3) Adapter presents request and display context, (4) Human selects decision, (5) Adapter captures response, (6) Adapter returns response to Foreman. No validation or rejection step exists between steps 5 and 6.",
+      "feedback_id": "f_003",
+      "in_scope": true,
+      "invariant_violated": "Execution flow descriptions must reflect all normative MUST-level adapter obligations defined elsewhere in the specification so that implementers using the flow as a sequencing reference do not omit mandatory steps.",
+      "issue_fingerprint": "99236cbf8f1320a8d4d47b6421a1fcae9afc033688ad83b6c2de1627cb940c83",
+      "issue_id": "iss_99236cbf8f1320a8",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Insert a step between 'Adapter captures response' and 'Adapter returns response to Foreman' that reflects the authority-bearing field validation obligation, e.g., 'Adapter verifies no preserved authority-bearing field was mutated; rejects submission on mismatch.'",
+      "rubric_impact": null,
+      "severity_rationale": "A normative MUST obligation is invisible in the execution flow implementers will use as their sequencing reference. The omission does not contradict the spec but reduces implementation determinism by making a mandatory step easy to overlook. Severity is minor because the obligation is stated clearly in Section 5; this is a flow completeness gap, not an authority boundary issue."
+    },
+    {
+      "affected_sections": [
+        "23"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Section 23 Acceptance Criteria omit conformance coverage for behaviors normatively specified in Sections 6, 12, 13, and 16. Implementers relying on ACs as their primary test surface will miss these behaviors, producing incomplete conformance verification.",
+      "determinism_impact": "minor",
+      "evidence": "Section 6 specifies that Foreman MUST NOT construct display_context with top-level fields sharing names with authority-bearing fields \u2014 no corresponding AC. Section 12 specifies that adapter receipts are not approval records and do not establish approval validity \u2014 no corresponding AC. Section 13 specifies that the MVP signature value is null and that signature verification is Arbiter-owned when signatures are enforced \u2014 no corresponding AC. Section 16 specifies that adapter error codes MUST NOT appear as Foreman transition reason codes; AC 1.13 covers the reason-code namespace boundary but does not cover conformance of the failure output shape itself.",
+      "feedback_id": "f_004",
+      "in_scope": true,
+      "invariant_violated": "Acceptance criteria must provide conformance coverage for all normatively specified adapter behaviors so that implementers can derive a complete test surface from Section 23 alone.",
+      "issue_fingerprint": "43d933d25012e178a15a318b08bf84421ef872e4b4bc4d56dc8301ffb5cd8167",
+      "issue_id": "iss_43d933d25012e178",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add ACs for: (a) display_context top-level fields must not share names with authority-bearing request fields; (b) adapter receipts are not approval records and do not establish approval validity; (c) MVP signature field value is null; (d) signature verification authority belongs to the Arbiter when signatures are enforced; (e) failure output conforms to the specified shape including a valid adapter error code outside the Foreman reason-code namespace.",
+      "rubric_impact": null,
+      "severity_rationale": "Missing AC coverage creates a conformance testing gap for behaviors specified at MUST strength in their respective sections. The gap is structural \u2014 the ACs as a section are systematically incomplete relative to the spec body \u2014 rather than contradictory. Severity is minor because the underlying obligations are stated correctly in their sections."
+    },
+    {
+      "affected_sections": [
+        "2"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "nit",
+      "claim": "The acronym 'HLD' is used in Section 2 to designate the authoritative source for several cross-spec obligations but is never defined in this document. Readers unfamiliar with the broader Foreman documentation set cannot identify which artifact holds that authority.",
+      "determinism_impact": null,
+      "evidence": "Section 2: 'The HLD remains authoritative for: Arbiter ownership of validation, state-transition authority, approval binding semantics, audit and replay invariants, reason-code registry behavior.' The acronym HLD does not appear in any glossary, footnote, or definitional clause within this specification.",
+      "feedback_id": "f_005",
+      "in_scope": true,
+      "invariant_violated": "All acronyms used in normative cross-references must be defined on first use within the document.",
+      "issue_fingerprint": "3cf6f7a81db5c42f6e289bb3925734b62353815764d35b464b42cc8290e25374",
+      "issue_id": "iss_3cf6f7a81db5c42f",
+      "issue_type": "undefined_reference",
+      "normalized_severity": "nit",
+      "oscillation_key": null,
+      "recommended_change": "Expand on first use: 'The High-Level Design (HLD) remains authoritative for...' or replace with the specific document name and add a reference entry consistent with other cross-spec references in Section 2.",
+      "rubric_impact": null,
+      "severity_rationale": "An undefined acronym in a normative cross-reference is a documentation quality issue. It does not affect the authority model or implementation determinism but reduces auditability of the cross-reference relationship and accessibility for new readers. Severity is nit."
+    }
+  ],
+  "profile": "structural_integrity",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Structural Integrity Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

@@ -1,0 +1,7 @@
+{
+  "client_path": "claude-code reviewer -> codex editor",
+  "failed_stage": "reviewer_validation",
+  "message": "Claude reviewer output failed Phase 2 reviewer input schema validation before Codex editor invocation.",
+  "schema_error": "$.feedback[0].determinism_impact: matched no anyOf option: $.feedback[0].determinism_impact: expected one of ['blocker', 'major', 'minor', 'nit']; $.feedback[0].determinism_impact: expected type null",
+  "spec_mutated": false
+}

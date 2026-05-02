@@ -1,0 +1,159 @@
+{
+  "draft_hash": "26b26d1a9559516243988bf3301562aeda92e011bb52cc4d5111771f8237711c",
+  "feedback": [
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-oscillation-detection-full-definition",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-content-normalization-and-hashing"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "Mechanical draft churn is defined as: same semantic_change_hash appears with opposing exact add/remove polarity across rounds. But semantic_change_hash is defined to include polarity, so the same hash cannot occur with opposing polarity. As written, draft-level mechanical churn cannot be computed/detected.",
+      "determinism_impact": "blocker",
+      "evidence": "In CONTENT NORMALIZATION AND HASHING, semantic_change_hash includes polarity. In OSCILLATION DETECTION, mechanical churn requires the same semantic_change_hash with opposing add/remove polarity.",
+      "feedback_id": "fb_iss_29a78174687b00ff",
+      "in_scope": true,
+      "invariant_violated": "design principle: every primitive must be computable",
+      "issue_fingerprint": "29a78174687b00ff2c278935493f1c3f05cd3b77fbb27b10d097d7806c3d02a6",
+      "issue_id": "iss_29a78174687b00ff",
+      "issue_type": "oscillation_mechanical_churn_unreachable",
+      "normalized_severity": "blocker",
+      "oscillation_key": {
+        "concern_type": "determinism_violation",
+        "direction": "modify",
+        "fingerprint": "b52f70d0b9a74a1e1d2f164a32e76bc1321330f833c939fcc59cc898b5f0d9d9",
+        "opposition_key": "1a6b19e6e41e7b46698ea0c074c16519e1ab68660ae41d31330584a8e3900df1",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-oscillation-detection-full-definition"
+      },
+      "recommended_change": "Introduce a polarity-free churn key (e.g., hash of section_id + before_content_hash + after_content_hash with before/after ordered or sorted) and compare polarity separately, or redefine semantic_change_hash to exclude polarity and track polarity as a separate field; update the mechanical churn rule accordingly.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-content-normalization-and-hashing",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-convergence-declaration",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-target-matrix-precedence",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-phase-2-failure-handling",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-reproducibility"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "The spec requires rubric_content_hash (declaration + prompt_snapshot) and uses unresolved_rubric_gaps in final/strict convergence and failure handling, but never defines (a) normalization/hash algorithm for the rubric file and (b) a deterministic way to enumerate, store, and count rubric gaps. This makes convergence_strict_check non-deterministic/unimplementable.",
+      "determinism_impact": "major",
+      "evidence": "CONVERGENCE DECLARATION requires rubric_content_hash and unresolved_rubric_gaps count. TARGET MATRIX PRECEDENCE forbids unresolved rubric gaps in final/strict. PHASE 2 FAILURE HANDLING includes unresolved_rubric_gaps. CONTENT NORMALIZATION AND HASHING only specifies draft_hash and semantic_change_hash (no rubric hash).",
+      "feedback_id": "fb_iss_9351989d4a7ae6bd",
+      "in_scope": true,
+      "invariant_violated": "design principle: every primitive must be computable",
+      "issue_fingerprint": "9351989d4a7ae6bd20a42d9fed5360852deba07f53074af25ad9a6b5e04ad9bb",
+      "issue_id": "iss_9351989d4a7ae6bd",
+      "issue_type": "rubric_hash_and_gap_computation_undefined",
+      "normalized_severity": "blocker",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "095be587e12ef1116321f5915128384e1edd33b55f563dd69863f33e03bc94c5",
+        "opposition_key": "08ff23d5cd0d87b8e51b9689a580eafcf5dfd1ab5f6979ba48975a979307f5d9",
+        "scope": "structural",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-content-normalization-and-hashing"
+      },
+      "recommended_change": "Define rubric hashing normalization (ideally identical to draft hash normalization) and define a rubric-gap data model and deterministic evaluation procedure that produces: (1) unresolved_rubric_gaps list, (2) count derivation rules, and (3) persistence location (e.g., a rubric_gaps.json artifact or an extension of unresolved_issues.json with rubric_gap entries).",
+      "rubric_impact": "blocker",
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-artifact-schemas-minimum-required-fields",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-phase-gated-feedback-classification",
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-phase-gated-feedback-classification-oscillation-key-canonicalization"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "ARTIFACT SCHEMAS defines reviewer_feedback.json.oscillation_key as `null | object` without requiring the Phase 2 reviewer-proposed fields (section_id, concern_type, direction, scope). This undercuts the stated Phase 2 validation rule (reject missing/invalid oscillation classifications) and makes the schema insufficient to enforce Phase 2 requirements.",
+      "determinism_impact": "major",
+      "evidence": "PHASE-GATED FEEDBACK CLASSIFICATION says Phase 2 feedback items MUST include reviewer-proposed oscillation_key fields and are rejected if missing/invalid, but the minimum required fields schema does not require those subfields.",
+      "feedback_id": "fb_iss_c84a1c39d940cc0a",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "c84a1c39d940cc0a7bc2a1b2004117b4bc5720d3a02d31cdf2caf0fbbe157063",
+      "issue_id": "iss_c84a1c39d940cc0a",
+      "issue_type": "phase2_reviewer_feedback_schema_allows_missing_oscillation_key_fields",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "precision_gap",
+        "direction": "constrain",
+        "fingerprint": "04c7a664e0db2987c6145582b654f2f7ef73a48e987db1aab0d0a3143f1e1563",
+        "opposition_key": "f1738320c72cefa3e44625c688a86c228b70a6638e9210f99a2b08192430b794",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-artifact-schemas-minimum-required-fields"
+      },
+      "recommended_change": "Make the Phase 2 reviewer artifact schema explicitly require oscillation_key with exactly the four semantic fields (and forbid fingerprint/opposition_key in reviewer output), either via a phase-specific schema or a conditional rule in the schema section.",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-reproducibility"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "prompt_snapshot.json MUST include timestamp, but the spec does not define its format/timezone/source or whether it is excluded from any determinism comparisons. This can create inconsistent artifacts across runs and complicates reproducibility expectations.",
+      "determinism_impact": "minor",
+      "evidence": "REPRODUCIBILITY lists timestamp as a required field but provides no constraints.",
+      "feedback_id": "fb_iss_baf17d2f701a5b25",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "baf17d2f701a5b250210365adc2c26c7e07a64b66450bc504d0bd1aac2366b32",
+      "issue_id": "iss_baf17d2f701a5b25",
+      "issue_type": "prompt_snapshot_timestamp_underspecified",
+      "normalized_severity": "minor",
+      "oscillation_key": {
+        "concern_type": "precision_gap",
+        "direction": "clarify",
+        "fingerprint": "426ed7d1c097f39ff2b3be7671ceeb9dc312108d92a0a58763aca8a9248f4a01",
+        "opposition_key": "b5715ef59029a84744f5a5e6ca212d61bc324f6a638f17550d994f06ee91f95a",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-reproducibility"
+      },
+      "recommended_change": "Specify timestamp as RFC3339 UTC (or Unix epoch seconds) and explicitly state it is audit-only metadata that MUST NOT be included in any determinism-critical hashing/comparison (or define a separate deterministic prompt_hash field).",
+      "rubric_impact": null,
+      "severity_rationale": null
+    },
+    {
+      "affected_sections": [
+        "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-conflict-escalation"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Conflict escalation threshold uses the phrase `same conflict persists for 2 consecutive rounds` but does not define what persistence means (e.g., conflict_fingerprint appears in consecutive conflict_report.json outputs, or appears unresolved in editor_summary.json). This leaves escalation triggering underspecified.",
+      "determinism_impact": "minor",
+      "evidence": "CONFLICT ESCALATION provides thresholds but no deterministic persistence criterion.",
+      "feedback_id": "fb_iss_445899f1464f272d",
+      "in_scope": true,
+      "invariant_violated": null,
+      "issue_fingerprint": "445899f1464f272dedd28c05433705a88e4bb0c960974613de3162ac6954cb80",
+      "issue_id": "iss_445899f1464f272d",
+      "issue_type": "conflict_persists_definition_ambiguous",
+      "normalized_severity": "minor",
+      "oscillation_key": {
+        "concern_type": "clarity_gap",
+        "direction": "clarify",
+        "fingerprint": "50b9e4611e73961aef28397a84237f2a164f0d9bc14160fdc43eb5da77e05f3c",
+        "opposition_key": "286aa07faa1049925f6673a854b964c44079dae3a5e7b4edbe336ac7901bf392",
+        "scope": "local",
+        "section_id": "whetstone-ai-spec-convergence-orchestrator-0-07-strict-candidate-conflict-escalation"
+      },
+      "recommended_change": "Define persistence deterministically (e.g., a conflict persists in a round if conflict_fingerprint is present in conflict_report.json and is not listed as resolved; then apply the consecutive/non-consecutive thresholds over that derived per-round boolean).",
+      "rubric_impact": null,
+      "severity_rationale": null
+    }
+  ],
+  "profile": "convergence_strict_check",
+  "reviewer": {
+    "model": "gpt-5.2",
+    "name": "codex",
+    "version": "cli-unknown"
+  },
+  "round_number": 1
+}

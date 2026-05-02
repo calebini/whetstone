@@ -1,0 +1,124 @@
+{
+  "draft_hash": "8d408b532cae7bb0fdacb770b0f29b575e5f4d8be2e9cede310436454919c4c8",
+  "feedback": [
+    {
+      "affected_sections": [
+        "smoke-spec-hashing"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "The hashing section does not specify which hash algorithm the system uses.",
+      "determinism_impact": "blocker",
+      "evidence": "The entire section reads 'The system hashes the draft.' No algorithm such as SHA-256, SHA-512, or any other is named.",
+      "feedback_id": "fb_0001",
+      "in_scope": true,
+      "invariant_violated": "A hashing specification must name the hash algorithm to be reproducible across implementations.",
+      "issue_fingerprint": "1111111111111111222222222222222233333333333333334444444444444444",
+      "issue_id": "iss_a1b2c3d4e5f60718",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "blocker",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "136e801c3b56ee032551482c001f0515f52426f295a4abfea6025b83c49032b8",
+        "opposition_key": "be8e1ba06a0a336abe94c62e1df0bfac4f4bd1a3c0ccdd539c44249826d154aa",
+        "scope": "local",
+        "section_id": "smoke-spec-hashing"
+      },
+      "recommended_change": "Add a sentence naming the algorithm, e.g. 'The system hashes the draft using SHA-256.'",
+      "rubric_impact": null,
+      "severity_rationale": "Without a named algorithm no two implementations can produce or verify matching digests, rendering the hashing specification non-functional."
+    },
+    {
+      "affected_sections": [
+        "smoke-spec-hashing"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "The section does not define what bytes or representation of 'the draft' are fed into the hash function.",
+      "determinism_impact": "blocker",
+      "evidence": "'The system hashes the draft' is silent on encoding, normalization, field inclusion, and byte ordering.",
+      "feedback_id": "fb_0002",
+      "in_scope": true,
+      "invariant_violated": "A hashing specification must define the exact byte sequence used as input to the hash function.",
+      "issue_fingerprint": "aaaaaaaaaaaaaaaa1111111111111111bbbbbbbbbbbbbbbb2222222222222222",
+      "issue_id": "iss_f1e2d3c4b5a60718",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "blocker",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "136e801c3b56ee032551482c001f0515f52426f295a4abfea6025b83c49032b8",
+        "opposition_key": "be8e1ba06a0a336abe94c62e1df0bfac4f4bd1a3c0ccdd539c44249826d154aa",
+        "scope": "local",
+        "section_id": "smoke-spec-hashing"
+      },
+      "recommended_change": "Specify the canonical input form, e.g. 'The system hashes the UTF-8 encoded bytes of the draft with line endings normalized to LF and no trailing whitespace.'",
+      "rubric_impact": null,
+      "severity_rationale": "Without a defined input representation two systems hashing semantically identical drafts may produce different digests, making verification impossible."
+    },
+    {
+      "affected_sections": [
+        "smoke-spec-hashing"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "blocker",
+      "claim": "The spec permits non-deterministic hashing because it leaves algorithm, encoding, and normalization undefined.",
+      "determinism_impact": "blocker",
+      "evidence": "The single sentence 'The system hashes the draft' constrains none of the parameters that must be fixed for deterministic output.",
+      "feedback_id": "fb_0003",
+      "in_scope": true,
+      "invariant_violated": "Hashing must be fully deterministic: identical logical inputs must always produce identical digests across all compliant implementations.",
+      "issue_fingerprint": "cccccccccccccccc3333333333333333dddddddddddddddd4444444444444444",
+      "issue_id": "iss_deadbeef01234567",
+      "issue_type": "determinism_violation",
+      "normalized_severity": "blocker",
+      "oscillation_key": {
+        "concern_type": "determinism_violation",
+        "direction": "constrain",
+        "fingerprint": "6b37abdbbd3d262d2dcb23a39d753cf930b279b4645a7affc1c955daa4156055",
+        "opposition_key": "dbfe5c7940f4bce1c60f47ce42c095929c8c38ae5a53e9d4a919f53494acd658",
+        "scope": "local",
+        "section_id": "smoke-spec-hashing"
+      },
+      "recommended_change": "Constrain the section to mandate a specific algorithm and a canonical input form so that any two compliant implementations produce identical digests for the same draft content.",
+      "rubric_impact": null,
+      "severity_rationale": "A hash used for verification that can vary across implementations provides no verification guarantee and blocks all downstream logic that depends on it."
+    },
+    {
+      "affected_sections": [
+        "smoke-spec"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "The smoke spec contains only a hashing subsection and no other content, leaving purpose, scope, actors, and behavioral rules entirely unspecified.",
+      "determinism_impact": null,
+      "evidence": "The document body consists solely of the heading '## Hashing' and one sentence. No goals, actors, invariants, or non-hashing behavioral rules appear anywhere in the document.",
+      "feedback_id": "fb_0004",
+      "in_scope": true,
+      "invariant_violated": "A specification must define the scope, purpose, and governing rules of the system it describes.",
+      "issue_fingerprint": "eeeeeeeeeeeeeeee5555555555555555ffffffffffffffff6666666666666666",
+      "issue_id": "iss_cafebabe01234567",
+      "issue_type": "completeness_gap",
+      "normalized_severity": "major",
+      "oscillation_key": {
+        "concern_type": "completeness_gap",
+        "direction": "add",
+        "fingerprint": "862fe13105ead0482601b22455b0e2eb097364a20b729a7167a69c8a90292644",
+        "opposition_key": "fb574fd835f618daaeca85d02e0b926f529598148006377ecedb8a477652a302",
+        "scope": "structural",
+        "section_id": "smoke-spec"
+      },
+      "recommended_change": "Add a top-level section describing the purpose of the smoke spec, what system behavior it governs, and any invariants or rules beyond hashing.",
+      "rubric_impact": null,
+      "severity_rationale": "A spec with no defined scope or purpose cannot guide implementation or review; the omission is major but does not itself invalidate the hashing subsection's content."
+    }
+  ],
+  "profile": "convergence_strict_check",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 1
+}

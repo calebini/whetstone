@@ -1,0 +1,11 @@
+{
+  "draft_hash": "8e8e4fcdad75bc00252fc37c253a307f0f36846cfdcee761315660d2407adb75",
+  "feedback": [],
+  "profile": "operability",
+  "reviewer": {
+    "model": "gpt-5",
+    "name": "Codex Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 3
+}

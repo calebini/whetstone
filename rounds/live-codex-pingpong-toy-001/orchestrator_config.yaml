@@ -1,0 +1,36 @@
+spec_path: spec.md
+history_path: spec.history.md
+rounds_dir: rounds
+declaration_path: convergence_declaration.md
+
+clients:
+  reviewer:
+    name: codex
+    command: codex
+    version: 0.128.0
+    model: gpt-5.5
+  editor:
+    name: codex
+    command: codex
+    version: 0.128.0
+    model: gpt-5.2
+
+review:
+  max_rounds: 3
+
+convergence:
+  enabled: true
+  target_phase: final
+  target_mode: strict
+  rubric_path: convergence_rubric.md
+  max_rounds: 8
+
+decision_points:
+  enabled: true
+  mode: end_of_cycle
+  intervention_thresholds:
+    severities: [blocker, major]
+    trigger_on_requirement_strength_change: true
+    trigger_on_authority_boundary_change: true
+    trigger_on_scope_change: true
+    trigger_on_new_enum_or_error_code: true

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/oscillation_report.schema.json",
+  "title": "Whetstone Oscillation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "terminal_state",
+    "generated_at",
+    "round_number",
+    "draft_hash",
+    "detected",
+    "type",
+    "affected_sections",
+    "suspected_feedback_ids",
+    "oscillation_fingerprints",
+    "oscillation_opposition_keys",
+    "recommendation"
+  ],
+  "properties": {
+    "terminal_state": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/terminalState" },
+        { "type": "null" }
+      ]
+    },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "detected": { "type": "boolean" },
+    "type": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "cycle",
+            "mechanical_churn",
+            "feedback_flip_flop",
+            "feedback_churn",
+            "feedback_re_addition"
+          ]
+        },
+        { "type": "null" }
+      ]
+    },
+    "affected_sections": { "$ref": "common.schema.json#/$defs/stringArray" },
+    "suspected_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/feedbackId" }
+    },
+    "oscillation_fingerprints": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/sha256" }
+    },
+    "oscillation_opposition_keys": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/sha256" }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["freeze_prior_decision", "escalate_conflict", "continue_once", "stop_iteration"]
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "draft_hash": "a99cd231a16cf7044a1ae6865d16c66351fd1c6f63cfd3c8030396c781ad5fdd",
+  "feedback": [
+    {
+      "affected_sections": [
+        "12"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "Adapter receipts are entirely optional with no conditional SHOULD requirement and no standard storage interface, leaving operators without a reliable signal for request presentation and response submission events.",
+      "determinism_impact": null,
+      "evidence": "Section 12 declares receipts 'optional observability artifacts' and states 'Storage location is implementation-defined.' No SHOULD-level emission policy is specified. Operators cannot build consistent SLA monitoring, support escalation workflows, or audit trails across adapter implementations because each implementation may emit receipts differently or not at all.",
+      "feedback_id": "fb_op_001",
+      "in_scope": true,
+      "invariant_violated": "Operators must have reliable observable signals to build monitoring for human-gated approval lifecycle events.",
+      "issue_fingerprint": "65675d61c07bca9cdcf36c53cead7fd52acd9732512507acfea29b1046131b08",
+      "issue_id": "iss_65675d61c07bca9c",
+      "issue_type": "missing_requirement",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Add a SHOULD-level requirement: adapters SHOULD emit a receipt for every request presentation attempt and every response submission outcome. Strengthen to MUST for failure cases: adapters MUST emit a receipt when delivery_status is delivery_failed. Provide normative guidance on a minimum storage or retrieval interface (e.g., a well-known log sink or queryable endpoint) to enable cross-adapter operational monitoring.",
+      "rubric_impact": null,
+      "severity_rationale": "A human approval gate is a critical control point. Operators need reliable signals to detect stuck or failed approvals, meet SLA targets, and handle support escalations. Pure optionality with no SHOULD and no standard storage interface makes consistent monitoring impossible across adapter implementations."
+    },
+    {
+      "affected_sections": [
+        "16"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "major",
+      "claim": "Section 16 defines a single adapter error code (HAG_ADAPTER_DELIVERY_FAILED) for all adapter failure modes, making it impossible to distinguish between structurally different failure conditions at the operational level.",
+      "determinism_impact": null,
+      "evidence": "Section 16 specifies only HAG_ADAPTER_DELIVERY_FAILED with no further breakdown. The adapter can fail in materially different ways: failing to retrieve the approval request from Foreman, failing to present it to the human, failing to capture the human response, failing to submit the response back to Foreman, and authentication or authorization failure. A single undifferentiated code collapses all of these into one signal.",
+      "feedback_id": "fb_op_002",
+      "in_scope": true,
+      "invariant_violated": "Distinct failure modes must produce distinguishable error signals for operators to build targeted alerts and runbooks.",
+      "issue_fingerprint": "e17697d433a87a66cb10682c904451da323502b950b652a59de56a70f77c834f",
+      "issue_id": "iss_e17697d433a87a66",
+      "issue_type": "missing_requirement",
+      "normalized_severity": "major",
+      "oscillation_key": null,
+      "recommended_change": "Define a minimum error code vocabulary covering distinct failure modes, for example: HAG_ADAPTER_REQUEST_RETRIEVAL_FAILED, HAG_ADAPTER_PRESENTATION_FAILED, HAG_ADAPTER_SUBMISSION_FAILED, and HAG_ADAPTER_AUTH_FAILED. This enables operators to build targeted alerts (submission failures alert differently than retrieval failures) and write meaningful runbooks per failure category.",
+      "rubric_impact": null,
+      "severity_rationale": "Without distinguishable error codes operators receive undifferentiated signals from the adapter layer. Root-cause analysis requires digging into implementation-specific logs rather than the contract-defined error surface, increasing mean time to diagnosis during incidents."
+    },
+    {
+      "affected_sections": [
+        "5",
+        "7"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Neither the approval request nor the approval response envelope includes a trace or correlation ID field, leaving approval_request_id as the sole cross-boundary correlator and preventing standard distributed tracing integration.",
+      "determinism_impact": null,
+      "evidence": "Section 5 (approval request canonical shape) and Section 7 (approval response canonical shape) define their fields without any trace_id, correlation_id, or equivalent. The only correlating field crossing the adapter boundary is approval_request_id. Adapter-side logs, Foreman arbitration logs, and Arbiter processing cannot be joined using standard distributed tracing tooling (e.g., W3C Trace Context, OpenTelemetry).",
+      "feedback_id": "fb_op_003",
+      "in_scope": true,
+      "invariant_violated": "Distributed systems require propagated correlation context to connect events across component boundaries for incident diagnosis.",
+      "issue_fingerprint": "fad27be3ca68cdb70e27e6eacdd8d734fe068ad6cba8c7f7d8dfcf094e9f0aa5",
+      "issue_id": "iss_fad27be3ca68cdb7",
+      "issue_type": "missing_requirement",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Add an optional trace_id field to both the approval request and the approval response. Specify that the adapter MUST echo the trace_id from the received request into its response without modification. Define it as an opaque string. This allows operators to correlate adapter-side events with Foreman-side arbitration events in distributed tracing systems without granting the field any authority-bearing semantics.",
+      "rubric_impact": null,
+      "severity_rationale": "Without a propagated trace identifier operators must correlate events by matching approval_request_id across log systems, which is workable but creates operational friction during incidents. The absence is not blocking but is a meaningful gap for production deployments at scale."
+    },
+    {
+      "affected_sections": [
+        "9"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "Section 9 makes Foreman-side response ingestion time recording a MAY, leaving operators without a consistent timestamp to measure adapter-to-Foreman submission latency across implementations.",
+      "determinism_impact": null,
+      "evidence": "Section 9 states 'Foreman MAY record Foreman-side response ingestion time as an audit/observability timestamp, but it MUST NOT be used for expiration validity.' The MAY allows implementations to omit this timestamp entirely. Without a consistent ingestion timestamp operators cannot compute the latency between adapter-side submitted_at and Foreman-side processing, making SLA monitoring across the adapter boundary unreliable and non-comparable across Foreman implementations.",
+      "feedback_id": "fb_op_004",
+      "in_scope": true,
+      "invariant_violated": "SLA monitoring across system boundaries requires consistent ingestion timestamps to measure latency.",
+      "issue_fingerprint": "1333581a4680af8c17ed3089055b0a5147683b14fc854769fc14e27bfb90d491",
+      "issue_id": "iss_1333581a4680af8c",
+      "issue_type": "underspecified_requirement",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Upgrade from MAY to SHOULD: Foreman SHOULD record the ingestion timestamp for every received adapter response as an audit and observability field. Clarify that this field is distinct from submitted_at and is not used for expiration validity. Name the field explicitly (e.g., foreman_ingested_at) to avoid confusion with adapter-provided timestamps.",
+      "rubric_impact": null,
+      "severity_rationale": "The MAY vs SHOULD gap means some Foreman implementations will omit the ingestion timestamp, making cross-implementation SLA measurement inconsistent. The fix is low-cost and the operational benefit for latency tracking and SLA enforcement is meaningful."
+    },
+    {
+      "affected_sections": [
+        "10",
+        "12"
+      ],
+      "authority_impact": null,
+      "baseline_severity": "minor",
+      "claim": "When the adapter blocks an expired submission, Foreman receives no signal, making adapter-blocked submissions indistinguishable from approver non-response at the Foreman level.",
+      "determinism_impact": null,
+      "evidence": "Section 10 states 'If the adapter blocks submission after expiration, it does not need to send a special expired response to Foreman. Foreman can discover expiration from the immutable approval request's expires_at during candidate selection and arbitration.' This means Foreman sees silence in both the non-response case and the blocked-submission case. Operators cannot determine how many approvals were actively blocked at the adapter layer versus simply left unanswered.",
+      "feedback_id": "fb_op_005",
+      "in_scope": true,
+      "invariant_violated": "Operators must be able to distinguish between approver non-response and adapter-blocked submission to correctly diagnose stuck approvals.",
+      "issue_fingerprint": "258594ca84ea41a72ffd7dea32d2dcbc5f72bf6c319430d0832feb11171fc87c",
+      "issue_id": "iss_258594ca84ea41a7",
+      "issue_type": "missing_requirement",
+      "normalized_severity": "minor",
+      "oscillation_key": null,
+      "recommended_change": "Specify that when an adapter blocks a submission due to local expiration detection, it SHOULD emit a receipt with response_status set to locally_rejected and include a reason field indicating adapter_expiration_block. This gives Foreman-side operators visibility into adapter-side blocking without granting the adapter any authority over expiration validity, which remains Arbiter-owned.",
+      "rubric_impact": null,
+      "severity_rationale": "Without this signal, support engineers investigating a stuck approval cannot distinguish between an approver who ignored the request and an approver who tried to submit but was blocked by the adapter. The distinction determines the correct operational response: re-notify the approver versus create a new non-expired approval request."
+    }
+  ],
+  "profile": "operability",
+  "reviewer": {
+    "model": "claude-sonnet-4-6",
+    "name": "Whetstone Operability Reviewer",
+    "version": "1.0.0"
+  },
+  "round_number": 3
+}
