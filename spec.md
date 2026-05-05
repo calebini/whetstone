@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.22 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.23 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.22` separates editor resolution from reviewer-verified clean status so round advancement and convergence require a clean review of the current draft, not only an editor claim that findings were handled.
+Version `0.23` replaces the packaged governance rubric placeholder with the actual Convergence Rubric v6 reference and clarifies that lighter rubric profiles are aligned relaxations, not full governance-v6 substitutes.
 
 ---
 
@@ -1805,7 +1805,7 @@ Future config MUST include:
 
 If implemented later, weighted mode MUST define numeric severity mapping, reviewer weights, and rounding behavior before use.
 
-Not implemented in 0.22.
+Not implemented in 0.23.
 
 ---
 

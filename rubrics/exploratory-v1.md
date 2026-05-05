@@ -1,12 +1,14 @@
 # Whetstone Exploratory-v1 Rubric
 
-Derived from: Convergence Rubric v6
+Aligned with: Convergence Rubric v6
 Profile version: exploratory-v1
 Intended use: Exploratory-v1 is for early-stage specification shaping, risk discovery, and concept clarification before a system is ready for production-grade convergence review. It helps reviewers identify missing concepts, contradictions, unclear authority boundaries, untestable assumptions, and goals that are too vague to guide the next round of specification work.
 Strictness level: low
 Target fit: `target_phase=mid`, `target_mode=permissive`
 
 ## Derivation Note
+
+This is an intentionally relaxed Whetstone profile aligned with Convergence Rubric v6. It is not a full governance-v6 substitute and was not mechanically generated from the v6 text.
 
 This profile preserves v6's concerns for determinism, authority boundaries, artifact integrity, explicit acceptance evidence, state legality, failure handling, coupling awareness, and bias-resistant review. It intentionally relaxes governance-grade declaration requirements, exhaustive scoring, final convergence gates, Tier 5 scale/evolution checks, complete schemas, complete state machines, full traceability, and final acceptance criteria unless their absence blocks further specification.
 

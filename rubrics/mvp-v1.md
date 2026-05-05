@@ -1,12 +1,14 @@
 # Whetstone MVP v1 Rubric
 
-Derived from: Convergence Rubric v6
+Aligned with: Convergence Rubric v6
 Profile version: mvp-v1
 Intended use: This profile evaluates whether a specification is ready for a first useful implementation of an MVP. It prioritizes the minimum information an engineer needs to build the core job flow without guessing: scope, interfaces, data contracts, state transitions, acceptance criteria, artifact integrity, authority boundaries, deterministic behavior, and obvious failure handling.
 Strictness level: medium
 Target fit: `target_phase: mid` / `target_mode: strict`
 
 ## Derivation Note
+
+This is an intentionally relaxed Whetstone profile aligned with Convergence Rubric v6. It is not a full governance-v6 substitute and was not mechanically generated from the v6 text.
 
 This profile preserves v6 concerns that protect deterministic implementation, authority boundaries, artifact integrity, explicit acceptance criteria, legal state transitions, structural linting, baseline coupling checks, and failure handling. It intentionally relaxes governance-grade declaration ceremony, exhaustive coupling declarations, independent scoring proof, full final convergence gating, Tier 5 scale/evolution review, long-term operational polish, and edge cases outside the MVP scope.
 

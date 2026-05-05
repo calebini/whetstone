@@ -1,12 +1,14 @@
 # Whetstone Standard Rubric
 
-Derived from: Convergence Rubric v6
+Aligned with: Convergence Rubric v6
 Profile version: standard-v1
 Intended use: This profile is for production-ready technical specifications that need to be buildable, deterministic, internally consistent, and operable without requiring governance-grade final convergence evidence. It is intended to catch blockers and major ambiguities that would cause implementation failure, divergent behavior, invalid artifacts, or unclear handoff between systems, roles, states, and failure paths.
 Strictness level: medium
 Target fit: final/strict
 
 ## Derivation Note
+
+This is an intentionally relaxed Whetstone profile aligned with Convergence Rubric v6. It is not a full governance-v6 substitute and was not mechanically generated from the v6 text.
 
 Preserves v6 concerns for deterministic implementation, explicit data contracts, legal state transitions, failure handling, replay/idempotency, artifact integrity, structural linting, coupling checks, and conservative severity classification.
 
