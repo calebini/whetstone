@@ -6,7 +6,13 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from whetstone.hashing import draft_hash
-from whetstone.versioning import promote_spec_file_for_phase2, promote_spec_text_for_phase2, promoted_phase2_version
+from whetstone.versioning import (
+    promote_spec_file_for_phase2,
+    promote_spec_text_for_phase2,
+    promoted_phase2_version,
+    stamp_spec_text_for_round,
+    stamped_round_version,
+)
 
 
 class VersioningTests(unittest.TestCase):
@@ -25,6 +31,17 @@ class VersioningTests(unittest.TestCase):
         self.assertEqual(after_version, "1.0")
         self.assertIn("# Whetstone (1.0 - STRICT CANDIDATE)", promoted)
         self.assertIn("Version 0.17 in body.", promoted)
+
+    def test_promote_spec_text_supports_status_version_when_heading_has_no_version(self) -> None:
+        draft = "# Foreman Approval Persistence\n\nStatus: Draft v0.02  \n\nBody 0.02 remains.\n"
+
+        promoted, before_version, after_version, changed = promote_spec_text_for_phase2(draft)
+
+        self.assertTrue(changed)
+        self.assertEqual(before_version, "0.02")
+        self.assertEqual(after_version, "1.0")
+        self.assertIn("Status: Draft v1.0", promoted)
+        self.assertIn("Body 0.02 remains.", promoted)
 
     def test_promote_spec_file_requires_stable_phase1_gate(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -79,7 +96,38 @@ class VersioningTests(unittest.TestCase):
             self.assertEqual(state["current_draft_hash"], result.after_hash)
             self.assertEqual(state["last_accepted_draft_hash"], result.after_hash)
 
+    def test_stamped_round_version_increments_phase1_hundredths(self) -> None:
+        self.assertEqual(stamped_round_version("0.17", phase="phase_1"), "0.18")
+        self.assertEqual(stamped_round_version("0.99", phase="phase_1"), "1.00")
+        self.assertEqual(stamped_round_version("1.00", phase="phase_1"), "1.01")
+
+    def test_stamped_round_version_increments_phase2_decimal_counter(self) -> None:
+        self.assertEqual(stamped_round_version("1.0", phase="phase_2"), "1.1")
+        self.assertEqual(stamped_round_version("1.9", phase="phase_2"), "1.10")
+
+    def test_stamp_spec_text_for_round_updates_root_heading_only(self) -> None:
+        draft = "# Whetstone (0.17 - STRICT CANDIDATE)\n\nVersion 0.17 in body.\n"
+
+        result = stamp_spec_text_for_round(draft, phase="phase_1")
+
+        self.assertTrue(result.stamped)
+        self.assertEqual(result.before_version, "0.17")
+        self.assertEqual(result.after_version, "0.18")
+        self.assertIn("# Whetstone (0.18 - STRICT CANDIDATE)", result.content)
+        self.assertIn("Version 0.17 in body.", result.content)
+        self.assertNotEqual(result.before_hash, result.after_hash)
+
+    def test_stamp_spec_text_for_round_supports_status_version_when_heading_has_no_version(self) -> None:
+        draft = "# Foreman Approval Persistence\n\nStatus: Draft v0.02  \n\nBody 0.02 remains.\n"
+
+        result = stamp_spec_text_for_round(draft, phase="phase_1")
+
+        self.assertTrue(result.stamped)
+        self.assertEqual(result.before_version, "0.02")
+        self.assertEqual(result.after_version, "0.03")
+        self.assertIn("Status: Draft v0.03", result.content)
+        self.assertIn("Body 0.02 remains.", result.content)
+
 
 if __name__ == "__main__":
     unittest.main()
-

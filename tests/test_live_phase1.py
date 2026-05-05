@@ -159,6 +159,9 @@ class LivePhase1RunnerTests(unittest.TestCase):
             state = _read_json(root / "rounds" / "run_state.json")
             self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
             self.assertTrue(state["ready_for_phase_2"])
+            self.assertEqual(state["telemetry_totals"]["round_count"], 3)
+            self.assertEqual(state["telemetry_totals"]["attempt_count"], 6)
+            self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 6)
 
     def test_blocker_profile_repeats_before_advancing(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -168,8 +171,21 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=reviewer,
-                editor_client=BlockingThenResolvingEditorClient(),
-                draft_after_provider=lambda round_number, profile, draft: draft + f"\nRound {round_number}.\n",
+                editor_client=ResolvingMutatingEditorClient(),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            self.assertEqual(reviewer.profiles, ["structural_integrity", "structural_integrity", "determinism", "operability"])
+
+    def test_editor_resolution_requires_reviewer_verification_before_profile_advances(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp))
+            reviewer = ScriptedReviewerClient(root, ["blocker", None, None, None])
+            result = LivePhase1Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=ResolvingMutatingEditorClient(),
             ).run()
 
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
@@ -285,6 +301,29 @@ class BlockingThenResolvingEditorClient:
             "created_conflict_ids": [],
             "resolved_issue_ids": resolved,
             "unresolved_issue_ids": unresolved,
+            **({"draft_after_content": draft_after_content} if explicit_after_hash is None else {}),
+        }
+
+
+class ResolvingMutatingEditorClient:
+    def revise(self, prompt: str) -> dict:
+        before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
+        explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
+        draft_after_content = _draft_from_prompt(prompt)
+        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        if issue_ids:
+            draft_after_content += "\nVerified fix.\n"
+        round_number = _editor_round_number(prompt)
+        return {
+            "round_number": round_number,
+            "draft_before_hash": before_hash,
+            "draft_after_hash": explicit_after_hash,
+            "accepted_feedback_ids": [],
+            "modified_feedback_ids": [f"fb-{round_number}"] if issue_ids else [],
+            "declined_feedback": [],
+            "created_conflict_ids": [],
+            "resolved_issue_ids": issue_ids,
+            "unresolved_issue_ids": [],
             **({"draft_after_content": draft_after_content} if explicit_after_hash is None else {}),
         }
 

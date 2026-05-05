@@ -34,6 +34,7 @@ def render_reviewer_prompt(
     profile: str,
     draft: str,
     rubric: str | None = None,
+    declaration: str | None = None,
     phase: str = "phase_1",
     section_ids: list[str] | None = None,
     round_number: int = 1,
@@ -82,8 +83,29 @@ def render_reviewer_prompt(
     if phase == "phase_1":
         lines.append("For Phase 1, set oscillation_key to null.")
     if phase == "phase_2":
-        lines.extend(["", _phase_2_classification_table(section_ids or [])])
+        lines.extend(["", _phase_2_declaration_context(declaration), "", _phase_2_classification_table(section_ids or [])])
     lines.extend(["", "Rubric:", rubric_text, "", "Draft:", draft])
+    return "\n".join(lines)
+
+
+def _phase_2_declaration_context(declaration: str | None) -> str:
+    lines = [
+        "Phase 2 declaration artifact rules:",
+        "- `Draft` below is spec.md source content only.",
+        "- `convergence_declaration.md` is a separate Orchestrator-owned artifact, not a section that must be added to spec.md.",
+        "- Do not report the absence of a convergence declaration section inside spec.md as a source-spec issue.",
+        "- Do not recommend adding convergence declaration text to spec.md.",
+        "- If a declaration artifact is supplied below, evaluate declaration-specific issues against that artifact.",
+        "- If no declaration artifact is supplied, assume declaration review is not active for this round.",
+        "- A provisional declaration with reviewer_final_status `not_run` and declaration_status `rejected` is an Orchestrator staging artifact, not a source-spec defect.",
+        "- During convergence_strict_check declaration verification, do not report reviewer_final_status `not_run` or declaration_status `rejected` as defects by themselves.",
+        "- The Orchestrator will change reviewer_final_status and declaration_status to accepted only after this review returns no in-scope declaration or target-matrix blockers/majors.",
+        "- Verify declaration hash, rubric hash, issue counts, rubric gap counts, target-matrix alignment, and source-spec readiness; exclude staging status fields from findings.",
+    ]
+    if declaration is None:
+        lines.extend(["", "Declaration artifact:", "(not provided for this review)"])
+    else:
+        lines.extend(["", "Declaration artifact:", declaration])
     return "\n".join(lines)
 
 
@@ -137,6 +159,7 @@ def render_editor_prompt(
     *,
     draft: str,
     reviewer_feedback_json: str,
+    phase: str = "phase_1",
     round_number: int = 1,
     draft_before_hash_value: str | None = None,
     draft_after_hash_value: str | None = None,
@@ -145,6 +168,9 @@ def render_editor_prompt(
     lines = [
         "You are the Whetstone editor.",
         "Apply or decline feedback according to the spec authority model.",
+        "Use only the Draft and Reviewer feedback JSON provided in this prompt.",
+        "Do not inspect repository files, run shell commands, use web search, or call tools.",
+        "Do not rely on external documents, ambient workspace context, or prior run artifacts.",
         "",
         "Return only a single JSON object matching editor_summary.json.",
         "Do not return markdown, explanation, fenced code, an editor object, or a decisions array.",
@@ -154,6 +180,10 @@ def render_editor_prompt(
         lines.append(f"The draft_before_hash MUST be {draft_before_hash_value}.")
     if draft_after_hash_value:
         lines.append(f"The draft_after_hash MUST be {draft_after_hash_value}.")
+    if phase == "phase_2":
+        lines.append("Phase 2 declaration artifact rule: `convergence_declaration.md` is Orchestrator-owned and separate from spec.md.")
+        lines.append("Do not add convergence declaration text or acceptance statements to spec.md.")
+        lines.append("If feedback asks for a convergence declaration inside spec.md, decline it as out_of_scope unless the Orchestrator explicitly supplied that text in the editable draft.")
     if capture_only:
         lines.append("This live round is capture-only; do not assume the repository draft is mutated by this prompt.")
         lines.append("In capture-only mode, feedback may be accepted in substance while its issue remains unresolved because no draft text changed.")

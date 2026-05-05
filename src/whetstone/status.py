@@ -1,0 +1,365 @@
+"""Read-only run status summaries."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+from typing import Any
+
+from whetstone.config import OrchestratorConfig
+from whetstone.hashing import draft_hash
+from whetstone.live import run_telemetry_totals
+
+
+ROUND_REQUIRED_ARTIFACTS = (
+    "draft_before.md",
+    "draft_after.md",
+    "profile_used.yaml",
+    "prompt_snapshot.json",
+    "reviewer_feedback.json",
+    "editor_summary.json",
+    "unresolved_issues.json",
+    "decision_points.json",
+    "telemetry_summary.json",
+)
+
+TERMINAL_REPORTS = (
+    "convergence_failure_report.json",
+    "technical_failure_report.json",
+    "conflict_report.json",
+    "oscillation_report.json",
+    "artifact_validation_error.json",
+    "config_validation_error.json",
+)
+PHASE_2_PROFILES = {"convergence_strict_check", "adversarial"}
+
+
+def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
+    """Return a stable read-only snapshot of the current Whetstone run."""
+    rounds_dir = config.rounds_dir
+    state_path = rounds_dir / "run_state.json"
+    run_state = _read_json_object(state_path)
+    latest_round = _latest_round(rounds_dir, root)
+    inferred_rounds = _inferred_round_accounting(rounds_dir, run_state)
+    decision_summary = _decision_summary(rounds_dir, root)
+    terminal_report_path = _terminal_report_path(rounds_dir)
+    telemetry_totals = _telemetry_totals(rounds_dir, run_state)
+    apply_back = _apply_back_status(root, rounds_dir, run_state)
+    packet = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "root": str(root),
+        "rounds_dir": _path_or_none(rounds_dir, root),
+        "run_state_path": _path_or_none(state_path, root) if state_path.exists() else None,
+        "run_state_exists": run_state is not None,
+        "phase": run_state.get("phase") if run_state else None,
+        "current_round": run_state.get("current_round") if run_state else None,
+        "current_absolute_round": run_state.get("current_absolute_round", run_state.get("current_round")) if run_state else None,
+        "current_phase_round": (run_state.get("current_phase_round") if run_state else None)
+        or inferred_rounds.get("current_phase_round"),
+        "phase_1_rounds_completed": (run_state.get("phase_1_rounds_completed") if run_state else None)
+        or inferred_rounds.get("phase_1_rounds_completed"),
+        "phase_2_rounds_completed": (run_state.get("phase_2_rounds_completed") if run_state else None)
+        or inferred_rounds.get("phase_2_rounds_completed"),
+        "review_max_rounds": (run_state.get("review_max_rounds") if run_state else None) or config.review_max_rounds,
+        "convergence_max_rounds": (run_state.get("convergence_max_rounds") if run_state else None)
+        or config.convergence.max_rounds,
+        "total_absolute_round_budget": (run_state.get("total_absolute_round_budget") if run_state else None)
+        or (config.review_max_rounds + config.convergence.max_rounds),
+        "active_profile": run_state.get("active_profile") if run_state else None,
+        "terminal_state": run_state.get("terminal_state") if run_state else None,
+        "ready_for_phase_2": run_state.get("ready_for_phase_2") if run_state else False,
+        "current_draft_hash": run_state.get("current_draft_hash") if run_state else None,
+        "last_accepted_draft_hash": run_state.get("last_accepted_draft_hash") if run_state else None,
+        "resumable": run_state.get("resumable") if run_state else False,
+        "latest_round": latest_round,
+        "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
+        "decision_register": _decision_register(rounds_dir, root),
+        "decision_summary": decision_summary,
+        "apply_back": apply_back,
+        "telemetry_totals": telemetry_totals,
+        "next_action": _next_action(run_state, terminal_report_path=terminal_report_path),
+    }
+    return packet
+
+
+def render_status_text(status: dict[str, Any]) -> str:
+    """Render a compact human-readable status summary."""
+    latest_round = status.get("latest_round") or {}
+    decision_register = status.get("decision_register") or {}
+    decision_summary = status.get("decision_summary") or {}
+    telemetry = status.get("telemetry_totals") or {}
+    apply_back = status.get("apply_back") or {}
+    latest_round_text = "none"
+    if latest_round:
+        completeness = "complete" if latest_round.get("complete") else "partial"
+        latest_round_text = f"round-{latest_round.get('round_number')} {completeness}"
+    lines = [
+        "Whetstone Status",
+        f"root: {status.get('root')}",
+        f"phase: {_display(status.get('phase'))}",
+        f"current_round: {_display(status.get('current_round'))}",
+        f"current_absolute_round: {_display(status.get('current_absolute_round'))}",
+        f"current_phase_round: {_display(status.get('current_phase_round'))}",
+        f"round_budgets: phase1={_display(status.get('review_max_rounds'))}, "
+        f"phase2={_display(status.get('convergence_max_rounds'))}, "
+        f"absolute={_display(status.get('total_absolute_round_budget'))}",
+        f"terminal_state: {_display(status.get('terminal_state'))}",
+        f"active_profile: {_display(status.get('active_profile'))}",
+        f"ready_for_phase_2: {str(bool(status.get('ready_for_phase_2'))).lower()}",
+        f"last_accepted_draft_hash: {_display(status.get('last_accepted_draft_hash'))}",
+        f"latest_round: {latest_round_text}",
+        f"next_action: {_display(status.get('next_action'))}",
+        f"terminal_report: {_display(status.get('terminal_report_path'))}",
+        (
+            "decisions: "
+            f"{_display(decision_summary.get('decision_count', decision_register.get('decision_count')))}, "
+            f"human: {_display(decision_summary.get('unresolved_human_decision_count', decision_register.get('unresolved_human_decision_count')))}"
+        ),
+        (
+            "telemetry: "
+            f"{_display(telemetry.get('round_count'))} rounds, "
+            f"{_display(telemetry.get('attempt_count'))} attempts, "
+            f"{_display(telemetry.get('total_tokens'))} tokens"
+        ),
+        (
+            "apply_back: "
+            f"available={str(bool(apply_back.get('available'))).lower()}, "
+            f"applied={_display(apply_back.get('applied'))}, "
+            f"final_draft={_display(apply_back.get('final_draft_path'))}"
+        ),
+    ]
+    if latest_round and not latest_round.get("complete"):
+        missing = ", ".join(latest_round.get("missing_required_artifacts", []))
+        lines.append(f"missing_round_artifacts: {missing}")
+        pending = latest_round.get("pending_client_attempt")
+        if pending:
+            lines.append(
+                "pending_client_attempt: "
+                f"{pending.get('client_role')} {pending.get('artifact_name')} "
+                f"attempt {pending.get('attempt_number')}"
+            )
+    return "\n".join(lines) + "\n"
+
+
+def _latest_round(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    round_dirs = [
+        path
+        for path in rounds_dir.glob("round-*")
+        if path.is_dir() and path.name.removeprefix("round-").isdigit()
+    ]
+    if not round_dirs:
+        return None
+    round_dir = sorted(round_dirs, key=lambda path: int(path.name.removeprefix("round-")))[-1]
+    present = sorted(path.name for path in round_dir.iterdir())
+    missing = [name for name in ROUND_REQUIRED_ARTIFACTS if not (round_dir / name).exists()]
+    return {
+        "round_number": int(round_dir.name.removeprefix("round-")),
+        "path": _path_or_none(round_dir, root),
+        "complete": not missing,
+        "present_artifacts": present,
+        "missing_required_artifacts": missing,
+        "pending_client_attempt": _pending_client_attempt(round_dir, root),
+    }
+
+
+def _decision_register(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    path = rounds_dir / "decision_register.json"
+    packet = _read_json_object(path)
+    if packet is None:
+        return None
+    return {
+        "path": _path_or_none(path, root),
+        "decision_count": len(packet.get("decision_points", [])),
+        "unresolved_human_decision_count": packet.get("unresolved_human_decision_count"),
+    }
+
+
+def _decision_summary(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    path = rounds_dir / "decision_summary.json"
+    packet = _read_json_object(path)
+    if packet is None:
+        return None
+    return {
+        "path": _path_or_none(path, root),
+        "decision_count": packet.get("decision_count"),
+        "unresolved_human_decision_count": packet.get("unresolved_human_decision_count"),
+        "hotspots": packet.get("hotspots"),
+    }
+
+
+def _terminal_report_path(rounds_dir: Path) -> Path | None:
+    for name in TERMINAL_REPORTS:
+        path = rounds_dir / name
+        if path.exists():
+            return path
+    return None
+
+
+def _inferred_round_accounting(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, int | None]:
+    current_round = (run_state or {}).get("current_round")
+    if not isinstance(current_round, int):
+        return {
+            "current_phase_round": None,
+            "phase_1_rounds_completed": None,
+            "phase_2_rounds_completed": None,
+        }
+    phase2_rounds = 0
+    for profile_path in sorted(rounds_dir.glob("round-*/profile_used.yaml"), key=_round_profile_sort_key):
+        if _profile_name(profile_path) in PHASE_2_PROFILES:
+            phase2_rounds += 1
+    phase = (run_state or {}).get("phase")
+    if phase == "phase_2":
+        phase1_rounds = max(0, current_round - phase2_rounds)
+        current_phase_round = phase2_rounds
+    else:
+        phase1_rounds = current_round
+        current_phase_round = current_round
+    return {
+        "current_phase_round": current_phase_round,
+        "phase_1_rounds_completed": phase1_rounds,
+        "phase_2_rounds_completed": phase2_rounds if phase == "phase_2" else 0,
+    }
+
+
+def _round_profile_sort_key(path: Path) -> int:
+    suffix = path.parent.name.removeprefix("round-")
+    return int(suffix) if suffix.isdigit() else -1
+
+
+def _profile_name(path: Path) -> str | None:
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith('"profile"'):
+            _, _, value = stripped.partition(":")
+            return value.strip().strip('",')
+        if stripped.startswith("profile:"):
+            return stripped.removeprefix("profile:").strip().strip('"')
+    return None
+
+
+def _apply_back_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
+    final_draft = root / "spec.md"
+    review_path = rounds_dir / "apply_back_review.json"
+    review = _read_json_object(review_path)
+    terminal_state = (run_state or {}).get("terminal_state")
+    packet: dict[str, Any] = {
+        "available": terminal_state == "CONVERGED" and final_draft.exists(),
+        "final_draft_path": _path_or_none(final_draft, root) if final_draft.exists() else None,
+        "final_draft_hash": _draft_hash_or_none(final_draft),
+        "review_path": _path_or_none(review_path, root) if review_path.exists() else None,
+        "applied": review.get("applied") if review else False,
+        "source_path": review.get("source_path") if review else None,
+        "source_after_hash": review.get("source_after_hash") if review else None,
+    }
+    packet["source_matches_final_draft"] = (
+        None
+        if packet["source_after_hash"] is None or packet["final_draft_hash"] is None
+        else packet["source_after_hash"] == packet["final_draft_hash"]
+    )
+    return packet
+
+
+def _telemetry_totals(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
+    computed_totals = run_telemetry_totals(rounds_dir)
+    if computed_totals.get("round_count"):
+        return computed_totals
+    state_totals = (run_state or {}).get("telemetry_totals")
+    if isinstance(state_totals, dict):
+        return state_totals
+    return computed_totals
+
+
+def _draft_hash_or_none(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    return draft_hash(path.read_text(encoding="utf-8"))
+
+
+def _pending_client_attempt(round_dir: Path, root: Path) -> dict[str, Any] | None:
+    snapshot_dir = round_dir / "prompt_snapshots"
+    if not snapshot_dir.exists():
+        return None
+    attempts: list[dict[str, Any]] = []
+    for snapshot in sorted(snapshot_dir.glob("*-attempt-*.json")):
+        parsed = _parse_attempt_snapshot_name(snapshot.name)
+        if parsed is None:
+            continue
+        telemetry_path = (
+            round_dir
+            / "client_telemetry"
+            / f"{parsed['client_role']}-{parsed['artifact_name']}-attempt-{parsed['attempt_number']}.json"
+        )
+        if telemetry_path.exists():
+            continue
+        attempts.append(
+            {
+                **parsed,
+                "prompt_snapshot_path": _path_or_none(snapshot, root),
+                "expected_telemetry_path": _path_or_none(telemetry_path, root),
+            }
+        )
+    if not attempts:
+        return None
+    return sorted(attempts, key=lambda item: (item["attempt_number"], item["client_role"], item["artifact_name"]))[-1]
+
+
+def _parse_attempt_snapshot_name(name: str) -> dict[str, Any] | None:
+    prefix, separator, suffix = name.partition("-attempt-")
+    if separator != "-attempt-" or not suffix.endswith(".json"):
+        return None
+    attempt_text = suffix.removesuffix(".json")
+    if not attempt_text.isdigit():
+        return None
+    client_role, separator, artifact_name = prefix.partition("-")
+    if separator != "-" or client_role == "" or artifact_name == "":
+        return None
+    return {
+        "client_role": client_role,
+        "artifact_name": artifact_name,
+        "attempt_number": int(attempt_text),
+    }
+
+
+def _next_action(run_state: dict[str, Any] | None, *, terminal_report_path: Path | None) -> str:
+    if run_state is None:
+        return "run_live_phase1"
+    terminal_state = run_state.get("terminal_state")
+    if terminal_state == "CONFIG_INVALID":
+        return "fix_config"
+    if terminal_state == "PAUSED_DECISION":
+        return "resolve_decision_intervention"
+    if terminal_state == "PHASE_1_STABLE" and run_state.get("ready_for_phase_2") is True:
+        return "run_live_phase2"
+    if terminal_state == "CONVERGED":
+        return "review_or_apply_back"
+    if terminal_state in {"TARGET_NOT_REACHED", "HALTED_CONFLICT", "HALTED_OSCILLATION", "HALTED_ARTIFACT_INVALID"}:
+        return "manual_review_required"
+    if terminal_report_path is not None:
+        return "manual_review_required"
+    if run_state.get("phase") == "phase_2":
+        return "continue_or_resume_phase2"
+    return "continue_or_resume_phase1"
+
+
+def _read_json_object(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        packet = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return packet if isinstance(packet, dict) else None
+
+
+def _path_or_none(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def _display(value: Any) -> str:
+    if value is None:
+        return "none"
+    return str(value)

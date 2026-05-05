@@ -192,6 +192,33 @@ class ContractValidationTests(unittest.TestCase):
 
         validate_artifact(artifact, "rubric_gaps")
 
+    def test_rubric_manifest_validates(self) -> None:
+        artifact = {
+            "generated_at": "2026-05-01T00:00:00+00:00",
+            "workflow": "governance",
+            "rubric_profile": "governance-v6",
+            "rubric_source": "builtin",
+            "rubric_label": None,
+            "rubric_path": "/tmp/whetstone/rubrics/governance-v6.md",
+            "rubric_content_hash": HASH,
+            "target_phase": "final",
+            "target_mode": "strict",
+            "resolved_defaults": {
+                "target_phase": "final",
+                "target_mode": "strict",
+                "convergence_max_rounds": 8,
+                "required_artifacts": ["spec.md", "convergence_declaration.md"],
+            },
+            "configured_budgets": {
+                "review_max_rounds": 12,
+                "convergence_max_rounds": 8,
+                "total_absolute_round_budget": 20,
+            },
+            "warnings": [],
+        }
+
+        validate_artifact(artifact, "rubric_manifest")
+
     def test_config_validation_error_validates(self) -> None:
         artifact = {
             "terminal_state": "CONFIG_INVALID",
@@ -218,6 +245,7 @@ class ContractValidationTests(unittest.TestCase):
                     "artifact_name": "reviewer_feedback.json",
                     "validation_errors": ["$.feedback[0].oscillation_key.section_id: unknown section"],
                     "raw_response_path": "rounds/round-1/reviewer_raw_response.json",
+                    "telemetry_path": "rounds/round-1/client_telemetry/reviewer-reviewer_feedback.json-attempt-1.json",
                 }
             ],
             "retry_exhausted": True,
@@ -227,6 +255,86 @@ class ContractValidationTests(unittest.TestCase):
         }
 
         validate_artifact(artifact, "artifact_validation_error")
+
+    def test_client_telemetry_validates(self) -> None:
+        artifact = {
+            "generated_at": "2026-05-01T00:00:00+00:00",
+            "round_number": 1,
+            "phase": "phase_2",
+            "profile": "convergence_strict_check",
+            "client_role": "reviewer",
+            "artifact_name": "reviewer_feedback.json",
+            "attempt_number": 1,
+            "client": {
+                "name": "claude-code",
+                "command": "claude",
+                "configured_version": "1.0.47",
+                "observed_version": None,
+                "model": "claude-sonnet-4-6",
+            },
+            "started_at": "2026-05-01T00:00:00+00:00",
+            "finished_at": "2026-05-01T00:00:01+00:00",
+            "duration_ms": 1000,
+            "duration_api_ms": 900,
+            "exit_code": 0,
+            "timed_out": False,
+            "session_id": "session-1",
+            "num_turns": 2,
+            "stop_reason": "end_turn",
+            "terminal_reason": "success",
+            "total_cost_usd": 0.12,
+            "usage": {
+                "input_tokens": 10,
+                "output_tokens": 20,
+                "cache_creation_input_tokens": 30,
+                "cache_read_input_tokens": 40,
+                "total_tokens": 100,
+                "provider_raw": {"input_tokens": 10},
+            },
+            "model_usage": {"claude-sonnet": {"inputTokens": 10}},
+            "raw_envelope_path": "rounds/round-1/client_telemetry/raw.json",
+            "stdout_path": "rounds/round-1/client_telemetry/stdout.txt",
+            "stderr_path": None,
+            "telemetry_source": "claude_json_envelope",
+        }
+
+        validate_artifact(artifact, "client_telemetry")
+
+    def test_apply_back_report_validates(self) -> None:
+        artifact = {
+            "generated_at": "2026-05-01T00:00:00+00:00",
+            "mode": "dry_run",
+            "applied": False,
+            "approval_mode": "none",
+            "source_path": "/tmp/source.md",
+            "run_root": "/tmp/run",
+            "final_draft_path": "/tmp/run/spec.md",
+            "run_state_path": "/tmp/run/rounds/run_state.json",
+            "terminal_state": "CONVERGED",
+            "eligible_terminal_state": True,
+            "allow_non_converged": False,
+            "source_before_hash": HASH,
+            "expected_source_hash": None,
+            "source_hash_mismatch_allowed": False,
+            "final_draft_hash": HASH,
+            "run_state_current_draft_hash": HASH,
+            "final_draft_matches_run_state": True,
+            "source_after_hash": HASH,
+            "changed": False,
+            "declaration_path": "/tmp/run/convergence_declaration.md",
+            "declaration_included": False,
+            "decision_summary_path": "/tmp/run/rounds/decision_summary.json",
+            "decision_summary_included": True,
+            "rubric_manifest_path": None,
+            "workflow": None,
+            "rubric_profile": None,
+            "rubric_source": None,
+            "rubric_label": None,
+            "rubric_content_hash": None,
+            "diff_line_count": 0,
+        }
+
+        validate_artifact(artifact, "apply_back_report")
 
     def test_decision_artifacts_validate(self) -> None:
         point = {
@@ -263,6 +371,64 @@ class ContractValidationTests(unittest.TestCase):
                 "unresolved_human_decision_count": 1,
             },
             "decision_register",
+        )
+        validate_artifact(
+            {
+                "generated_at": "2026-05-01T00:00:00+00:00",
+                "source_register_path": "rounds/decision_register.json",
+                "mode": "end_of_cycle",
+                "terminal_state": "PHASE_1_STABLE",
+                "decision_count": 1,
+                "unresolved_human_decision_count": 1,
+                "summary_method": "mechanical_v1",
+                "hotspots": {
+                    "largest_clusters": [
+                        {
+                            "cluster_group": "by_section",
+                            "cluster_key": "Adapter Receipt",
+                            "cluster_label": "Adapter Receipt",
+                            "decision_count": 1,
+                            "requires_human_decision_count": 1,
+                        }
+                    ],
+                    "human_decision_clusters": [
+                        {
+                            "cluster_group": "by_section",
+                            "cluster_key": "Adapter Receipt",
+                            "cluster_label": "Adapter Receipt",
+                            "decision_count": 1,
+                            "requires_human_decision_count": 1,
+                        }
+                    ],
+                },
+                "clusters": {
+                    "by_section": [
+                        {
+                            "cluster_key": "Adapter Receipt",
+                            "cluster_label": "Adapter Receipt",
+                            "decision_count": 1,
+                            "requires_human_decision_count": 1,
+                            "orchestrator_actions": ["present_at_end"],
+                            "decision_types": ["add_operational_requirement"],
+                            "trigger_types": ["add_operational_requirement"],
+                            "round_numbers": [1],
+                            "profiles": ["determinism"],
+                            "affected_sections": ["Adapter Receipt"],
+                            "decision_ids": ["dec_aaaaaaaaaaaaaaaa"],
+                            "representative_decisions": [
+                                {
+                                    "decision_id": "dec_aaaaaaaaaaaaaaaa",
+                                    "question": "Should `Adapter Receipt` add this operational requirement?",
+                                    "risk_if_wrong": "The spec may encode an unintended operational requirement.",
+                                }
+                            ],
+                        }
+                    ],
+                    "by_round_profile": [],
+                    "by_trigger_type": [],
+                },
+            },
+            "decision_summary",
         )
         point = dict(point)
         point["orchestrator_action"] = "pause_for_input"

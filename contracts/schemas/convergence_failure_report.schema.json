@@ -13,6 +13,11 @@
     "final_declaration_path",
     "target_phase",
     "target_mode",
+    "workflow",
+    "rubric_profile",
+    "rubric_source",
+    "rubric_label",
+    "rubric_manifest_path",
     "unresolved_blockers",
     "unresolved_major_issues",
     "unresolved_rubric_gaps",
@@ -36,6 +41,22 @@
     },
     "target_phase": { "$ref": "common.schema.json#/$defs/targetPhase" },
     "target_mode": { "$ref": "common.schema.json#/$defs/targetMode" },
+    "workflow": {
+      "type": "string",
+      "enum": ["exploratory", "mvp", "standard", "governance", "custom"]
+    },
+    "rubric_profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "rubric_source": {
+      "type": "string",
+      "enum": ["builtin", "custom"]
+    },
+    "rubric_label": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "rubric_manifest_path": { "$ref": "common.schema.json#/$defs/path" },
     "unresolved_blockers": {
       "type": "array",
       "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
@@ -63,4 +84,3 @@
     }
   }
 }
-

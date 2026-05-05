@@ -124,6 +124,7 @@ class SchemaRegistry:
             "array": lambda value: isinstance(value, list),
             "string": lambda value: isinstance(value, str),
             "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
+            "number": lambda value: (isinstance(value, int | float) and not isinstance(value, bool)),
             "boolean": lambda value: isinstance(value, bool),
             "null": lambda value: value is None,
         }

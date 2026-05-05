@@ -49,3 +49,7 @@
 - Revised the spec to `0.16` with hardened artifact-failure semantics: `technical_failure_report.json` is listed as a primary output, validation halts now record `last_valid_draft_path`, and retry prompts are persisted in attempt-level `prompt_snapshots/` without overwriting the round-level convenience snapshot.
 
 - Revised the spec to `0.17` with a Phase 2 maturity-promotion rule: fractional Phase 1 versions remain stabilization drafts, and the Orchestrator promotes an accepted Phase 1 draft to the next whole major version before the first convergence review.
+- Revised the spec to `0.18` with Orchestrator-owned version stamping for accepted mutating rounds, making version labels a human-readable rollback/navigation aid while preserving draft hashes as replay authority.
+- Revised the spec to `0.19` with deterministic decision-summary artifacts that cluster decision points by document topology, round/profile, and trigger type, while keeping optional AI interpretation explicitly non-authoritative.
+- Revised the spec to `0.20` with per-attempt client telemetry artifacts for live invocations, preserving client-native usage, cost, duration, session, and raw-envelope references when available.
+- Revised the spec to `0.21` with canonical rubric profiles and explicit workflows, requiring Phase 2 runs to persist rubric identity, source, hash, target, and workflow in a manifest before convergence review begins.

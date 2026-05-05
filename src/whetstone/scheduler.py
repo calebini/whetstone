@@ -105,7 +105,8 @@ class PhaseScheduler:
             raise ValueError(f"expected profile {step.profile!r}, got {profile!r}")
         state = self.states[self.index]
         state.clean = blocker_count == 0 and major_count == 0
-        if blocker_count > 0 and step.repeat_if_blockers and state.repeats_used < step.max_repeats:
+        has_blocking_findings = blocker_count > 0 or major_count > 0
+        if has_blocking_findings and step.repeat_if_blockers and state.repeats_used < step.max_repeats:
             state.repeats_used += 1
             return
         self.index += 1
@@ -141,7 +142,7 @@ def default_phase_1_scheduler() -> PhaseScheduler:
                 "operability",
                 focus=DEFAULT_PROFILE_FOCUS_ANCHORS["operability"],
                 skip_if_clean=False,
-                repeat_if_blockers=False,
+                repeat_if_blockers=True,
                 max_repeats=1,
             ),
         ]
@@ -151,9 +152,24 @@ def default_phase_1_scheduler() -> PhaseScheduler:
 def default_phase_2_scheduler() -> PhaseScheduler:
     return PhaseScheduler(
         [
-            ProfileStep("convergence_strict_check", focus=DEFAULT_PROFILE_FOCUS_ANCHORS["convergence_strict_check"]),
-            ProfileStep("adversarial", focus=DEFAULT_PROFILE_FOCUS_ANCHORS["adversarial"]),
-            ProfileStep("convergence_strict_check", focus=DEFAULT_PROFILE_FOCUS_ANCHORS["convergence_strict_check"]),
+            ProfileStep(
+                "convergence_strict_check",
+                focus=DEFAULT_PROFILE_FOCUS_ANCHORS["convergence_strict_check"],
+                repeat_if_blockers=True,
+                max_repeats=2,
+            ),
+            ProfileStep(
+                "adversarial",
+                focus=DEFAULT_PROFILE_FOCUS_ANCHORS["adversarial"],
+                repeat_if_blockers=True,
+                max_repeats=2,
+            ),
+            ProfileStep(
+                "convergence_strict_check",
+                focus=DEFAULT_PROFILE_FOCUS_ANCHORS["convergence_strict_check"],
+                repeat_if_blockers=True,
+                max_repeats=2,
+            ),
         ]
     )
 

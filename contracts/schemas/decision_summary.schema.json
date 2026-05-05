@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/decision_summary.schema.json",
+  "title": "Whetstone Decision Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "source_register_path",
+    "mode",
+    "terminal_state",
+    "decision_count",
+    "unresolved_human_decision_count",
+    "summary_method",
+    "hotspots",
+    "clusters"
+  ],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "source_register_path": { "$ref": "common.schema.json#/$defs/path" },
+    "mode": {
+      "type": "string",
+      "enum": ["end_of_cycle", "intervention"]
+    },
+    "terminal_state": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "decision_count": { "type": "integer", "minimum": 0 },
+    "unresolved_human_decision_count": { "type": "integer", "minimum": 0 },
+    "summary_method": {
+      "type": "string",
+      "enum": ["mechanical_v1"]
+    },
+    "hotspots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["largest_clusters", "human_decision_clusters"],
+      "properties": {
+        "largest_clusters": {
+          "type": "array",
+          "items": { "$ref": "decision_summary.schema.json#/$defs/decisionHotspot" }
+        },
+        "human_decision_clusters": {
+          "type": "array",
+          "items": { "$ref": "decision_summary.schema.json#/$defs/decisionHotspot" }
+        }
+      }
+    },
+    "clusters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by_section", "by_round_profile", "by_trigger_type"],
+      "properties": {
+        "by_section": {
+          "type": "array",
+          "items": { "$ref": "decision_summary.schema.json#/$defs/decisionCluster" }
+        },
+        "by_round_profile": {
+          "type": "array",
+          "items": { "$ref": "decision_summary.schema.json#/$defs/decisionCluster" }
+        },
+        "by_trigger_type": {
+          "type": "array",
+          "items": { "$ref": "decision_summary.schema.json#/$defs/decisionCluster" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "decisionHotspot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cluster_group",
+        "cluster_key",
+        "cluster_label",
+        "decision_count",
+        "requires_human_decision_count"
+      ],
+      "properties": {
+        "cluster_group": {
+          "type": "string",
+          "enum": ["by_section", "by_round_profile", "by_trigger_type"]
+        },
+        "cluster_key": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "cluster_label": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "decision_count": { "type": "integer", "minimum": 0 },
+        "requires_human_decision_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "decisionCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cluster_key",
+        "cluster_label",
+        "decision_count",
+        "requires_human_decision_count",
+        "orchestrator_actions",
+        "decision_types",
+        "trigger_types",
+        "round_numbers",
+        "profiles",
+        "affected_sections",
+        "decision_ids",
+        "representative_decisions"
+      ],
+      "properties": {
+        "cluster_key": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "cluster_label": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "decision_count": { "type": "integer", "minimum": 0 },
+        "requires_human_decision_count": { "type": "integer", "minimum": 0 },
+        "orchestrator_actions": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "decision_types": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "trigger_types": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "round_numbers": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "profiles": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "affected_sections": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^dec_[a-f0-9]{16}$"
+          }
+        },
+        "representative_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["decision_id", "question", "risk_if_wrong"],
+            "properties": {
+              "decision_id": {
+                "type": "string",
+                "pattern": "^dec_[a-f0-9]{16}$"
+              },
+              "question": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+              "risk_if_wrong": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

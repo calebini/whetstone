@@ -53,6 +53,12 @@
               { "$ref": "common.schema.json#/$defs/path" },
               { "type": "null" }
             ]
+          },
+          "telemetry_path": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/path" },
+              { "type": "null" }
+            ]
           }
         }
       }

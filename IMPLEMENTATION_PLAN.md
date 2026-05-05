@@ -1,6 +1,6 @@
 # Whetstone Implementation Plan
 
-This plan is the traceable build checklist for Whetstone `0.17`.
+This plan is the traceable build checklist for Whetstone `0.21`.
 
 ## Build Strategy
 
@@ -13,7 +13,7 @@ Fixture mode remains the regression harness. Live Codex/Claude behavior must not
 Completed:
 
 - [x] Bare repository scaffold
-- [x] `0.17` spec persisted as `spec.md`
+- [x] `0.21` spec persisted as `spec.md`
 - [x] Contract schemas for primary artifacts
 - [x] Dependency-free schema validator
 - [x] Draft normalization and draft hashing
@@ -51,6 +51,17 @@ Completed:
 - [x] Phase 2 reviewer output canonicalized before persistence
 - [x] Live Codex reviewer smoke test against `spec.md`
 - [x] Live Claude Code reviewer smoke test against a tiny Phase 2 draft
+- [x] Minimal non-resumable live Phase 1 runner
+- [x] Minimal non-resumable live Phase 2 runner
+- [x] Decision point register and intervention pause support
+- [x] Artifact validation retry/halt audit trail
+- [x] Phase 2 version promotion
+- [x] Accepted-round version stamping
+- [x] Separate Orchestrator-owned convergence declaration artifact
+- [x] Spec-defined decision-summary artifact contract
+- [x] Spec-defined client telemetry artifact contract
+- [x] Live Codex Phase 2 smoke against a toy spec
+- [x] Live Codex Phase 2 smoke against Foreman HAG Adapter spec copy
 - [x] Clean-convergence fixture script
 
 Verification baseline:
@@ -65,6 +76,11 @@ Acceptance:
 - [x] Full test suite passes
 - [x] Compile check passes
 - [x] No stale legacy role terminology remains
+
+Current limitation:
+
+- Live Phase 1 and Phase 2 runners are intentionally non-resumable.
+- Live spec sharpening currently operates on an isolated run root. Applying accepted changes back to a source repository remains a planned workflow.
 
 ## Live Test Gates
 
@@ -285,16 +301,63 @@ Prerequisites:
 - [x] Conflict escalation tracker complete
 - [x] Halt precedence automation complete
 - [x] Artifact validation retry/halt policy complete
-- [ ] Status/resume support available or explicit non-resumable limitation documented
+- [x] Status/resume support available or explicit non-resumable limitation documented
 
 Acceptance:
 
-- [ ] Full multi-round run reaches `CONVERGED` or a correct terminal state
-- [ ] Halt artifacts match terminal state
-- [ ] Cross-round memory explains any oscillation/conflict halt
-- [ ] Fixture-mode tests still pass afterward
+- [x] Full multi-round run reaches `CONVERGED` or a correct terminal state
+- [x] Halt artifacts match terminal state
+- [x] Cross-round memory explains any oscillation/conflict halt
+- [x] Fixture-mode tests still pass afterward
+
+### Gate 4.1: Non-Resumable Live Phase 2 Runner
+
+Goal: make Phase 2 executable from a valid Phase 1 handoff without waiting for resumable orchestration.
+
+Tasks:
+
+- [x] Require `PHASE_1_STABLE` and `ready_for_phase_2=true` before live Phase 2 starts
+- [x] Promote accepted Phase 1 fractional versions to the Phase 2 whole version before the first Phase 2 round
+- [x] Run the configured Phase 2 profile sequence with live reviewer/editor clients
+- [x] Persist per-round `rubric_gaps.json`
+- [x] Generate a candidate convergence declaration before final acceptance
+- [x] Require a later `convergence_strict_check` pass before emitting accepted declaration
+- [x] Carry Phase 2 draft and feedback oscillation memory through the live loop
+- [x] Emit Phase 2 convergence failure reports for max-round and halt outcomes
+- [x] Expose `live-phase2` CLI command
+
+Acceptance:
+
+- [x] Clean live Phase 2 fixture run promotes `0.x` to `1.0` and reaches `CONVERGED`
+- [x] Missing Phase 1 handoff is rejected
+- [x] Phase 2 max rounds persists `convergence_failure_report.json`
+- [x] Phase 2 artifact validation failure halts without advancing
+- [x] Full unit suite passes
+
+### Gate 4.2: Orchestrator-Owned Version Stamping
+
+Goal: make accepted mutating rounds easier to inspect and roll back by assigning human-readable version labels while keeping hashes authoritative.
+
+Tasks:
+
+- [x] Add round-stamping helpers for Phase 1 and post-entry Phase 2 versions
+- [x] Keep Phase 2 entry promotion separate from accepted-round stamping
+- [x] Stamp only accepted mutating applied live rounds
+- [x] Compute `draft_after_hash` after version stamping
+- [x] Persist stamped content to `draft_after.md` and `spec.md`
+- [x] Record version stamp before/after versions and hashes in `spec.history.md`
+- [x] Skip stamping safely for unversioned root headings
+
+Acceptance:
+
+- [x] Phase 1 accepted mutating round stamps `0.17 -> 0.18`
+- [x] Phase 2 accepted mutating round stamps `1.0 -> 1.1`
+- [x] Persisted `editor_summary.json` hash matches stamped draft content
+- [x] Full unit suite passes
 
 ## Remaining Build Checklist
+
+This checklist now tracks work remaining after Gates 1 through 4.2. Earlier live-client and live-round checklist items have been reconciled with the implemented gates above.
 
 ### 1. Schema Completion
 
@@ -445,18 +508,18 @@ Acceptance:
 
 Tasks:
 
-- [ ] Generate `convergence_declaration.md`
-- [ ] Validate declaration content against current draft hash, rubric hash, target matrix, and unresolved issue set
-- [ ] Distinguish `CONVERGENCE_REVISION` from `DECLARATION_REVISION`
-- [ ] Re-review declaration with `convergence_strict_check`
-- [ ] Reject conditional declarations as terminal status
+- [x] Generate `convergence_declaration.md`
+- [x] Validate declaration content against current draft hash, rubric hash, target matrix, and unresolved issue set
+- [x] Distinguish `CONVERGENCE_REVISION` from `DECLARATION_REVISION`
+- [x] Re-review declaration with `convergence_strict_check`
+- [x] Reject conditional declarations as terminal status
 
 Acceptance:
 
-- [ ] `CONVERGED` requires accepted declaration
-- [ ] Declaration-only changes route through `DECLARATION_REVISION`
-- [ ] Spec changes route through `CONVERGENCE_REVISION`
-- [ ] `conditional` is never emitted as terminal declaration status
+- [x] `CONVERGED` requires accepted declaration
+- [x] Declaration-only changes route through `DECLARATION_REVISION`
+- [x] Spec changes route through `CONVERGENCE_REVISION`
+- [x] `conditional` is never emitted as terminal declaration status
 
 ### 6a. Rubric Gap Evaluation
 
@@ -464,74 +527,78 @@ Tasks:
 
 - [x] Define `rubric_content_hash` normalization
 - [x] Define `rubric_gaps.json` schema
-- [ ] Emit `rubric_gaps.json` during Phase 2 rounds
-- [ ] Derive `unresolved_rubric_gaps` from unresolved blocking rubric gaps
-- [ ] Feed derived rubric gaps into target-matrix evaluation
-- [ ] Include rubric gaps in convergence failure reports
+- [x] Emit `rubric_gaps.json` during Phase 2 rounds
+- [x] Derive `unresolved_rubric_gaps` from unresolved blocking rubric gaps
+- [x] Feed derived rubric gaps into target-matrix evaluation
+- [x] Include rubric gaps in convergence failure reports
 
 Acceptance:
 
-- [ ] `final/strict` convergence cannot pass with unresolved blocking rubric gaps
-- [ ] Permissive targets can accept documented rubric gaps when policy allows
+- [x] `final/strict` convergence cannot pass with unresolved blocking rubric gaps
+- [x] Permissive targets can accept documented rubric gaps when policy allows
 - [ ] Rubric gap ordering is deterministic
 
 ### 7. Role Assignment And Client Factory
 
 Tasks:
 
-- [ ] Read `clients.reviewer` from config
-- [ ] Read `clients.editor` from config
-- [ ] Instantiate Codex reviewer adapter
-- [ ] Instantiate Codex editor adapter if configured
-- [ ] Instantiate Claude Code editor adapter
-- [ ] Keep fixture clients available
-- [ ] Surface unsupported client names as configuration errors
+- [x] Read `clients.reviewer` from config
+- [x] Read `clients.editor` from config
+- [x] Instantiate Codex reviewer adapter
+- [x] Instantiate Codex editor adapter if configured
+- [x] Instantiate Claude Code reviewer adapter
+- [x] Instantiate Claude Code editor adapter
+- [x] Keep fixture clients available through direct test injection and fixture-mode runners
+- [x] Surface unsupported client names as configuration errors
 
 Acceptance:
 
-- [ ] Reviewer and editor can be assigned independently
-- [ ] Codex can be reviewer while Claude Code is editor
-- [ ] Fixture clients can be used for either role in tests
-- [ ] Config model preserves concrete command/version/model values
+- [x] Reviewer and editor can be assigned independently
+- [x] Codex can be reviewer while Claude Code is editor
+- [x] Fixture clients can be used for either role in tests
+- [x] Config model preserves concrete command/version/model values
 
 ### 8. Live Round Engine
 
 Tasks:
 
-- [ ] Render reviewer prompt
-- [ ] Persist reviewer prompt snapshot
-- [ ] Invoke reviewer client
-- [ ] Validate reviewer artifact
-- [ ] Render editor prompt
-- [ ] Persist editor prompt snapshot
-- [ ] Invoke editor client
-- [ ] Validate editor artifact
-- [ ] Capture or apply draft mutation
-- [ ] Emit full round packet
+- [x] Render reviewer prompt
+- [x] Persist reviewer prompt snapshot
+- [x] Invoke reviewer client
+- [x] Validate reviewer artifact
+- [x] Render editor prompt
+- [x] Persist editor prompt snapshot
+- [x] Invoke editor client
+- [x] Validate editor artifact
+- [x] Capture or apply draft mutation
+- [x] Emit full round packet
 
 Acceptance:
 
-- [ ] One live round can complete with fixture reviewer + live editor
-- [ ] One live round can complete with live reviewer + fixture editor
-- [ ] One live round can complete with live reviewer + live editor
-- [ ] Invalid client output cannot mutate `spec.md`
+- [x] Injected fixture reviewer/editor clients can complete a guarded round in tests
+- [x] One live round can complete with live reviewer + live editor
+- [x] Real Codex reviewer -> Claude editor tiny-spec E2E round completes
+- [x] Real Claude reviewer -> Codex editor tiny-spec E2E round completes
+- [x] Invalid client output cannot mutate `spec.md`
 
 ### 9. Live CLI Surface
 
 Tasks:
 
 - [ ] Add `run`
-- [ ] Add `live-round`
-- [ ] Add `status`
+- [x] Add `live-round`
+- [x] Add `live-phase1`
+- [x] Add `live-phase2`
+- [x] Add `status`
 - [ ] Add `resume`
-- [ ] Keep `fixture-script`
-- [ ] Keep `codex-review`
+- [x] Keep `fixture-script`
+- [x] Keep `codex-review`
 
 Acceptance:
 
-- [ ] `status` reports latest terminal state or latest round packet
+- [x] `status` reports latest terminal state or latest round packet
 - [ ] `resume` refuses unsafe resume when required artifacts are missing
-- [ ] `run` uses configured roles
+- [ ] `run` uses configured roles and sequences Phase 1 -> Phase 2
 - [ ] CLI errors are actionable
 
 ### 10. Golden Fixtures
@@ -539,24 +606,199 @@ Acceptance:
 Tasks:
 
 - [x] Clean convergence fixture
-- [ ] Blocker conflict escalation fixture
-- [ ] Oscillation cycle fixture
-- [ ] Mechanical churn freeze fixture
-- [ ] Feedback flip-flop fixture
-- [ ] Feedback churn manual-review fixture
-- [ ] Re-addition stop fixture
-- [ ] Phase 1 max rounds fixture
-- [ ] Phase 2 declaration failure fixture
-- [ ] Phase 2 convergence failure fixture
-- [ ] Permissive target with documented Phase 2 major issue fixture
-- [ ] Malformed reviewer output rejection fixture
-- [ ] Malformed editor output rejection fixture
+- [x] Blocker conflict escalation fixture
+- [x] Oscillation cycle fixture
+- [x] Mechanical churn freeze fixture
+- [x] Feedback flip-flop fixture
+- [x] Feedback churn manual-review fixture
+- [x] Re-addition stop fixture
+- [x] Phase 1 max rounds fixture
+- [x] Phase 2 declaration failure fixture
+- [x] Phase 2 convergence failure fixture
+- [x] Permissive target with documented Phase 2 major issue fixture
+- [x] Malformed reviewer output rejection fixture
+- [x] Malformed editor output rejection fixture
+- [ ] Add curated golden fixture files for each terminal state beyond unit-level fixture scripts
 
 Acceptance:
 
-- [ ] Every terminal state has at least one fixture
-- [ ] Every fixture validates emitted artifacts
-- [ ] Fixtures remain stable across test runs
+- [x] Every implemented terminal state has at least one unit or fixture-script regression
+- [x] Every fixture regression validates emitted artifacts
+- [x] Fixtures remain stable across test runs
+- [ ] Curated golden fixture directories can be inspected without reading unit-test setup code
+
+### 11. Apply-Back Workflow
+
+Goal: safely promote an isolated Whetstone run result back to the source spec repository after human review.
+
+Tasks:
+
+- [x] Add an apply-back command or module that accepts a source spec path and completed run root
+- [x] Persist the original source hash before apply-back
+- [x] Compute a human-readable diff from source spec to final Whetstone draft
+- [x] Produce an apply-back review artifact before mutating the source file
+- [x] Require explicit approval or an explicit non-interactive flag before writing to the source file
+- [x] Exclude Whetstone-only artifacts such as `convergence_declaration.md` from source-spec mutation unless requested
+- [x] Preserve source repo formatting and path ownership
+- [x] Persist an apply-back report with before/after hashes, selected final draft, and approval mode
+
+Acceptance:
+
+- [x] Dry-run apply-back produces a diff and report without mutating the source file
+- [x] Approved apply-back updates only the requested source spec
+- [x] Hash mismatch refuses apply-back unless an explicit override is provided
+- [x] Declaration artifacts do not leak into source specs by default
+- [x] Foreman HAG Adapter isolated-run result can be reviewed as an apply-back candidate
+
+### 12. Status, Resume, And Recovery
+
+Goal: make long live runs operable after interruption without treating partial artifacts as accepted packets.
+
+Tasks:
+
+- [x] Add `status` command
+- [x] Add isolated run-root support for `status`
+- [x] Add human-readable `status --format text`
+- [ ] Add `resume` command
+- [ ] Define complete-round packet detection
+- [x] Detect and report partial round directories
+- [ ] Refuse unsafe resume when required artifacts are missing or invalid
+- [ ] Resume from the latest valid run state
+- [ ] Preserve non-resumable runners as simpler smoke-test paths or replace them with the resumable runner
+
+Acceptance:
+
+- [x] `status` summarizes terminal state, phase, round, active profile, latest accepted hash, and next action
+- [ ] `resume` can continue after a completed round boundary
+- [ ] `resume` refuses after a partial client-attempt artifact without explicit recovery action
+- [ ] Recovery behavior is covered by fixture tests
+
+### 12a. Decision Summary
+
+Goal: make large decision registers reviewable without asking operators to read every raw decision point.
+
+Tasks:
+
+- [x] Add `decision_summary.json` schema
+- [x] Add deterministic section-family clustering from `decision_register.json`
+- [x] Add deterministic round/profile clustering
+- [x] Add deterministic trigger-type clustering
+- [x] Add `decision-summary` CLI command
+- [x] Emit `decision_summary.md` with mechanical clusters and representative questions
+- [x] Auto-emit decision summaries when decision registers are written
+- [x] Add mechanical hotspot fields for largest and human-decision-heavy clusters
+- [x] Keep interpretive summary disabled by default
+- [ ] Label any future AI interpretation as non-authoritative and cite decision IDs
+
+Acceptance:
+
+- [x] Existing Approval Persistence run decision register collapses into deterministic section, round/profile, and trigger clusters
+- [x] Mechanical summary is stable across repeated runs against the same register
+- [x] Summary generation does not mutate spec, history, declaration, or round artifacts
+- [x] Human-readable summary makes the Approval Persistence register reviewable at cluster level
+
+### 12b. Client Telemetry
+
+Goal: capture per-attempt runtime, token, cost, and client-envelope metadata for live reviewer/editor invocations.
+
+Tasks:
+
+- [x] Add `client_telemetry.json` schema
+- [x] Add a telemetry result object to process client execution
+- [x] Persist `client_telemetry/{client_role}-{artifact_name}-attempt-{attempt_number}.json` for every live invocation attempt
+- [x] Preserve Claude Code JSON envelopes or lossless redacted copies before unwrapping `structured_output` / `result`
+- [x] Extract Claude usage fields: input, output, cache creation/read tokens, cost, duration, API duration, turns, session, stop/terminal reason
+- [x] Extract Codex usage when available from stdout text
+- [ ] Extract Codex usage from structured envelope if a future CLI envelope exposes it
+- [x] Preserve raw stdout/stderr references when needed to explain parsed telemetry
+- [x] Keep telemetry failures non-fatal
+- [x] Surface telemetry persistence failures as run warnings
+- [x] Add status/report aggregation for per-round total duration, tokens, and cost
+
+Acceptance:
+
+- [x] Claude editor/reviewer attempts emit telemetry with `usage`, `total_cost_usd`, `duration_ms`, and `session_id` when the CLI envelope provides them
+- [x] Codex reviewer attempts emit telemetry with parsed token totals when available
+- [x] Successful attempts and invalid attempts both produce telemetry
+- [x] Missing usage data still produces process metadata telemetry
+- [x] Telemetry artifacts do not duplicate prompt text
+- [x] Telemetry is not used for convergence, validation, mutation, or replay authority
+
+### 12c. Canonical Rubrics And Workflows
+
+Goal: make the convergence quality bar explicit and auditable by separating canonical rubric identity from operational workflow behavior.
+
+Tasks:
+
+- [x] Add packaged built-in rubric profiles: `governance-v6`, `standard-v1`, `mvp-v1`, and `exploratory-v1`
+- [x] Add config fields for `workflow`, `convergence.rubric_profile`, `convergence.rubric_source`, and `convergence.rubric_label`
+- [x] Resolve workflow defaults without hiding the final `rubric_profile`, target, or round budget
+- [x] Persist `/rounds/rubric_manifest.json` before Phase 2 begins
+- [x] Block Phase 2 entry when rubric identity is invalid, unlabeled for custom runs, or built-in hash-mismatched
+- [ ] Block Phase 2 entry when rubric identity is implicit rather than default-resolved
+- [x] Include rubric manifest identity in Phase 2 prompt snapshots, declarations, failure reports, and apply-back reports
+- [ ] Include rubric manifest identity in decision summaries after Gate 12a is implemented
+- [x] Add CLI flags for `--workflow` and `--rubric`
+- [x] Print custom-rubric warnings in CLI run output
+- [x] Treat any future `--mvp` shortcut as a workflow alias, not as a rubric-definition shortcut
+- [x] Add tests proving a soft/custom rubric cannot be used silently during a final/strict run
+
+Acceptance:
+
+- [x] Phase 2 refuses to start without a valid built-in rubric profile or custom rubric label/path/hash
+- [x] Built-in rubric hashes are stable and checked before prompt construction
+- [ ] Custom rubric runs are visibly labeled in the manifest and run-start output
+- [x] The Approval Persistence soft-rubric scenario would have produced an explicit manifest warning
+- [x] `--workflow mvp --rubric mvp-v1` and `--workflow governance --rubric governance-v6` produce distinct manifests
+- [x] Reproducibility artifacts include the full rubric identity tuple for implemented Phase 2 prompt snapshots, declarations, failure reports, and apply-back reports
+
+### 13. Cleanup And Operator Summaries
+
+Goal: reduce artifact noise while preserving auditability.
+
+Tasks:
+
+- [ ] Add `--cleanup` or archive mode for completed runs
+- [ ] Preserve essential artifacts: final spec, spec history, terminal report, decision register, declaration, and apply-back report when present
+- [ ] Archive or summarize per-round raw artifacts instead of deleting them silently
+- [ ] Generate an operator-facing run summary
+- [ ] Generate a decision-point TL;DR suitable for approval review
+
+Acceptance:
+
+- [ ] Cleanup mode never destroys the only copy of a rollback target
+- [ ] Cleanup output states exactly what was retained, archived, or removed
+- [ ] Operator summary can be read without opening every round directory
+
+### 14. Two-Stage Review Pipeline
+
+Goal: separate content critique from strict Whetstone classification so clients can be assigned to the stage that matches their strengths.
+
+Source spec:
+
+- [x] Draft `docs/TWO_STAGE_REVIEW_PIPELINE_SPEC.md`
+
+Tasks:
+
+- [ ] Review and sharpen the two-stage subsystem spec
+- [ ] Add `critic_findings.json` schema
+- [ ] Add `canonicalizer_summary.json` schema
+- [ ] Add `review_pipeline.mode = direct | critic_then_canonicalizer` config parsing
+- [ ] Add Critic and Canonicalizer client factories
+- [ ] Persist Critic and Canonicalizer prompt snapshots and telemetry
+- [ ] Implement Canonicalizer retry without rerunning a successful Critic by default
+- [ ] Preserve lineage from Critic finding to canonical feedback item
+- [ ] Keep `reviewer_feedback.json` as the only artifact consumed by existing convergence logic
+- [ ] Add live smoke with Claude Code as Critic and Codex `gpt-5.5` as Canonicalizer
+
+Acceptance:
+
+- [ ] Direct reviewer mode remains backward compatible
+- [ ] Two-stage mode can complete one fixture round
+- [ ] Invalid Critic output halts before Canonicalizer invocation
+- [ ] Invalid Canonicalizer output can retry without rerunning Critic
+- [ ] Persisted `reviewer_feedback.json` is schema-valid and Orchestrator-canonicalized
+- [ ] Operator can trace Critic finding -> canonical feedback item -> editor handling
 
 ## Identity-System Notes
 
@@ -568,8 +810,8 @@ Whetstone uses three identity surfaces:
 
 Implementation rules:
 
-- [ ] Conflict escalation uses conflict fingerprints and may underfire when issue prose changes
-- [ ] Phase 2 oscillation detection uses oscillation keys and should fire earlier for recurring churn
+- [x] Conflict escalation uses conflict fingerprints and may underfire when issue prose changes
+- [x] Phase 2 oscillation detection uses oscillation keys and should fire earlier for recurring churn
 - [ ] Operator-facing reports explain which identity system triggered the result
 
 ## Risk Register
@@ -598,9 +840,9 @@ First successful deterministic build:
 
 First successful live build:
 
-- [ ] Assign reviewer and editor roles from config
-- [ ] Run Codex as reviewer
-- [ ] Run Claude Code or another configured client as editor
-- [ ] Persist complete prompt snapshots
-- [ ] Complete at least one live round without accepting malformed artifacts
-- [ ] Preserve fixture-mode regression behavior
+- [x] Assign reviewer and editor roles from config
+- [x] Run Codex as reviewer
+- [x] Run Claude Code or another configured client as editor
+- [x] Persist complete prompt snapshots
+- [x] Complete at least one live round without accepting malformed artifacts
+- [x] Preserve fixture-mode regression behavior

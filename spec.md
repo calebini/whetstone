@@ -1,8 +1,12 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.17 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.22 - STRICT CANDIDATE)
 
 ## Purpose
 
 Automate iterative technical review between AI clients (e.g., Claude Code, Codex) to drive a spec from v0.1 -> converged (mid/final, permissive/strict), with controlled multi-perspective review per round, deterministic convergence behavior, explicit failure handling, and fully specified primitives.
+
+Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
+
+Version `0.22` separates editor resolution from reviewer-verified clean status so round advancement and convergence require a clean review of the current draft, not only an editor claim that findings were handled.
 
 ---
 
@@ -45,6 +49,8 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
   - prompt_snapshot.json
   - prompt_snapshots/
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
+  - client_telemetry/
+    - {client_role}-{artifact_name}-attempt-{attempt_number}.json
 - /rounds/oscillation_report.json (if detected)
 - /rounds/conflict_report.json (if escalated)
 - /rounds/technical_failure_report.json (if Phase 1 fails)
@@ -53,7 +59,10 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 - /rounds/artifact_validation_error.json (if client artifact validation retries are exhausted)
 - /rounds/decision_register.json (if any decision point is captured)
 - /rounds/decision_register.md (human-readable decision register, if any decision point is captured)
+- /rounds/decision_summary.json (if decision summary generation is enabled and any decision point is captured)
+- /rounds/decision_summary.md (human-readable decision summary, if generated)
 - /rounds/decision_intervention_request.json (if decision intervention is required)
+- /rounds/rubric_manifest.json (required before Phase 2 review begins)
 
 ---
 
@@ -64,6 +73,8 @@ spec_path: ./spec.md
 history_path: ./spec.history.md
 rounds_dir: ./rounds
 declaration_path: ./convergence_declaration.md
+
+workflow: standard             # exploratory | mvp | standard | governance | custom
 
 clients:
   editor:
@@ -84,12 +95,18 @@ convergence:
   enabled: true
   target_phase: final        # mid | final
   target_mode: strict        # permissive | strict
+  rubric_profile: governance-v6
+  rubric_source: builtin      # builtin | custom
+  rubric_label: ""            # REQUIRED when rubric_source = custom
   rubric_path: ./convergence_rubric.md
   max_rounds: 8
 
 decision_points:
   enabled: true
   mode: end_of_cycle          # end_of_cycle | intervention
+  summary:
+    enabled: true
+    include_interpretive_summary: false
   intervention_thresholds:
     severities: [blocker, major]
     trigger_on_requirement_strength_change: true
@@ -101,6 +118,94 @@ decision_points:
 Before entering `TECHNICAL_REVIEW`, the Orchestrator MUST validate configuration.
 
 Client `version` and `model` fields MUST be non-empty strings after trimming whitespace. If any required client field is empty, the Orchestrator MUST halt before the first review round and produce `/rounds/config_validation_error.json` identifying the invalid fields. This preflight failure does not consume a Phase 1 or Phase 2 round.
+
+---
+
+## CANONICAL RUBRICS AND WORKFLOWS
+
+Whetstone separates the convergence quality bar from operational run behavior.
+
+`rubric_profile` defines the standard being evaluated. It answers: "What quality bar is this draft being judged against?"
+
+`workflow` defines the execution preset. It answers: "How should the Orchestrator schedule, halt, summarize, and require artifacts for this run?"
+
+The terms MUST NOT be used interchangeably. A workflow MAY select a default rubric profile, but the persisted run identity MUST record both values independently.
+
+### Canonical Rubric Profiles
+
+Whetstone SHOULD ship canonical built-in rubric profiles that are always addressable by stable name and version:
+
+- `governance-v6`: highest strictness; intended for final/strict governance-grade convergence.
+- `standard-v1`: balanced technical convergence; intended for normal production-ready specs.
+- `mvp-v1`: implementation-readiness convergence; prioritizes scope, buildability, acceptance criteria, and blocking ambiguity over exhaustive governance sharpness.
+- `exploratory-v1`: early shaping convergence; intended for surfacing major gaps without forcing final-grade completeness.
+
+Built-in rubric profiles MUST be immutable once released. If a built-in rubric changes materially, it MUST receive a new profile version.
+
+Custom rubrics are allowed only when `rubric_source = custom`. Custom rubric runs MUST provide:
+
+- `rubric_label`: non-empty human-readable label
+- `rubric_path`: concrete path
+- `rubric_content_hash`: Orchestrator-computed hash of the normalized rubric content
+
+The Orchestrator MUST NOT infer that two custom rubrics are equivalent from label similarity. Hash identity is the replay authority.
+
+### Workflow Presets
+
+The initial canonical workflows are:
+
+- `exploratory`: early review workflow; may default to `exploratory-v1`, `mid/permissive`, fewer rounds, and non-blocking decision summaries.
+- `mvp`: MVP-readiness workflow; may default to `mvp-v1`, `mid/strict`, focused round budgets, and decision summaries optimized for approve/build decisions.
+- `standard`: default production-spec workflow; may default to `standard-v1`, `final/strict`, full Phase 1 and Phase 2 gates.
+- `governance`: highest-assurance workflow; MUST default to `governance-v6`, `final/strict`, declaration workflow, decision summary, telemetry when available, and full artifact validation.
+- `custom`: explicitly configured workflow; MUST NOT silently inherit a built-in rubric unless configured.
+
+`--workflow mvp` and any future `--mvp` shorthand are workflow selectors, not rubric definitions. The CLI MAY expose shorthand flags, but persisted configuration MUST normalize them to `workflow` plus explicit `rubric_profile`.
+
+### Rubric Manifest
+
+Before the first Phase 2 review, the Orchestrator MUST write `/rounds/rubric_manifest.json`.
+
+`rubric_manifest.json` MUST include:
+
+```yaml
+workflow: string
+rubric_profile: string
+rubric_source: builtin | custom
+rubric_label: string | null
+rubric_path: string
+rubric_content_hash: string
+target_phase: mid | final
+target_mode: permissive | strict
+resolved_defaults:
+  target_phase: mid | final
+  target_mode: permissive | strict
+  max_rounds: integer
+  required_artifacts: [string]
+warnings: [string]
+```
+
+Phase 2 MUST NOT start unless rubric identity is explicit and manifest validation passes.
+
+For built-in rubrics:
+
+- `rubric_profile` MUST be one of the built-in canonical profile names.
+- `rubric_content_hash` MUST match the packaged rubric content used for prompt construction.
+- If `rubric_path` points to a copied materialized rubric, the copied content hash MUST match the built-in profile hash.
+
+For custom rubrics:
+
+- `rubric_label` MUST be non-empty.
+- The run start summary and manifest MUST mark the rubric as custom.
+- The CLI SHOULD warn that custom rubric identity is hash-based and may not be comparable to built-in profile results.
+
+Phase 2 prompt snapshots, convergence declarations, convergence failure reports, decision summaries, and apply-back reports MUST include the manifest path or the full rubric identity tuple:
+
+```text
+(workflow, rubric_profile, rubric_source, rubric_label, rubric_content_hash, target_phase, target_mode)
+```
+
+This tuple is audit metadata. It MUST NOT replace `rubric_content_hash` as the deterministic replay primitive.
 
 ---
 
@@ -202,17 +307,49 @@ Accepted draft is stricter than some convergence targets and is required before 
 Spec version labels express maturity:
 - `0.x` versions are Phase 1 stabilization drafts.
 - whole-number major versions (`1.0`, `2.0`, etc.) indicate the spec has passed Phase 1 acceptance and entered Phase 2 convergence.
+- post-entry Phase 2 decimal versions (`1.1`, `1.2`, etc.) indicate accepted mutating convergence revisions after Phase 2 entry.
 
-When the Orchestrator transitions from `TECHNICAL_STABLE` to `CONVERGENCE_REVIEW`, it MUST promote the spec version to the smallest whole major version that is greater than or equal to the current numeric version, with a minimum of `1.0`.
+Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft.
+
+For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading contains a numeric version label. If no numeric root-heading version exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
+
+Version stamping rules:
+
+- Phase 1 accepted mutating revision: increment the fractional stabilization version by one hundredth.
+- Phase 1 non-mutating round: do not change the version label.
+- Phase 1 rejected or unresolved round: do not change the version label.
+- Phase 2 entry: promote to the smallest whole major version that is greater than or equal to the current numeric version, with a minimum of `1.0`.
+- Phase 2 accepted mutating revision after entry: increment the first decimal place under the current major version.
+- Phase 2 non-mutating round: do not change the version label.
+- Phase 2 rejected or unresolved round: do not change the version label.
+- Clean convergence declaration generation alone does not change the version label unless the same accepted round also mutates `spec.md`.
 
 Examples:
+- Phase 1 accepted mutation: `0.17` stamps to `0.18`
+- Phase 1 accepted mutation: `0.99` stamps to `1.00`, but this does not by itself authorize Phase 2 entry
 - `0.17` promotes to `1.0`
 - `1.7` promotes to `2.0`
 - `2.0` remains `2.0`
+- Phase 2 accepted mutation: `1.0` stamps to `1.1`
+- Phase 2 accepted mutation: `1.9` stamps to `1.10`
 
-Version promotion MUST happen only after the accepted-draft gate is satisfied and all required Phase 1 clean-profile conditions are met. Invoking a Phase 2 command directly does not by itself authorize version promotion.
+Phase 2 entry promotion MUST happen only after the accepted-draft gate is satisfied and all required Phase 1 clean-profile conditions are met. Invoking a Phase 2 command directly does not by itself authorize version promotion.
 
-Version promotion is an Orchestrator-owned mutation. It MUST be persisted to `spec.md`, recorded in `spec.history.md`, and reflected in the Phase 2 `draft_before.md` snapshot for the first convergence review.
+Each version stamp is an Orchestrator-owned mutation. It MUST be persisted to `spec.md`, recorded in `spec.history.md`, and reflected in the affected round snapshot:
+
+- Phase 1 and post-entry Phase 2 accepted mutating revisions: reflected in that round's `draft_after.md`.
+- Phase 2 entry promotion: reflected in the Phase 2 `draft_before.md` snapshot for the first convergence review.
+
+`spec.history.md` MUST record:
+
+- round number or transition name
+- phase
+- previous version label
+- stamped version label
+- draft hash before stamping
+- draft hash after stamping
+
+Rollback authority remains the round artifacts and hashes. Version labels are human navigation aids and MUST NOT replace hash validation for replay, audit, or rollback correctness.
 
 ---
 
@@ -308,12 +445,19 @@ round_strategy:
       max_repeats: 2
     - profile: operability
       skip_if_clean: false
+      repeat_if_blockers: true
       max_repeats: 1
 
   phase_2:
     - profile: convergence_strict_check
+      repeat_if_blockers: true
+      max_repeats: 2
     - profile: adversarial
+      repeat_if_blockers: true
+      max_repeats: 2
     - profile: convergence_strict_check
+      repeat_if_blockers: true
+      max_repeats: 2
 ```
 
 ## ROUND SCHEDULING ALGORITHM
@@ -322,7 +466,10 @@ Phase 1 executes configured profiles in order.
 
 For each Phase 1 profile:
 - run the profile unless `skip_if_clean = true` and the current draft already has a valid clean result for that profile
-- if the profile returns blocker issues and `repeat_if_blockers = true`, schedule the same profile again after editor revision until either blockers are cleared or `max_repeats` is reached
+- the profile result is clean only when the Reviewer review of `draft_before.md` for that round returns zero in-scope blocker issues and zero in-scope major issues
+- editor resolution claims in `editor_summary.json` determine which findings remain unresolved after the edit, but they MUST NOT by themselves mark the reviewed profile clean
+- if the profile returns in-scope blocker or major issues and `repeat_if_blockers = true`, schedule the same profile again after editor revision until a later Reviewer pass verifies the current draft clean or `max_repeats` is reached
+- if the Reviewer pass is clean but the Editor mutates the draft in the same round, that clean result applies only to the pre-edit draft and MUST NOT mark the post-edit draft clean; the same profile requires a later clean verification pass unless a computable skip rule applies
 - if the editor mutates any section whose canonical section ID matches the profile's resolved focus anchors, previous clean status for that profile is invalidated
 - if the editor mutates only sections outside the profile's resolved focus anchors, previous clean status for that profile remains valid
 
@@ -335,6 +482,8 @@ Phase 2 executes configured profiles in order.
 After each Phase 2 reviewer/editor cycle, the Orchestrator MUST evaluate halt conditions in the ordered precedence defined by this spec.
 
 Phase 2 completion is checked after each validated Phase 2 review cycle and any resulting declaration revision, not only after the full configured Phase 2 profile sequence has been exhausted.
+
+As in Phase 1, Phase 2 profile cleanliness is based on Reviewer findings against `draft_before.md`, not on Editor resolution claims in the same round. A Phase 2 profile with any in-scope blocker or major finding is not clean even if the Editor resolves every finding in `draft_after.md`; a later Reviewer pass must verify the resulting draft. A clean Reviewer pass followed by an Editor mutation also requires later verification of the mutated draft.
 
 For `target_phase = final` and `target_mode = strict`, the Orchestrator MUST NOT declare clean convergence until every distinct Phase 2 profile name in the configured sequence has produced at least one clean result in Phase 2 for the current draft lineage.
 
@@ -352,6 +501,7 @@ Clean convergence is achieved when:
 - the current draft satisfies the configured target matrix,
 - `convergence_declaration.md` exists,
 - the declaration is accepted under the convergence declaration criteria, and
+- every required distinct Phase 2 profile has produced a clean Reviewer result for the current unmodified draft lineage,
 - no halt condition with higher or equal precedence has already fired.
 
 ---
@@ -821,6 +971,93 @@ decision_points: [decision_point]
 unresolved_human_decision_count: integer
 ```
 
+## DECISION SUMMARY
+
+Decision summary artifacts are operator-facing review aids derived from `decision_register.json`.
+
+The Orchestrator MUST NOT use decision summary artifacts as authority for convergence, halt selection, conflict escalation, oscillation detection, draft mutation, or replay. The decision register remains the authoritative decision-point artifact.
+
+When `decision_points.summary.enabled = true` and at least one decision point is captured, the Orchestrator MUST produce:
+
+- `/rounds/decision_summary.json`
+- `/rounds/decision_summary.md`
+
+The mechanical portion of the decision summary MUST be deterministic and MUST be derivable solely from persisted decision-point artifacts and run metadata.
+
+The mechanical summary MUST include these grouping surfaces:
+
+```yaml
+generated_at: string
+source_register_path: string
+terminal_state: string
+decision_point_count: integer
+unresolved_human_decision_count: integer
+section_clusters:
+  - cluster_id: string
+    section_family: string
+    affected_sections: [string]
+    decision_ids: [string]
+    round_numbers: [integer]
+    profiles: [string]
+    trigger_counts: object
+    decision_type_counts: object
+    representative_questions: [string]
+round_profile_clusters:
+  - cluster_id: string
+    round_number: integer
+    profile: string
+    decision_ids: [string]
+    trigger_counts: object
+    decision_type_counts: object
+trigger_clusters:
+  - cluster_id: string
+    trigger_type: string
+    decision_ids: [string]
+    affected_sections: [string]
+    round_numbers: [integer]
+interpretive_summary: object | null
+```
+
+`section_clusters` MUST group decision points by document topology, not by semantic guesswork:
+
+- For numbered Markdown sections, `section_family` MUST be the first numeric section component from the first affected section, e.g. `13` for `13.2 Duplicate Identity`.
+- For unnumbered sections, `section_family` MUST be the normalized top-level affected section text.
+- If a decision point has multiple affected sections, the first affected section in persisted order is the primary grouping anchor; all affected sections MUST still be listed in the cluster.
+- Cluster ordering MUST be deterministic: numeric section families in numeric order, then nonnumeric section families lexicographically.
+
+`round_profile_clusters` MUST group decision points by `(round_number, profile)` and MUST sort by `round_number` ascending, then `profile` lexicographically.
+
+`trigger_clusters` MUST group decision points by each value in `trigger_types` and MUST sort by `trigger_type` lexicographically.
+
+Within every cluster:
+
+- `decision_ids` MUST be sorted lexicographically.
+- `affected_sections` MUST be de-duplicated and sorted by first observed source order.
+- `round_numbers` MUST be de-duplicated and sorted ascending.
+- `profiles` MUST be de-duplicated and sorted lexicographically.
+- `trigger_counts` and `decision_type_counts` MUST use deterministic key ordering.
+- `representative_questions` MUST contain at most three questions, selected by the cluster's decision order after sorting by `(round_number, decision_id)`.
+
+The human-readable `decision_summary.md` MUST clearly separate:
+
+- mechanical counts and clusters
+- optional interpretive summary, if present
+
+Mechanical summary text MUST NOT claim semantic theme authority beyond section family, round/profile, trigger type, and directly quoted or paraphrased decision-point fields.
+
+If `decision_points.summary.include_interpretive_summary = false`, then `interpretive_summary = null`.
+
+If `decision_points.summary.include_interpretive_summary = true`, the interpretive summary MAY be produced by an AI client, but it MUST obey these constraints:
+
+- It MUST consume the mechanical summary as input, not raw draft-only context.
+- It MUST preserve and cite decision IDs for every interpreted theme.
+- It MUST NOT invent decision points, affected sections, approvals, rejections, or source claims.
+- It MUST be labeled non-authoritative in both JSON and Markdown.
+- It MUST include the client name, version, model, prompt snapshot path, and timestamp used to produce it.
+- Failure to produce an interpretive summary MUST NOT invalidate the mechanical summary.
+
+Decision summary generation MUST be read-only with respect to `spec.md`, `spec.history.md`, `convergence_declaration.md`, and all per-round artifacts.
+
 `decision_intervention_request.json` MUST contain:
 
 ```yaml
@@ -1007,6 +1244,85 @@ For Phase 2 reviewer feedback, an invalid or missing reviewer-proposed `oscillat
 
 ---
 
+## CLIENT TELEMETRY
+
+The Orchestrator MUST persist per-attempt client telemetry for every live client invocation, including successful attempts, invalid artifact attempts, timeout attempts, and nonzero-exit attempts whenever process metadata is available.
+
+Telemetry artifacts MUST be written under:
+
+```text
+/rounds/round-N/client_telemetry/{client_role}-{artifact_name}-attempt-{attempt_number}.json
+```
+
+Client telemetry is audit and observability data. It MUST NOT be used for convergence, acceptance, severity normalization, artifact validation, conflict escalation, oscillation detection, draft hashing, or replay authority.
+
+`client_telemetry` artifacts MUST contain:
+
+```yaml
+generated_at: string
+round_number: integer
+phase: phase_1 | phase_2
+profile: string
+client_role: reviewer | editor
+artifact_name: string
+attempt_number: integer
+client:
+  name: string
+  command: string
+  configured_version: string
+  observed_version: string | null
+  model: string
+started_at: string
+finished_at: string | null
+duration_ms: integer | null
+duration_api_ms: integer | null
+exit_code: integer | null
+timed_out: boolean
+session_id: string | null
+stop_reason: string | null
+terminal_reason: string | null
+total_cost_usd: number | null
+usage:
+  input_tokens: integer | null
+  output_tokens: integer | null
+  cache_creation_input_tokens: integer | null
+  cache_read_input_tokens: integer | null
+  total_tokens: integer | null
+  provider_raw: object | null
+model_usage: object | null
+raw_envelope_path: string | null
+stderr_path: string | null
+telemetry_source: claude_json_envelope | codex_stdout | codex_json_envelope | process_metadata | unavailable
+```
+
+`usage.total_tokens` MUST be computed by the Orchestrator when token components are available:
+
+```text
+total_tokens =
+  input_tokens +
+  output_tokens +
+  cache_creation_input_tokens +
+  cache_read_input_tokens
+```
+
+Null token components MUST be treated as zero for this computed total only. If every token component is null, `usage.total_tokens` MUST be null.
+
+When a client exposes a raw JSON envelope with usage metadata, such as Claude Code `--output-format json`, the Orchestrator MUST persist the raw envelope or a lossless redacted copy and set `raw_envelope_path`.
+
+When a client exposes usage only in stdout/stderr text, such as a human-readable `tokens used` line, the Orchestrator MAY parse the available fields and MUST preserve the raw stdout/stderr text or a redacted copy if it is needed to explain the parsed usage.
+
+When no usage data is available, telemetry MUST still be emitted with timing, exit, and configured-client metadata when available, and `telemetry_source = unavailable` or `process_metadata`.
+
+Telemetry persistence MUST be best-effort but non-silent:
+
+- Failure to persist telemetry MUST NOT by itself invalidate a schema-valid reviewer/editor artifact.
+- Telemetry persistence failure MUST be recorded as a validation warning or run warning in the round packet.
+- Missing telemetry for a live invocation MUST be detectable by artifact validation or status tooling.
+
+Prompt text MUST NOT be duplicated into telemetry artifacts unless the prompt snapshot path is referenced. The attempt-level `prompt_snapshots/` artifact remains the authoritative prompt audit artifact.
+
+---
+
 ## CONTENT NORMALIZATION AND HASHING
 
 Draft hash normalization:
@@ -1018,6 +1334,8 @@ Draft hash normalization:
 - ensure exactly one trailing newline
 
 `draft_hash` is SHA256 of the normalized full draft.
+
+If a round requires Orchestrator-owned version stamping, stamping MUST occur before writing the canonical `draft_after.md`, before mutating `spec.md`, and before computing the persisted `draft_after_hash`.
 
 Rubric hash normalization:
 - use the same normalization rules as `draft_hash`
@@ -1241,6 +1559,11 @@ Includes:
 - final_declaration_path: string | null
 - target_phase
 - target_mode
+- workflow
+- rubric_profile
+- rubric_source
+- rubric_label: string | null
+- rubric_manifest_path
 - unresolved_blockers
 - unresolved_major_issues
 - unresolved_rubric_gaps
@@ -1344,7 +1667,7 @@ TECHNICAL_REVISION -> TECHNICAL_REVIEW
 
 TECHNICAL_REVIEW -> TECHNICAL_STABLE (if accepted draft and all non-skipped Phase 1 profiles have valid clean status)
 
-TECHNICAL_STABLE -> CONVERGENCE_REVIEW (after spec version promotion)
+TECHNICAL_STABLE -> CONVERGENCE_REVIEW (after Phase 2 entry version promotion)
 
 CONVERGENCE_REVIEW -> CONVERGENCE_REVISION (if any in-scope unresolved feedback item targets `spec.md` or another non-declaration source artifact)
 CONVERGENCE_REVIEW -> DECLARATION_REVISION (if all in-scope unresolved feedback items target only `convergence_declaration.md`, `rubric_gaps.json`, `unresolved_issues.json`, or other declaration-evaluation artifacts)
@@ -1368,9 +1691,16 @@ If both `CONVERGENCE_REVISION` and `DECLARATION_REVISION` guards are true for th
 
 `convergence_declaration.md` MUST exist before `CONVERGED`.
 
+The convergence declaration is a separate Orchestrator-owned artifact. Editors MUST NOT satisfy declaration requirements by adding declaration text, acceptance statements, or declaration metadata to `spec.md` unless that text is explicitly part of the source spec domain itself.
+
 Minimum declaration content:
 - target_phase
 - target_mode
+- workflow
+- rubric_profile
+- rubric_source
+- rubric_label: string | null
+- rubric_manifest_path
 - final_draft_hash
 - rubric_content_hash
 - unresolved_blockers count
@@ -1389,6 +1719,7 @@ The declaration is accepted only when all of the following are true:
 - `convergence_declaration.md` exists
 - `final_draft_hash` equals the current `draft_hash`
 - `rubric_content_hash` equals the current `rubric_content_hash`
+- declaration rubric identity equals the current `rubric_manifest.json`
 - declaration counts equal the counts derived from `unresolved_issues.json` and `rubric_gaps.json`
 - target matrix requirements are satisfied
 - `convergence_strict_check` returns zero in-scope blocker declaration-scoped issues
@@ -1417,7 +1748,11 @@ prompt_snapshot.json MUST include:
 - model
 - timestamp
 - config snapshot
+- workflow
+- rubric profile
+- rubric source
 - rubric content hash
+- rubric manifest path in Phase 2
 - draft_hash
 - semantic_change_hash when a draft mutation is requested
 
@@ -1433,7 +1768,13 @@ prompt_snapshot.json MUST include:
 - attempt number
 - timestamp
 - config snapshot
+- workflow
+- rubric profile
+- rubric source
+- rubric manifest path in Phase 2
 - validation errors that caused the attempt, or an empty list for the first attempt
+
+`client_telemetry/{client_role}-{artifact_name}-attempt-{attempt_number}.json` is the attempt-level client runtime telemetry artifact. It MUST be keyed to the same `client_role`, `artifact_name`, and `attempt_number` as the corresponding prompt snapshot when both exist. It MAY reference raw client envelopes or stderr/stdout captures but MUST NOT replace prompt snapshots or canonical reviewer/editor artifacts.
 
 Phase 2 reviewer prompt snapshots MUST include the full oscillation classification table shown to the reviewer.
 
@@ -1464,7 +1805,7 @@ Future config MUST include:
 
 If implemented later, weighted mode MUST define numeric severity mapping, reviewer weights, and rounding behavior before use.
 
-Not implemented in 0.17.
+Not implemented in 0.22.
 
 ---
 

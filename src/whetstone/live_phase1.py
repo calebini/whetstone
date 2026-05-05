@@ -11,7 +11,7 @@ from typing import Any, Callable
 from whetstone.config import OrchestratorConfig
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
 from whetstone.hashing import draft_hash
-from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient
+from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, run_telemetry_totals
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
 from whetstone.scheduler import default_phase_1_scheduler
@@ -69,7 +69,8 @@ class LivePhase1Runner:
         for round_number in range(1, self.config.review_max_rounds + 1):
             profile = scheduler.next_profile()
             if profile is None:
-                if last_accepted_draft_hash is not None:
+                accepted_current_draft = last_accepted_draft_hash == seen_hashes[-1]
+                if scheduler.phase_complete(accepted_draft=accepted_current_draft) and last_accepted_draft_hash is not None:
                     return self._complete(
                         round_number=round_number - 1,
                         current_draft_hash=seen_hashes[-1],
@@ -137,9 +138,17 @@ class LivePhase1Runner:
             decision_packet = _read_json(round_dir / "decision_points.json")
             last_unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
 
-            blocker_count = _count(last_unresolved, "blocker")
-            major_count = _count(last_unresolved, "major")
-            scheduler.record_result(profile, blocker_count=blocker_count, major_count=major_count)
+            reviewer_blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            reviewer_major_count = _reviewer_count(reviewer_feedback, "major")
+            reviewer_clean = reviewer_blocker_count == 0 and reviewer_major_count == 0
+            mutation_requires_verification = reviewer_clean and result.spec_mutated
+            unresolved_blocker_count = _count(last_unresolved, "blocker")
+            unresolved_major_count = _count(last_unresolved, "major")
+            scheduler.record_result(
+                profile,
+                blocker_count=reviewer_blocker_count,
+                major_count=reviewer_major_count + (1 if mutation_requires_verification else 0),
+            )
 
             if result.accepted:
                 last_accepted_draft_hash = result.draft_after_hash
@@ -186,12 +195,12 @@ class LivePhase1Runner:
                 before_hash=result.draft_before_hash,
                 after_hash=result.draft_after_hash,
                 accepted=result.accepted,
-                blocker_count=blocker_count,
-                major_count=major_count,
+                blocker_count=unresolved_blocker_count,
+                major_count=unresolved_major_count,
             )
 
             seen_hashes.append(result.draft_after_hash)
-            if result.draft_after_hash in seen_hashes[:-1] and (blocker_count > 0 or major_count > 0):
+            if result.draft_after_hash in seen_hashes[:-1] and (reviewer_blocker_count > 0 or reviewer_major_count > 0):
                 report_path = self.report_writer.write_oscillation_report(
                     round_number=round_number,
                     detected=True,
@@ -311,13 +320,21 @@ class LivePhase1Runner:
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
         packet = {
             "current_round": current_round,
+            "current_absolute_round": current_round,
+            "current_phase_round": current_round,
             "phase": "phase_1",
+            "phase_1_rounds_completed": current_round,
+            "phase_2_rounds_completed": 0,
+            "review_max_rounds": self.config.review_max_rounds,
+            "convergence_max_rounds": self.config.convergence.max_rounds,
+            "total_absolute_round_budget": self.config.review_max_rounds + self.config.convergence.max_rounds,
             "active_profile": active_profile,
             "current_draft_hash": current_draft_hash,
             "last_accepted_draft_hash": last_accepted_draft_hash,
             "seen_draft_hashes": seen_draft_hashes,
             "terminal_state": terminal_state,
             "ready_for_phase_2": ready_for_phase_2,
+            "telemetry_totals": run_telemetry_totals(self.config.rounds_dir),
             "resumable": False,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -349,6 +366,14 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 def _count(issues: list[dict[str, Any]], severity: str) -> int:
     return sum(1 for issue in issues if issue.get("normalized_severity") == severity)
+
+
+def _reviewer_count(reviewer_feedback: dict[str, Any], severity: str) -> int:
+    return sum(
+        1
+        for issue in reviewer_feedback.get("feedback", [])
+        if issue.get("normalized_severity") == severity and bool(issue.get("in_scope", True))
+    )
 
 
 def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:

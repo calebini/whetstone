@@ -7,11 +7,10 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from whetstone.config import OrchestratorConfig
-from whetstone.conflicts import ConflictTracker
-from whetstone.declaration import render_convergence_declaration, write_convergence_declaration
+from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection
+from whetstone.declaration import render_convergence_declaration, validate_convergence_declaration, write_convergence_declaration
 from whetstone.evaluation import target_matrix_satisfied
-from whetstone.hashing import draft_hash, semantic_changes
-from whetstone.identity import SEVERITY_RANK, conflict_fingerprint, conflict_id
+from whetstone.hashing import draft_hash, rubric_content_hash, semantic_changes
 from whetstone.oscillation import OscillationTracker
 from whetstone.reports import ReportWriter
 from whetstone.runner import FixtureRunner, FixtureRoundResult
@@ -52,9 +51,13 @@ class FixtureEngine:
         scheduler: PhaseScheduler = default_phase_1_scheduler()
         last_accepted_draft_hash: str | None = None
         last_result: FixtureRoundResult | None = None
+        last_rubric_gaps: list[dict[str, Any]] = []
         phase_rounds = 0
         conflict_tracker = ConflictTracker()
         oscillation_tracker = OscillationTracker()
+        declaration_path: Path | None = None
+        phase2_clean_profiles: set[str] = set()
+        required_phase2_clean_profiles = {step.profile for step in default_phase_2_scheduler().steps}
         oscillation_tracker.record_draft(
             round_number=0,
             draft_hash_value=draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
@@ -70,6 +73,8 @@ class FixtureEngine:
                     round_number=round_number - 1,
                     last_result=last_result,
                     last_accepted_draft_hash=last_accepted_draft_hash,
+                    declaration_path=declaration_path,
+                    unresolved_rubric_gaps=last_rubric_gaps,
                 )
 
             expected_profile = scheduler.next_profile()
@@ -95,12 +100,23 @@ class FixtureEngine:
             )
             last_result = result
 
+            reviewer_blocker_count = _reviewer_count(step.reviewer_feedback, "blocker")
+            reviewer_major_count = _reviewer_count(step.reviewer_feedback, "major")
+            reviewer_clean = reviewer_blocker_count == 0 and reviewer_major_count == 0
+            spec_mutated = result.draft_before_hash != result.draft_after_hash
+            verified_current_draft_clean = reviewer_clean and not spec_mutated
             blocker_count = _count(result.unresolved_issues, "blocker")
             major_count = _count(result.unresolved_issues, "major")
-            scheduler.record_result(actual_profile, blocker_count=blocker_count, major_count=major_count)
+            scheduler.record_result(
+                actual_profile,
+                blocker_count=reviewer_blocker_count,
+                major_count=reviewer_major_count + (1 if reviewer_clean and spec_mutated else 0),
+            )
 
             if result.accepted:
                 last_accepted_draft_hash = result.draft_after_hash
+            if phase == "phase_2":
+                last_rubric_gaps = _blocking_rubric_gaps(step.unresolved_rubric_gaps)
 
             terminal_candidates: list[TerminationCandidate] = []
             draft_detection = oscillation_tracker.record_draft(
@@ -155,7 +171,7 @@ class FixtureEngine:
                     if feedback_detection.recommendation == "stop_iteration":
                         terminal_candidates.append(TerminationCandidate("HALTED_OSCILLATION", round_number, phase, report_path))
                     if feedback_detection.recommendation == "escalate_conflict":
-                        conflict = _conflict_from_oscillation(feedback_detection)
+                        conflict = conflict_from_oscillation_detection(feedback_detection)
                         conflict_report = self.report_writer.write_conflict_report(
                             round_number=round_number,
                             conflicts=[conflict],
@@ -181,31 +197,77 @@ class FixtureEngine:
                     terminal_candidates.append(TerminationCandidate("HALTED_CONFLICT", round_number, phase, report_path))
 
             if phase == "phase_1" and scheduler.phase_complete(accepted_draft=result.accepted):
-                phase = "phase_2"
-                phase_rounds = 0
-                scheduler = default_phase_2_scheduler()
-                continue
+                    phase = "phase_2"
+                    phase_rounds = 0
+                    scheduler = default_phase_2_scheduler()
+                    phase2_clean_profiles.clear()
+                    continue
 
             if phase == "phase_2":
-                if target_matrix_satisfied(
+                if spec_mutated:
+                    phase2_clean_profiles.clear()
+                if verified_current_draft_clean:
+                    phase2_clean_profiles.add(actual_profile)
+                rubric_hash_value = _rubric_hash(self.config)
+                self.runner.store.write_round_json(
+                    round_number,
+                    "rubric_gaps.json",
+                    {
+                        "round_number": round_number,
+                        "draft_hash": result.draft_after_hash,
+                        "rubric_content_hash": rubric_hash_value,
+                        "rubric_gaps": step.unresolved_rubric_gaps,
+                    },
+                    schema_name="rubric_gaps",
+                )
+                target_ready = target_matrix_satisfied(
                     target_phase=self.config.convergence.target_phase,
                     target_mode=self.config.convergence.target_mode,
                     issues=result.unresolved_issues,
-                    unresolved_rubric_gaps=step.unresolved_rubric_gaps,
-                    declaration_accepted=step.declaration_accepted,
-                ):
+                    unresolved_rubric_gaps=_blocking_rubric_gaps(step.unresolved_rubric_gaps),
+                    declaration_accepted=True,
+                )
+                if target_ready and declaration_path is None:
                     declaration = render_convergence_declaration(
                         target_phase=self.config.convergence.target_phase,
                         target_mode=self.config.convergence.target_mode,
                         final_draft_hash=result.draft_after_hash,
-                        rubric_content_hash="0" * 64,
+                        rubric_content_hash=rubric_hash_value,
                         unresolved_blockers_count=blocker_count,
                         unresolved_major_issues_count=major_count,
-                        unresolved_rubric_gaps_count=len(step.unresolved_rubric_gaps),
+                        unresolved_rubric_gaps_count=len(_blocking_rubric_gaps(step.unresolved_rubric_gaps)),
+                        reviewer_final_status="not_run",
+                        declaration_status="rejected",
+                    )
+                    declaration_path = write_convergence_declaration(self.root / "convergence_declaration.md", declaration)
+                if target_matrix_satisfied(
+                    target_phase=self.config.convergence.target_phase,
+                    target_mode=self.config.convergence.target_mode,
+                    issues=result.unresolved_issues,
+                    unresolved_rubric_gaps=_blocking_rubric_gaps(step.unresolved_rubric_gaps),
+                    declaration_accepted=step.declaration_accepted,
+                ) and verified_current_draft_clean and required_phase2_clean_profiles.issubset(phase2_clean_profiles):
+                    declaration = render_convergence_declaration(
+                        target_phase=self.config.convergence.target_phase,
+                        target_mode=self.config.convergence.target_mode,
+                        final_draft_hash=result.draft_after_hash,
+                        rubric_content_hash=rubric_hash_value,
+                        unresolved_blockers_count=blocker_count,
+                        unresolved_major_issues_count=major_count,
+                        unresolved_rubric_gaps_count=len(_blocking_rubric_gaps(step.unresolved_rubric_gaps)),
                         reviewer_final_status="accepted",
                         declaration_status="accepted",
                     )
-                    write_convergence_declaration(self.root / "convergence_declaration.md", declaration)
+                    if not validate_convergence_declaration(
+                        declaration,
+                        final_draft_hash=result.draft_after_hash,
+                        rubric_content_hash=rubric_hash_value,
+                        unresolved_blockers_count=blocker_count,
+                        unresolved_major_issues_count=major_count,
+                        unresolved_rubric_gaps_count=len(_blocking_rubric_gaps(step.unresolved_rubric_gaps)),
+                    ):
+                        raise ValueError("generated convergence declaration failed validation")
+                    declaration_path = write_convergence_declaration(self.root / "convergence_declaration.md", declaration)
                     terminal_candidates.append(TerminationCandidate("CONVERGED", round_number, phase, None))
 
             selected = select_terminal_candidate(terminal_candidates)
@@ -214,6 +276,7 @@ class FixtureEngine:
                     self._write_phase2_halt_companion(
                         round_number=selected.round_number,
                         result=result,
+                        declaration_path=declaration_path,
                         last_accepted_draft_hash=last_accepted_draft_hash,
                         terminal_state=selected.terminal_state,
                         exit_reason=f"{selected.terminal_state} halted Phase 2 before convergence",
@@ -232,6 +295,8 @@ class FixtureEngine:
             round_number=round_number,
             last_result=last_result,
             last_accepted_draft_hash=last_accepted_draft_hash,
+            declaration_path=declaration_path,
+            unresolved_rubric_gaps=last_rubric_gaps,
         )
 
     def _max_rounds_result(
@@ -241,6 +306,8 @@ class FixtureEngine:
         round_number: int,
         last_result: FixtureRoundResult | None,
         last_accepted_draft_hash: str | None,
+        declaration_path: Path | None = None,
+        unresolved_rubric_gaps: list[dict[str, Any]] | None = None,
     ) -> EngineResult:
         unresolved = last_result.unresolved_issues if last_result else []
         blockers = [_issue_summary(issue) for issue in unresolved if issue["normalized_severity"] == "blocker"]
@@ -261,12 +328,12 @@ class FixtureEngine:
             report_path = self.report_writer.write_convergence_failure_report(
                 round_number=max(round_number, 1),
                 final_draft_path="./spec.md",
-                final_declaration_path=None,
+                final_declaration_path=str(declaration_path.relative_to(self.root)) if declaration_path else None,
                 target_phase=self.config.convergence.target_phase,
                 target_mode=self.config.convergence.target_mode,
                 unresolved_blockers=blockers,
                 unresolved_major_issues=majors,
-                unresolved_rubric_gaps=[],
+                unresolved_rubric_gaps=[_rubric_gap_summary(gap) for gap in (unresolved_rubric_gaps or [])],
                 reviewer_final_status="not_run",
                 last_accepted_draft_hash=last_accepted_draft_hash,
                 exit_reason="max rounds or fixture script exhausted before convergence",
@@ -279,6 +346,7 @@ class FixtureEngine:
         *,
         round_number: int,
         result: FixtureRoundResult,
+        declaration_path: Path | None,
         last_accepted_draft_hash: str | None,
         terminal_state: str,
         exit_reason: str,
@@ -288,7 +356,7 @@ class FixtureEngine:
         return self.report_writer.write_convergence_failure_report(
             round_number=round_number,
             final_draft_path=str(Path("rounds") / f"round-{round_number}" / "draft_after.md"),
-            final_declaration_path=None,
+            final_declaration_path=str(declaration_path.relative_to(self.root)) if declaration_path else None,
             target_phase=self.config.convergence.target_phase,
             target_mode=self.config.convergence.target_mode,
             unresolved_blockers=blockers,
@@ -320,6 +388,14 @@ def _count(issues: Iterable[dict[str, Any]], severity: str) -> int:
     return sum(1 for issue in issues if issue.get("normalized_severity") == severity)
 
 
+def _reviewer_count(reviewer_feedback: dict[str, Any], severity: str) -> int:
+    return sum(
+        1
+        for issue in reviewer_feedback.get("feedback", [])
+        if issue.get("normalized_severity") == severity and bool(issue.get("in_scope", True))
+    )
+
+
 def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:
     return {
         "issue_id": issue["issue_id"],
@@ -330,19 +406,21 @@ def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _conflict_from_oscillation(detection: Any) -> dict[str, Any]:
-    claim = f"{detection.oscillation_type} on {', '.join(detection.oscillation_opposition_keys)}"
-    fingerprint = conflict_fingerprint(
-        "profile_conflict",
-        detection.participating_issue_fingerprints,
-        claim,
-    )
-    severity = max(detection.severities or ["nit"], key=lambda value: SEVERITY_RANK[value])
+def _blocking_rubric_gaps(gaps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [gap for gap in gaps if gap.get("blocking_convergence") is True]
+
+
+def _rubric_gap_summary(gap: dict[str, Any]) -> dict[str, Any]:
     return {
-        "conflict_id": conflict_id(fingerprint),
-        "conflict_fingerprint": fingerprint,
-        "conflict_type": "profile_conflict",
-        "conflict_severity": severity,
-        "participating_issue_ids": detection.participating_issue_ids,
-        "conflict_claim": claim,
+        "issue_id": "iss_" + str(gap["gap_fingerprint"])[:16],
+        "issue_fingerprint": gap["gap_fingerprint"],
+        "normalized_severity": gap["normalized_severity"],
+        "affected_sections": gap["affected_sections"],
+        "claim": gap["claim"],
     }
+
+
+def _rubric_hash(config: OrchestratorConfig) -> str:
+    if not config.convergence.rubric_path.exists():
+        return "0" * 64
+    return rubric_content_hash(config.convergence.rubric_path.read_text(encoding="utf-8"))

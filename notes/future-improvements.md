@@ -73,6 +73,21 @@ Per-round artifacts can be compacted or archived, but should remain recoverable 
 
 The first version should probably be named `whetstone compact` or `--archive-round-artifacts` rather than destructive cleanup, so the feature's default mental model is preserving the audit trail while reducing clutter.
 
+## Decision Summary And Intervention Refinement
+
+Decision capture is useful, but live intervention is likely too interrupt-heavy for normal Whetstone runs. Real runs can produce dozens of decision points, and pausing on each meaningful requirement, scope, or policy change would turn review into an expensive permission flow.
+
+Future improvements:
+
+- Keep `end_of_cycle` as the default decision mode.
+- Treat `intervention` as a narrow high-risk escape hatch rather than a general approval workflow.
+- Improve end-of-cycle summaries with stronger clustering, de-duplication, and top-N policy choices.
+- Add an optional LLM-written decision brief layered on top of the mechanical register, while keeping the mechanical register authoritative.
+- Distinguish routine spec hardening from true owner-level choices.
+- Consider intervention only for high-risk classes such as authority boundary changes, destructive or irreversible behavior, cross-system scope expansion, security/privacy-impacting decisions, or changes that override an explicit human constraint.
+- Consider cluster-level intervention instead of line-level intervention, so one pause can cover a coherent group of related decisions.
+- Make approval briefs emphasize what happens if the owner accepts all editor choices unchanged.
+
 ## Client Capability Notes
 
 Observed live behavior suggests a practical role split:

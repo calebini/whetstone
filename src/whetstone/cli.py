@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 from pathlib import Path
 
+from whetstone.apply_back import apply_back
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
-from whetstone.decisions import scan_decision_points, write_decision_scan_outputs
+from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
 from whetstone.live_phase1 import LivePhase1Runner
+from whetstone.live_phase2 import LivePhase2Runner
 from whetstone.prompts import render_editor_prompt, render_reviewer_prompt
 from whetstone.runner import FixtureRunner
+from whetstone.rubrics import BUILTIN_RUBRIC_FILES, build_rubric_manifest
 from whetstone.sections import section_index
+from whetstone.status import read_status, render_status_text
 from whetstone.versioning import promote_spec_file_for_phase2
 
 
@@ -81,12 +86,30 @@ def main(argv: list[str] | None = None) -> int:
     live_round.add_argument("--apply", action="store_true", help="apply validated draft_after to spec.md")
     live_round.add_argument("--overwrite", action="store_true", help="replace existing round directory")
     live_round.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
+    live_round.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="workflow preset")
+    live_round.add_argument("--rubric", help="built-in rubric profile or custom rubric path")
+    live_round.add_argument("--rubric-label", help="required label when --rubric points to a custom path")
 
     live_phase1 = subparsers.add_parser("live-phase1", help="run the minimal live Phase 1 multi-round loop")
     live_phase1.add_argument("--root", default=".", help="repository root")
     live_phase1.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
     live_phase1.add_argument("--overwrite", action="store_true", help="replace existing round directories")
     live_phase1.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
+
+    live_phase2 = subparsers.add_parser("live-phase2", help="run the minimal live Phase 2 convergence loop")
+    live_phase2.add_argument("--root", default=".", help="repository root")
+    live_phase2.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    live_phase2.add_argument("--overwrite", action="store_true", help="replace existing round directories")
+    live_phase2.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
+    live_phase2.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="workflow preset")
+    live_phase2.add_argument("--rubric", help="built-in rubric profile or custom rubric path")
+    live_phase2.add_argument("--rubric-label", help="required label when --rubric points to a custom path")
+
+    status = subparsers.add_parser("status", help="summarize the current Whetstone run state")
+    status.add_argument("--root", default=".", help="repository root")
+    status.add_argument("--run-root", help="isolated Whetstone run root; overrides --root")
+    status.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    status.add_argument("--format", choices=["json", "text"], default="json", help="status output format")
 
     decision_scan = subparsers.add_parser("decision-scan", help="scan a before/after draft pair for decision points")
     decision_scan.add_argument("--before", required=True, help="starting draft path")
@@ -95,9 +118,34 @@ def main(argv: list[str] | None = None) -> int:
     decision_scan.add_argument("--mode", choices=["end_of_cycle", "intervention"], default="end_of_cycle")
     decision_scan.add_argument("--profile", default="decision_scan", help="profile label for emitted decision points")
 
+    decision_summary = subparsers.add_parser("decision-summary", help="summarize an existing decision_register.json")
+    decision_summary.add_argument("--register", required=True, help="decision_register.json path")
+    decision_summary.add_argument(
+        "--output-dir",
+        help="directory for summary artifacts; defaults to the register directory",
+    )
+
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
     promote_phase2.add_argument("--root", default=".", help="repository root")
     promote_phase2.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+
+    apply_back_parser = subparsers.add_parser("apply-back", help="review or apply an isolated Whetstone result to a source spec")
+    apply_back_parser.add_argument("--source", required=True, help="source spec path to compare or update")
+    apply_back_parser.add_argument("--run-root", required=True, help="completed isolated Whetstone run root")
+    apply_back_parser.add_argument("--output-dir", help="directory for apply-back review artifacts; defaults to RUN_ROOT/rounds")
+    apply_back_parser.add_argument("--expected-source-hash", help="optional source hash guard")
+    apply_back_parser.add_argument(
+        "--allow-source-hash-mismatch",
+        action="store_true",
+        help="continue when --expected-source-hash does not match the current source hash",
+    )
+    apply_back_parser.add_argument(
+        "--allow-non-converged",
+        action="store_true",
+        help="allow writing back from a non-CONVERGED run; intended only for manual recovery",
+    )
+    apply_back_parser.add_argument("--apply", action="store_true", help="write the final Whetstone draft back to --source")
+    apply_back_parser.add_argument("--approve", action="store_true", help="required with --apply")
 
     args = parser.parse_args(argv)
     if args.command == "fixture-round":
@@ -140,6 +188,9 @@ def main(argv: list[str] | None = None) -> int:
             profile=args.profile,
             draft=draft,
             rubric=rubric,
+            declaration=(root / "convergence_declaration.md").read_text(encoding="utf-8")
+            if args.phase == "phase_2" and (root / "convergence_declaration.md").exists()
+            else None,
             phase=args.phase,
             section_ids=section_ids,
             draft_hash_value=draft_hash(draft),
@@ -165,6 +216,9 @@ def main(argv: list[str] | None = None) -> int:
             profile=args.profile,
             draft=draft,
             rubric=rubric,
+            declaration=(root / "convergence_declaration.md").read_text(encoding="utf-8")
+            if args.phase == "phase_2" and (root / "convergence_declaration.md").exists()
+            else None,
             phase=args.phase,
             section_ids=section_ids,
             draft_hash_value=draft_hash(draft),
@@ -219,6 +273,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "live-round":
         root = Path(args.root)
         config = load_config(root / args.config)
+        config = _apply_run_profile_overrides(config, root=root, args=args)
         draft_after = (root / args.draft_after).read_text(encoding="utf-8") if args.draft_after else None
         result = LiveRoundRunner(root, config, timeout_seconds=args.timeout_seconds).run_round(
             round_number=args.round,
@@ -236,6 +291,7 @@ def main(argv: list[str] | None = None) -> int:
                     "accepted": result.accepted,
                     "feedback_count": result.reviewer_feedback_count,
                     "spec_mutated": result.spec_mutated,
+                    "rubric_manifest": _manifest_summary(config) if args.phase == "phase_2" else None,
                 }
             )
         )
@@ -256,6 +312,34 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
         )
+        return 0
+    if args.command == "live-phase2":
+        root = Path(args.root)
+        config = load_config(root / args.config)
+        config = _apply_run_profile_overrides(config, root=root, args=args)
+        result = LivePhase2Runner(root, config, timeout_seconds=args.timeout_seconds).run(overwrite=args.overwrite)
+        print(
+            json.dumps(
+                {
+                    "terminal_state": result.terminal_state,
+                    "round_number": result.round_number,
+                    "current_draft_hash": result.current_draft_hash,
+                    "last_accepted_draft_hash": result.last_accepted_draft_hash,
+                    "declaration_path": str(result.declaration_path) if result.declaration_path else None,
+                    "report_path": str(result.report_path) if result.report_path else None,
+                    "rubric_manifest": _manifest_summary(config),
+                }
+            )
+        )
+        return 0
+    if args.command == "status":
+        root = Path(args.run_root or args.root)
+        config = load_config(root / args.config)
+        packet = read_status(root=root, config=config)
+        if args.format == "text":
+            print(render_status_text(packet), end="")
+        else:
+            print(json.dumps(packet, indent=2, sort_keys=True))
         return 0
     if args.command == "decision-scan":
         before = Path(args.before).read_text(encoding="utf-8")
@@ -282,6 +366,23 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "decision-summary":
+        outputs = write_decision_summary_outputs(
+            register_path=Path(args.register),
+            output_dir=Path(args.output_dir) if args.output_dir else None,
+        )
+        summary = _read_json(outputs["decision_summary"])
+        print(
+            json.dumps(
+                {
+                    "decision_count": summary["decision_count"],
+                    "unresolved_human_decision_count": summary["unresolved_human_decision_count"],
+                    "decision_summary": str(outputs["decision_summary"]),
+                    "decision_summary_markdown": str(outputs["decision_summary_markdown"]),
+                }
+            )
+        )
+        return 0
     if args.command == "promote-phase2":
         root = Path(args.root)
         config = load_config(root / args.config)
@@ -302,12 +403,84 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "apply-back":
+        result = apply_back(
+            source_path=Path(args.source),
+            run_root=Path(args.run_root),
+            apply=args.apply,
+            approve=args.approve,
+            expected_source_hash=args.expected_source_hash,
+            allow_source_hash_mismatch=args.allow_source_hash_mismatch,
+            allow_non_converged=args.allow_non_converged,
+            output_dir=Path(args.output_dir) if args.output_dir else None,
+        )
+        print(
+            json.dumps(
+                {
+                    "applied": result.applied,
+                    "changed": result.changed,
+                    "source_path": str(result.source_path),
+                    "final_draft_path": str(result.final_draft_path),
+                    "review_json_path": str(result.review_json_path),
+                    "review_markdown_path": str(result.review_markdown_path),
+                    "source_before_hash": result.source_before_hash,
+                    "final_draft_hash": result.final_draft_hash,
+                    "source_after_hash": result.source_after_hash,
+                }
+            )
+        )
+        return 0
     return 1
 
 
 def _read_json(path: Path) -> dict:
     with path.open(encoding="utf-8") as artifact_file:
         return json.load(artifact_file)
+
+
+def _apply_run_profile_overrides(config: object, *, root: Path, args: object) -> object:
+    workflow = getattr(args, "workflow", None)
+    rubric = getattr(args, "rubric", None)
+    rubric_label = getattr(args, "rubric_label", None)
+    if workflow is None and rubric is None and rubric_label is None:
+        return config
+
+    convergence = config.convergence
+    updates = {}
+    if rubric is not None:
+        if rubric in BUILTIN_RUBRIC_FILES:
+            updates.update(
+                {
+                    "rubric_profile": rubric,
+                    "rubric_source": "builtin",
+                    "rubric_label": None,
+                }
+            )
+        else:
+            updates.update(
+                {
+                    "rubric_profile": "custom",
+                    "rubric_source": "custom",
+                    "rubric_label": rubric_label,
+                    "rubric_path": root / rubric,
+                }
+            )
+    elif rubric_label is not None:
+        updates["rubric_label"] = rubric_label
+
+    return replace(config, workflow=workflow or config.workflow, convergence=replace(convergence, **updates))
+
+
+def _manifest_summary(config: object) -> dict:
+    manifest = build_rubric_manifest(config).packet
+    return {
+        "workflow": manifest["workflow"],
+        "rubric_profile": manifest["rubric_profile"],
+        "rubric_source": manifest["rubric_source"],
+        "rubric_label": manifest["rubric_label"],
+        "rubric_content_hash": manifest["rubric_content_hash"],
+        "warnings": manifest["warnings"],
+    }
 
 
 def _read_json_list(path: Path) -> list[dict]:

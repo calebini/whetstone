@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
+import re
+import signal
 import subprocess
 from tempfile import TemporaryDirectory
+from time import monotonic
+from typing import Any
 
 from whetstone.contracts import SCHEMA_DIR, validate_artifact
 from whetstone.hashing import draft_hash
@@ -45,6 +52,12 @@ SEVERITY_ALIASES = {
     "not applicable to rubric": None,
 }
 SEVERITY_VALUES = {"blocker", "major", "minor", "nit"}
+
+
+@dataclass(frozen=True)
+class ClientInvocationResult:
+    artifact: dict
+    telemetry: dict[str, Any]
 
 
 class ProcessReviewerClient:
@@ -96,16 +109,23 @@ class CodexReviewerClient:
         self.output_schema_name = (
             "phase2_reviewer_feedback_input.codex" if phase == "phase_2" else "reviewer_feedback.codex"
         )
+        self.last_telemetry: dict[str, Any] | None = None
 
     def review(self, prompt: str) -> dict:
-        artifact = _run_codex_exec(
-            command=self.command,
-            prompt=prompt,
-            cwd=self.cwd,
-            schema_path=SCHEMA_DIR / f"{self.output_schema_name}.schema.json",
-            model=self.model,
-            timeout_seconds=self.timeout_seconds,
-        )
+        try:
+            result = _run_codex_exec(
+                command=self.command,
+                prompt=prompt,
+                cwd=self.cwd,
+                schema_path=SCHEMA_DIR / f"{self.output_schema_name}.schema.json",
+                model=self.model,
+                timeout_seconds=self.timeout_seconds,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        artifact = result.artifact
         artifact = canonicalize_reviewer_input(artifact)
         validate_artifact(artifact, self.schema_name)
         if self.phase == "phase_2":
@@ -137,16 +157,23 @@ class ClaudeCodeReviewerClient:
         self.output_schema_name = (
             "phase2_reviewer_feedback_input.codex" if phase == "phase_2" else "reviewer_feedback.codex"
         )
+        self.last_telemetry: dict[str, Any] | None = None
 
     def review(self, prompt: str) -> dict:
-        artifact = _run_claude_print(
-            command=self.command,
-            prompt=prompt,
-            cwd=self.cwd,
-            schema_path=SCHEMA_DIR / f"{self.output_schema_name}.schema.json",
-            model=self.model,
-            timeout_seconds=self.timeout_seconds,
-        )
+        try:
+            result = _run_claude_print(
+                command=self.command,
+                prompt=prompt,
+                cwd=self.cwd,
+                schema_path=SCHEMA_DIR / f"{self.output_schema_name}.schema.json",
+                model=self.model,
+                timeout_seconds=self.timeout_seconds,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        artifact = result.artifact
         artifact = canonicalize_reviewer_input(artifact)
         validate_artifact(artifact, self.schema_name)
         if self.phase == "phase_2":
@@ -170,16 +197,23 @@ class CodexEditorClient:
         self.model = model
         self.cwd = Path(cwd)
         self.timeout_seconds = timeout_seconds
+        self.last_telemetry: dict[str, Any] | None = None
 
     def revise(self, prompt: str) -> dict:
-        artifact = _run_codex_exec(
-            command=self.command,
-            prompt=prompt,
-            cwd=self.cwd,
-            schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
-            model=self.model,
-            timeout_seconds=self.timeout_seconds,
-        )
+        try:
+            result = _run_codex_exec(
+                command=self.command,
+                prompt=prompt,
+                cwd=self.cwd,
+                schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
+                model=self.model,
+                timeout_seconds=self.timeout_seconds,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        artifact = result.artifact
         artifact = canonicalize_editor_input(artifact)
         validate_artifact(artifact, "editor_summary")
         return artifact
@@ -200,16 +234,23 @@ class ClaudeCodeEditorClient:
         self.model = model
         self.cwd = Path(cwd)
         self.timeout_seconds = timeout_seconds
+        self.last_telemetry: dict[str, Any] | None = None
 
     def revise(self, prompt: str) -> dict:
-        artifact = _run_claude_print(
-            command=self.command,
-            prompt=prompt,
-            cwd=self.cwd,
-            schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
-            model=self.model,
-            timeout_seconds=self.timeout_seconds,
-        )
+        try:
+            result = _run_claude_print(
+                command=self.command,
+                prompt=prompt,
+                cwd=self.cwd,
+                schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
+                model=self.model,
+                timeout_seconds=self.timeout_seconds,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        artifact = result.artifact
         artifact = canonicalize_editor_input(artifact)
         validate_artifact(artifact, "editor_summary")
         return artifact
@@ -313,7 +354,7 @@ def _run_codex_exec(
     schema_path: Path,
     model: str | None,
     timeout_seconds: int | None = None,
-) -> dict:
+) -> ClientInvocationResult:
     with TemporaryDirectory() as tmp:
         output_path = Path(tmp) / "last-message.json"
         args = [
@@ -321,6 +362,11 @@ def _run_codex_exec(
             "exec",
             "--cd",
             str(cwd),
+            "-c",
+            'web_search="disabled"',
+            "-c",
+            'model_reasoning_effort="medium"',
+            "--ignore-rules",
             "--sandbox",
             "read-only",
             "--ephemeral",
@@ -334,21 +380,33 @@ def _run_codex_exec(
         if model:
             args.extend(["--model", model])
         args.append("-")
+        started_at = _now()
+        started_monotonic = monotonic()
         try:
-            completed = subprocess.run(
+            completed = _run_client_process(
                 args,
-                input=prompt,
-                text=True,
-                capture_output=True,
-                check=False,
+                input_text=prompt,
                 timeout=timeout_seconds,
             )
         except subprocess.TimeoutExpired as exc:
-            raise TimeoutError(f"{command!r} exec timed out after {timeout_seconds} seconds") from exc
+            telemetry = _base_telemetry(
+                started_at=started_at,
+                duration_ms=_duration_ms(started_monotonic),
+                exit_code=None,
+                timed_out=True,
+                telemetry_source="process_metadata",
+            )
+            error = TimeoutError(f"{command!r} exec timed out after {timeout_seconds} seconds")
+            setattr(error, "telemetry", telemetry)
+            raise error from exc
+        telemetry = _codex_telemetry_from_completed(completed, started_at=started_at, started_monotonic=started_monotonic)
         if completed.returncode != 0:
-            raise RuntimeError(f"{command!r} exec exited {completed.returncode}: {completed.stderr.strip()}")
+            telemetry["client_error"] = completed.stderr.strip() or completed.stdout.strip()
+            error = RuntimeError(f"{command!r} exec exited {completed.returncode}: {completed.stderr.strip()}")
+            setattr(error, "telemetry", telemetry)
+            raise error
         content = output_path.read_text(encoding="utf-8") if output_path.exists() else completed.stdout
-        return _parse_json_object(content, source=f"{command!r} exec")
+        return ClientInvocationResult(_parse_json_object(content, source=f"{command!r} exec"), telemetry)
 
 
 def _run_claude_print(
@@ -359,7 +417,7 @@ def _run_claude_print(
     schema_path: Path,
     model: str | None,
     timeout_seconds: int | None = None,
-) -> dict:
+) -> ClientInvocationResult:
     args = [
         command,
         "--print",
@@ -376,28 +434,231 @@ def _run_claude_print(
     if model:
         args.extend(["--model", model])
     args.append(prompt)
+    started_at = _now()
+    started_monotonic = monotonic()
     try:
-        completed = subprocess.run(
+        completed = _run_client_process(
             args,
             cwd=cwd,
-            text=True,
-            capture_output=True,
-            check=False,
+            input_text=None,
             timeout=timeout_seconds,
         )
     except subprocess.TimeoutExpired as exc:
-        raise TimeoutError(f"{command!r} --print timed out after {timeout_seconds} seconds") from exc
+        telemetry = _base_telemetry(
+            started_at=started_at,
+            duration_ms=_duration_ms(started_monotonic),
+            exit_code=None,
+            timed_out=True,
+            telemetry_source="process_metadata",
+        )
+        error = TimeoutError(f"{command!r} --print timed out after {timeout_seconds} seconds")
+        setattr(error, "telemetry", telemetry)
+        raise error from exc
+    telemetry = _claude_telemetry_from_completed(completed, started_at=started_at, started_monotonic=started_monotonic)
     if completed.returncode != 0:
         detail = completed.stderr.strip() or completed.stdout.strip()
-        raise RuntimeError(f"{command!r} --print exited {completed.returncode}: {detail}")
+        telemetry["client_error"] = detail
+        error = RuntimeError(f"{command!r} --print exited {completed.returncode}: {detail}")
+        setattr(error, "telemetry", telemetry)
+        raise error
     artifact = _parse_json_object(completed.stdout, source=f"{command!r} --print")
     structured_output = artifact.get("structured_output")
     if isinstance(structured_output, dict):
-        return structured_output
+        return ClientInvocationResult(structured_output, telemetry)
     result = artifact.get("result")
     if isinstance(result, str):
-        return _parse_json_object(result, source=f"{command!r} --print result")
-    return artifact
+        return ClientInvocationResult(_parse_json_object(result, source=f"{command!r} --print result"), telemetry)
+    return ClientInvocationResult(artifact, telemetry)
+
+
+def _run_client_process(
+    args: list[str],
+    *,
+    cwd: Path | None = None,
+    input_text: str | None,
+    timeout: int | None,
+) -> subprocess.CompletedProcess[str]:
+    process = subprocess.Popen(
+        args,
+        cwd=cwd,
+        stdin=subprocess.PIPE if input_text is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(input=input_text, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _terminate_process_group(process)
+        stdout, stderr = process.communicate()
+        raise subprocess.TimeoutExpired(args, timeout, output=stdout, stderr=stderr)
+    return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
+
+
+def _terminate_process_group(process: subprocess.Popen[str]) -> None:
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        return
+    except OSError:
+        process.kill()
+        return
+    try:
+        process.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
+        except OSError:
+            process.kill()
+
+
+def _base_telemetry(
+    *,
+    started_at: str,
+    duration_ms: int | None,
+    exit_code: int | None,
+    timed_out: bool,
+    telemetry_source: str,
+) -> dict[str, Any]:
+    return {
+        "started_at": started_at,
+        "finished_at": _now() if not timed_out else None,
+        "duration_ms": duration_ms,
+        "duration_api_ms": None,
+        "exit_code": exit_code,
+        "timed_out": timed_out,
+        "session_id": None,
+        "num_turns": None,
+        "stop_reason": None,
+        "terminal_reason": None,
+        "total_cost_usd": None,
+        "usage": {
+            "input_tokens": None,
+            "output_tokens": None,
+            "cache_creation_input_tokens": None,
+            "cache_read_input_tokens": None,
+            "total_tokens": None,
+            "provider_raw": None,
+        },
+        "model_usage": None,
+        "raw_envelope": None,
+        "stdout": None,
+        "stderr": None,
+        "telemetry_source": telemetry_source,
+    }
+
+
+def _codex_telemetry_from_completed(
+    completed: subprocess.CompletedProcess[str],
+    *,
+    started_at: str,
+    started_monotonic: float,
+) -> dict[str, Any]:
+    telemetry = _base_telemetry(
+        started_at=started_at,
+        duration_ms=_duration_ms(started_monotonic),
+        exit_code=completed.returncode,
+        timed_out=False,
+        telemetry_source="process_metadata",
+    )
+    telemetry["stdout"] = completed.stdout
+    telemetry["stderr"] = completed.stderr
+    tokens = _parse_codex_tokens_used(completed.stdout + "\n" + completed.stderr)
+    if tokens is not None:
+        telemetry["usage"]["total_tokens"] = tokens
+        telemetry["telemetry_source"] = "codex_stdout"
+    return telemetry
+
+
+def _claude_telemetry_from_completed(
+    completed: subprocess.CompletedProcess[str],
+    *,
+    started_at: str,
+    started_monotonic: float,
+) -> dict[str, Any]:
+    telemetry = _base_telemetry(
+        started_at=started_at,
+        duration_ms=_duration_ms(started_monotonic),
+        exit_code=completed.returncode,
+        timed_out=False,
+        telemetry_source="process_metadata",
+    )
+    telemetry["stdout"] = completed.stdout
+    telemetry["stderr"] = completed.stderr
+    try:
+        envelope = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        return telemetry
+    if not isinstance(envelope, dict):
+        return telemetry
+    telemetry["raw_envelope"] = envelope
+    telemetry["telemetry_source"] = "claude_json_envelope"
+    telemetry["duration_api_ms"] = _optional_int(envelope.get("duration_api_ms"))
+    telemetry["session_id"] = _optional_str(envelope.get("session_id"))
+    telemetry["num_turns"] = _optional_int(envelope.get("num_turns"))
+    telemetry["stop_reason"] = _optional_str(envelope.get("stop_reason"))
+    telemetry["terminal_reason"] = _optional_str(envelope.get("terminal_reason") or envelope.get("subtype"))
+    telemetry["total_cost_usd"] = _optional_number(envelope.get("total_cost_usd"))
+    usage = envelope.get("usage")
+    if isinstance(usage, dict):
+        telemetry["usage"] = _usage_packet(usage)
+    model_usage = envelope.get("modelUsage")
+    telemetry["model_usage"] = model_usage if isinstance(model_usage, dict) else None
+    return telemetry
+
+
+def _usage_packet(provider_raw: dict[str, Any]) -> dict[str, Any]:
+    packet = {
+        "input_tokens": _optional_int(provider_raw.get("input_tokens")),
+        "output_tokens": _optional_int(provider_raw.get("output_tokens")),
+        "cache_creation_input_tokens": _optional_int(provider_raw.get("cache_creation_input_tokens")),
+        "cache_read_input_tokens": _optional_int(provider_raw.get("cache_read_input_tokens")),
+        "total_tokens": None,
+        "provider_raw": provider_raw,
+    }
+    token_values = [
+        packet["input_tokens"],
+        packet["output_tokens"],
+        packet["cache_creation_input_tokens"],
+        packet["cache_read_input_tokens"],
+    ]
+    if any(value is not None for value in token_values):
+        packet["total_tokens"] = sum(value or 0 for value in token_values)
+    return packet
+
+
+def _parse_codex_tokens_used(text: str) -> int | None:
+    match = re.search(r"tokens used\s*[:\n]\s*([0-9][0-9,]*)", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return int(match.group(1).replace(",", ""))
+
+
+def _optional_int(value: Any) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    return None
+
+
+def _optional_number(value: Any) -> int | float | None:
+    if isinstance(value, int | float) and not isinstance(value, bool):
+        return value
+    return None
+
+
+def _optional_str(value: Any) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _duration_ms(started_monotonic: float) -> int:
+    return max(0, int((monotonic() - started_monotonic) * 1000))
 
 
 def _parse_json_object(content: str, *, source: str) -> dict:

@@ -22,6 +22,20 @@ class SchedulerTests(unittest.TestCase):
         scheduler.record_result("determinism", blocker_count=1, major_count=0)
         self.assertEqual(scheduler.next_profile(), "operability")
 
+    def test_repeats_major_profile_for_clean_verification(self) -> None:
+        scheduler = PhaseScheduler(
+            [
+                ProfileStep("determinism", repeat_if_blockers=True, max_repeats=1),
+                ProfileStep("operability"),
+            ]
+        )
+
+        self.assertEqual(scheduler.next_profile(), "determinism")
+        scheduler.record_result("determinism", blocker_count=0, major_count=1)
+        self.assertEqual(scheduler.next_profile(), "determinism")
+        scheduler.record_result("determinism", blocker_count=0, major_count=0)
+        self.assertEqual(scheduler.next_profile(), "operability")
+
     def test_phase_complete_requires_all_clean_and_accepted_draft(self) -> None:
         scheduler = PhaseScheduler([ProfileStep("a"), ProfileStep("b")])
         scheduler.record_result("a", blocker_count=0, major_count=0)

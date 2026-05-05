@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/apply_back_report.schema.json",
+  "title": "Whetstone Apply-Back Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "mode",
+    "applied",
+    "approval_mode",
+    "source_path",
+    "run_root",
+    "final_draft_path",
+    "run_state_path",
+    "terminal_state",
+    "eligible_terminal_state",
+    "allow_non_converged",
+    "source_before_hash",
+    "expected_source_hash",
+    "source_hash_mismatch_allowed",
+    "final_draft_hash",
+    "run_state_current_draft_hash",
+    "final_draft_matches_run_state",
+    "source_after_hash",
+    "changed",
+    "declaration_path",
+    "declaration_included",
+    "decision_summary_path",
+    "decision_summary_included",
+    "rubric_manifest_path",
+    "workflow",
+    "rubric_profile",
+    "rubric_source",
+    "rubric_label",
+    "rubric_content_hash",
+    "diff_line_count"
+  ],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "mode": {
+      "type": "string",
+      "enum": ["dry_run", "apply"]
+    },
+    "applied": { "type": "boolean" },
+    "approval_mode": {
+      "type": "string",
+      "enum": ["none", "explicit"]
+    },
+    "source_path": { "$ref": "common.schema.json#/$defs/path" },
+    "run_root": { "$ref": "common.schema.json#/$defs/path" },
+    "final_draft_path": { "$ref": "common.schema.json#/$defs/path" },
+    "run_state_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "terminal_state": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "eligible_terminal_state": { "type": "boolean" },
+    "allow_non_converged": { "type": "boolean" },
+    "source_before_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "expected_source_hash": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "source_hash_mismatch_allowed": { "type": "boolean" },
+    "final_draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "run_state_current_draft_hash": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "final_draft_matches_run_state": {
+      "anyOf": [
+        { "type": "boolean" },
+        { "type": "null" }
+      ]
+    },
+    "source_after_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "changed": { "type": "boolean" },
+    "declaration_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "declaration_included": { "type": "boolean" },
+    "decision_summary_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "decision_summary_included": { "type": "boolean" },
+    "rubric_manifest_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "workflow": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": ["exploratory", "mvp", "standard", "governance", "custom"]
+        },
+        { "type": "null" }
+      ]
+    },
+    "rubric_profile": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "rubric_source": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": ["builtin", "custom"]
+        },
+        { "type": "null" }
+      ]
+    },
+    "rubric_label": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "rubric_content_hash": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "diff_line_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

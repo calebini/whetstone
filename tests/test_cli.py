@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import redirect_stdout
+import io
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -186,6 +188,65 @@ JSON
             self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), before)
             self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["round_number"], 1)
 
+    def test_apply_back_dry_run_cli_writes_review_without_mutating_source(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.md"
+            run_root = root / "run"
+            run_root.mkdir()
+            source.write_text("# Spec\n\nBefore.\n", encoding="utf-8")
+            run_root.joinpath("spec.md").write_text("# Spec\n\nAfter.\n", encoding="utf-8")
+
+            exit_code = main(["apply-back", "--source", str(source), "--run-root", str(run_root)])
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(source.read_text(encoding="utf-8"), "# Spec\n\nBefore.\n")
+            report = json.loads(run_root.joinpath("rounds/apply_back_review.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["mode"], "dry_run")
+            self.assertFalse(report["applied"])
+
+    def test_apply_back_cli_can_apply_with_approval(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.md"
+            run_root = root / "run"
+            run_root.mkdir()
+            source.write_text("# Spec\n\nBefore.\n", encoding="utf-8")
+            final_text = "# Spec\n\nAfter.\n"
+            run_root.joinpath("spec.md").write_text(final_text, encoding="utf-8")
+            run_root.joinpath("rounds").mkdir()
+            run_root.joinpath("rounds/run_state.json").write_text(
+                json.dumps(
+                    {
+                        "current_round": 6,
+                        "current_draft_hash": draft_hash(final_text),
+                        "terminal_state": "CONVERGED",
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            exit_code = main(
+                [
+                    "apply-back",
+                    "--source",
+                    str(source),
+                    "--run-root",
+                    str(run_root),
+                    "--apply",
+                    "--approve",
+                ]
+            )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(source.read_text(encoding="utf-8"), final_text)
+            report = json.loads(run_root.joinpath("rounds/apply_back_review.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["mode"], "apply")
+            self.assertTrue(report["applied"])
+
     def test_live_round_uses_configured_reviewer_and_editor_roles(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -272,6 +333,186 @@ convergence:
             self.assertEqual(editor_summary["draft_before_hash"], spec_hash)
             self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), spec)
 
+    def test_live_phase2_cli_reaches_converged_with_fake_codex_executables(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = "# Whetstone 0.17\n\n## Rules\n\nDraft.\n"
+            root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            root.joinpath("rounds").mkdir()
+            spec_hash = draft_hash(spec)
+            root.joinpath("rounds/run_state.json").write_text(
+                json.dumps(
+                    {
+                        "current_round": 3,
+                        "phase": "phase_1",
+                        "active_profile": None,
+                        "current_draft_hash": spec_hash,
+                        "last_accepted_draft_hash": spec_hash,
+                        "seen_draft_hashes": [spec_hash],
+                        "terminal_state": "PHASE_1_STABLE",
+                        "ready_for_phase_2": True,
+                        "resumable": False,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            reviewer = root / "fake-codex-reviewer"
+            reviewer.write_text(
+                """#!/usr/bin/env python3
+import json
+import re
+import sys
+from pathlib import Path
+
+out = None
+args = sys.argv[1:]
+for index, arg in enumerate(args):
+    if arg == "--output-last-message":
+        out = args[index + 1]
+prompt = sys.stdin.read()
+profile = re.search(r"^Review profile: (.+)$", prompt, re.M).group(1)
+round_number = int(re.search(r"^- round_number: ([0-9]+)$", prompt, re.M).group(1))
+draft_hash = re.search(r"^- draft_hash: ([a-f0-9]{64})$", prompt, re.M).group(1)
+artifact = {
+    "round_number": round_number,
+    "profile": profile,
+    "reviewer": {"name": "fake-codex", "version": "0", "model": "fixture"},
+    "draft_hash": draft_hash,
+    "feedback": [],
+}
+Path(out).write_text(json.dumps(artifact), encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
+            reviewer.chmod(reviewer.stat().st_mode | stat.S_IXUSR)
+
+            editor = root / "fake-codex-editor"
+            editor.write_text(
+                """#!/usr/bin/env python3
+import hashlib
+import json
+import re
+import sys
+from pathlib import Path
+
+out = None
+args = sys.argv[1:]
+for index, arg in enumerate(args):
+    if arg == "--output-last-message":
+        out = args[index + 1]
+prompt = sys.stdin.read()
+round_number = int(re.search(r"The top-level object MUST set round_number to ([0-9]+)\\.", prompt).group(1))
+before_hash = re.search(r"The draft_before_hash MUST be ([a-f0-9]{64})\\.", prompt).group(1)
+draft = prompt.split("\\nDraft:\\n", 1)[1]
+after_hash = hashlib.sha256(draft.encode("utf-8")).hexdigest()
+artifact = {
+    "round_number": round_number,
+    "draft_before_hash": before_hash,
+    "draft_after_hash": after_hash,
+    "accepted_feedback_ids": [],
+    "modified_feedback_ids": [],
+    "declined_feedback": [],
+    "created_conflict_ids": [],
+    "resolved_issue_ids": [],
+    "unresolved_issue_ids": [],
+    "draft_after_content": draft,
+}
+Path(out).write_text(json.dumps(artifact), encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
+            editor.chmod(editor.stat().st_mode | stat.S_IXUSR)
+
+            root.joinpath("orchestrator_config.yaml").write_text(
+                f"""
+spec_path: ./spec.md
+history_path: ./spec.history.md
+rounds_dir: ./rounds
+declaration_path: ./convergence_declaration.md
+clients:
+  reviewer:
+    name: codex
+    command: {reviewer}
+    version: "0"
+    model: fixture
+  editor:
+    name: codex
+    command: {editor}
+    version: "0"
+    model: fixture
+convergence:
+  enabled: true
+  target_phase: final
+  target_mode: strict
+  rubric_path: ./convergence_rubric.md
+  max_rounds: 8
+""",
+                encoding="utf-8",
+            )
+
+            exit_code = main(["live-phase2", "--root", str(root)])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("# Whetstone 1.0", root.joinpath("spec.md").read_text(encoding="utf-8"))
+            state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["terminal_state"], "CONVERGED")
+            declaration = root.joinpath("convergence_declaration.md").read_text(encoding="utf-8")
+            self.assertIn("declaration_status: accepted", declaration)
+            self.assertTrue(root.joinpath("rounds/round-4/rubric_gaps.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-6/reviewer_feedback.json").exists())
+            manifest = json.loads(root.joinpath("rounds/rubric_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["workflow"], "standard")
+            self.assertEqual(manifest["rubric_profile"], "standard-v1")
+
+    def test_live_phase2_cli_workflow_and_rubric_overrides_produce_distinct_manifests(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_cli_phase2_root(root)
+
+            exit_code = main(
+                [
+                    "live-phase2",
+                    "--root",
+                    str(root),
+                    "--workflow",
+                    "mvp",
+                    "--rubric",
+                    "mvp-v1",
+                ]
+            )
+
+            self.assertEqual(exit_code, 0)
+            mvp_manifest = json.loads(root.joinpath("rounds/rubric_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(mvp_manifest["workflow"], "mvp")
+            self.assertEqual(mvp_manifest["rubric_profile"], "mvp-v1")
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_cli_phase2_root(root)
+
+            exit_code = main(
+                [
+                    "live-phase2",
+                    "--root",
+                    str(root),
+                    "--workflow",
+                    "governance",
+                    "--rubric",
+                    "governance-v6",
+                ]
+            )
+
+            self.assertEqual(exit_code, 0)
+            governance_manifest = json.loads(root.joinpath("rounds/rubric_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(governance_manifest["workflow"], "governance")
+            self.assertEqual(governance_manifest["rubric_profile"], "governance-v6")
+            self.assertNotEqual(mvp_manifest["rubric_content_hash"], governance_manifest["rubric_content_hash"])
+
     def test_decision_scan_writes_register_for_before_after_pair(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -298,6 +539,236 @@ convergence:
             self.assertEqual(register["mode"], "end_of_cycle")
             self.assertGreaterEqual(register["unresolved_human_decision_count"], 1)
             self.assertTrue((output_dir / "decision_register.md").exists())
+            self.assertTrue((output_dir / "decision_summary.json").exists())
+            self.assertTrue((output_dir / "decision_summary.md").exists())
+
+    def test_status_reports_run_state(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("rounds").mkdir()
+            root.joinpath("rounds/run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 3,
+                        "active_profile": None,
+                        "terminal_state": "PHASE_1_STABLE",
+                        "ready_for_phase_2": True,
+                        "current_draft_hash": "a" * 64,
+                        "last_accepted_draft_hash": "a" * 64,
+                        "resumable": False,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            output = io.StringIO()
+
+            with redirect_stdout(output):
+                exit_code = main(["status", "--root", str(root)])
+
+            self.assertEqual(exit_code, 0)
+            packet = json.loads(output.getvalue())
+            self.assertEqual(packet["terminal_state"], "PHASE_1_STABLE")
+            self.assertEqual(packet["next_action"], "run_live_phase2")
+
+    def test_status_supports_run_root_and_text_format(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_root = root / "run"
+            run_root.joinpath("rounds").mkdir(parents=True)
+            run_root.joinpath("rounds/run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 3,
+                        "terminal_state": "PHASE_1_STABLE",
+                        "ready_for_phase_2": True,
+                        "last_accepted_draft_hash": "a" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            output = io.StringIO()
+
+            with redirect_stdout(output):
+                exit_code = main(["status", "--run-root", str(run_root), "--format", "text"])
+
+            self.assertEqual(exit_code, 0)
+            rendered = output.getvalue()
+            self.assertIn("Whetstone Status", rendered)
+            self.assertIn("terminal_state: PHASE_1_STABLE", rendered)
+            self.assertIn("next_action: run_live_phase2", rendered)
+
+    def test_decision_summary_writes_mechanical_summary(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "decision-scan"
+            output_dir.mkdir()
+            register_path = output_dir / "decision_register.json"
+            register_path.write_text(
+                json.dumps(
+                    {
+                        "generated_at": "2026-05-01T00:00:00+00:00",
+                        "mode": "end_of_cycle",
+                        "terminal_state": "PHASE_1_STABLE",
+                        "unresolved_human_decision_count": 1,
+                        "decision_points": [
+                            {
+                                "decision_id": "dec_aaaaaaaaaaaaaaaa",
+                                "round_number": 1,
+                                "profile": "operability",
+                                "source_feedback_ids": ["fb-1"],
+                                "affected_sections": ["Rules"],
+                                "decision_type": "tighten_requirement",
+                                "trigger_types": ["tighten_requirement"],
+                                "evidence_lines": ["- Adapter MUST retry."],
+                                "question": "Should `Rules` adopt this change?",
+                                "options_considered": [
+                                    {
+                                        "option_id": "selected",
+                                        "label": "Keep editor change",
+                                        "description": "Keep the revised draft behavior.",
+                                    }
+                                ],
+                                "editor_selected_option_id": "selected",
+                                "editor_rationale": "Detected from diff.",
+                                "risk_if_wrong": "The spec may encode an unintended decision.",
+                                "requires_human_decision": True,
+                                "orchestrator_action": "present_at_end",
+                            }
+                        ],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            exit_code = main(["decision-summary", "--register", str(register_path)])
+
+            self.assertEqual(exit_code, 0)
+            summary = json.loads((output_dir / "decision_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["summary_method"], "mechanical_v1")
+            self.assertEqual(summary["clusters"]["by_section"][0]["cluster_key"], "Rules")
+            self.assertTrue((output_dir / "decision_summary.md").exists())
+
+
+def _seed_cli_phase2_root(root: Path) -> None:
+    spec = "# Whetstone 0.17\n\n## Rules\n\nDraft.\n"
+    root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+    root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+    root.joinpath("rounds").mkdir()
+    spec_hash = draft_hash(spec)
+    root.joinpath("rounds/run_state.json").write_text(
+        json.dumps(
+            {
+                "current_round": 3,
+                "phase": "phase_1",
+                "active_profile": None,
+                "current_draft_hash": spec_hash,
+                "last_accepted_draft_hash": spec_hash,
+                "seen_draft_hashes": [spec_hash],
+                "terminal_state": "PHASE_1_STABLE",
+                "ready_for_phase_2": True,
+                "resumable": False,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    reviewer = root / "fake-codex-reviewer"
+    reviewer.write_text(
+        """#!/usr/bin/env python3
+import json
+import re
+import sys
+from pathlib import Path
+
+out = None
+args = sys.argv[1:]
+for index, arg in enumerate(args):
+    if arg == "--output-last-message":
+        out = args[index + 1]
+prompt = sys.stdin.read()
+profile = re.search(r"^Review profile: (.+)$", prompt, re.M).group(1)
+round_number = int(re.search(r"^- round_number: ([0-9]+)$", prompt, re.M).group(1))
+draft_hash = re.search(r"^- draft_hash: ([a-f0-9]{64})$", prompt, re.M).group(1)
+artifact = {
+    "round_number": round_number,
+    "profile": profile,
+    "reviewer": {"name": "fake-codex", "version": "0", "model": "fixture"},
+    "draft_hash": draft_hash,
+    "feedback": [],
+}
+Path(out).write_text(json.dumps(artifact), encoding="utf-8")
+""",
+        encoding="utf-8",
+    )
+    reviewer.chmod(reviewer.stat().st_mode | stat.S_IXUSR)
+    editor = root / "fake-codex-editor"
+    editor.write_text(
+        """#!/usr/bin/env python3
+import hashlib
+import json
+import re
+import sys
+from pathlib import Path
+
+out = None
+args = sys.argv[1:]
+for index, arg in enumerate(args):
+    if arg == "--output-last-message":
+        out = args[index + 1]
+prompt = sys.stdin.read()
+round_number = int(re.search(r"The top-level object MUST set round_number to ([0-9]+)\\.", prompt).group(1))
+before_hash = re.search(r"The draft_before_hash MUST be ([a-f0-9]{64})\\.", prompt).group(1)
+draft = prompt.split("\\nDraft:\\n", 1)[1]
+after_hash = hashlib.sha256(draft.encode("utf-8")).hexdigest()
+artifact = {
+    "round_number": round_number,
+    "draft_before_hash": before_hash,
+    "draft_after_hash": after_hash,
+    "accepted_feedback_ids": [],
+    "modified_feedback_ids": [],
+    "declined_feedback": [],
+    "created_conflict_ids": [],
+    "resolved_issue_ids": [],
+    "unresolved_issue_ids": [],
+    "draft_after_content": draft,
+}
+Path(out).write_text(json.dumps(artifact), encoding="utf-8")
+""",
+        encoding="utf-8",
+    )
+    editor.chmod(editor.stat().st_mode | stat.S_IXUSR)
+    root.joinpath("orchestrator_config.yaml").write_text(
+        f"""
+spec_path: ./spec.md
+history_path: ./spec.history.md
+rounds_dir: ./rounds
+declaration_path: ./convergence_declaration.md
+clients:
+  reviewer:
+    name: codex
+    command: {reviewer}
+    version: "0"
+    model: fixture
+  editor:
+    name: codex
+    command: {editor}
+    version: "0"
+    model: fixture
+convergence:
+  enabled: true
+  target_phase: final
+  target_mode: strict
+  max_rounds: 8
+""",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

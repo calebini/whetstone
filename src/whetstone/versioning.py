@@ -12,6 +12,7 @@ from whetstone.hashing import draft_hash
 
 
 ROOT_HEADING_RE = re.compile(r"^(# .*)$", re.MULTILINE)
+STATUS_VERSION_RE = re.compile(r"^(Status:\s+.*?)(v?)(\d+(?:\.\d+)?)(.*)$", re.MULTILINE)
 VERSION_RE = re.compile(r"(?<!\d)(\d+)(?:\.(\d+))?(?!\d)")
 
 
@@ -22,6 +23,16 @@ class VersionPromotionResult:
     after_version: str
     before_hash: str
     after_hash: str
+
+
+@dataclass(frozen=True)
+class VersionStampResult:
+    stamped: bool
+    before_version: str
+    after_version: str
+    before_hash: str
+    after_hash: str
+    content: str
 
 
 def promoted_phase2_version(version: str) -> str:
@@ -38,21 +49,42 @@ def promoted_phase2_version(version: str) -> str:
     return f"{max(math.floor(major) + 1, 1)}.0"
 
 
+def stamped_round_version(version: str, *, phase: str) -> str:
+    """Return the next accepted-round version for a mutating live round."""
+    major, minor = _parse_version(version)
+    if phase == "phase_1":
+        total = major * 100 + minor + 1
+        return f"{total // 100}.{total % 100:02d}"
+    if phase == "phase_2":
+        return f"{major}.{minor + 1}"
+    raise ValueError(f"unsupported phase {phase!r}")
+
+
+def stamp_spec_text_for_round(spec_text: str, *, phase: str) -> VersionStampResult:
+    """Stamp the primary spec version for an accepted mutating round."""
+    target = _find_version_target(spec_text)
+    if target is None:
+        raise ValueError("spec does not contain a supported numeric version anchor")
+    before_version = target.version
+    after_version = stamped_round_version(before_version, phase=phase)
+    before_hash = draft_hash(spec_text)
+    if before_version == after_version:
+        return VersionStampResult(False, before_version, after_version, before_hash, before_hash, spec_text)
+    stamped_text = target.replace(spec_text, after_version)
+    after_hash = draft_hash(stamped_text)
+    return VersionStampResult(True, before_version, after_version, before_hash, after_hash, stamped_text)
+
+
 def promote_spec_text_for_phase2(spec_text: str) -> tuple[str, str, str, bool]:
-    """Promote the first numeric version in the root heading to the Phase 2 version."""
-    heading_match = ROOT_HEADING_RE.search(spec_text)
-    if heading_match is None:
-        raise ValueError("spec root heading is required for version promotion")
-    heading = heading_match.group(1)
-    version_match = VERSION_RE.search(heading)
-    if version_match is None:
-        raise ValueError("spec root heading does not contain a numeric version")
-    before_version = version_match.group(0)
+    """Promote the primary spec version anchor to the Phase 2 version."""
+    target = _find_version_target(spec_text)
+    if target is None:
+        raise ValueError("spec does not contain a supported numeric version anchor")
+    before_version = target.version
     after_version = promoted_phase2_version(before_version)
     if before_version == after_version:
         return spec_text, before_version, after_version, False
-    promoted_heading = heading[: version_match.start()] + after_version + heading[version_match.end() :]
-    promoted_text = spec_text[: heading_match.start(1)] + promoted_heading + spec_text[heading_match.end(1) :]
+    promoted_text = target.replace(spec_text, after_version)
     return promoted_text, before_version, after_version, True
 
 
@@ -86,3 +118,48 @@ def promote_spec_file_for_phase2(*, spec_path: Path, history_path: Path, rounds_
         state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return VersionPromotionResult(promoted, before_version, after_version, before_hash, after_hash)
 
+
+def _parse_version(version: str) -> tuple[int, int]:
+    parts = version.strip().split(".")
+    if not parts or not parts[0].isdigit() or len(parts) > 2:
+        raise ValueError(f"unsupported spec version {version!r}")
+    major = int(parts[0])
+    if len(parts) == 1:
+        return major, 0
+    if not parts[1].isdigit():
+        raise ValueError(f"unsupported spec version {version!r}")
+    return major, int(parts[1])
+
+
+@dataclass(frozen=True)
+class _VersionTarget:
+    start: int
+    end: int
+    version: str
+    prefix: str = ""
+
+    def replace(self, text: str, version: str) -> str:
+        return text[: self.start] + self.prefix + version + text[self.end :]
+
+
+def _find_version_target(spec_text: str) -> _VersionTarget | None:
+    heading_match = ROOT_HEADING_RE.search(spec_text)
+    if heading_match is not None:
+        heading = heading_match.group(1)
+        version_match = VERSION_RE.search(heading)
+        if version_match is not None:
+            return _VersionTarget(
+                start=heading_match.start(1) + version_match.start(),
+                end=heading_match.start(1) + version_match.end(),
+                version=version_match.group(0),
+            )
+
+    status_match = STATUS_VERSION_RE.search(spec_text)
+    if status_match is not None:
+        return _VersionTarget(
+            start=status_match.start(2),
+            end=status_match.end(3),
+            version=status_match.group(3),
+            prefix=status_match.group(2),
+        )
+    return None

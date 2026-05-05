@@ -14,6 +14,9 @@ class ConfigTests(unittest.TestCase):
 
             self.assertEqual(config.spec_path, Path(tmp) / "spec.md")
             self.assertEqual(config.reviewer.name, "fixture-reviewer")
+            self.assertEqual(config.workflow, "standard")
+            self.assertEqual(config.convergence.rubric_profile, "standard-v1")
+            self.assertEqual(config.convergence.rubric_source, "builtin")
             self.assertEqual(config.convergence.target_mode, "strict")
 
     def test_load_config_parses_project_yaml_subset(self) -> None:
@@ -25,6 +28,7 @@ spec_path: ./custom-spec.md
 history_path: ./history.md
 rounds_dir: ./out
 declaration_path: ./decl.md
+workflow: governance
 clients:
   editor:
     name: claude-code
@@ -42,6 +46,8 @@ convergence:
   enabled: true
   target_phase: mid
   target_mode: permissive
+  rubric_profile: governance-v6
+  rubric_source: builtin
   rubric_path: ./rubric.md
   max_rounds: 2
 decision_points:
@@ -60,7 +66,9 @@ decision_points:
             self.assertEqual(config.editor.version, "1.2.3")
             self.assertEqual(config.reviewer.model, "gpt-fixture")
             self.assertEqual(config.review_max_rounds, 3)
+            self.assertEqual(config.workflow, "governance")
             self.assertEqual(config.convergence.target_phase, "mid")
+            self.assertEqual(config.convergence.rubric_profile, "governance-v6")
             self.assertEqual(config.decision_points.mode, "intervention")
             self.assertEqual(config.decision_points.severities, ("major",))
             self.assertFalse(config.decision_points.trigger_on_requirement_strength_change)

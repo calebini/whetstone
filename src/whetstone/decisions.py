@@ -116,11 +116,32 @@ def write_decision_scan_outputs(
     register_path.write_text(json.dumps(register, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     markdown_path = output_dir / "decision_register.md"
     markdown_path.write_text(render_decision_register_markdown(register), encoding="utf-8")
+    summary_outputs = write_decision_summary_outputs(register_path=register_path)
     return {
         "decision_points": decision_points_path,
         "decision_register": register_path,
         "decision_register_markdown": markdown_path,
+        **summary_outputs,
     }
+
+
+def write_decision_summary_outputs(
+    *,
+    register_path: Path,
+    output_dir: Path | None = None,
+) -> dict[str, Path]:
+    """Write deterministic decision summary artifacts for an existing decision register."""
+    register = json.loads(register_path.read_text(encoding="utf-8"))
+    validate_artifact(register, "decision_register")
+    target_dir = output_dir or register_path.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
+    summary = summarize_decision_register(register, source_register_path=str(register_path))
+    validate_artifact(summary, "decision_summary")
+    summary_path = target_dir / "decision_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    markdown_path = target_dir / "decision_summary.md"
+    markdown_path.write_text(render_decision_summary_markdown(summary), encoding="utf-8")
+    return {"decision_summary": summary_path, "decision_summary_markdown": markdown_path}
 
 
 def write_decision_register(
@@ -144,6 +165,7 @@ def write_decision_register(
     output = rounds_dir / "decision_register.json"
     output.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (rounds_dir / "decision_register.md").write_text(render_decision_register_markdown(packet), encoding="utf-8")
+    write_decision_summary_outputs(register_path=output)
     return output
 
 
@@ -213,6 +235,89 @@ def render_decision_register_markdown(packet: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def summarize_decision_register(register: dict[str, Any], *, source_register_path: str) -> dict[str, Any]:
+    """Build a stable mechanical summary from a decision register."""
+    points = list(register.get("decision_points", []))
+    clusters = {
+        "by_section": _clusters_by_section(points),
+        "by_round_profile": _clusters_by_round_profile(points),
+        "by_trigger_type": _clusters_by_trigger_type(points),
+    }
+    summary = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source_register_path": source_register_path,
+        "mode": register["mode"],
+        "terminal_state": register["terminal_state"],
+        "decision_count": len(points),
+        "unresolved_human_decision_count": register["unresolved_human_decision_count"],
+        "summary_method": "mechanical_v1",
+        "hotspots": _decision_hotspots(clusters),
+        "clusters": clusters,
+    }
+    validate_artifact(summary, "decision_summary")
+    return summary
+
+
+def render_decision_summary_markdown(summary: dict[str, Any]) -> str:
+    lines = [
+        "# Decision Summary",
+        "",
+        f"- source_register_path: `{summary['source_register_path']}`",
+        f"- mode: `{summary['mode']}`",
+        f"- terminal_state: `{summary['terminal_state']}`",
+        f"- decision_count: `{summary['decision_count']}`",
+        f"- unresolved_human_decision_count: `{summary['unresolved_human_decision_count']}`",
+        f"- summary_method: `{summary['summary_method']}`",
+        "",
+    ]
+    lines.extend(["## Hotspots", ""])
+    for name, title in (("largest_clusters", "Largest Clusters"), ("human_decision_clusters", "Human Decision Clusters")):
+        lines.extend([f"### {title}", ""])
+        hotspots = summary["hotspots"][name]
+        if not hotspots:
+            lines.extend(["No hotspots.", ""])
+            continue
+        for hotspot in hotspots:
+            lines.append(
+                f"- `{hotspot['cluster_group']}` / `{hotspot['cluster_label']}`: "
+                f"{hotspot['decision_count']} decisions, "
+                f"{hotspot['requires_human_decision_count']} human decisions"
+            )
+        lines.append("")
+    for group_name, title in (
+        ("by_section", "By Section"),
+        ("by_round_profile", "By Round/Profile"),
+        ("by_trigger_type", "By Trigger Type"),
+    ):
+        lines.extend([f"## {title}", ""])
+        clusters = summary["clusters"][group_name]
+        if not clusters:
+            lines.extend(["No decisions.", ""])
+            continue
+        for cluster in clusters:
+            lines.extend(
+                [
+                    f"### {cluster['cluster_label']}",
+                    "",
+                    f"- decisions: `{cluster['decision_count']}`",
+                    f"- human decisions: `{cluster['requires_human_decision_count']}`",
+                    f"- actions: {_format_inline_values(cluster['orchestrator_actions'])}",
+                    f"- decision_types: {_format_inline_values(cluster['decision_types'])}",
+                    f"- trigger_types: {_format_inline_values(cluster['trigger_types'])}",
+                    f"- rounds: {_format_inline_values([str(number) for number in cluster['round_numbers']])}",
+                    f"- profiles: {_format_inline_values(cluster['profiles'])}",
+                    f"- sections: {_format_inline_values(cluster['affected_sections'])}",
+                    f"- decision_ids: {_format_inline_values(cluster['decision_ids'])}",
+                    "",
+                    "Representative decisions:",
+                ]
+            )
+            for decision in cluster["representative_decisions"]:
+                lines.append(f"- `{decision['decision_id']}`: {decision['question']}")
+            lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def _detect_added_line_points(
     draft_before: str,
     draft_after: str,
@@ -236,6 +341,118 @@ def _detect_added_line_points(
         if trigger_types:
             points.append(_point(context, trigger_types, section, text))
     return points
+
+
+def _clusters_by_section(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for point in points:
+        sections = point.get("affected_sections") or ["(unsectioned)"]
+        for section in sections:
+            groups.setdefault(str(section), []).append(point)
+    return _clusters_from_groups(groups, label_prefix="")
+
+
+def _clusters_by_round_profile(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for point in points:
+        key = f"round-{point['round_number']}|{point['profile']}"
+        groups.setdefault(key, []).append(point)
+    labels = {key: key.replace("|", " / ") for key in groups}
+    return _clusters_from_groups(groups, labels=labels)
+
+
+def _clusters_by_trigger_type(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for point in points:
+        triggers = point.get("trigger_types") or ["(none)"]
+        for trigger in triggers:
+            groups.setdefault(str(trigger), []).append(point)
+    return _clusters_from_groups(groups, label_prefix="")
+
+
+def _decision_hotspots(clusters: dict[str, list[dict[str, Any]]]) -> dict[str, list[dict[str, Any]]]:
+    flattened = [
+        _hotspot(group_name, cluster)
+        for group_name, group_clusters in clusters.items()
+        for cluster in group_clusters
+    ]
+    return {
+        "largest_clusters": sorted(
+            flattened,
+            key=lambda hotspot: (
+                -int(hotspot["decision_count"]),
+                -int(hotspot["requires_human_decision_count"]),
+                str(hotspot["cluster_group"]),
+                str(hotspot["cluster_key"]),
+            ),
+        )[:5],
+        "human_decision_clusters": sorted(
+            [hotspot for hotspot in flattened if int(hotspot["requires_human_decision_count"]) > 0],
+            key=lambda hotspot: (
+                -int(hotspot["requires_human_decision_count"]),
+                -int(hotspot["decision_count"]),
+                str(hotspot["cluster_group"]),
+                str(hotspot["cluster_key"]),
+            ),
+        )[:5],
+    }
+
+
+def _hotspot(group_name: str, cluster: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "cluster_group": group_name,
+        "cluster_key": cluster["cluster_key"],
+        "cluster_label": cluster["cluster_label"],
+        "decision_count": cluster["decision_count"],
+        "requires_human_decision_count": cluster["requires_human_decision_count"],
+    }
+
+
+def _clusters_from_groups(
+    groups: dict[str, list[dict[str, Any]]],
+    *,
+    labels: dict[str, str] | None = None,
+    label_prefix: str = "",
+) -> list[dict[str, Any]]:
+    clusters = []
+    for key in sorted(groups):
+        points = sorted(groups[key], key=lambda point: (int(point["round_number"]), str(point["decision_id"])))
+        clusters.append(_cluster(key=key, label=(labels or {}).get(key, f"{label_prefix}{key}"), points=points))
+    return clusters
+
+
+def _cluster(*, key: str, label: str, points: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "cluster_key": key,
+        "cluster_label": label,
+        "decision_count": len(points),
+        "requires_human_decision_count": sum(1 for point in points if point.get("requires_human_decision") is True),
+        "orchestrator_actions": _sorted_unique(str(point["orchestrator_action"]) for point in points),
+        "decision_types": _sorted_unique(str(point["decision_type"]) for point in points),
+        "trigger_types": _sorted_unique(trigger for point in points for trigger in point.get("trigger_types", [])),
+        "round_numbers": sorted({int(point["round_number"]) for point in points}),
+        "profiles": _sorted_unique(str(point["profile"]) for point in points),
+        "affected_sections": _sorted_unique(section for point in points for section in point.get("affected_sections", [])),
+        "decision_ids": [str(point["decision_id"]) for point in points],
+        "representative_decisions": [
+            {
+                "decision_id": str(point["decision_id"]),
+                "question": str(point["question"]),
+                "risk_if_wrong": str(point["risk_if_wrong"]),
+            }
+            for point in points[:3]
+        ],
+    }
+
+
+def _sorted_unique(values: Any) -> list[str]:
+    return sorted({str(value) for value in values})
+
+
+def _format_inline_values(values: list[str]) -> str:
+    if not values:
+        return "`none`"
+    return ", ".join(f"`{value}`" for value in values)
 
 
 def _trigger_types(text: str, config: DecisionPointConfig) -> list[str]:

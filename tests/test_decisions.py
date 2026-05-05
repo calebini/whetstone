@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
 from whetstone.config import DecisionPointConfig
-from whetstone.decisions import detect_decision_points, write_decision_register
+from whetstone.decisions import detect_decision_points, summarize_decision_register, write_decision_register, write_decision_summary_outputs
 
 
 class DecisionPointTests(unittest.TestCase):
@@ -113,12 +114,90 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
                 editor_summary={"accepted_feedback_ids": ["fb-1"], "modified_feedback_ids": []},
                 config=DecisionPointConfig(True, "end_of_cycle", ("major",), True, True, True, True),
             )
-            (round_dir / "decision_points.json").write_text(__import__("json").dumps(point), encoding="utf-8")
+            (round_dir / "decision_points.json").write_text(json.dumps(point), encoding="utf-8")
 
             path = write_decision_register(rounds_dir=rounds_dir, mode="end_of_cycle", terminal_state="PHASE_1_STABLE")
 
             self.assertIsNotNone(path)
             self.assertTrue((rounds_dir / "decision_register.md").exists())
+            self.assertTrue((rounds_dir / "decision_summary.json").exists())
+            self.assertTrue((rounds_dir / "decision_summary.md").exists())
+
+    def test_decision_summary_clusters_mechanically(self) -> None:
+        register = {
+            "generated_at": "2026-05-01T00:00:00+00:00",
+            "mode": "end_of_cycle",
+            "terminal_state": "PHASE_1_STABLE",
+            "unresolved_human_decision_count": 2,
+            "decision_points": [
+                _decision_point(
+                    decision_id="dec_aaaaaaaaaaaaaaaa",
+                    round_number=1,
+                    profile="operability",
+                    section="Rules",
+                    trigger_types=["tighten_requirement", "scope_change"],
+                ),
+                _decision_point(
+                    decision_id="dec_bbbbbbbbbbbbbbbb",
+                    round_number=2,
+                    profile="determinism",
+                    section="Rules",
+                    trigger_types=["choose_policy"],
+                ),
+                _decision_point(
+                    decision_id="dec_cccccccccccccccc",
+                    round_number=2,
+                    profile="determinism",
+                    section="Errors",
+                    trigger_types=["add_operational_requirement"],
+                    requires_human_decision=False,
+                    orchestrator_action="record_only",
+                ),
+            ],
+        }
+
+        summary = summarize_decision_register(register, source_register_path="rounds/decision_register.json")
+
+        self.assertEqual(summary["summary_method"], "mechanical_v1")
+        self.assertEqual(summary["decision_count"], 3)
+        self.assertEqual(summary["hotspots"]["largest_clusters"][0]["cluster_key"], "Rules")
+        self.assertEqual(summary["hotspots"]["largest_clusters"][0]["decision_count"], 2)
+        self.assertEqual(summary["hotspots"]["human_decision_clusters"][0]["requires_human_decision_count"], 2)
+        by_section = summary["clusters"]["by_section"]
+        self.assertEqual([cluster["cluster_key"] for cluster in by_section], ["Errors", "Rules"])
+        self.assertEqual(by_section[1]["decision_ids"], ["dec_aaaaaaaaaaaaaaaa", "dec_bbbbbbbbbbbbbbbb"])
+        by_round_profile = summary["clusters"]["by_round_profile"]
+        self.assertEqual([cluster["cluster_key"] for cluster in by_round_profile], ["round-1|operability", "round-2|determinism"])
+        self.assertEqual(by_round_profile[1]["decision_count"], 2)
+        by_trigger = summary["clusters"]["by_trigger_type"]
+        self.assertEqual(
+            [cluster["cluster_key"] for cluster in by_trigger],
+            ["add_operational_requirement", "choose_policy", "scope_change", "tighten_requirement"],
+        )
+
+    def test_write_decision_summary_outputs(self) -> None:
+        with TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            register_path = output_dir / "decision_register.json"
+            register_path.write_text(
+                json.dumps(
+                    {
+                        "generated_at": "2026-05-01T00:00:00+00:00",
+                        "mode": "end_of_cycle",
+                        "terminal_state": "PHASE_1_STABLE",
+                        "unresolved_human_decision_count": 1,
+                        "decision_points": [_decision_point()],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            outputs = write_decision_summary_outputs(register_path=register_path)
+
+            self.assertTrue(outputs["decision_summary"].exists())
+            self.assertTrue(outputs["decision_summary_markdown"].exists())
+            summary = json.loads(outputs["decision_summary"].read_text(encoding="utf-8"))
+            self.assertEqual(summary["clusters"]["by_section"][0]["cluster_key"], "Rules")
 
 
 def _feedback(severity: str) -> dict:
@@ -129,6 +208,42 @@ def _feedback(severity: str) -> dict:
                 "normalized_severity": severity,
             }
         ]
+    }
+
+
+def _decision_point(
+    *,
+    decision_id: str = "dec_aaaaaaaaaaaaaaaa",
+    round_number: int = 1,
+    profile: str = "operability",
+    section: str = "Rules",
+    trigger_types: list[str] | None = None,
+    requires_human_decision: bool = True,
+    orchestrator_action: str = "present_at_end",
+) -> dict:
+    triggers = trigger_types or ["tighten_requirement"]
+    return {
+        "decision_id": decision_id,
+        "round_number": round_number,
+        "profile": profile,
+        "source_feedback_ids": ["fb-1"],
+        "affected_sections": [section],
+        "decision_type": triggers[0],
+        "trigger_types": triggers,
+        "evidence_lines": ["- Adapter MUST retry."],
+        "question": f"Should `{section}` adopt this change?",
+        "options_considered": [
+            {
+                "option_id": "selected",
+                "label": "Keep editor change",
+                "description": "Keep the revised draft behavior.",
+            }
+        ],
+        "editor_selected_option_id": "selected",
+        "editor_rationale": "Detected from diff.",
+        "risk_if_wrong": "The spec may encode an unintended decision.",
+        "requires_human_decision": requires_human_decision,
+        "orchestrator_action": orchestrator_action,
     }
 
 

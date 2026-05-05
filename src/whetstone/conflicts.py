@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from whetstone.evaluation import conflict_severity
+from whetstone.identity import SEVERITY_RANK, conflict_fingerprint, conflict_id
 
 
 @dataclass(frozen=True)
@@ -82,3 +83,21 @@ def _dedupe_by_fingerprint(conflicts: list[dict[str, Any]]) -> list[dict[str, An
         deduped.append(conflict)
     return deduped
 
+
+def conflict_from_oscillation_detection(detection: Any) -> dict[str, Any]:
+    """Create a conflict summary from an escalated Phase 2 oscillation detection."""
+    claim = f"{detection.oscillation_type} on {', '.join(detection.oscillation_opposition_keys)}"
+    fingerprint = conflict_fingerprint(
+        "profile_conflict",
+        detection.participating_issue_fingerprints,
+        claim,
+    )
+    severity = max(detection.severities or ["nit"], key=lambda value: SEVERITY_RANK[value])
+    return {
+        "conflict_id": conflict_id(fingerprint),
+        "conflict_fingerprint": fingerprint,
+        "conflict_type": "profile_conflict",
+        "conflict_severity": severity,
+        "participating_issue_ids": detection.participating_issue_ids,
+        "conflict_claim": claim,
+    }

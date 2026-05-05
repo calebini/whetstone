@@ -20,6 +20,9 @@ class ConvergenceConfig:
     enabled: bool
     target_phase: str
     target_mode: str
+    rubric_profile: str
+    rubric_source: str
+    rubric_label: str | None
     rubric_path: Path
     max_rounds: int
 
@@ -41,6 +44,7 @@ class OrchestratorConfig:
     history_path: Path
     rounds_dir: Path
     declaration_path: Path
+    workflow: str
     editor: ClientConfig
     reviewer: ClientConfig
     review_max_rounds: int
@@ -55,6 +59,7 @@ class OrchestratorConfig:
             history_path=base / "spec.history.md",
             rounds_dir=base / "rounds",
             declaration_path=base / "convergence_declaration.md",
+            workflow="standard",
             editor=ClientConfig("fixture-editor", "fixture", "0.0.0", "fixture"),
             reviewer=ClientConfig("fixture-reviewer", "fixture", "0.0.0", "fixture"),
             review_max_rounds=12,
@@ -62,6 +67,9 @@ class OrchestratorConfig:
                 enabled=True,
                 target_phase="final",
                 target_mode="strict",
+                rubric_profile="standard-v1",
+                rubric_source="builtin",
+                rubric_label=None,
                 rubric_path=base / "convergence_rubric.md",
                 max_rounds=8,
             ),
@@ -100,6 +108,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
         history_path=root / str(parsed.get("history_path", default.history_path.name)),
         rounds_dir=root / str(parsed.get("rounds_dir", default.rounds_dir.name)),
         declaration_path=root / str(parsed.get("declaration_path", default.declaration_path.name)),
+        workflow=str(parsed.get("workflow", default.workflow)),
         editor=ClientConfig(
             str(editor.get("name", default.editor.name)),
             str(editor.get("command", default.editor.command)),
@@ -117,6 +126,9 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             enabled=bool(convergence.get("enabled", default.convergence.enabled)),
             target_phase=str(convergence.get("target_phase", default.convergence.target_phase)),
             target_mode=str(convergence.get("target_mode", default.convergence.target_mode)),
+            rubric_profile=str(convergence.get("rubric_profile", default.convergence.rubric_profile)),
+            rubric_source=str(convergence.get("rubric_source", default.convergence.rubric_source)),
+            rubric_label=_optional_string(convergence.get("rubric_label", default.convergence.rubric_label)),
             rubric_path=root / str(convergence.get("rubric_path", default.convergence.rubric_path.name)),
             max_rounds=int(convergence.get("max_rounds", default.convergence.max_rounds)),
         ),
@@ -193,3 +205,10 @@ def _parse_string_list(value: Any) -> list[str]:
     if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
         return [part.strip().strip('"').strip("'") for part in value[1:-1].split(",") if part.strip()]
     return [str(value)]
+
+
+def _optional_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value)
+    return text if text else None

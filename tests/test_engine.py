@@ -4,9 +4,11 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from dataclasses import replace
 
+from whetstone.config import OrchestratorConfig
 from whetstone.engine import FixtureEngine, FixtureScriptStep
-from whetstone.identity import issue_fingerprint, issue_id, oscillation_fingerprint, oscillation_opposition_key
+from whetstone.identity import issue_fingerprint, issue_id, oscillation_fingerprint, oscillation_opposition_key, rubric_gap_fingerprint, rubric_gap_id
 
 
 class FixtureEngineTests(unittest.TestCase):
@@ -28,6 +30,63 @@ class FixtureEngineTests(unittest.TestCase):
             self.assertEqual(result.phase, "phase_2")
             self.assertTrue((root / "convergence_declaration.md").exists())
             self.assertTrue((root / "rounds" / "round-6" / "prompt_snapshot.json").exists())
+            self.assertTrue((root / "rounds" / "round-4" / "rubric_gaps.json").exists())
+
+    def test_phase2_generates_candidate_declaration_before_acceptance(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _repo(tmp)
+            steps = [
+                _clean_step("structural_integrity"),
+                _clean_step("determinism"),
+                _clean_step("operability"),
+                _clean_step("convergence_strict_check"),
+            ]
+
+            result = FixtureEngine(root).run(steps)
+
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            declaration = (root / "convergence_declaration.md").read_text(encoding="utf-8")
+            self.assertIn("reviewer_final_status: not_run", declaration)
+            self.assertIn("declaration_status: rejected", declaration)
+            report = json.loads((root / "rounds" / "convergence_failure_report.json").read_text())
+            self.assertEqual(report["final_declaration_path"], "convergence_declaration.md")
+
+    def test_phase2_rubric_gap_blocks_final_strict_convergence(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _repo(tmp)
+            gap = _rubric_gap()
+            steps = [
+                _clean_step("structural_integrity"),
+                _clean_step("determinism"),
+                _clean_step("operability"),
+                _clean_step("convergence_strict_check", declaration_accepted=True, unresolved_rubric_gaps=[gap]),
+            ]
+
+            result = FixtureEngine(root).run(steps)
+
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            packet = json.loads((root / "rounds" / "round-4" / "rubric_gaps.json").read_text())
+            self.assertEqual(packet["rubric_gaps"][0]["gap_id"], gap["gap_id"])
+            report = json.loads((root / "rounds" / "convergence_failure_report.json").read_text())
+            self.assertEqual(report["unresolved_rubric_gaps"][0]["issue_fingerprint"], gap["gap_fingerprint"])
+
+    def test_final_permissive_target_can_accept_documented_rubric_gap(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _repo(tmp)
+            config = OrchestratorConfig.default(root)
+            config = replace(config, convergence=replace(config.convergence, target_mode="permissive"))
+            steps = [
+                _clean_step("structural_integrity"),
+                _clean_step("determinism"),
+                _clean_step("operability"),
+                _clean_step("convergence_strict_check", unresolved_rubric_gaps=[_rubric_gap()]),
+                _clean_step("adversarial", unresolved_rubric_gaps=[_rubric_gap()]),
+                _clean_step("convergence_strict_check", declaration_accepted=True, unresolved_rubric_gaps=[_rubric_gap()]),
+            ]
+
+            result = FixtureEngine(root, config).run(steps)
+
+            self.assertEqual(result.terminal_state, "CONVERGED")
 
     def test_fixture_engine_writes_technical_failure_when_phase_1_script_exhausts(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -65,6 +124,8 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("structural_integrity", conflicts=[conflict]),
                 _clean_step("determinism", conflicts=[conflict]),
                 _clean_step("operability"),
+                _clean_step("convergence_strict_check"),
+                _clean_step("adversarial"),
                 _clean_step("convergence_strict_check", declaration_accepted=True),
             ]
 
@@ -102,7 +163,7 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("determinism"),
                 _clean_step("operability"),
                 _phase2_oscillation_step("convergence_strict_check", "clarify", "major", "fb-1"),
-                _phase2_oscillation_step("adversarial", "clarify", "major", "fb-2"),
+                _phase2_oscillation_step("convergence_strict_check", "clarify", "major", "fb-2"),
                 _phase2_oscillation_step("convergence_strict_check", "clarify", "major", "fb-3"),
             ]
 
@@ -121,7 +182,7 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("determinism"),
                 _clean_step("operability"),
                 _phase2_oscillation_step("convergence_strict_check", "clarify", "blocker", "fb-1"),
-                _phase2_oscillation_step("adversarial", "clarify", "blocker", "fb-2"),
+                _phase2_oscillation_step("convergence_strict_check", "clarify", "blocker", "fb-2"),
                 _phase2_oscillation_step("convergence_strict_check", "clarify", "blocker", "fb-3"),
             ]
 
@@ -142,8 +203,9 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("structural_integrity"),
                 _clean_step("determinism"),
                 _clean_step("operability"),
-                _clean_step("convergence_strict_check", conflicts=[conflict]),
-                _clean_step("adversarial", conflicts=[conflict], declaration_accepted=True),
+                _clean_step("convergence_strict_check"),
+                _clean_step("adversarial", conflicts=[conflict]),
+                _clean_step("convergence_strict_check", conflicts=[conflict], declaration_accepted=True),
             ]
 
             result = FixtureEngine(root).run(steps)
@@ -162,7 +224,7 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("determinism"),
                 _clean_step("operability"),
                 _clean_step("convergence_strict_check", draft_after=changed, conflicts=[conflict]),
-                _clean_step("adversarial", draft_after=start, conflicts=[conflict]),
+                _clean_step("convergence_strict_check", draft_after=start, conflicts=[conflict]),
             ]
 
             result = FixtureEngine(root).run(steps)
@@ -182,7 +244,7 @@ class FixtureEngineTests(unittest.TestCase):
                 _clean_step("determinism"),
                 _clean_step("operability"),
                 _clean_step("convergence_strict_check", draft_after=changed),
-                _clean_step("adversarial", draft_after=start),
+                _clean_step("convergence_strict_check", draft_after=start),
             ]
 
             result = FixtureEngine(root).run(steps)
@@ -206,6 +268,7 @@ def _clean_step(
     declaration_accepted: bool = False,
     conflicts: list[dict] | None = None,
     draft_after: str | None = None,
+    unresolved_rubric_gaps: list[dict] | None = None,
 ) -> FixtureScriptStep:
     return FixtureScriptStep(
         reviewer_feedback={
@@ -224,6 +287,7 @@ def _clean_step(
         declaration_accepted=declaration_accepted,
         conflicts=conflicts or [],
         draft_after=draft_after,
+        unresolved_rubric_gaps=unresolved_rubric_gaps or [],
     )
 
 
@@ -276,6 +340,22 @@ def _issue_step(profile: str, severity: str) -> FixtureScriptStep:
             "unresolved_issue_ids": [identifier],
         },
     )
+
+
+def _rubric_gap() -> dict:
+    fingerprint = rubric_gap_fingerprint("rubric-purpose", ["spec.md"], "Missing rubric evidence.")
+    return {
+        "gap_id": rubric_gap_id(fingerprint),
+        "gap_fingerprint": fingerprint,
+        "rubric_anchor": "rubric-purpose",
+        "affected_sections": ["spec.md"],
+        "normalized_severity": "major",
+        "claim": "Missing rubric evidence.",
+        "evidence": "fixture",
+        "recommendation": "Add evidence.",
+        "status": "unresolved",
+        "blocking_convergence": True,
+    }
 
 
 def _phase2_oscillation_step(profile: str, direction: str, severity: str, feedback_id: str) -> FixtureScriptStep:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -9,6 +10,9 @@ from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
 from whetstone.identity import oscillation_fingerprint, oscillation_opposition_key
 from whetstone.live import LiveRoundRunner
+
+
+HASH_RE = re.compile(r"([a-f0-9]{64})")
 
 
 class FakeReviewerClient:
@@ -54,6 +58,24 @@ class FakeReviewerClient:
                     },
                 }
             ],
+        }
+
+
+class PromptRecordingReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.prompts: list[str] = []
+
+    def review(self, prompt: str) -> dict:
+        self.prompts.append(prompt)
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": [],
         }
 
 
@@ -127,12 +149,47 @@ class GoodEmptyReviewerClient:
         self.root = root
 
     def review(self, prompt: str) -> dict:
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
         return {
-            "round_number": 1,
-            "profile": "determinism",
+            "round_number": round_number,
+            "profile": profile,
             "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
             "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
             "feedback": [],
+        }
+
+
+class InvalidTelemetryReviewerClient(GoodEmptyReviewerClient):
+    def review(self, prompt: str) -> dict:
+        artifact = super().review(prompt)
+        self.last_telemetry = {
+            "started_at": "2026-05-01T00:00:00+00:00",
+            "finished_at": "2026-05-01T00:00:01+00:00",
+            "duration_ms": "not-an-integer",
+            "telemetry_source": "process_metadata",
+        }
+        return artifact
+
+
+class AppliedDraftEditorClient:
+    def __init__(self, draft_after_content: str) -> None:
+        self.draft_after_content = draft_after_content
+
+    def revise(self, prompt: str) -> dict:
+        current_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
+        round_number = _editor_round_number(prompt)
+        return {
+            "round_number": round_number,
+            "draft_before_hash": current_hash,
+            "draft_after_hash": None,
+            "accepted_feedback_ids": [],
+            "modified_feedback_ids": [],
+            "declined_feedback": [],
+            "created_conflict_ids": [],
+            "resolved_issue_ids": [],
+            "unresolved_issue_ids": [],
+            "draft_after_content": self.draft_after_content,
         }
 
 
@@ -184,6 +241,15 @@ class FlakyEditorClient:
         }
 
 
+class TimeoutEditorClient:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def revise(self, prompt: str) -> dict:
+        self.calls += 1
+        raise TimeoutError("fixture editor timed out")
+
+
 class LiveRoundRunnerTests(unittest.TestCase):
     def test_live_round_writes_guarded_packet_without_mutating_spec(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -207,6 +273,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
             expected = {
                 "draft_before.md",
                 "draft_after.md",
+                "client_telemetry",
                 "decision_points.json",
                 "editor_summary.json",
                 "profile_used.yaml",
@@ -214,12 +281,44 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 "prompt_snapshots",
                 "reviewer_feedback.json",
                 "reviewer_working_notes.md",
+                "telemetry_summary.json",
                 "unresolved_issues.json",
             }
             self.assertEqual({path.name for path in round_dir.iterdir()}, expected)
+            self.assertTrue(round_dir.joinpath("client_telemetry/reviewer-reviewer_feedback.json-attempt-1.json").exists())
+            self.assertTrue(round_dir.joinpath("client_telemetry/editor-editor_summary.json-attempt-1.json").exists())
+            summary = json.loads(round_dir.joinpath("telemetry_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["attempt_count"], 2)
+            self.assertEqual(summary["missing_usage_attempts"], 2)
             unresolved = json.loads(round_dir.joinpath("unresolved_issues.json").read_text(encoding="utf-8"))
             self.assertTrue(unresolved["unresolved_issues"][0]["in_scope"])
             self.assertTrue(unresolved["unresolved_issues"][0]["blocking_acceptance"])
+
+    def test_telemetry_persistence_failure_warns_without_failing_round(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=InvalidTelemetryReviewerClient(root),
+                editor_client=FakeEditorClient(root),
+            ).run_round(round_number=1, profile="determinism")
+
+            self.assertTrue(result.accepted)
+            round_dir = root / "rounds" / "round-1"
+            self.assertFalse(round_dir.joinpath("client_telemetry/reviewer-reviewer_feedback.json-attempt-1.json").exists())
+            warnings = json.loads(
+                round_dir.joinpath("client_telemetry/telemetry_warnings.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(warnings), 1)
+            self.assertEqual(warnings[0]["client_role"], "reviewer")
+            self.assertIn("client telemetry persistence failed", warnings[0]["warning"])
+            summary = json.loads(round_dir.joinpath("telemetry_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["attempt_count"], 1)
+            self.assertEqual(len(summary["warnings"]), 1)
 
     def test_live_round_writes_config_error_before_round_when_client_metadata_missing(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -231,6 +330,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 history_path=config.history_path,
                 rounds_dir=config.rounds_dir,
                 declaration_path=config.declaration_path,
+                workflow=config.workflow,
                 editor=config.editor,
                 reviewer=type(config.reviewer)(config.reviewer.name, config.reviewer.command, "", config.reviewer.model),
                 review_max_rounds=config.review_max_rounds,
@@ -361,6 +461,141 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertEqual(editor.calls, 2)
             self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_1.json").exists())
             self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
+
+    def test_editor_timeout_does_not_retry_same_prompt(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            editor = TimeoutEditorClient()
+
+            with self.assertRaises(ValueError):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodEmptyReviewerClient(root),
+                    editor_client=editor,
+                ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertEqual(editor.calls, 1)
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_1.json").exists())
+            self.assertFalse(root.joinpath("rounds/round-1/editor_invalid_attempt_2.json").exists())
+            self.assertFalse(
+                root.joinpath("rounds/round-1/prompt_snapshots/editor-editor_summary.json-attempt-2.json").exists()
+            )
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["retry_exhausted"], True)
+            self.assertEqual(len(error["attempts"]), 1)
+
+    def test_accepted_mutating_phase1_round_stamps_version_before_persisted_hash(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec 0.17\n\nDraft.\n"
+            after = "# Spec 0.17\n\nDraft.\n\nClarified.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodEmptyReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(after),
+            ).run_round(round_number=1, profile="determinism", phase="phase_1", apply=True)
+
+            stamped = root.joinpath("spec.md").read_text(encoding="utf-8")
+            self.assertTrue(result.accepted)
+            self.assertTrue(result.spec_mutated)
+            self.assertIn("# Spec 0.18", stamped)
+            self.assertEqual(result.draft_after_hash, draft_hash(stamped))
+            self.assertEqual(root.joinpath("rounds/round-1/draft_after.md").read_text(encoding="utf-8"), stamped)
+            editor_summary = json.loads(root.joinpath("rounds/round-1/editor_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(editor_summary["draft_after_hash"], draft_hash(stamped))
+            self.assertIn("Version stamp: round 1", root.joinpath("spec.history.md").read_text(encoding="utf-8"))
+
+    def test_accepted_mutating_phase2_round_stamps_version_before_persisted_hash(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec 1.0\n\n## Hashing\n\nDraft.\n"
+            after = "# Spec 1.0\n\n## Hashing\n\nDraft.\n\nClarified.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodEmptyReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(after),
+            ).run_round(round_number=1, profile="convergence_strict_check", phase="phase_2", apply=True)
+
+            stamped = root.joinpath("spec.md").read_text(encoding="utf-8")
+            self.assertTrue(result.accepted)
+            self.assertIn("# Spec 1.1", stamped)
+            self.assertEqual(result.draft_after_hash, draft_hash(stamped))
+
+    def test_phase2_adversarial_prompt_does_not_include_declaration_artifact(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec 1.0\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            root.joinpath("convergence_declaration.md").write_text(
+                "# Convergence Declaration\n\n- declaration_status: rejected\n",
+                encoding="utf-8",
+            )
+            reviewer = PromptRecordingReviewerClient(root)
+
+            LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=AppliedDraftEditorClient("# Spec 1.0\n\n## Hashing\n\nDraft.\n"),
+            ).run_round(round_number=1, profile="adversarial", phase="phase_2", apply=True)
+
+            self.assertIn("Declaration artifact:", reviewer.prompts[0])
+            self.assertIn("(not provided for this review)", reviewer.prompts[0])
+            self.assertNotIn("declaration_status: rejected", reviewer.prompts[0])
+
+    def test_phase2_convergence_prompt_includes_declaration_artifact(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec 1.0\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            root.joinpath("convergence_declaration.md").write_text(
+                "# Convergence Declaration\n\n- declaration_status: rejected\n",
+                encoding="utf-8",
+            )
+            reviewer = PromptRecordingReviewerClient(root)
+
+            LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=AppliedDraftEditorClient("# Spec 1.0\n\n## Hashing\n\nDraft.\n"),
+            ).run_round(round_number=1, profile="convergence_strict_check", phase="phase_2", apply=True)
+
+            self.assertIn("Declaration artifact:", reviewer.prompts[0])
+            self.assertIn("declaration_status: rejected", reviewer.prompts[0])
+
+def _hash_line(prompt: str, prefix: str) -> str:
+    for line in prompt.splitlines():
+        if line.startswith(prefix):
+            value = line.removeprefix(prefix).strip().rstrip(".")
+            if HASH_RE.fullmatch(value):
+                return value
+    raise AssertionError(f"missing or invalid hash line {prefix}")
+
+
+def _line_value(prompt: str, prefix: str) -> str:
+    for line in prompt.splitlines():
+        if line.startswith(prefix):
+            return line.removeprefix(prefix).strip()
+    raise AssertionError(f"missing prompt line {prefix}")
+
+
+def _editor_round_number(prompt: str) -> int:
+    match = re.search(r"The top-level object MUST set round_number to ([0-9]+)\.", prompt)
+    if match is None:
+        raise AssertionError("missing editor round number")
+    return int(match.group(1))
 
 
 if __name__ == "__main__":
