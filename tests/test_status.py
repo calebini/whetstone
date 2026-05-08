@@ -172,6 +172,49 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(pending["artifact_name"], "editor_summary.json")
             self.assertEqual(pending["attempt_number"], 1)
 
+    def test_status_reports_resumable_editor_timeout_commands(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 7,
+                        "terminal_state": "HALTED_CLIENT_TIMEOUT",
+                        "resumable": True,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("artifact_validation_error.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "HALTED_CLIENT_TIMEOUT",
+                        "failure_type": "client_timeout",
+                        "phase": "phase_1",
+                        "client_role": "editor",
+                        "round_number": 7,
+                        "profile": "determinism",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertEqual(status["next_action"], "resume_or_increase_timeout")
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertEqual(status["resume"]["round_number"], 7)
+            self.assertIn("whetstone resume --root", status["resume"]["command"])
+            self.assertIn("--continue", status["resume"]["continue_command"])
+            self.assertIn("resume_command:", rendered)
+            self.assertIn("resume_continue_command:", rendered)
+
     def test_render_status_text_includes_operator_fields(self) -> None:
         status = {
             "root": "/tmp/run",
@@ -180,6 +223,7 @@ class StatusTests(unittest.TestCase):
             "terminal_state": "PHASE_1_STABLE",
             "active_profile": None,
             "ready_for_phase_2": True,
+            "resumable": False,
             "last_accepted_draft_hash": "a" * 64,
             "latest_round": {"round_number": 3, "complete": True},
             "next_action": "run_live_phase2",

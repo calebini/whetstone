@@ -239,6 +239,7 @@ class ContractValidationTests(unittest.TestCase):
             "profile": "convergence_strict_check",
             "client_role": "reviewer",
             "client": {"name": "claude-code", "version": "1.0.47", "model": "claude-sonnet-4-6"},
+            "failure_type": "artifact_validation",
             "attempts": [
                 {
                     "attempt_number": 1,

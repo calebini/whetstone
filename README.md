@@ -1,68 +1,66 @@
 # Whetstone
 
-Whetstone is an AI spec convergence orchestrator.
+Whetstone is an AI spec convergence orchestrator. It runs iterative Reviewer and Editor passes over a technical spec, persists every round artifact, and stops on explicit terminal states instead of relying on conversational memory.
 
-The current source of truth is [spec.md](spec.md), currently version `0.17`. Runtime review artifacts are expected under `rounds/` once implementation begins.
+The source of truth is [spec.md](spec.md), currently version `0.34`.
 
-## Files
+## Start Here
 
-- `spec.md` - latest persisted orchestrator spec, currently `0.17`
-- `spec.history.md` - append-only spec history
-- `IMPLEMENTATION_PLAN.md` - contract-first build plan
-- `contracts/schemas/` - initial JSON Schema artifact contracts
-- `src/whetstone/` - deterministic implementation primitives
-- `tests/` - fixture-mode regression tests
-- `examples/fixtures/` - golden fixture scripts for deterministic runs
-- `rounds/` - future orchestrator output root
+For live runs against real specs, use the operator guide:
 
-## Current Build State
+- [Operator Quickstart](docs/OPERATOR_QUICKSTART.md)
 
-Implemented:
-- schema loading and artifact validation
-- draft and semantic-change hashing
-- issue/conflict identity and severity helpers
-- accepted-draft, target-matrix, conflict, and oscillation evaluators
-- guarded artifact store
-- fixture-mode round runner and CLI
-- multi-round fixture orchestration engine
-- terminal report generation
-- convergence declaration rendering
-- Phase 1/Phase 2 scheduler primitives
-- process client adapter boundary and prompt rendering
-- Codex `exec` reviewer adapter and CLI probe command
-- guarded `live-round` CLI for one reviewer -> editor round packet
+The quickstart covers isolated run roots, Phase 1, Phase 2, status, timeout recovery, dry-run resume, decision summaries, and manual apply-back to an external source spec.
 
-## Fixture Run
+## Common Commands
+
+Run tests:
 
 ```bash
-PYTHONPATH=src python3 -m whetstone.cli fixture-script \
-  --script examples/fixtures/clean_convergence_script.json \
-  --overwrite
-```
-
-## Codex Reviewer Probe
-
-```bash
-PYTHONPATH=src python3 -m whetstone.cli codex-review \
-  --profile determinism \
-  --output rounds/codex_reviewer_feedback.json
-```
-
-The Codex adapter uses `codex exec` with `--sandbox read-only`, `--ephemeral`, `--output-schema`, and `--output-last-message`.
-
-## Live Single Round
-
-```bash
-PYTHONPATH=src python3 -m whetstone.cli live-round \
-  --profile convergence_strict_check \
-  --phase phase_2
-```
-
-The live round is guarded: reviewer output validates before editor invocation, generated editor drafts are hashed by Whetstone before persistence, and `spec.md` is not mutated unless `--apply` is explicitly supplied with validated draft content.
-
-## Verification
-
-```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py' -v
+PYTHONPATH=src python3 -m unittest discover -s tests
 python3 -m compileall -q src tests
 ```
+
+Run Phase 1 in an isolated run root:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli live-phase1 --root "$RUN_ROOT"
+```
+
+Check run status:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli status --root "$RUN_ROOT" --format text
+```
+
+Recover a supported Editor timeout:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --dry-run --continue
+PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --continue
+```
+
+Run Phase 2:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli live-phase2 --root "$RUN_ROOT" --workflow standard
+```
+
+Review or apply an isolated run back to its source spec:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli apply-back --source "$SOURCE_SPEC" --run-root "$RUN_ROOT"
+PYTHONPATH=src python3 -m whetstone.cli apply-back --source "$SOURCE_SPEC" --run-root "$RUN_ROOT" --apply --approve
+```
+
+## Repository Map
+
+- `spec.md` - Whetstone system specification
+- `spec.history.md` - append-only spec revision history
+- `IMPLEMENTATION_PLAN.md` - traceable implementation checklist
+- `docs/OPERATOR_QUICKSTART.md` - command-first live-run guide
+- `contracts/schemas/` - JSON Schema contracts for persisted artifacts
+- `rubrics/` - built-in rubric profiles
+- `src/whetstone/` - implementation
+- `tests/` - regression tests, including CLI-shaped live-run smoke tests
+- `rounds/` - default local artifact output root

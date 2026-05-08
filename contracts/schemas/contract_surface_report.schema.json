@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/contract_surface_report.schema.json",
+  "title": "Whetstone Contract Surface Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "detected",
+    "type",
+    "round_number",
+    "profile",
+    "draft_hash",
+    "profile_rounds_observed",
+    "recent_window",
+    "serious_recent_rounds",
+    "contract_families",
+    "affected_sections",
+    "suspected_feedback_ids",
+    "round_evidence",
+    "recommendation",
+    "synthesis_scope"
+  ],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "detected": { "type": "boolean" },
+    "type": { "type": "string", "const": "EXPANDING_CONTRACT_SURFACE" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "profile_rounds_observed": { "type": "integer", "minimum": 1 },
+    "recent_window": { "type": "integer", "minimum": 1 },
+    "serious_recent_rounds": { "type": "integer", "minimum": 1 },
+    "contract_families": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+    },
+    "affected_sections": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+    },
+    "suspected_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+    },
+    "round_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "round_number",
+          "blocker_count",
+          "major_count",
+          "minor_count",
+          "serious_feedback_ids",
+          "affected_sections",
+          "contract_families"
+        ],
+        "properties": {
+          "round_number": { "type": "integer", "minimum": 1 },
+          "blocker_count": { "type": "integer", "minimum": 0 },
+          "major_count": { "type": "integer", "minimum": 0 },
+          "minor_count": { "type": "integer", "minimum": 0 },
+          "serious_feedback_ids": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          },
+          "affected_sections": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          },
+          "contract_families": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          }
+        }
+      }
+    },
+    "recommendation": { "type": "string", "enum": ["synthesis_pass_recommended", "report_only"] },
+    "synthesis_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sections", "contract_families", "instruction"],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        },
+        "contract_families": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        },
+        "instruction": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}

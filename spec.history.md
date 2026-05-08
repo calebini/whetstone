@@ -53,3 +53,15 @@
 - Revised the spec to `0.19` with deterministic decision-summary artifacts that cluster decision points by document topology, round/profile, and trigger type, while keeping optional AI interpretation explicitly non-authoritative.
 - Revised the spec to `0.20` with per-attempt client telemetry artifacts for live invocations, preserving client-native usage, cost, duration, session, and raw-envelope references when available.
 - Revised the spec to `0.21` with canonical rubric profiles and explicit workflows, requiring Phase 2 runs to persist rubric identity, source, hash, target, and workflow in a manifest before convergence review begins.
+- Revised the spec to `0.24` with profile-level round budgets and explanatory failure reports that distinguish unresolved Editor issues from missing Reviewer verification.
+- Raised default profile-level round budgets to `10` per profile to support observation of natural stabilization behavior during live Foreman-spec evaluation.
+- Revised the spec to `0.25` with explicit `HALTED_CLIENT_TIMEOUT` terminal semantics and role-specific Reviewer/Editor timeout configuration.
+- Revised the spec to `0.26` with a narrow hash-guarded resume path for Phase 1 Editor timeouts that reuses validated Reviewer feedback and preserves prior timeout diagnostics.
+- Revised the spec to `0.27` with `resume --continue`, allowing recovered Phase 1 Editor-timeout runs to continue through the remaining Phase 1 schedule without replaying completed rounds.
+- Revised the spec to `0.28` with `resume --dry-run` planning and status guidance that reports exact resume commands for eligible Phase 1 Editor timeout halts.
+- Revised the spec to `0.29` with file-backed live prompt context, requiring round-local context files, prompt/path references, and hashed context manifests in prompt snapshots.
+- Revised the spec to `0.30` with file-backed context hardening: prompts explicitly allow listed-file reads, destructive Editor draft replacements are rejected, run state exposes resolved profile budgets, and terminal decision registers are always written.
+- Revised the spec to `0.31` with resume timeout inheritance, preserving halted run timeout settings from `run_state.json` unless explicit resume CLI overrides are supplied.
+- Revised the spec to `0.32` with `effective_run_config` persistence in `run_state.json`, requiring resume to inherit effective profile budgets, decision-point configuration, and timeouts while preserving explicit resume CLI overrides as highest precedence.
+- Revised the spec to `0.33` with `EXPANDING_CONTRACT_SURFACE` detection, a persisted synthesis recommendation artifact, and timeout-aware bounded synthesis guidance in Editor prompts when a matching contract surface report exists.
+- Revised the spec to `0.34` with opt-in soft Phase 1 budget sweeps, per-profile residual status, `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, and explicit Phase 2 blocking when residual review profiles remain.

@@ -51,7 +51,7 @@ class ScriptedPhase2ReviewerClient:
                 {
                     "feedback_id": f"fb-{self.calls}",
                     "issue_id": f"iss_{self.calls:016x}",
-                    "issue_fingerprint": f"{self.calls:x}" * 64,
+                    "issue_fingerprint": f"{self.calls:064x}",
                     "issue_type": "undefined_behavior",
                     "affected_sections": ["whetstone-1-0-rules"],
                     "baseline_severity": severity,
@@ -70,9 +70,9 @@ class ScriptedPhase2ReviewerClient:
                         "concern_type": "clarity_gap",
                         "direction": "clarify",
                         "scope": "local",
+                        "fingerprint": "a" * 64,
+                        "opposition_key": "b" * 64,
                     },
-                    "oscillation_fingerprint": "a" * 64,
-                    "oscillation_opposition_key": "b" * 64,
                 }
             )
         return {
@@ -85,6 +85,9 @@ class ScriptedPhase2ReviewerClient:
 
 
 class EchoEditorClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
     def revise(self, prompt: str) -> dict:
         return {
             "round_number": _editor_round_number(prompt),
@@ -96,7 +99,7 @@ class EchoEditorClient:
             "created_conflict_ids": [],
             "resolved_issue_ids": [],
             "unresolved_issue_ids": [],
-            "draft_after_content": _draft_from_prompt(prompt),
+            "draft_after_content": _draft_from_prompt(prompt, self.root),
         }
 
 
@@ -112,12 +115,13 @@ class BadReviewerClient:
 
 
 class ChangingEditorClient:
-    def __init__(self) -> None:
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.calls = 0
 
     def revise(self, prompt: str) -> dict:
         self.calls += 1
-        draft = _draft_from_prompt(prompt)
+        draft = _draft_from_prompt(prompt, self.root)
         if self.calls == 2:
             draft = draft + "\nRound 5 clarification.\n"
         return {
@@ -135,9 +139,12 @@ class ChangingEditorClient:
 
 
 class ResolvingPhase2EditorClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
     def revise(self, prompt: str) -> dict:
-        draft = _draft_from_prompt(prompt)
-        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        draft = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
         if issue_ids:
             draft += "\nVerified Phase 2 fix.\n"
         return {
@@ -155,12 +162,13 @@ class ResolvingPhase2EditorClient:
 
 
 class DecisionPointEditorClient:
-    def __init__(self) -> None:
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.calls = 0
 
     def revise(self, prompt: str) -> dict:
         self.calls += 1
-        draft = _draft_from_prompt(prompt)
+        draft = _draft_from_prompt(prompt, self.root)
         if self.calls == 2:
             draft = draft + "\n## Canonicalizer Summary Policy\n\nThe Orchestrator MUST preserve attempt-scoped summaries.\n"
         return {
@@ -187,7 +195,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=reviewer,
-                editor_client=EchoEditorClient(),
+                editor_client=EchoEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "CONVERGED")
@@ -207,7 +215,9 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertEqual(state["current_phase_round"], 3)
             self.assertEqual(state["phase_1_rounds_completed"], 3)
             self.assertEqual(state["phase_2_rounds_completed"], 3)
-            self.assertEqual(state["total_absolute_round_budget"], 20)
+            self.assertEqual(state["total_absolute_round_budget"], 60)
+            self.assertEqual(state["review_round_budget"], 30)
+            self.assertEqual(state["convergence_round_budget"], 30)
             self.assertEqual(state["rubric_manifest_path"], "rounds/rubric_manifest.json")
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
             self.assertEqual(state["telemetry_totals"]["attempt_count"], 6)
@@ -222,7 +232,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 root,
                 load_config(root / "orchestrator_config.yaml"),
                 reviewer_client=reviewer,
-                editor_client=ResolvingPhase2EditorClient(),
+                editor_client=ResolvingPhase2EditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "CONVERGED")
@@ -247,18 +257,18 @@ class LivePhase2RunnerTests(unittest.TestCase):
                     root,
                     OrchestratorConfig.default(root),
                     reviewer_client=CleanPhase2ReviewerClient(root),
-                    editor_client=EchoEditorClient(),
+                    editor_client=EchoEditorClient(root),
                 ).run()
 
     def test_phase2_max_rounds_writes_convergence_failure_with_candidate_declaration(self) -> None:
         with TemporaryDirectory() as tmp:
-            root = _seed_phase1_stable(Path(tmp), convergence_max_rounds=1)
+            root = _seed_phase1_stable(Path(tmp))
 
             result = LivePhase2Runner(
                 root,
                 load_config(root / "orchestrator_config.yaml"),
-                reviewer_client=CleanPhase2ReviewerClient(root),
-                editor_client=EchoEditorClient(),
+                reviewer_client=ScriptedPhase2ReviewerClient(root, ["major"] * 30),
+                editor_client=ResolvingPhase2EditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
@@ -266,6 +276,8 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertEqual(report["final_declaration_path"], "convergence_declaration.md")
             self.assertEqual(report["terminal_state"], "TARGET_NOT_REACHED")
             self.assertEqual(report["rubric_profile"], "standard-v1")
+            self.assertEqual(report["profile_status"]["exhausted_profiles"], ["convergence_strict_check", "adversarial", "convergence_strict_check"])
+            self.assertEqual(report["last_reviewer_findings"]["major_count"], 1)
 
     def test_phase2_artifact_validation_failure_stops_loop(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -275,7 +287,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=BadReviewerClient(),
-                editor_client=EchoEditorClient(),
+                editor_client=EchoEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "HALTED_ARTIFACT_INVALID")
@@ -289,7 +301,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=CleanPhase2ReviewerClient(root),
-                editor_client=ChangingEditorClient(),
+                editor_client=ChangingEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "CONVERGED")
@@ -335,7 +347,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=CleanPhase2ReviewerClient(root),
-                editor_client=DecisionPointEditorClient(),
+                editor_client=DecisionPointEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "CONVERGED")
@@ -410,11 +422,22 @@ def _line_value(prompt: str, prefix: str) -> str:
     raise AssertionError(f"missing prompt line {prefix}")
 
 
-def _draft_from_prompt(prompt: str) -> str:
+def _draft_from_prompt(prompt: str, root: Path) -> str:
+    path_match = re.search(r"Draft path: ([^\n]+)", prompt)
+    if path_match:
+        return (root / path_match.group(1)).read_text(encoding="utf-8")
     marker = "\nDraft:\n"
     if marker not in prompt:
         raise AssertionError("missing Draft block")
     return prompt.split(marker, 1)[1]
+
+
+def _issue_ids_from_prompt(prompt: str, root: Path) -> list[str]:
+    path_match = re.search(r"Reviewer feedback JSON path: ([^\n]+)", prompt)
+    if path_match:
+        feedback = (root / path_match.group(1)).read_text(encoding="utf-8")
+        return re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', feedback)
+    return re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
 
 
 def _hash_line(prompt: str, prefix: str) -> str:

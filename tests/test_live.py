@@ -274,6 +274,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 "draft_before.md",
                 "draft_after.md",
                 "client_telemetry",
+                "context",
                 "decision_points.json",
                 "editor_summary.json",
                 "profile_used.yaml",
@@ -290,6 +291,13 @@ class LiveRoundRunnerTests(unittest.TestCase):
             summary = json.loads(round_dir.joinpath("telemetry_summary.json").read_text(encoding="utf-8"))
             self.assertEqual(summary["attempt_count"], 2)
             self.assertEqual(summary["missing_usage_attempts"], 2)
+            self.assertTrue(round_dir.joinpath("context/draft_before.md").exists())
+            self.assertTrue(round_dir.joinpath("context/reviewer_feedback.json").exists())
+            snapshot = json.loads(round_dir.joinpath("prompt_snapshot.json").read_text(encoding="utf-8"))
+            self.assertTrue(any(item["label"] == "draft_before" for item in snapshot["context_files"]))
+            self.assertTrue(any(item["label"] == "reviewer_feedback" for item in snapshot["context_files"]))
+            self.assertIn("Draft path: rounds/round-1/context/draft_before.md", snapshot["editor_prompt_text"])
+            self.assertNotIn("\nDraft:\n# Spec", snapshot["editor_prompt_text"])
             unresolved = json.loads(round_dir.joinpath("unresolved_issues.json").read_text(encoding="utf-8"))
             self.assertTrue(unresolved["unresolved_issues"][0]["in_scope"])
             self.assertTrue(unresolved["unresolved_issues"][0]["blocking_acceptance"])
@@ -334,8 +342,13 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 editor=config.editor,
                 reviewer=type(config.reviewer)(config.reviewer.name, config.reviewer.command, "", config.reviewer.model),
                 review_max_rounds=config.review_max_rounds,
+                review_profile_budgets=config.review_profile_budgets,
+                review_budget_exhaustion_policy=config.review_budget_exhaustion_policy,
                 convergence=config.convergence,
+                convergence_profile_budgets=config.convergence_profile_budgets,
                 decision_points=config.decision_points,
+                timeouts=config.timeouts,
+                contract_surface=config.contract_surface,
             )
 
             with self.assertRaises(ValueError):
@@ -381,6 +394,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertIn("previous response did not validate", attempt_2["prompt_text"])
             error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
             self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["failure_type"], "artifact_validation")
             self.assertEqual(error["client_role"], "reviewer")
             self.assertEqual(len(error["attempts"]), 2)
             self.assertEqual(error["last_valid_draft_path"], "rounds/round-1/draft_before.md")
@@ -435,6 +449,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_2.json").exists())
             error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
             self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["failure_type"], "artifact_validation")
             self.assertEqual(error["client_role"], "editor")
             self.assertEqual(error["last_valid_draft_path"], "rounds/round-1/draft_after.md")
             self.assertTrue(
@@ -484,8 +499,51 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 root.joinpath("rounds/round-1/prompt_snapshots/editor-editor_summary.json-attempt-2.json").exists()
             )
             error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(error["failure_type"], "client_timeout")
             self.assertEqual(error["retry_exhausted"], True)
             self.assertEqual(len(error["attempts"]), 1)
+            technical = json.loads(root.joinpath("rounds/technical_failure_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(technical["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+
+    def test_empty_editor_draft_is_rejected_before_mutating_spec(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = "# Spec\n\n" + ("Required behavior.\n" * 100)
+            root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodEmptyReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient(""),
+                ).run_round(round_number=1, profile="structural_integrity", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), spec)
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertIn("replace a non-empty draft with empty content", error["attempts"][-1]["validation_errors"][0])
+
+    def test_blocked_editor_placeholder_is_rejected_before_mutating_spec(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = "# Spec\n\nRequired behavior.\n"
+            root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodEmptyReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient("[Whetstone editor blocked] Cannot read context files."),
+                ).run_round(round_number=1, profile="structural_integrity", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), spec)
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertIn("blocked/error placeholder", error["attempts"][-1]["validation_errors"][0])
 
     def test_accepted_mutating_phase1_round_stamps_version_before_persisted_hash(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -573,7 +631,11 @@ class LiveRoundRunnerTests(unittest.TestCase):
             ).run_round(round_number=1, profile="convergence_strict_check", phase="phase_2", apply=True)
 
             self.assertIn("Declaration artifact:", reviewer.prompts[0])
-            self.assertIn("declaration_status: rejected", reviewer.prompts[0])
+            self.assertIn("Declaration artifact path:", reviewer.prompts[0])
+            declaration_context = root.joinpath("rounds/round-1/context/convergence_declaration.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("declaration_status: rejected", declaration_context)
 
 def _hash_line(prompt: str, prefix: str) -> str:
     for line in prompt.splitlines():

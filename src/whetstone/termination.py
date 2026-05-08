@@ -10,9 +10,10 @@ PRECEDENCE = {
     "CONVERGED": 1,
     "HALTED_CONFLICT": 2,
     "HALTED_OSCILLATION": 3,
-    "HALTED_ARTIFACT_INVALID": 4,
-    "PAUSED_DECISION": 5,
-    "TARGET_NOT_REACHED": 6,
+    "HALTED_CLIENT_TIMEOUT": 4,
+    "HALTED_ARTIFACT_INVALID": 5,
+    "PAUSED_DECISION": 6,
+    "TARGET_NOT_REACHED": 7,
 }
 
 
@@ -28,4 +29,3 @@ def select_terminal_candidate(candidates: list[TerminationCandidate]) -> Termina
     if not candidates:
         return None
     return sorted(candidates, key=lambda candidate: PRECEDENCE[candidate.terminal_state])[0]
-

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Protocol
@@ -12,6 +13,7 @@ from whetstone.artifacts import ArtifactStore
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import ClientConfig, OrchestratorConfig
 from whetstone.contracts import validate_artifact
+from whetstone.contract_surface import read_contract_surface_report
 from whetstone.decisions import detect_decision_points
 from whetstone.evaluation import accepted_draft
 from whetstone.hashing import draft_hash, rubric_content_hash, semantic_change_hash
@@ -42,6 +44,13 @@ class LiveRoundResult:
     accepted: bool
     reviewer_feedback_count: int
     spec_mutated: bool
+
+
+@dataclass(frozen=True)
+class ContextFile:
+    label: str
+    path: str
+    sha256: str
 
 
 class LiveRoundRunner:
@@ -95,12 +104,22 @@ class LiveRoundRunner:
             else None
         )
         section_ids = [section.id for section in section_index(draft_before)] if phase == "phase_2" else []
+        reviewer_context_files = self._write_reviewer_context_files(
+            round_number=round_number,
+            draft_before=draft_before,
+            rubric=rubric,
+            declaration=declaration,
+        )
+        context_path_by_label = {item.label: item.path for item in reviewer_context_files}
 
         reviewer_prompt = render_reviewer_prompt(
             profile=profile,
-            draft=draft_before,
-            rubric=rubric,
-            declaration=declaration,
+            draft="",
+            rubric=None,
+            declaration=None,
+            draft_path=context_path_by_label.get("draft_before"),
+            rubric_path=context_path_by_label.get("rubric"),
+            declaration_path=context_path_by_label.get("declaration"),
             phase=phase,
             section_ids=section_ids,
             round_number=round_number,
@@ -116,6 +135,7 @@ class LiveRoundRunner:
             draft_before=draft_before,
             draft_after=draft_after_content,
             rubric_hash=rubric_hash,
+            context_files=reviewer_context_files,
         )
         self._write_pre_review_artifacts(round_number, draft_before, draft_after_content, prompt_snapshot, profile)
 
@@ -124,7 +144,7 @@ class LiveRoundRunner:
             cwd=self.root,
             phase=phase,
             section_ids=section_ids,
-            timeout_seconds=self.timeout_seconds,
+            timeout_seconds=self._timeout_for_role("reviewer"),
         )
         reviewer_feedback = self._call_with_validation_retry(
             round_number=round_number,
@@ -143,18 +163,42 @@ class LiveRoundRunner:
                 schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
             ),
             last_valid_draft_hash=draft_before_hash,
+            context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
 
         reviewer_feedback_json = json.dumps(reviewer_feedback, indent=2, sort_keys=True)
+        editor_context_files = [
+            *reviewer_context_files,
+            self._write_context_file(
+                round_number=round_number,
+                label="reviewer_feedback",
+                filename="reviewer_feedback.json",
+                content=reviewer_feedback_json + "\n",
+            ),
+        ]
+        synthesis_report = read_contract_surface_report(self.config.rounds_dir, profile=profile)
+        if synthesis_report is not None:
+            editor_context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="contract_surface_report",
+                    filename="contract_surface_report.json",
+                    content=json.dumps(synthesis_report, indent=2, sort_keys=True) + "\n",
+                )
+            )
+        editor_context_path_by_label = {item.label: item.path for item in editor_context_files}
         editor_prompt = render_editor_prompt(
-            draft=draft_before,
-            reviewer_feedback_json=reviewer_feedback_json,
+            draft="",
+            reviewer_feedback_json="",
+            draft_path=editor_context_path_by_label.get("draft_before"),
+            reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
             phase=phase,
             round_number=round_number,
             draft_before_hash_value=draft_before_hash,
             draft_after_hash_value=draft_after_hash if explicit_draft_after or not apply else None,
             capture_only=not apply,
+            synthesis_report_path=editor_context_path_by_label.get("contract_surface_report"),
         )
         prompt_snapshot = self._prompt_snapshot(
             profile=profile,
@@ -166,13 +210,14 @@ class LiveRoundRunner:
             draft_before=draft_before,
             draft_after=draft_after_content,
             rubric_hash=rubric_hash,
+            context_files=editor_context_files,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
         editor = self.editor_client or create_editor_client(
             self.config.editor,
             cwd=self.root,
-            timeout_seconds=self.timeout_seconds,
+            timeout_seconds=self._timeout_for_role("editor"),
         )
         editor_summary = self._call_with_validation_retry(
             round_number=round_number,
@@ -189,8 +234,10 @@ class LiveRoundRunner:
                 draft_before_hash=draft_before_hash,
                 draft_after_hash=draft_after_hash if explicit_draft_after or not apply else None,
                 require_draft_after_content=apply and not explicit_draft_after,
+                draft_before_content=draft_before if apply and not explicit_draft_after else None,
             ),
             last_valid_draft_hash=draft_before_hash,
+            context_files=editor_context_files,
         )
         if apply and not explicit_draft_after:
             draft_after_content = str(editor_summary["draft_after_content"])
@@ -226,6 +273,7 @@ class LiveRoundRunner:
                 draft_before=draft_before,
                 draft_after=draft_after_content,
                 rubric_hash=rubric_hash,
+                context_files=editor_context_files,
             )
             self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
         self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
@@ -269,6 +317,177 @@ class LiveRoundRunner:
             spec_mutated=spec_mutated,
         )
 
+    def resume_editor_round(
+        self,
+        *,
+        round_number: int,
+        profile: str,
+        phase: str = "phase_1",
+        apply: bool = True,
+        start_attempt_number: int = 2,
+    ) -> LiveRoundResult:
+        """Resume a round that already has validated reviewer feedback."""
+
+        round_dir = self.store.round_dir(round_number)
+        if not round_dir.exists():
+            raise ValueError(f"round-{round_number} does not exist")
+        draft_before = round_dir.joinpath("draft_before.md").read_text(encoding="utf-8")
+        draft_before_hash = draft_hash(draft_before)
+        reviewer_feedback = json.loads(round_dir.joinpath("reviewer_feedback.json").read_text(encoding="utf-8"))
+        _validate_reviewer_feedback(
+            reviewer_feedback,
+            round_number=round_number,
+            profile=profile,
+            draft_hash_value=draft_before_hash,
+            schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
+        )
+        reviewer_feedback_json = json.dumps(reviewer_feedback, indent=2, sort_keys=True)
+        editor_context_files = [
+            self._write_context_file(
+                round_number=round_number,
+                label="draft_before",
+                filename="draft_before.md",
+                content=draft_before,
+            ),
+            self._write_context_file(
+                round_number=round_number,
+                label="reviewer_feedback",
+                filename="reviewer_feedback.json",
+                content=reviewer_feedback_json + "\n",
+            ),
+        ]
+        synthesis_report = read_contract_surface_report(self.config.rounds_dir, profile=profile)
+        if synthesis_report is not None:
+            editor_context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="contract_surface_report",
+                    filename="contract_surface_report.json",
+                    content=json.dumps(synthesis_report, indent=2, sort_keys=True) + "\n",
+                )
+            )
+        editor_context_path_by_label = {item.label: item.path for item in editor_context_files}
+        editor_prompt = render_editor_prompt(
+            draft="",
+            reviewer_feedback_json="",
+            draft_path=editor_context_path_by_label.get("draft_before"),
+            reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
+            phase=phase,
+            round_number=round_number,
+            draft_before_hash_value=draft_before_hash,
+            draft_after_hash_value=None,
+            capture_only=not apply,
+            synthesis_report_path=editor_context_path_by_label.get("contract_surface_report"),
+        )
+        prompt_snapshot = self._prompt_snapshot(
+            profile=profile,
+            phase=phase,
+            reviewer_prompt=_read_prompt_snapshot_field(round_dir, "reviewer_prompt_text"),
+            editor_prompt=editor_prompt,
+            draft_before_hash=draft_before_hash,
+            draft_after_hash=draft_before_hash,
+            draft_before=draft_before,
+            draft_after=draft_before,
+            rubric_hash=_read_prompt_snapshot_field(round_dir, "rubric_content_hash") or "0" * 64,
+            context_files=editor_context_files,
+        )
+        self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
+
+        editor = self.editor_client or create_editor_client(
+            self.config.editor,
+            cwd=self.root,
+            timeout_seconds=self._timeout_for_role("editor"),
+        )
+        editor_summary = self._call_with_validation_retry(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            client_role="editor",
+            client_config=self.config.editor,
+            artifact_name="editor_summary.json",
+            prompt=editor_prompt,
+            call=editor.revise,
+            validate=lambda artifact: _validate_editor_summary(
+                artifact,
+                round_number=round_number,
+                draft_before_hash=draft_before_hash,
+                draft_after_hash=None,
+                require_draft_after_content=apply,
+                draft_before_content=draft_before if apply else None,
+            ),
+            last_valid_draft_hash=draft_before_hash,
+            start_attempt_number=start_attempt_number,
+            context_files=editor_context_files,
+        )
+        draft_after_content = str(editor_summary["draft_after_content"]) if apply else draft_before
+        draft_after_hash = draft_hash(draft_after_content)
+        unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
+        accepted = accepted_draft(unresolved)
+        if apply and accepted and draft_after_content != draft_before:
+            version_stamp = _try_stamp_spec_text_for_round(draft_after_content, phase=phase)
+            if version_stamp is not None:
+                draft_after_content = version_stamp.content
+                draft_after_hash = version_stamp.after_hash
+                editor_summary["draft_after_hash"] = draft_after_hash
+                editor_summary["draft_after_content"] = draft_after_content
+                _append_version_stamp_history(
+                    self.config.history_path,
+                    round_number=round_number,
+                    phase=phase,
+                    result=version_stamp,
+                )
+        if apply:
+            self.store.write_round_text(round_number, "draft_after.md", draft_after_content)
+        self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
+        decision_packet = detect_decision_points(
+            draft_before=draft_before,
+            draft_after=draft_after_content,
+            round_number=round_number,
+            profile=profile,
+            reviewer_feedback=reviewer_feedback,
+            editor_summary=editor_summary,
+            config=self.config.decision_points,
+        )
+        self.store.write_round_json(round_number, "decision_points.json", decision_packet, schema_name="decision_points")
+        self.store.write_round_json(
+            round_number,
+            "unresolved_issues.json",
+            {
+                "round_number": round_number,
+                "draft_hash": draft_after_hash,
+                "unresolved_issues": unresolved,
+            },
+            schema_name="unresolved_issues",
+        )
+        self.store.write_round_text(round_number, "reviewer_working_notes.md", "Live resumed round; reviewer notes are captured in structured feedback.\n")
+        prompt_snapshot = self._prompt_snapshot(
+            profile=profile,
+            phase=phase,
+            reviewer_prompt=_read_prompt_snapshot_field(round_dir, "reviewer_prompt_text"),
+            editor_prompt=editor_prompt,
+            draft_before_hash=draft_before_hash,
+            draft_after_hash=draft_after_hash,
+            draft_before=draft_before,
+            draft_after=draft_after_content,
+            rubric_hash=_read_prompt_snapshot_field(round_dir, "rubric_content_hash") or "0" * 64,
+            context_files=editor_context_files,
+        )
+        self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
+        spec_mutated = False
+        if apply and draft_after_content != draft_before:
+            self.config.spec_path.write_text(draft_after_content, encoding="utf-8")
+            spec_mutated = True
+        _remove_top_level_timeout_artifacts(self.config.rounds_dir)
+        return LiveRoundResult(
+            round_number=round_number,
+            round_dir=round_dir,
+            draft_before_hash=draft_before_hash,
+            draft_after_hash=draft_after_hash,
+            accepted=accepted,
+            reviewer_feedback_count=len(reviewer_feedback.get("feedback", [])),
+            spec_mutated=spec_mutated,
+        )
+
     def _call_with_validation_retry(
         self,
         *,
@@ -282,12 +501,14 @@ class LiveRoundRunner:
         call: Any,
         validate: Any,
         last_valid_draft_hash: str,
+        start_attempt_number: int = 1,
+        context_files: list[ContextFile] | None = None,
     ) -> dict[str, Any]:
         attempts: list[dict[str, Any]] = []
         current_prompt = prompt
         current_validation_errors: list[str] = []
         last_valid_draft_path = _last_valid_draft_path(round_number, client_role=client_role)
-        for attempt_number in (1, 2):
+        for attempt_number in range(start_attempt_number, start_attempt_number + 2):
             self._write_attempt_prompt_snapshot(
                 round_number=round_number,
                 phase=phase,
@@ -298,7 +519,9 @@ class LiveRoundRunner:
                 attempt_number=attempt_number,
                 prompt=current_prompt,
                 validation_errors=current_validation_errors,
+                context_files=context_files or [],
             )
+
             try:
                 artifact = call(current_prompt)
             except Exception as exc:
@@ -339,6 +562,7 @@ class LiveRoundRunner:
                         attempts=attempts,
                         last_valid_draft_hash=last_valid_draft_hash,
                         last_valid_draft_path=last_valid_draft_path,
+                        failure_type="client_timeout",
                     )
                     _write_artifact_validation_companion_report(
                         self.root,
@@ -346,9 +570,10 @@ class LiveRoundRunner:
                         round_number=round_number,
                         phase=phase,
                         final_draft_path=last_valid_draft_path,
+                        failure_type="client_timeout",
                     )
                     raise ValueError(f"{artifact_name} timed out") from exc
-                if attempt_number == 1:
+                if attempt_number == start_attempt_number:
                     current_validation_errors = validation_errors
                     current_prompt = _retry_prompt(prompt, artifact_name=artifact_name, validation_errors=validation_errors)
                     continue
@@ -362,6 +587,7 @@ class LiveRoundRunner:
                     attempts=attempts,
                     last_valid_draft_hash=last_valid_draft_hash,
                     last_valid_draft_path=last_valid_draft_path,
+                    failure_type="client_error",
                 )
                 _write_artifact_validation_companion_report(
                     self.root,
@@ -369,6 +595,7 @@ class LiveRoundRunner:
                     round_number=round_number,
                     phase=phase,
                     final_draft_path=last_valid_draft_path,
+                    failure_type="client_error",
                 )
                 raise ValueError(f"{artifact_name} validation failed after retry") from exc
             try:
@@ -400,7 +627,7 @@ class LiveRoundRunner:
                         "telemetry_path": str(telemetry_path.relative_to(self.root)) if telemetry_path else None,
                     }
                 )
-                if attempt_number == 1:
+                if attempt_number == start_attempt_number:
                     current_validation_errors = validation_errors
                     current_prompt = _retry_prompt(prompt, artifact_name=artifact_name, validation_errors=validation_errors)
                     continue
@@ -436,6 +663,15 @@ class LiveRoundRunner:
             return artifact
         raise AssertionError("unreachable validation retry state")
 
+    def _timeout_for_role(self, role: str) -> int | None:
+        if self.timeout_seconds is not None:
+            return self.timeout_seconds
+        if role == "reviewer":
+            return self.config.timeouts.reviewer_seconds
+        if role == "editor":
+            return self.config.timeouts.editor_seconds
+        raise ValueError(f"unsupported client role {role!r}")
+
     def _write_invalid_attempt(
         self,
         *,
@@ -459,6 +695,7 @@ class LiveRoundRunner:
         attempt_number: int,
         prompt: str,
         validation_errors: list[str],
+        context_files: list[ContextFile],
     ) -> Path:
         round_dir = self.store.round_dir(round_number)
         snapshot_dir = round_dir / "prompt_snapshots"
@@ -466,6 +703,7 @@ class LiveRoundRunner:
         filename = f"{client_role}-{artifact_name}-attempt-{attempt_number}.json"
         snapshot = {
             "prompt_text": prompt,
+            "context_files": _context_file_packets(context_files),
             "profile": profile,
             "phase": phase,
             "client_role": client_role,
@@ -569,6 +807,53 @@ class LiveRoundRunner:
         self.store.write_round_json(round_number, "profile_used.yaml", {"profile": profile})
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
+    def _write_reviewer_context_files(
+        self,
+        *,
+        round_number: int,
+        draft_before: str,
+        rubric: str | None,
+        declaration: str | None,
+    ) -> list[ContextFile]:
+        context_files = [
+            self._write_context_file(
+                round_number=round_number,
+                label="draft_before",
+                filename="draft_before.md",
+                content=draft_before,
+            )
+        ]
+        if rubric is not None:
+            context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="rubric",
+                    filename="rubric.md",
+                    content=rubric,
+                )
+            )
+        if declaration is not None:
+            context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="declaration",
+                    filename="convergence_declaration.md",
+                    content=declaration,
+                )
+            )
+        return context_files
+
+    def _write_context_file(self, *, round_number: int, label: str, filename: str, content: str) -> ContextFile:
+        context_dir = self.store.round_dir(round_number) / "context"
+        context_dir.mkdir(parents=True, exist_ok=True)
+        path = context_dir / filename
+        path.write_text(content, encoding="utf-8")
+        return ContextFile(
+            label=label,
+            path=_relative_path(path, self.root),
+            sha256=hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        )
+
     def _prompt_snapshot(
         self,
         *,
@@ -581,12 +866,14 @@ class LiveRoundRunner:
         draft_before: str,
         draft_after: str,
         rubric_hash: str,
+        context_files: list[ContextFile] | None = None,
     ) -> dict[str, Any]:
         semantic_hash = semantic_change_hash(draft_before, draft_after)
         return {
             "prompt_text": reviewer_prompt,
             "reviewer_prompt_text": reviewer_prompt,
             "editor_prompt_text": editor_prompt,
+            "context_files": _context_file_packets(context_files or []),
             "profile": profile,
             "phase": phase,
             "client": asdict(self.config.reviewer),
@@ -669,6 +956,24 @@ def validate_live_config(config: OrchestratorConfig) -> list[dict[str, str]]:
         for field_name in ("version", "model"):
             if not getattr(client, field_name).strip():
                 invalid.append({"path": f"clients.{role_name}.{field_name}", "reason": "must be a non-empty string"})
+    for field_name, value in (
+        ("timeouts.reviewer_seconds", config.timeouts.reviewer_seconds),
+        ("timeouts.editor_seconds", config.timeouts.editor_seconds),
+    ):
+        if value is not None and value < 1:
+            invalid.append({"path": field_name, "reason": "must be null or an integer >= 1"})
+    if config.contract_surface.action not in {"recommend_synthesis", "report_only"}:
+        invalid.append({"path": "contract_surface_policy.action", "reason": "must be recommend_synthesis or report_only"})
+    if config.review_budget_exhaustion_policy not in {"hard", "soft"}:
+        invalid.append({"path": "review.budget_exhaustion_policy", "reason": "must be hard or soft"})
+    for field_name, value in (
+        ("contract_surface_policy.min_profile_rounds", config.contract_surface.min_profile_rounds),
+        ("contract_surface_policy.recent_window", config.contract_surface.recent_window),
+        ("contract_surface_policy.min_recent_serious_rounds", config.contract_surface.min_recent_serious_rounds),
+        ("contract_surface_policy.min_contract_families", config.contract_surface.min_contract_families),
+    ):
+        if value < 1:
+            invalid.append({"path": field_name, "reason": "must be an integer >= 1"})
     return invalid
 
 
@@ -935,10 +1240,12 @@ def _write_artifact_validation_error(
     attempts: list[dict[str, Any]],
     last_valid_draft_hash: str,
     last_valid_draft_path: str,
+    failure_type: str = "artifact_validation",
 ) -> None:
     rounds_dir.mkdir(parents=True, exist_ok=True)
+    terminal_state = "HALTED_CLIENT_TIMEOUT" if failure_type == "client_timeout" else "HALTED_ARTIFACT_INVALID"
     artifact = {
-        "terminal_state": "HALTED_ARTIFACT_INVALID",
+        "terminal_state": terminal_state,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "round_number": round_number,
         "phase": phase,
@@ -949,6 +1256,7 @@ def _write_artifact_validation_error(
             "version": client_config.version,
             "model": client_config.model,
         },
+        "failure_type": failure_type,
         "attempts": attempts,
         "retry_exhausted": True,
         "last_valid_draft_hash": last_valid_draft_hash,
@@ -974,8 +1282,11 @@ def _write_artifact_validation_companion_report(
     round_number: int,
     phase: str,
     final_draft_path: str,
+    failure_type: str = "artifact_validation",
 ) -> None:
     writer = ReportWriter(root)
+    terminal_state = "HALTED_CLIENT_TIMEOUT" if failure_type == "client_timeout" else "HALTED_ARTIFACT_INVALID"
+    exit_reason = "client invocation timed out before producing a valid artifact" if failure_type == "client_timeout" else "artifact validation retry exhausted"
     if phase == "phase_2":
         writer.write_convergence_failure_report(
             round_number=round_number,
@@ -993,9 +1304,9 @@ def _write_artifact_validation_companion_report(
             unresolved_rubric_gaps=[],
             reviewer_final_status="not_run",
             last_accepted_draft_hash=None,
-            exit_reason="artifact validation retry exhausted",
+            exit_reason=exit_reason,
             recommendation="manual_review_required",
-            terminal_state="HALTED_ARTIFACT_INVALID",
+            terminal_state=terminal_state,
         )
         return
     writer.write_technical_failure_report(
@@ -1006,9 +1317,9 @@ def _write_artifact_validation_companion_report(
         unresolved_conflicts=[],
         unresolved_oscillation=None,
         last_accepted_draft_hash=None,
-        exit_reason="artifact validation retry exhausted",
+        exit_reason=exit_reason,
         recommendation="manual_review_required",
-        terminal_state="HALTED_ARTIFACT_INVALID",
+        terminal_state=terminal_state,
     )
 
 
@@ -1052,10 +1363,15 @@ def _validate_editor_summary(
     draft_before_hash: str,
     draft_after_hash: str | None,
     require_draft_after_content: bool = False,
+    draft_before_content: str | None = None,
 ) -> None:
     if require_draft_after_content and not isinstance(artifact.get("draft_after_content"), str):
         raise ValueError("editor_summary draft_after_content is required for applied editor-generated revisions")
     if isinstance(artifact.get("draft_after_content"), str):
+        _reject_destructive_draft_after(
+            draft_before_content=draft_before_content,
+            draft_after_content=artifact["draft_after_content"],
+        )
         computed_hash = draft_hash(artifact["draft_after_content"])
         artifact["draft_after_hash"] = computed_hash
         if draft_after_hash is not None and computed_hash != draft_after_hash:
@@ -1071,10 +1387,51 @@ def _validate_editor_summary(
     validate_artifact(artifact, "editor_summary")
 
 
+def _reject_destructive_draft_after(*, draft_before_content: str | None, draft_after_content: str) -> None:
+    if draft_before_content is None:
+        return
+    before_stripped = draft_before_content.strip()
+    after_stripped = draft_after_content.strip()
+    if not before_stripped:
+        return
+    if not after_stripped:
+        raise ValueError("editor_summary draft_after_content would replace a non-empty draft with empty content")
+    if after_stripped.startswith("[Whetstone editor blocked]"):
+        raise ValueError("editor_summary draft_after_content is an editor blocked/error placeholder, not a revised draft")
+    before_len = len(before_stripped)
+    after_len = len(after_stripped)
+    if before_len >= 1000 and after_len < 100 and after_len < int(before_len * 0.05):
+        raise ValueError(
+            "editor_summary draft_after_content is destructively smaller than the non-empty draft; "
+            "refusing near-empty replacement"
+        )
+
+
 def _read_optional(path: Path) -> str | None:
     if not path.exists():
         return None
     return path.read_text(encoding="utf-8")
+
+
+def _read_prompt_snapshot_field(round_dir: Path, field: str) -> str | None:
+    path = round_dir / "prompt_snapshot.json"
+    if not path.exists():
+        return None
+    value = json.loads(path.read_text(encoding="utf-8")).get(field)
+    return value if isinstance(value, str) else None
+
+
+def _remove_top_level_timeout_artifacts(rounds_dir: Path) -> None:
+    for filename in ("artifact_validation_error.json", "technical_failure_report.json", "convergence_failure_report.json"):
+        path = rounds_dir / filename
+        if not path.exists():
+            continue
+        try:
+            packet = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if packet.get("terminal_state") == "HALTED_CLIENT_TIMEOUT":
+            path.unlink()
 
 
 def _rubric_manifest_path(config: OrchestratorConfig) -> str:
@@ -1082,6 +1439,24 @@ def _rubric_manifest_path(config: OrchestratorConfig) -> str:
         return str((config.rounds_dir / "rubric_manifest.json").relative_to(config.rounds_dir.parent))
     except ValueError:
         return str(config.rounds_dir / "rubric_manifest.json")
+
+
+def _relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def _context_file_packets(context_files: list[ContextFile]) -> list[dict[str, str]]:
+    return [
+        {
+            "label": item.label,
+            "path": item.path,
+            "sha256": item.sha256,
+        }
+        for item in context_files
+    ]
 
 
 def _append_version_stamp_history(history_path: Path, *, round_number: int, phase: str, result: Any) -> None:

@@ -18,6 +18,11 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(config.convergence.rubric_profile, "standard-v1")
             self.assertEqual(config.convergence.rubric_source, "builtin")
             self.assertEqual(config.convergence.target_mode, "strict")
+            self.assertEqual(config.review_budget_exhaustion_policy, "hard")
+            self.assertEqual(config.timeouts.reviewer_seconds, 360)
+            self.assertEqual(config.timeouts.editor_seconds, 900)
+            self.assertTrue(config.contract_surface.enabled)
+            self.assertEqual(config.contract_surface.action, "recommend_synthesis")
 
     def test_load_config_parses_project_yaml_subset(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -42,6 +47,10 @@ clients:
     model: gpt-fixture
 review:
   max_rounds: 3
+  budget_exhaustion_policy: soft
+  profile_budgets:
+    structural_integrity: 4
+    determinism: 5
 convergence:
   enabled: true
   target_phase: mid
@@ -50,12 +59,25 @@ convergence:
   rubric_source: builtin
   rubric_path: ./rubric.md
   max_rounds: 2
+  profile_budgets:
+    convergence_strict_check: 6
+    adversarial: 2
 decision_points:
   enabled: true
   mode: intervention
   intervention_thresholds:
     severities: [major]
     trigger_on_requirement_strength_change: false
+timeouts:
+  reviewer_seconds: 120
+  editor_seconds: 900
+contract_surface_policy:
+  enabled: true
+  action: report_only
+  min_profile_rounds: 3
+  recent_window: 5
+  min_recent_serious_rounds: 2
+  min_contract_families: 4
 """.strip(),
                 encoding="utf-8",
             )
@@ -66,12 +88,24 @@ decision_points:
             self.assertEqual(config.editor.version, "1.2.3")
             self.assertEqual(config.reviewer.model, "gpt-fixture")
             self.assertEqual(config.review_max_rounds, 3)
+            self.assertEqual(config.review_budget_exhaustion_policy, "soft")
+            self.assertEqual(config.review_profile_budgets["structural_integrity"], 4)
+            self.assertEqual(config.review_profile_budgets["determinism"], 5)
             self.assertEqual(config.workflow, "governance")
             self.assertEqual(config.convergence.target_phase, "mid")
             self.assertEqual(config.convergence.rubric_profile, "governance-v6")
+            self.assertEqual(config.convergence_profile_budgets["convergence_strict_check"], 6)
+            self.assertEqual(config.convergence_profile_budgets["adversarial"], 2)
             self.assertEqual(config.decision_points.mode, "intervention")
             self.assertEqual(config.decision_points.severities, ("major",))
             self.assertFalse(config.decision_points.trigger_on_requirement_strength_change)
+            self.assertEqual(config.timeouts.reviewer_seconds, 120)
+            self.assertEqual(config.timeouts.editor_seconds, 900)
+            self.assertEqual(config.contract_surface.action, "report_only")
+            self.assertEqual(config.contract_surface.min_profile_rounds, 3)
+            self.assertEqual(config.contract_surface.recent_window, 5)
+            self.assertEqual(config.contract_surface.min_recent_serious_rounds, 2)
+            self.assertEqual(config.contract_surface.min_contract_families, 4)
 
 
 if __name__ == "__main__":

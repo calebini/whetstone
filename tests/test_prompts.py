@@ -55,8 +55,31 @@ class PromptTests(unittest.TestCase):
         self.assertIn("accepted_feedback_ids", prompt)
         self.assertIn("unresolved_issue_ids", prompt)
         self.assertIn("Do not return markdown", prompt)
-        self.assertIn("Do not inspect repository files, run shell commands, use web search, or call tools.", prompt)
+        self.assertIn("Do not inspect unrelated repository files, use web search, or call tools for anything except reading listed context files.", prompt)
         self.assertIn('{"feedback": []}', prompt)
+
+    def test_file_backed_prompts_reference_context_without_embedding_content(self) -> None:
+        reviewer_prompt = render_reviewer_prompt(
+            profile="determinism",
+            draft="",
+            draft_path="rounds/round-1/context/draft_before.md",
+            rubric_path="rounds/round-1/context/rubric.md",
+        )
+        editor_prompt = render_editor_prompt(
+            draft="",
+            reviewer_feedback_json="",
+            draft_path="rounds/round-1/context/draft_before.md",
+            reviewer_feedback_path="rounds/round-1/context/reviewer_feedback.json",
+        )
+
+        self.assertIn("Context files:", reviewer_prompt)
+        self.assertIn("Draft path: rounds/round-1/context/draft_before.md", reviewer_prompt)
+        self.assertIn("Rubric path: rounds/round-1/context/rubric.md", reviewer_prompt)
+        self.assertNotIn("\nDraft:\n# Spec", reviewer_prompt)
+        self.assertIn("Context files:", editor_prompt)
+        self.assertIn("Reviewer feedback JSON path: rounds/round-1/context/reviewer_feedback.json", editor_prompt)
+        self.assertIn("Draft path: rounds/round-1/context/draft_before.md", editor_prompt)
+        self.assertNotIn("\nReviewer feedback JSON:\n{", editor_prompt)
 
     def test_phase_2_editor_prompt_forbids_declaration_in_spec(self) -> None:
         prompt = render_editor_prompt(
@@ -77,6 +100,21 @@ class PromptTests(unittest.TestCase):
         )
 
         self.assertIn("Whetstone computes draft_after_hash from draft_after_content", prompt)
+
+    def test_editor_prompt_includes_bounded_synthesis_guidance_when_report_supplied(self) -> None:
+        prompt = render_editor_prompt(
+            draft="",
+            reviewer_feedback_json="",
+            draft_path="rounds/round-8/context/draft_before.md",
+            reviewer_feedback_path="rounds/round-8/context/reviewer_feedback.json",
+            synthesis_report_path="rounds/round-8/context/contract_surface_report.json",
+            capture_only=False,
+        )
+
+        self.assertIn("Timeout-aware bounded synthesis guidance", prompt)
+        self.assertIn("EXPANDING_CONTRACT_SURFACE", prompt)
+        self.assertIn("Contract surface report path: rounds/round-8/context/contract_surface_report.json", prompt)
+        self.assertIn("complete revised draft text", prompt)
 
 
 if __name__ == "__main__":

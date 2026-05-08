@@ -59,16 +59,57 @@ class ScriptedReviewerClient:
         }
 
 
+class ContractSurfaceReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        profile = _line_value(prompt, "Review profile:")
+        feedback = []
+        if self.calls <= 4:
+            feedback = [
+                {
+                    "feedback_id": f"fb-{self.calls}",
+                    "issue_id": f"iss_{self.calls:016x}",
+                    "issue_fingerprint": f"{self.calls:x}" * 64,
+                    "issue_type": "schema_validation_failure_mapping_gap",
+                    "affected_sections": [f"Contract Section {self.calls}"],
+                    "baseline_severity": "major",
+                    "authority_impact": None,
+                    "determinism_impact": "major",
+                    "rubric_impact": None,
+                    "normalized_severity": "major",
+                    "invariant_violated": "fixture invariant",
+                    "claim": "The schema validation failure report mapping is incomplete.",
+                    "evidence": "Fixture evidence.",
+                    "recommended_change": "Define schema fields, validation ordering, failure mapping, and report artifact behavior.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": None,
+                }
+            ]
+        return {
+            "round_number": self.calls,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": feedback,
+        }
+
+
 class ResolvingEditorClient:
-    def __init__(self) -> None:
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.calls = 0
 
     def revise(self, prompt: str) -> dict:
         self.calls += 1
         before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
         explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
-        draft_after_content = _draft_from_prompt(prompt)
-        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        draft_after_content = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
         round_number = _editor_round_number(prompt)
         return {
             "round_number": round_number,
@@ -85,15 +126,16 @@ class ResolvingEditorClient:
 
 
 class BlockingEditorClient:
-    def __init__(self) -> None:
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.calls = 0
 
     def revise(self, prompt: str) -> dict:
         self.calls += 1
         before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
         explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
-        draft_after_content = _draft_from_prompt(prompt)
-        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        draft_after_content = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
         round_number = _editor_round_number(prompt)
         return {
             "round_number": round_number,
@@ -149,7 +191,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=reviewer,
-                editor_client=ResolvingEditorClient(),
+                editor_client=ResolvingMutatingEditorClient(root),
             ).run(overwrite=True)
 
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
@@ -159,6 +201,21 @@ class LivePhase1RunnerTests(unittest.TestCase):
             state = _read_json(root / "rounds" / "run_state.json")
             self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
             self.assertTrue(state["ready_for_phase_2"])
+            self.assertEqual(
+                state["review_profile_budgets"],
+                {"determinism": 10, "operability": 10, "structural_integrity": 10},
+            )
+            self.assertEqual(state["configured_review_profile_budgets"], {})
+            self.assertEqual(
+                state["effective_run_config"]["review_profile_budgets"],
+                {"determinism": 10, "operability": 10, "structural_integrity": 10},
+            )
+            self.assertEqual(
+                state["effective_run_config"]["convergence_profile_budgets"],
+                {"adversarial": 10, "convergence_strict_check": 10},
+            )
+            self.assertEqual(state["effective_run_config"]["decision_points"]["mode"], "end_of_cycle")
+            self.assertEqual(state["effective_run_config"]["timeouts"]["editor_seconds"], 900)
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
             self.assertEqual(state["telemetry_totals"]["attempt_count"], 6)
             self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 6)
@@ -171,7 +228,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=reviewer,
-                editor_client=ResolvingMutatingEditorClient(),
+                editor_client=ResolvingMutatingEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
@@ -185,7 +242,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=reviewer,
-                editor_client=ResolvingMutatingEditorClient(),
+                editor_client=ResolvingMutatingEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
@@ -198,12 +255,73 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 load_config(root / "orchestrator_config.yaml"),
                 reviewer_client=ScriptedReviewerClient(root, ["major"]),
-                editor_client=BlockingEditorClient(),
+                editor_client=BlockingEditorClient(root),
                 draft_after_provider=lambda round_number, profile, draft: draft + "\nChanged.\n",
             ).run()
 
             self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
             self.assertTrue((root / "rounds" / "technical_failure_report.json").exists())
+
+    def test_contract_surface_report_written_after_repeated_serious_contract_findings(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp))
+            result = LivePhase1Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=ContractSurfaceReviewerClient(root),
+                editor_client=ResolvingMutatingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            report = _read_json(root / "rounds" / "contract_surface_report.json")
+            self.assertTrue(report["detected"])
+            self.assertEqual(report["type"], "EXPANDING_CONTRACT_SURFACE")
+            self.assertEqual(report["profile"], "structural_integrity")
+            self.assertIn("schema/data-contract", report["contract_families"])
+            self.assertIn("failure-semantics", report["contract_families"])
+            self.assertTrue((root / "rounds" / "contract_surface_report.md").exists())
+
+    def test_soft_budget_exhaustion_completes_sweep_with_residuals(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=10)
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=ScriptedReviewerClient(root, ["major", "major", "major"]),
+                editor_client=BlockingEditorClient(root),
+                draft_after_provider=lambda round_number, profile, draft: draft + f"\nChanged {round_number}.\n",
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            self.assertFalse(result.ready_for_phase_2)
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            self.assertFalse(state["ready_for_phase_2"])
+            report = _read_json(root / "rounds" / "technical_failure_report.json")
+            self.assertEqual(report["terminal_state"], "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            self.assertEqual(
+                report["profile_status"]["exhausted_profiles"],
+                ["structural_integrity", "determinism", "operability"],
+            )
+
+    def test_soft_budget_oscillation_advances_profile_with_residual_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=10)
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=ScriptedReviewerClient(root, ["blocker", "blocker", "blocker"]),
+                editor_client=BlockingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            self.assertTrue((root / "rounds" / "oscillation_report.json").exists())
+            report = _read_json(root / "rounds" / "technical_failure_report.json")
+            statuses = {
+                item["profile"]: item["residual_status"]
+                for item in report["profile_status"]["profiles"]
+            }
+            self.assertEqual(statuses["structural_integrity"], "halted_oscillation")
 
     def test_repeated_blocking_draft_hash_emits_oscillation_report(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -212,12 +330,13 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=ScriptedReviewerClient(root, ["blocker"]),
-                editor_client=BlockingEditorClient(),
+                editor_client=BlockingEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "HALTED_OSCILLATION")
             report = _read_json(root / "rounds" / "oscillation_report.json")
             self.assertEqual(report["terminal_state"], "HALTED_OSCILLATION")
+            self.assertTrue(root.joinpath("rounds/decision_register.json").exists())
 
     def test_artifact_validation_failure_stops_loop_without_mutation(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -227,7 +346,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=BadReviewerClient(),
-                editor_client=ResolvingEditorClient(),
+                editor_client=ResolvingEditorClient(root),
             ).run()
 
             self.assertEqual(result.terminal_state, "HALTED_ARTIFACT_INVALID")
@@ -242,7 +361,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 load_config(root / "orchestrator_config.yaml"),
                 reviewer_client=ScriptedReviewerClient(root, ["major"]),
-                editor_client=ResolvingEditorClient(),
+                editor_client=ResolvingEditorClient(root),
                 draft_after_provider=lambda round_number, profile, draft: draft + "\nAdapter MUST retry.\n",
             ).run()
 
@@ -260,7 +379,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=phase1_reviewer,
-                editor_client=ResolvingEditorClient(),
+                editor_client=ResolvingEditorClient(root),
             ).run()
             self.assertEqual(phase1_result.terminal_state, "PHASE_1_STABLE")
 
@@ -269,7 +388,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 root,
                 OrchestratorConfig.default(root),
                 reviewer_client=phase2_reviewer,
-                editor_client=ResolvingEditorClient(),
+                editor_client=ResolvingEditorClient(root),
             ).run_round(round_number=4, profile="convergence_strict_check", phase="phase_2")
 
             self.assertIn("# Whetstone 1.0", root.joinpath("spec.md").read_text(encoding="utf-8"))
@@ -279,15 +398,16 @@ class LivePhase1RunnerTests(unittest.TestCase):
 
 
 class BlockingThenResolvingEditorClient:
-    def __init__(self) -> None:
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.calls = 0
 
     def revise(self, prompt: str) -> dict:
         self.calls += 1
         before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
         explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
-        draft_after_content = _draft_from_prompt(prompt)
-        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        draft_after_content = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
         unresolved = issue_ids if self.calls == 1 else []
         resolved = [] if self.calls == 1 else issue_ids
         round_number = _editor_round_number(prompt)
@@ -306,11 +426,14 @@ class BlockingThenResolvingEditorClient:
 
 
 class ResolvingMutatingEditorClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
     def revise(self, prompt: str) -> dict:
         before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
         explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
-        draft_after_content = _draft_from_prompt(prompt)
-        issue_ids = re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
+        draft_after_content = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
         if issue_ids:
             draft_after_content += "\nVerified fix.\n"
         round_number = _editor_round_number(prompt)
@@ -332,12 +455,14 @@ def _seed_root(
     root: Path,
     *,
     review_max_rounds: int | None = None,
+    budget_exhaustion_policy: str | None = None,
+    profile_budget: int | None = None,
     decision_mode: str | None = None,
     spec: str = "# Spec\n\nDraft.\n",
 ) -> Path:
     root.joinpath("spec.md").write_text(spec, encoding="utf-8")
     root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
-    if review_max_rounds is not None or decision_mode is not None:
+    if review_max_rounds is not None or budget_exhaustion_policy is not None or decision_mode is not None:
         root.joinpath("orchestrator_config.yaml").write_text(
             f"""
 spec_path: spec.md
@@ -357,6 +482,11 @@ clients:
     model: fixture
 review:
   max_rounds: {review_max_rounds or 12}
+  budget_exhaustion_policy: {budget_exhaustion_policy or "hard"}
+  profile_budgets:
+    structural_integrity: {profile_budget or 10}
+    determinism: {profile_budget or 10}
+    operability: {profile_budget or 10}
 decision_points:
   enabled: true
   mode: {decision_mode or "end_of_cycle"}
@@ -375,11 +505,22 @@ def _line_value(prompt: str, prefix: str) -> str:
     raise AssertionError(f"missing prompt line {prefix}")
 
 
-def _draft_from_prompt(prompt: str) -> str:
+def _draft_from_prompt(prompt: str, root: Path) -> str:
+    path_match = re.search(r"Draft path: ([^\n]+)", prompt)
+    if path_match:
+        return (root / path_match.group(1)).read_text(encoding="utf-8")
     marker = "\nDraft:\n"
     if marker not in prompt:
         raise AssertionError("missing Draft block")
     return prompt.split(marker, 1)[1]
+
+
+def _issue_ids_from_prompt(prompt: str, root: Path) -> list[str]:
+    path_match = re.search(r"Reviewer feedback JSON path: ([^\n]+)", prompt)
+    if path_match:
+        feedback = (root / path_match.group(1)).read_text(encoding="utf-8")
+        return re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', feedback)
+    return re.findall(r'"issue_id": "(iss_[a-f0-9]{16})"', prompt)
 
 
 def _hash_line(prompt: str, prefix: str) -> str:

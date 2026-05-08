@@ -12,6 +12,7 @@
     "profile",
     "client_role",
     "client",
+    "failure_type",
     "attempts",
     "retry_exhausted",
     "last_valid_draft_hash",
@@ -19,7 +20,10 @@
     "recommendation"
   ],
   "properties": {
-    "terminal_state": { "const": "HALTED_ARTIFACT_INVALID" },
+    "terminal_state": {
+      "type": "string",
+      "enum": ["HALTED_ARTIFACT_INVALID", "HALTED_CLIENT_TIMEOUT"]
+    },
     "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
     "round_number": { "type": "integer", "minimum": 1 },
     "phase": { "type": "string", "enum": ["phase_1", "phase_2"] },
@@ -34,6 +38,10 @@
         "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
       }
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": ["artifact_validation", "client_timeout", "client_error"]
     },
     "attempts": {
       "type": "array",

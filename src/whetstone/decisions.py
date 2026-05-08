@@ -151,8 +151,6 @@ def write_decision_register(
     terminal_state: str,
 ) -> Path | None:
     points = collect_decision_points(rounds_dir)
-    if not points:
-        return None
     packet = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": mode,

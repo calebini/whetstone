@@ -21,6 +21,17 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual(scheduler.next_profile(), "determinism")
         scheduler.record_result("determinism", blocker_count=1, major_count=0)
         self.assertEqual(scheduler.next_profile(), "operability")
+        status = scheduler.status()["profiles"][0]
+        self.assertEqual(status["residual_status"], "exhausted_with_residuals")
+
+    def test_force_advance_marks_residual_status(self) -> None:
+        scheduler = PhaseScheduler([ProfileStep("determinism"), ProfileStep("operability")])
+
+        self.assertEqual(scheduler.next_profile(), "determinism")
+        scheduler.force_advance_current(residual_status="halted_oscillation")
+
+        self.assertEqual(scheduler.next_profile(), "operability")
+        self.assertEqual(scheduler.status()["profiles"][0]["residual_status"], "halted_oscillation")
 
     def test_repeats_major_profile_for_clean_verification(self) -> None:
         scheduler = PhaseScheduler(

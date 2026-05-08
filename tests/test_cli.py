@@ -13,6 +13,29 @@ from whetstone.hashing import draft_hash
 
 
 class CliTests(unittest.TestCase):
+    def test_resume_help_includes_recovery_examples(self) -> None:
+        output = io.StringIO()
+
+        with redirect_stdout(output), self.assertRaises(SystemExit) as raised:
+            main(["resume", "--help"])
+
+        self.assertEqual(raised.exception.code, 0)
+        rendered = output.getvalue()
+        self.assertIn("whetstone resume --root \"$RUN_ROOT\" --dry-run --continue", rendered)
+        self.assertIn("Phase 1 Editor timeouts only", rendered)
+
+    def test_apply_back_help_marks_dangerous_flags(self) -> None:
+        output = io.StringIO()
+
+        with redirect_stdout(output), self.assertRaises(SystemExit) as raised:
+            main(["apply-back", "--help"])
+
+        self.assertEqual(raised.exception.code, 0)
+        rendered = output.getvalue()
+        self.assertIn("Run without --apply first", rendered)
+        self.assertIn("danger: continue when --expected-source-hash", rendered)
+        self.assertIn("danger: allow writing back from a non-CONVERGED run", rendered)
+
     def test_codex_review_writes_schema_valid_output(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -402,13 +425,23 @@ from pathlib import Path
 
 out = None
 args = sys.argv[1:]
+cd_path = Path.cwd()
 for index, arg in enumerate(args):
     if arg == "--output-last-message":
         out = args[index + 1]
+    if arg == "--cd" and index + 1 < len(args):
+        cd_path = Path(args[index + 1])
 prompt = sys.stdin.read()
 round_number = int(re.search(r"The top-level object MUST set round_number to ([0-9]+)\\.", prompt).group(1))
 before_hash = re.search(r"The draft_before_hash MUST be ([a-f0-9]{64})\\.", prompt).group(1)
-draft = prompt.split("\\nDraft:\\n", 1)[1]
+
+def read_draft_from_prompt():
+    found = re.search(r"Draft path: ([^\\n]+)", prompt)
+    if found:
+        return (cd_path / found.group(1)).read_text(encoding="utf-8")
+    return prompt.split("\\nDraft:\\n", 1)[1]
+
+draft = read_draft_from_prompt()
 after_hash = hashlib.sha256(draft.encode("utf-8")).hexdigest()
 artifact = {
     "round_number": round_number,
@@ -601,6 +634,139 @@ convergence:
             self.assertIn("terminal_state: PHASE_1_STABLE", rendered)
             self.assertIn("next_action: run_live_phase2", rendered)
 
+    def test_cli_resume_continue_smoke_after_editor_timeout(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Toy Spec\n\n## Behavior\n\nInitial draft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            fake_codex = root / "fake-codex"
+            fake_codex.write_text(
+                """#!/usr/bin/env python3
+import json
+import re
+import sys
+import time
+from pathlib import Path
+
+args = sys.argv[1:]
+prompt = sys.stdin.read()
+schema_path = ""
+output_path = None
+cd_path = Path.cwd()
+for index, arg in enumerate(args):
+    if arg == "--output-schema" and index + 1 < len(args):
+        schema_path = args[index + 1]
+    if arg == "--output-last-message" and index + 1 < len(args):
+        output_path = Path(args[index + 1])
+    if arg == "--cd" and index + 1 < len(args):
+        cd_path = Path(args[index + 1])
+
+def match(pattern, default=""):
+    found = re.search(pattern, prompt)
+    return found.group(1) if found else default
+
+def write(packet):
+    text = json.dumps(packet)
+    if output_path:
+        output_path.write_text(text, encoding="utf-8")
+    print(text)
+
+if "reviewer_feedback" in schema_path:
+    write({
+        "round_number": int(match(r"- round_number: (\\d+)", "1")),
+        "profile": match(r"Review profile: ([^\\n]+)", "structural_integrity"),
+        "reviewer": {"name": "fake-codex", "version": "0", "model": "fake"},
+        "draft_hash": match(r"- draft_hash: ([0-9a-f]{64})", "0" * 64),
+        "feedback": []
+    })
+    raise SystemExit(0)
+
+calls_path = cd_path / ".fake_editor_calls"
+try:
+    calls = int(calls_path.read_text(encoding="utf-8"))
+except FileNotFoundError:
+    calls = 0
+calls += 1
+calls_path.write_text(str(calls), encoding="utf-8")
+if calls == 1:
+    time.sleep(2)
+
+def read_draft_from_prompt():
+    found = re.search(r"Draft path: ([^\\n]+)", prompt)
+    if found:
+        return (cd_path / found.group(1)).read_text(encoding="utf-8")
+    return prompt.split("\\nDraft:\\n", 1)[1].split("\\n\\nReviewer feedback JSON:\\n", 1)[0]
+
+draft = read_draft_from_prompt()
+if "Clarified by fake editor." not in draft:
+    draft = draft.rstrip() + "\\n\\nClarified by fake editor.\\n"
+write({
+    "round_number": int(match(r"round_number to (\\d+)", "1")),
+    "draft_before_hash": match(r"draft_before_hash MUST be ([0-9a-f]{64})", "0" * 64),
+    "draft_after_hash": None,
+    "accepted_feedback_ids": [],
+    "modified_feedback_ids": [],
+    "declined_feedback": [],
+    "created_conflict_ids": [],
+    "resolved_issue_ids": [],
+    "unresolved_issue_ids": [],
+    "draft_after_content": draft
+})
+""",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(fake_codex.stat().st_mode | stat.S_IXUSR)
+            root.joinpath("orchestrator_config.yaml").write_text(
+                f"""
+spec_path: ./spec.md
+history_path: ./spec.history.md
+rounds_dir: ./rounds
+clients:
+  reviewer:
+    name: codex
+    command: {fake_codex}
+    version: "0"
+    model: fake
+  editor:
+    name: codex
+    command: {fake_codex}
+    version: "0"
+    model: fake
+timeouts:
+  reviewer_seconds: 5
+  editor_seconds: 1
+""",
+                encoding="utf-8",
+            )
+
+            first_stdout = io.StringIO()
+            with redirect_stdout(first_stdout):
+                first_exit = main(["live-phase1", "--root", str(root)])
+            first_packet = json.loads(first_stdout.getvalue())
+            self.assertEqual(first_exit, 0)
+            self.assertEqual(first_packet["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+
+            dry_stdout = io.StringIO()
+            with redirect_stdout(dry_stdout):
+                dry_exit = main(["resume", "--root", str(root), "--continue", "--dry-run"])
+            dry_packet = json.loads(dry_stdout.getvalue())
+            self.assertEqual(dry_exit, 0)
+            self.assertTrue(dry_packet["resumable"])
+            self.assertEqual(dry_packet["next_attempt_number"], 2)
+
+            resume_stdout = io.StringIO()
+            with redirect_stdout(resume_stdout):
+                resume_exit = main(["resume", "--root", str(root), "--continue"])
+            resume_packet = json.loads(resume_stdout.getvalue())
+
+            self.assertEqual(resume_exit, 0)
+            self.assertEqual(resume_packet["terminal_state"], "PHASE_1_STABLE")
+            self.assertEqual(resume_packet["round_number"], 4)
+            self.assertTrue(resume_packet["ready_for_phase_2"])
+            self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_1.json").exists())
+            self.assertIn("Clarified by fake editor.", root.joinpath("spec.md").read_text(encoding="utf-8"))
+
     def test_decision_summary_writes_mechanical_summary(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -719,13 +885,23 @@ from pathlib import Path
 
 out = None
 args = sys.argv[1:]
+cd_path = Path.cwd()
 for index, arg in enumerate(args):
     if arg == "--output-last-message":
         out = args[index + 1]
+    if arg == "--cd" and index + 1 < len(args):
+        cd_path = Path(args[index + 1])
 prompt = sys.stdin.read()
 round_number = int(re.search(r"The top-level object MUST set round_number to ([0-9]+)\\.", prompt).group(1))
 before_hash = re.search(r"The draft_before_hash MUST be ([a-f0-9]{64})\\.", prompt).group(1)
-draft = prompt.split("\\nDraft:\\n", 1)[1]
+
+def read_draft_from_prompt():
+    found = re.search(r"Draft path: ([^\\n]+)", prompt)
+    if found:
+        return (cd_path / found.group(1)).read_text(encoding="utf-8")
+    return prompt.split("\\nDraft:\\n", 1)[1]
+
+draft = read_draft_from_prompt()
 after_hash = hashlib.sha256(draft.encode("utf-8")).hexdigest()
 artifact = {
     "round_number": round_number,

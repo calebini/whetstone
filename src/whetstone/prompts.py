@@ -35,6 +35,9 @@ def render_reviewer_prompt(
     draft: str,
     rubric: str | None = None,
     declaration: str | None = None,
+    draft_path: str | None = None,
+    rubric_path: str | None = None,
+    declaration_path: str | None = None,
     phase: str = "phase_1",
     section_ids: list[str] | None = None,
     round_number: int = 1,
@@ -83,12 +86,40 @@ def render_reviewer_prompt(
     if phase == "phase_1":
         lines.append("For Phase 1, set oscillation_key to null.")
     if phase == "phase_2":
-        lines.extend(["", _phase_2_declaration_context(declaration), "", _phase_2_classification_table(section_ids or [])])
-    lines.extend(["", "Rubric:", rubric_text, "", "Draft:", draft])
+        lines.extend(
+            [
+                "",
+                _phase_2_declaration_context(declaration, declaration_path=declaration_path),
+                "",
+                _phase_2_classification_table(section_ids or []),
+            ]
+        )
+    if draft_path or rubric_path:
+        lines.extend(
+            [
+                "",
+                "Context files:",
+                "- Read the files listed in this section before producing the JSON response.",
+                "- Do not read any unlisted file.",
+                "- When needed, use read-only client-native file access or read-only shell commands only for the listed context file paths.",
+                "- Do not inspect unrelated repository files, use web search, or call tools for anything except reading listed context files.",
+            ]
+        )
+        if draft_path:
+            lines.append(f"- Draft path: {draft_path}")
+        if rubric_path:
+            lines.append(f"- Rubric path: {rubric_path}")
+        elif rubric is None:
+            lines.append("- Rubric: (no rubric provided)")
+        if declaration_path:
+            lines.append(f"- Declaration artifact path: {declaration_path}")
+        lines.append("Use the listed context files as authoritative input content.")
+    else:
+        lines.extend(["", "Rubric:", rubric_text, "", "Draft:", draft])
     return "\n".join(lines)
 
 
-def _phase_2_declaration_context(declaration: str | None) -> str:
+def _phase_2_declaration_context(declaration: str | None, *, declaration_path: str | None = None) -> str:
     lines = [
         "Phase 2 declaration artifact rules:",
         "- `Draft` below is spec.md source content only.",
@@ -102,7 +133,9 @@ def _phase_2_declaration_context(declaration: str | None) -> str:
         "- The Orchestrator will change reviewer_final_status and declaration_status to accepted only after this review returns no in-scope declaration or target-matrix blockers/majors.",
         "- Verify declaration hash, rubric hash, issue counts, rubric gap counts, target-matrix alignment, and source-spec readiness; exclude staging status fields from findings.",
     ]
-    if declaration is None:
+    if declaration_path is not None:
+        lines.extend(["", "Declaration artifact:", f"(read from {declaration_path})"])
+    elif declaration is None:
         lines.extend(["", "Declaration artifact:", "(not provided for this review)"])
     else:
         lines.extend(["", "Declaration artifact:", declaration])
@@ -159,17 +192,22 @@ def render_editor_prompt(
     *,
     draft: str,
     reviewer_feedback_json: str,
+    draft_path: str | None = None,
+    reviewer_feedback_path: str | None = None,
     phase: str = "phase_1",
     round_number: int = 1,
     draft_before_hash_value: str | None = None,
     draft_after_hash_value: str | None = None,
     capture_only: bool = True,
+    synthesis_report_path: str | None = None,
 ) -> str:
     lines = [
         "You are the Whetstone editor.",
         "Apply or decline feedback according to the spec authority model.",
-        "Use only the Draft and Reviewer feedback JSON provided in this prompt.",
-        "Do not inspect repository files, run shell commands, use web search, or call tools.",
+        "Use only the Draft and Reviewer feedback JSON provided in this prompt or in the listed context files.",
+        "If context files are listed, you MUST read those files and may inspect only those files.",
+        "When needed, use read-only client-native file access or read-only shell commands only for the listed context file paths.",
+        "Do not inspect unrelated repository files, use web search, or call tools for anything except reading listed context files.",
         "Do not rely on external documents, ambient workspace context, or prior run artifacts.",
         "",
         "Return only a single JSON object matching editor_summary.json.",
@@ -184,6 +222,18 @@ def render_editor_prompt(
         lines.append("Phase 2 declaration artifact rule: `convergence_declaration.md` is Orchestrator-owned and separate from spec.md.")
         lines.append("Do not add convergence declaration text or acceptance statements to spec.md.")
         lines.append("If feedback asks for a convergence declaration inside spec.md, decline it as out_of_scope unless the Orchestrator explicitly supplied that text in the editable draft.")
+    if synthesis_report_path:
+        lines.extend(
+            [
+                "",
+                "Timeout-aware bounded synthesis guidance:",
+                "- The previous Editor attempt timed out or this profile shows EXPANDING_CONTRACT_SURFACE.",
+                "- Read the contract surface report listed in context files.",
+                "- Prefer a bounded synthesis over the report's listed sections and contract families instead of broad unrelated rewriting.",
+                "- Preserve global coherence and still return draft_after_content as the complete revised draft text.",
+                "- Do not omit unrelated sections from draft_after_content.",
+            ]
+        )
     if capture_only:
         lines.append("This live round is capture-only; do not assume the repository draft is mutated by this prompt.")
         lines.append("In capture-only mode, feedback may be accepted in substance while its issue remains unresolved because no draft text changed.")
@@ -215,14 +265,31 @@ def render_editor_prompt(
             "If there are no entries for an array field, return an empty array for that field.",
         ]
     )
-    lines.extend(
-        [
-            "",
-            "Reviewer feedback JSON:",
-            reviewer_feedback_json,
-            "",
-            "Draft:",
-            draft,
-        ]
-    )
+    if draft_path or reviewer_feedback_path:
+        lines.extend(
+            [
+                "",
+                "Context files:",
+                "- Read the files listed in this section before producing the JSON response.",
+                "- Do not read any unlisted file.",
+            ]
+        )
+        if reviewer_feedback_path:
+            lines.append(f"- Reviewer feedback JSON path: {reviewer_feedback_path}")
+        if draft_path:
+            lines.append(f"- Draft path: {draft_path}")
+        if synthesis_report_path:
+            lines.append(f"- Contract surface report path: {synthesis_report_path}")
+        lines.append("Use the listed context files as authoritative input content.")
+    else:
+        lines.extend(
+            [
+                "",
+                "Reviewer feedback JSON:",
+                reviewer_feedback_json,
+                "",
+                "Draft:",
+                draft,
+            ]
+        )
     return "\n".join(lines)

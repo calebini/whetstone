@@ -17,7 +17,9 @@
     "last_accepted_draft_hash",
     "last_draft_hash",
     "exit_reason",
-    "recommendation"
+    "recommendation",
+    "profile_status",
+    "last_reviewer_findings"
   ],
   "properties": {
     "terminal_state": { "$ref": "common.schema.json#/$defs/terminalState" },
@@ -54,7 +56,81 @@
     "recommendation": {
       "type": "string",
       "enum": ["continue_phase_1", "narrow_scope", "manual_review_required"]
+    },
+    "profile_status": { "$ref": "technical_failure_report.schema.json#/$defs/profileStatus" },
+    "last_reviewer_findings": {
+      "anyOf": [
+        { "$ref": "technical_failure_report.schema.json#/$defs/lastReviewerFindings" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "$defs": {
+    "profileStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profiles",
+        "unverified_profiles",
+        "exhausted_profiles",
+        "profiles_remaining",
+        "total_round_budget"
+      ],
+      "properties": {
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["profile", "clean", "rounds_used", "round_budget", "exhausted", "residual_status", "active"],
+            "properties": {
+              "profile": { "type": "string", "minLength": 1 },
+              "clean": { "type": "boolean" },
+              "rounds_used": { "type": "integer", "minimum": 0 },
+              "round_budget": { "type": "integer", "minimum": 1 },
+              "exhausted": { "type": "boolean" },
+              "residual_status": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": ["exhausted_with_residuals", "halted_oscillation"]
+                  },
+                  { "type": "null" }
+                ]
+              },
+              "active": { "type": "boolean" }
+            }
+          }
+        },
+        "unverified_profiles": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "exhausted_profiles": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "profiles_remaining": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "total_round_budget": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "lastReviewerFindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["round_number", "profile", "blocker_count", "major_count", "feedback_ids"],
+      "properties": {
+        "round_number": { "type": "integer", "minimum": 1 },
+        "profile": { "type": "string", "minLength": 1 },
+        "blocker_count": { "type": "integer", "minimum": 0 },
+        "major_count": { "type": "integer", "minimum": 0 },
+        "feedback_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
     }
   }
 }
-

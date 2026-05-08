@@ -5,11 +5,18 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import shlex
 from typing import Any
 
 from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
 from whetstone.live import run_telemetry_totals
+from whetstone.scheduler import (
+    default_phase_1_scheduler,
+    default_phase_2_scheduler,
+    resolved_phase_1_profile_budgets,
+    resolved_phase_2_profile_budgets,
+)
 
 
 ROUND_REQUIRED_ARTIFACTS = (
@@ -46,6 +53,11 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     terminal_report_path = _terminal_report_path(rounds_dir)
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
     apply_back = _apply_back_status(root, rounds_dir, run_state)
+    resume_status = _resume_status(root, rounds_dir, run_state)
+    default_review_round_budget = default_phase_1_scheduler(config.review_profile_budgets).total_round_budget()
+    default_convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
+    default_review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    default_convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
     packet = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "root": str(root),
@@ -62,16 +74,25 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "phase_2_rounds_completed": (run_state.get("phase_2_rounds_completed") if run_state else None)
         or inferred_rounds.get("phase_2_rounds_completed"),
         "review_max_rounds": (run_state.get("review_max_rounds") if run_state else None) or config.review_max_rounds,
+        "review_round_budget": (run_state.get("review_round_budget") if run_state else None)
+        or default_review_round_budget,
+        "review_profile_budgets": (run_state.get("review_profile_budgets") if run_state else None)
+        or default_review_profile_budgets,
         "convergence_max_rounds": (run_state.get("convergence_max_rounds") if run_state else None)
         or config.convergence.max_rounds,
+        "convergence_round_budget": (run_state.get("convergence_round_budget") if run_state else None)
+        or default_convergence_round_budget,
+        "convergence_profile_budgets": (run_state.get("convergence_profile_budgets") if run_state else None)
+        or default_convergence_profile_budgets,
         "total_absolute_round_budget": (run_state.get("total_absolute_round_budget") if run_state else None)
-        or (config.review_max_rounds + config.convergence.max_rounds),
+        or (default_review_round_budget + default_convergence_round_budget),
         "active_profile": run_state.get("active_profile") if run_state else None,
         "terminal_state": run_state.get("terminal_state") if run_state else None,
         "ready_for_phase_2": run_state.get("ready_for_phase_2") if run_state else False,
         "current_draft_hash": run_state.get("current_draft_hash") if run_state else None,
         "last_accepted_draft_hash": run_state.get("last_accepted_draft_hash") if run_state else None,
         "resumable": run_state.get("resumable") if run_state else False,
+        "resume": resume_status,
         "latest_round": latest_round,
         "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
         "decision_register": _decision_register(rounds_dir, root),
@@ -90,6 +111,7 @@ def render_status_text(status: dict[str, Any]) -> str:
     decision_summary = status.get("decision_summary") or {}
     telemetry = status.get("telemetry_totals") or {}
     apply_back = status.get("apply_back") or {}
+    resume_status = status.get("resume") or {}
     latest_round_text = "none"
     if latest_round:
         completeness = "complete" if latest_round.get("complete") else "partial"
@@ -101,12 +123,13 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"current_round: {_display(status.get('current_round'))}",
         f"current_absolute_round: {_display(status.get('current_absolute_round'))}",
         f"current_phase_round: {_display(status.get('current_phase_round'))}",
-        f"round_budgets: phase1={_display(status.get('review_max_rounds'))}, "
-        f"phase2={_display(status.get('convergence_max_rounds'))}, "
+        f"round_budgets: phase1={_display(status.get('review_round_budget'))}, "
+        f"phase2={_display(status.get('convergence_round_budget'))}, "
         f"absolute={_display(status.get('total_absolute_round_budget'))}",
         f"terminal_state: {_display(status.get('terminal_state'))}",
         f"active_profile: {_display(status.get('active_profile'))}",
         f"ready_for_phase_2: {str(bool(status.get('ready_for_phase_2'))).lower()}",
+        f"resumable: {str(bool(status.get('resumable'))).lower()}",
         f"last_accepted_draft_hash: {_display(status.get('last_accepted_draft_hash'))}",
         f"latest_round: {latest_round_text}",
         f"next_action: {_display(status.get('next_action'))}",
@@ -139,6 +162,9 @@ def render_status_text(status: dict[str, Any]) -> str:
                 f"{pending.get('client_role')} {pending.get('artifact_name')} "
                 f"attempt {pending.get('attempt_number')}"
             )
+    if resume_status.get("eligible"):
+        lines.append(f"resume_command: {resume_status.get('command')}")
+        lines.append(f"resume_continue_command: {resume_status.get('continue_command')}")
     return "\n".join(lines) + "\n"
 
 
@@ -260,6 +286,49 @@ def _apply_back_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] |
     return packet
 
 
+def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
+    packet: dict[str, Any] = {
+        "eligible": False,
+        "command": None,
+        "continue_command": None,
+        "reason": None,
+        "round_number": None,
+        "profile": None,
+        "client_role": None,
+        "failure_type": None,
+    }
+    if not run_state or run_state.get("terminal_state") != "HALTED_CLIENT_TIMEOUT":
+        return packet
+    error = _read_json_object(rounds_dir / "artifact_validation_error.json")
+    if error is None:
+        packet["reason"] = "missing artifact_validation_error.json"
+        return packet
+    packet.update(
+        {
+            "round_number": error.get("round_number"),
+            "profile": error.get("profile"),
+            "client_role": error.get("client_role"),
+            "failure_type": error.get("failure_type"),
+        }
+    )
+    if error.get("failure_type") != "client_timeout":
+        packet["reason"] = "terminal timeout artifact is not failure_type=client_timeout"
+        return packet
+    if error.get("phase") != "phase_1" or error.get("client_role") != "editor":
+        packet["reason"] = "only Phase 1 editor timeouts are resumable"
+        return packet
+    command_root = shlex.quote(str(root))
+    packet.update(
+        {
+            "eligible": True,
+            "reason": "supported Phase 1 Editor timeout",
+            "command": f"whetstone resume --root {command_root}",
+            "continue_command": f"whetstone resume --root {command_root} --continue",
+        }
+    )
+    return packet
+
+
 def _telemetry_totals(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
     computed_totals = run_telemetry_totals(rounds_dir)
     if computed_totals.get("round_count"):
@@ -331,8 +400,12 @@ def _next_action(run_state: dict[str, Any] | None, *, terminal_report_path: Path
         return "resolve_decision_intervention"
     if terminal_state == "PHASE_1_STABLE" and run_state.get("ready_for_phase_2") is True:
         return "run_live_phase2"
+    if terminal_state == "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS":
+        return "manual_review_required"
     if terminal_state == "CONVERGED":
         return "review_or_apply_back"
+    if terminal_state == "HALTED_CLIENT_TIMEOUT":
+        return "resume_or_increase_timeout"
     if terminal_state in {"TARGET_NOT_REACHED", "HALTED_CONFLICT", "HALTED_OSCILLATION", "HALTED_ARTIFACT_INVALID"}:
         return "manual_review_required"
     if terminal_report_path is not None:

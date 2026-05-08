@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.23 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.34 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.23` replaces the packaged governance rubric placeholder with the actual Convergence Rubric v6 reference and clarifies that lighter rubric profiles are aligned relaxations, not full governance-v6 substitutes.
+Version `0.34` adds an opt-in soft Phase 1 budget policy that completes all configured review-profile passes, records residual blocker/major or oscillation status per profile, and halts with an explicit residual-sweep terminal state instead of stopping at the first exhausted profile.
 
 ---
 
@@ -49,6 +49,11 @@ Version `0.23` replaces the packaged governance rubric placeholder with the actu
   - prompt_snapshot.json
   - prompt_snapshots/
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
+  - context/
+    - draft_before.md
+    - rubric.md (when rubric text is provided to the client)
+    - convergence_declaration.md (Phase 2 convergence-check rounds only)
+    - reviewer_feedback.json (Editor prompts only)
   - client_telemetry/
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
 - /rounds/oscillation_report.json (if detected)
@@ -57,11 +62,13 @@ Version `0.23` replaces the packaged governance rubric placeholder with the actu
 - /rounds/convergence_failure_report.json (if Phase 2 fails)
 - /rounds/config_validation_error.json (if preflight configuration validation fails)
 - /rounds/artifact_validation_error.json (if client artifact validation retries are exhausted)
-- /rounds/decision_register.json (if any decision point is captured)
-- /rounds/decision_register.md (human-readable decision register, if any decision point is captured)
-- /rounds/decision_summary.json (if decision summary generation is enabled and any decision point is captured)
-- /rounds/decision_summary.md (human-readable decision summary, if generated)
+- /rounds/decision_register.json (at terminal state)
+- /rounds/decision_register.md (human-readable decision register, at terminal state)
+- /rounds/decision_summary.json (at terminal state)
+- /rounds/decision_summary.md (human-readable decision summary, at terminal state)
 - /rounds/decision_intervention_request.json (if decision intervention is required)
+- /rounds/contract_surface_report.json (if expanding contract surface is detected)
+- /rounds/contract_surface_report.md (human-readable synthesis recommendation, if detected)
 - /rounds/rubric_manifest.json (required before Phase 2 review begins)
 
 ---
@@ -89,7 +96,12 @@ clients:
     model: ""     # MUST be a concrete model identifier
 
 review:
-  max_rounds: 12
+  max_rounds: 12             # legacy/safety metadata; profile_budgets drive scheduling
+  budget_exhaustion_policy: hard  # hard | soft
+  profile_budgets:
+    structural_integrity: 10
+    determinism: 10
+    operability: 10
 
 convergence:
   enabled: true
@@ -99,7 +111,10 @@ convergence:
   rubric_source: builtin      # builtin | custom
   rubric_label: ""            # REQUIRED when rubric_source = custom
   rubric_path: ./convergence_rubric.md
-  max_rounds: 8
+  max_rounds: 8              # legacy/safety metadata; profile_budgets drive scheduling
+  profile_budgets:
+    convergence_strict_check: 10
+    adversarial: 10
 
 decision_points:
   enabled: true
@@ -113,6 +128,18 @@ decision_points:
     trigger_on_authority_boundary_change: true
     trigger_on_scope_change: true
     trigger_on_new_enum_or_error_code: true
+
+timeouts:
+  reviewer_seconds: 360
+  editor_seconds: 900
+
+contract_surface_policy:
+  enabled: true
+  action: recommend_synthesis   # recommend_synthesis | report_only
+  min_profile_rounds: 4
+  recent_window: 4
+  min_recent_serious_rounds: 3
+  min_contract_families: 2
 ```
 
 Before entering `TECHNICAL_REVIEW`, the Orchestrator MUST validate configuration.
@@ -216,7 +243,7 @@ This tuple is audit metadata. It MUST NOT replace `rubric_content_hash` as the d
 3. Oscillation stop triggered
 4. Artifact validation failure exhausted
 5. Decision intervention required
-6. max_rounds reached
+6. profile budgets or max_rounds reached
 
 The first condition satisfied halts execution.
 
@@ -259,6 +286,14 @@ max_rounds reached:
 - if in Phase 2, also produce:
   - convergence_failure_report.json
 
+soft Phase 1 profile-budget sweep completed with residuals:
+- terminal_state: PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS
+- required artifacts:
+  - technical_failure_report.json
+  - latest draft_after.md
+  - spec.history.md
+  - profile_status with per-profile residual_status values
+
 preflight configuration invalid:
 - terminal_state: CONFIG_INVALID
 - required artifacts:
@@ -268,6 +303,17 @@ artifact validation failure exhausted:
 - terminal_state: HALTED_ARTIFACT_INVALID
 - required artifacts:
   - artifact_validation_error.json
+  - latest validated draft_after.md, or current round draft_before.md when no validated draft_after.md exists
+  - spec.history.md
+- if in Phase 1, also produce:
+  - technical_failure_report.json
+- if in Phase 2, also produce:
+  - convergence_failure_report.json
+
+client invocation timeout:
+- terminal_state: HALTED_CLIENT_TIMEOUT
+- required artifacts:
+  - artifact_validation_error.json with failure_type = client_timeout
   - latest validated draft_after.md, or current round draft_before.md when no validated draft_after.md exists
   - spec.history.md
 - if in Phase 1, also produce:
@@ -438,26 +484,26 @@ round_strategy:
     - profile: structural_integrity
       skip_if_clean: true
       repeat_if_blockers: true
-      max_repeats: 2
+      round_budget: 10
     - profile: determinism
       skip_if_clean: true
       repeat_if_blockers: true
-      max_repeats: 2
+      round_budget: 10
     - profile: operability
       skip_if_clean: false
       repeat_if_blockers: true
-      max_repeats: 1
+      round_budget: 10
 
   phase_2:
     - profile: convergence_strict_check
       repeat_if_blockers: true
-      max_repeats: 2
+      round_budget: 10
     - profile: adversarial
       repeat_if_blockers: true
-      max_repeats: 2
+      round_budget: 10
     - profile: convergence_strict_check
       repeat_if_blockers: true
-      max_repeats: 2
+      round_budget: 10
 ```
 
 ## ROUND SCHEDULING ALGORITHM
@@ -468,7 +514,7 @@ For each Phase 1 profile:
 - run the profile unless `skip_if_clean = true` and the current draft already has a valid clean result for that profile
 - the profile result is clean only when the Reviewer review of `draft_before.md` for that round returns zero in-scope blocker issues and zero in-scope major issues
 - editor resolution claims in `editor_summary.json` determine which findings remain unresolved after the edit, but they MUST NOT by themselves mark the reviewed profile clean
-- if the profile returns in-scope blocker or major issues and `repeat_if_blockers = true`, schedule the same profile again after editor revision until a later Reviewer pass verifies the current draft clean or `max_repeats` is reached
+- if the profile returns in-scope blocker or major issues and `repeat_if_blockers = true`, schedule the same profile again after editor revision until a later Reviewer pass verifies the current draft clean or the profile's `round_budget` is exhausted
 - if the Reviewer pass is clean but the Editor mutates the draft in the same round, that clean result applies only to the pre-edit draft and MUST NOT mark the post-edit draft clean; the same profile requires a later clean verification pass unless a computable skip rule applies
 - if the editor mutates any section whose canonical section ID matches the profile's resolved focus anchors, previous clean status for that profile is invalidated
 - if the editor mutates only sections outside the profile's resolved focus anchors, previous clean status for that profile remains valid
@@ -491,9 +537,9 @@ For `target_phase = final` and `target_mode = strict`, the Orchestrator MUST NOT
 
 If a Phase 2 profile is not run because of an explicit future skip condition, the skip condition MUST be persisted in `profile_used.yaml` and MUST count as a clean result only if the skip rule is computable from current artifacts.
 
-If Phase 2 reaches the end of its configured profile sequence without clean convergence and Phase 2 round budget remains, the Orchestrator MUST start the Phase 2 profile sequence again from its first configured profile.
+If Phase 2 reaches the end of its configured profile sequence without clean convergence, the Orchestrator MUST halt with `TARGET_NOT_REACHED` and produce `convergence_failure_report.json` unless a future explicit schedule-loop rule is configured.
 
-If Phase 2 reaches `convergence.max_rounds` before clean convergence, the Orchestrator MUST halt with `TARGET_NOT_REACHED` and produce `convergence_failure_report.json`.
+If Phase 2 exhausts its configured profile-level round budgets before clean convergence, the Orchestrator MUST halt with `TARGET_NOT_REACHED` and produce `convergence_failure_report.json`.
 
 Phase 2 completes only when clean convergence is achieved.
 
@@ -503,6 +549,97 @@ Clean convergence is achieved when:
 - the declaration is accepted under the convergence declaration criteria, and
 - every required distinct Phase 2 profile has produced a clean Reviewer result for the current unmodified draft lineage,
 - no halt condition with higher or equal precedence has already fired.
+
+`rounds/run_state.json` MUST expose both configured and effective profile budgets. `configured_review_profile_budgets` and `configured_convergence_profile_budgets` preserve the explicit config overrides supplied by the operator. `review_profile_budgets` and `convergence_profile_budgets` MUST contain the resolved effective budgets used by the scheduler, including defaults for omitted profiles.
+
+`rounds/run_state.json` MUST also include `effective_run_config`, a compact persisted run-identity block used by resume. It MUST include:
+
+```yaml
+effective_run_config:
+  review_profile_budgets: map<string, integer>
+  review_budget_exhaustion_policy: hard | soft
+  convergence_profile_budgets: map<string, integer>
+  decision_points:
+    enabled: boolean
+    mode: end_of_cycle | intervention
+    intervention_thresholds:
+      severities: [blocker | major | minor | nit]
+      trigger_on_requirement_strength_change: boolean
+      trigger_on_authority_boundary_change: boolean
+      trigger_on_scope_change: boolean
+      trigger_on_new_enum_or_error_code: boolean
+  timeouts:
+    reviewer_seconds: integer | null
+    editor_seconds: integer | null
+  contract_surface_policy:
+    enabled: boolean
+    action: recommend_synthesis | report_only
+    min_profile_rounds: integer
+    recent_window: integer
+    min_recent_serious_rounds: integer
+    min_contract_families: integer
+```
+
+The budget maps in `effective_run_config` MUST be the resolved effective maps used by the scheduler, not merely the operator-supplied override maps.
+
+`review_budget_exhaustion_policy` controls only Phase 1 profile-budget exhaustion and Phase 1 profile-level oscillation handling:
+
+- `hard`: the Orchestrator preserves the default strict behavior. A profile that exhausts its budget with unresolved or unverified blocker/major status prevents further Phase 1 advancement and ultimately halts with `TARGET_NOT_REACHED`, unless a higher-precedence halt fires first.
+- `soft`: the Orchestrator MAY advance from an exhausted or oscillating Phase 1 profile to the next configured Phase 1 profile, but it MUST mark the prior profile with a residual status and MUST NOT mark the profile clean.
+
+Soft budget mode is a diagnostic sweep mode, not convergence. If all Phase 1 profiles have been visited but one or more required profiles has residual status, the Orchestrator MUST halt with `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, produce `technical_failure_report.json`, set `ready_for_phase_2 = false`, and require external input before any Phase 2 run.
+
+Allowed Phase 1 residual statuses are:
+
+- `exhausted_with_residuals`: the profile consumed its configured budget without valid clean Reviewer verification for the current draft.
+- `halted_oscillation`: an oscillation stop condition was detected for the profile, but soft budget mode advanced the sweep to preserve cross-profile diagnostic coverage.
+
+When soft mode converts a Phase 1 oscillation into a residual profile status, the Orchestrator MUST still persist `oscillation_report.json`. The top-level `run_state.json` terminal state remains the authority for whether the overall run halted immediately or continued the sweep.
+
+---
+
+## EXPANDING CONTRACT SURFACE
+
+`EXPANDING_CONTRACT_SURFACE` is a non-terminal diagnostic condition. It means repeated serious findings in one profile indicate that the system is no longer merely patching isolated defects; it is discovering or creating an immature contract family whose schemas, enums, validation rules, failure semantics, mapping tables, ordering rules, artifact semantics, or invocation surfaces need a holistic synthesis pass.
+
+When enabled, the Orchestrator SHOULD evaluate expanding-contract-surface evidence after each successful Phase 1 reviewer/editor round. The detector SHOULD consider:
+
+- number of rounds already spent on the current profile
+- count of recent rounds with in-scope blocker or major findings
+- clustering of serious findings around contract-bearing concepts such as schemas, validation, failure mapping, ordering, artifacts, checkpoints, replay behavior, or interfaces
+- affected sections and feedback IDs across the recent window
+- whether new serious findings continue to appear after previous Editor fixes
+
+Detection MUST NOT by itself mark a profile clean, halt the run, or waive accepted-draft requirements.
+
+If detected, the Orchestrator MUST persist:
+
+```yaml
+/rounds/contract_surface_report.json:
+  detected: true
+  type: EXPANDING_CONTRACT_SURFACE
+  round_number: integer
+  profile: string
+  draft_hash: sha256
+  profile_rounds_observed: integer
+  recent_window: integer
+  serious_recent_rounds: integer
+  contract_families: [string]
+  affected_sections: [string]
+  suspected_feedback_ids: [string]
+  round_evidence: [object]
+  recommendation: synthesis_pass_recommended
+  synthesis_scope:
+    sections: [string]
+    contract_families: [string]
+    instruction: string
+```
+
+`contract_surface_report.md` SHOULD summarize the same information for operators.
+
+When a matching `contract_surface_report.json` exists for the active profile, Editor prompts MAY include timeout-aware bounded synthesis guidance. A resumed Editor prompt after timeout SHOULD tell the Editor to read the contract surface report, prefer bounded synthesis over the report's listed sections and contract families, preserve global coherence, and still return `draft_after_content` as the complete revised draft text.
+
+The initial action is `recommend_synthesis`. Future versions MAY add automatic synthesis-pass scheduling, but automatic synthesis MUST remain explicit in configuration and MUST NOT silently replace normal profile review.
 
 ---
 
@@ -520,12 +657,21 @@ A clean profile does not imply an accepted draft.
 
 ## ROUND BUDGET HANDLING
 
-Unused Phase 1 rounds are not carried over.
-Each phase has an independent max_rounds budget.
+Round budgets are controlled at the profile-step level.
+
+Each configured profile step MUST define `round_budget`, an integer greater than or equal to 1. The budget counts Reviewer passes for that profile step. Editor retries caused by invalid artifacts do not consume profile budget unless a validated Reviewer pass is accepted for the round.
+
+`review.max_rounds` and `convergence.max_rounds` MAY be retained as legacy/safety metadata for operator display and backward compatibility, but they MUST NOT be the primary scheduler stop condition when profile-level budgets are configured.
+
+Unused profile budget is not carried over to later profiles or phases.
 
 Phase 2 may halt before consuming its full budget if clean convergence is achieved.
 
-Phase 1 max_rounds failure is a hard stop and does not proceed automatically to Phase 2.
+When `review_budget_exhaustion_policy = hard`, Phase 1 profile-budget exhaustion is a hard stop if any required Phase 1 profile lacks valid clean status or the current draft is not accepted. It does not proceed automatically to Phase 2.
+
+When `review_budget_exhaustion_policy = soft`, Phase 1 profile-budget exhaustion advances to the next configured Phase 1 profile after recording residual status for the exhausted profile. After the final configured Phase 1 profile is exhausted or verified, the Orchestrator MUST evaluate Phase 1 stability. If stability is not achieved, it MUST halt with `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS` rather than `TARGET_NOT_REACHED`.
+
+Soft budget mode MUST NOT weaken accepted-draft requirements, clean-profile requirements, convergence readiness, or Phase 2 entry. It only changes whether Phase 1 stops immediately on the first exhausted/oscillating profile or completes the remaining profile sweep for diagnostic value.
 
 ---
 
@@ -887,6 +1033,13 @@ When an applied live round expects the Editor to generate a revised draft, the E
 
 Persisted `editor_summary.json` MUST contain the Orchestrator-computed `draft_after_hash`. The Editor is not authoritative for derived hashes in editor-generated applied revisions.
 
+The Orchestrator MUST reject destructive Editor-generated draft replacements before writing `draft_after.md` or mutating `spec.md`. At minimum, when `draft_before.md` is non-empty, the Orchestrator MUST reject:
+- empty or whitespace-only `draft_after_content`
+- known Editor blocked/error placeholder text in `draft_after_content`
+- near-empty replacements that are destructively smaller than a large non-empty draft
+
+Such rejection is an artifact validation failure, not an accepted draft mutation. The invalid attempt MUST be persisted and the previous valid draft MUST remain authoritative.
+
 When `draft_after.md` is supplied by an external fixture or explicit Orchestrator input, `draft_after_content` MAY be null or omitted.
 
 When a `declined_feedback` item has `decline_reason = deferred_to_later_round`, `target_profile` and `target_round_or_phase` MUST be non-null strings. For every other decline reason, they MAY be null.
@@ -943,7 +1096,8 @@ decision_id = "dec_" + first_16_hex_chars(decision_fingerprint)
 
 `decision_points.mode = end_of_cycle`:
 - The Orchestrator MUST persist per-round `decision_points.json`.
-- The Orchestrator MUST aggregate all captured decision points into `/rounds/decision_register.json` and `/rounds/decision_register.md` at terminal state.
+- The Orchestrator MUST aggregate per-round decision points into `/rounds/decision_register.json` and `/rounds/decision_register.md` at terminal state.
+- Terminal decision register and summary artifacts MUST be produced even when no decision points were captured, with `decision_points = []` and `unresolved_human_decision_count = 0`.
 - Decision points with `requires_human_decision = true` MUST NOT block Phase 1 stability, Phase 2 progression, or convergence solely by existing.
 - Terminal output MUST disclose whether unresolved human decision points exist.
 
@@ -1189,7 +1343,7 @@ invalid_fields:
 `artifact_validation_error.json` MUST contain:
 
 ```yaml
-terminal_state: HALTED_ARTIFACT_INVALID
+terminal_state: HALTED_ARTIFACT_INVALID | HALTED_CLIENT_TIMEOUT
 generated_at: string
 round_number: integer
 phase: phase_1 | phase_2
@@ -1199,6 +1353,7 @@ client:
   name: string
   version: string
   model: string
+failure_type: artifact_validation | client_timeout | client_error
 attempts:
   - attempt_number: integer
     artifact_name: string
@@ -1238,9 +1393,70 @@ If the retry validates, the Orchestrator continues with the validated artifact.
 
 If the retry fails, the Orchestrator MUST halt with `HALTED_ARTIFACT_INVALID` and produce `/rounds/artifact_validation_error.json`.
 
+If a client invocation times out before returning an artifact, the Orchestrator MUST NOT retry the same prompt automatically. It MUST halt with `HALTED_CLIENT_TIMEOUT`, produce `/rounds/artifact_validation_error.json`, set `failure_type = client_timeout`, and produce the phase-appropriate companion failure report. Timeout halts are distinct from artifact validation failures because no candidate artifact was available to validate.
+
 When `HALTED_ARTIFACT_INVALID` occurs, `last_valid_draft_path` MUST point to the most recent draft snapshot the Orchestrator can safely treat as validated. If reviewer artifact validation fails before any validated review exists for the round, this MUST be the current round `draft_before.md`. If editor artifact validation fails after a validated reviewer artifact, this MAY be the current round `draft_after.md` only when that file is an Orchestrator-owned snapshot and not an unvalidated client artifact.
 
+When `HALTED_CLIENT_TIMEOUT` occurs, `last_valid_draft_path` follows the same rule as artifact validation failures. A timed-out Reviewer points to `draft_before.md`. A timed-out Editor after validated reviewer feedback MAY point to the Orchestrator-owned `draft_after.md` snapshot for the round.
+
 For Phase 2 reviewer feedback, an invalid or missing reviewer-proposed `oscillation_key`, an invalid enum value, or a `section_id` that does not resolve to exactly one canonical section ID is an artifact validation failure under this policy.
+
+---
+
+## RESUME POLICY
+
+The Orchestrator MAY resume only explicitly resumable terminal states. In this version, the supported resume path is:
+
+- `terminal_state = HALTED_CLIENT_TIMEOUT`
+- `failure_type = client_timeout`
+- `phase = phase_1`
+- `client_role = editor`
+- the halted round already has validated `reviewer_feedback.json`
+
+Resume MUST be hash-guarded. Before invoking the Editor, the Orchestrator MUST verify that the current `spec.md` hash equals the halted artifact's `last_valid_draft_hash`. If the hash differs, resume MUST refuse unless a future explicit override is defined.
+
+Resume MUST NOT rerun prior rounds. For the supported Editor-timeout path, resume MUST:
+- read `rounds/run_state.json`
+- read `rounds/artifact_validation_error.json`
+- read the halted round's `draft_before.md` and `reviewer_feedback.json`
+- validate the persisted Reviewer feedback against the halted round context
+- reconstruct Phase 1 scheduler state from completed prior rounds
+- verify the scheduler's next profile matches the halted profile
+- invoke only the Editor for the halted round
+- start resumed attempt numbering after the last recorded attempt number
+- preserve prior invalid attempt artifacts, timeout telemetry, and prompt snapshots
+- clear the top-level timeout terminal report only after the resumed round completes successfully
+- update `run_state.json`, `spec.md`, `draft_after.md`, `editor_summary.json`, `unresolved_issues.json`, `decision_points.json`, and `spec.history.md`
+
+Resume does not imply hidden client session reuse. It uses persisted file artifacts as the replay source of truth.
+
+Resume MUST inherit persisted effective run configuration from the halted run's `run_state.json` when present. At minimum, resume MUST inherit `review_profile_budgets`, `convergence_profile_budgets`, `decision_points`, and `timeouts` from `effective_run_config`. For compatibility with older runs, resume MAY fall back to top-level `run_state.json` `review_profile_budgets`, `convergence_profile_budgets`, and `timeouts` when `effective_run_config` is absent. Explicit CLI overrides supplied to the resume command take precedence over inherited run-state values.
+
+By default, resume recovers only the halted round and then stops. If invoked with `--continue`, the Orchestrator MAY continue Phase 1 after the recovered round succeeds. `resume --continue` MUST:
+- use the reconstructed scheduler state from completed prior rounds plus the recovered round result
+- start subsequent rounds at the next round number
+- preserve all prior round artifacts and timeout diagnostics
+- continue applying the normal Phase 1 scheduling algorithm, profile budgets, validation rules, timeout rules, oscillation checks, and halting conditions
+- halt normally on `PHASE_1_STABLE`, `TARGET_NOT_REACHED`, `HALTED_CLIENT_TIMEOUT`, `HALTED_ARTIFACT_INVALID`, `HALTED_CONFLICT`, or `HALTED_OSCILLATION`
+- update `run_state.json` and `spec.history.md` after each continued round
+
+`resume --continue` MUST NOT retroactively alter prior rounds, rerun the halted round's Reviewer, or restart the profile sequence.
+
+`resume --dry-run` MUST validate resume eligibility without invoking any client. It MUST perform the same terminal-state, failure-type, role, phase, hash, scheduler, and persisted Reviewer-feedback checks as live resume. It MUST report at minimum:
+- whether the run is resumable
+- halted `round_number`
+- halted `profile`
+- `phase`
+- `client_role`
+- `failure_type`
+- current and expected draft hashes
+- next Editor attempt number
+- whether `--continue` was requested
+- next continued round number when computable
+
+Read-only run status MUST expose whether a run is resumable and, when eligible, the exact `resume` and `resume --continue` commands an operator can run. Status guidance MUST be advisory; live resume remains responsible for enforcing the hash guard and artifact validation before invoking the Editor.
+
+If a resumed Editor call times out again, the Orchestrator MUST halt again with `HALTED_CLIENT_TIMEOUT` and preserve both the original and resumed attempt artifacts.
 
 ---
 
@@ -1570,6 +1786,8 @@ Includes:
 - reviewer_final_status
 - last_accepted_draft_hash
 - last_draft_hash
+- profile_status
+- last_reviewer_findings: object | null
 - exit_reason
 - recommendation:
   - return_to_phase_1
@@ -1594,6 +1812,17 @@ The system does not auto-apply recommendation.
 
 `reviewer_final_status = not_run` means Phase 2 halted before a final declaration verification review could run.
 
+`profile_status` MUST explain verification state at halt time. It MUST include:
+- `profiles`: ordered profile-step records with `profile`, `rounds_used`, `round_budget`, `clean`, `exhausted`, `residual_status`, and `active`
+- `unverified_profiles`: profile names whose latest relevant Reviewer pass has not verified the current draft clean
+- `exhausted_profiles`: profile names whose profile-step budget was consumed without a clean verification result
+- `profiles_remaining`: profile names with unconsumed profile-step budget
+- `total_round_budget`: sum of profile-step `round_budget` values for the phase
+
+`residual_status` MUST be null when the profile has no residual condition. In Phase 1 soft budget mode, it MUST be `exhausted_with_residuals` or `halted_oscillation` when the Orchestrator advances past a non-clean profile for diagnostic sweep coverage.
+
+`last_reviewer_findings` MUST summarize the last accepted Reviewer batch when available. It MUST include `round_number`, `profile`, `blocker_count`, `major_count`, and `feedback_ids` for in-scope blocker/major feedback. This field exists so a failure report can distinguish unresolved Editor issues from missing Reviewer verification.
+
 ---
 
 ## PHASE 1 FAILURE HANDLING
@@ -1610,6 +1839,8 @@ Includes:
 - unresolved_oscillation
 - last_accepted_draft_hash
 - last_draft_hash
+- profile_status
+- last_reviewer_findings: object | null
 - exit_reason
 - recommendation:
   - continue_phase_1
@@ -1621,6 +1852,10 @@ ACTION:
 Orchestrator MUST halt and require external input.
 
 The system does not proceed automatically to Phase 2.
+
+In Phase 1, empty `unresolved_blockers` and `unresolved_major_issues` do not imply Phase 1 stability. They mean the latest Editor summary did not leave blocker/major issues unresolved. Phase 1 stability still requires valid clean Reviewer status for every required Phase 1 profile and an accepted current draft. If profile-budget exhaustion occurs before that verification, `technical_failure_report.json` MUST make the missing verification visible through `profile_status` and `last_reviewer_findings`.
+
+If `terminal_state = PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, the report means Phase 1 soft budget mode completed the configured profile sweep but did not produce a Phase 1 stable draft. The report MUST be interpreted as a manual-review checkpoint, not a successful stabilization result.
 
 ---
 
@@ -1680,7 +1915,9 @@ CONVERGENCE_REVIEW -> CONVERGED (if declaration accepted)
 ANY STATE -> HALTED_CONFLICT (on blocker-level conflict escalation)
 ANY STATE -> HALTED_OSCILLATION (on oscillation stop)
 ANY STATE -> HALTED_ARTIFACT_INVALID (on exhausted artifact validation retry)
+ANY STATE -> HALTED_CLIENT_TIMEOUT (on client invocation timeout)
 ANY STATE -> PAUSED_DECISION (on decision intervention required)
+TECHNICAL_REVIEW -> PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS (when soft Phase 1 profile sweep completes with residual blocker/major or oscillation status)
 ANY STATE -> TARGET_NOT_REACHED (on max_rounds)
 
 If both `CONVERGENCE_REVISION` and `DECLARATION_REVISION` guards are true for the same review, `CONVERGENCE_REVISION` takes precedence because source-spec changes may invalidate declaration artifacts.
@@ -1755,6 +1992,7 @@ prompt_snapshot.json MUST include:
 - rubric manifest path in Phase 2
 - draft_hash
 - semantic_change_hash when a draft mutation is requested
+- context_files manifest when file-backed context is used
 
 `prompt_snapshot.json` is the round-level convenience snapshot. It MAY be updated as the round advances from reviewer prompt to editor prompt.
 
@@ -1772,7 +2010,22 @@ prompt_snapshot.json MUST include:
 - rubric profile
 - rubric source
 - rubric manifest path in Phase 2
+- context_files manifest when file-backed context is used
 - validation errors that caused the attempt, or an empty list for the first attempt
+
+Live client prompts MAY use file-backed context for large authoritative inputs. File-backed context MUST be written under `rounds/round-N/context/`, and prompt text MUST reference those files by path instead of duplicating the full content. This mechanism is intended for bulky round inputs such as the draft, rubric, convergence declaration, and reviewer feedback.
+
+When file-backed context is used:
+- the Orchestrator MUST persist each context file before the client attempt begins
+- the prompt MUST list only the context files the client is allowed to read
+- the prompt MUST explicitly allow the client to read the listed context files
+- each prompt snapshot MUST include a `context_files` manifest with `label`, `path`, and exact SHA256 of the context file content
+- context file paths SHOULD be workspace-relative when possible
+- context files referenced by an attempt snapshot MUST NOT be mutated after that snapshot is persisted
+- retry attempts MAY reuse the same context files when the authoritative inputs have not changed
+- deterministic replay uses the prompt text plus the referenced context file contents and hashes
+
+Clients MUST treat file-backed context as equivalent to inline prompt context. They MAY use read-only client-native file access or read-only shell commands solely to read the listed context file paths. They MUST NOT inspect unrelated repository files, use web search, or call tools for anything except reading listed context files.
 
 `client_telemetry/{client_role}-{artifact_name}-attempt-{attempt_number}.json` is the attempt-level client runtime telemetry artifact. It MUST be keyed to the same `client_role`, `artifact_name`, and `attempt_number` as the corresponding prompt snapshot when both exist. It MAY reference raw client envelopes or stderr/stdout captures but MUST NOT replace prompt snapshots or canonical reviewer/editor artifacts.
 
@@ -1805,7 +2058,7 @@ Future config MUST include:
 
 If implemented later, weighted mode MUST define numeric severity mapping, reviewer weights, and rounding behavior before use.
 
-Not implemented in 0.23.
+Not implemented in 0.34.
 
 ---
 

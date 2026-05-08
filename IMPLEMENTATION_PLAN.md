@@ -355,9 +355,125 @@ Acceptance:
 - [x] Persisted `editor_summary.json` hash matches stamped draft content
 - [x] Full unit suite passes
 
+### Gate 4.3: File-Backed Live Prompt Context
+
+Goal: reduce live prompt size and timeout pressure by persisting large authoritative inputs as round-local context files and referencing them by path plus hash.
+
+Tasks:
+
+- [x] Persist Reviewer context under `rounds/round-N/context/` before the attempt begins
+- [x] Persist Editor context under `rounds/round-N/context/` after Reviewer feedback is validated
+- [x] Render Reviewer prompts with draft/rubric/declaration paths instead of embedded bulky content
+- [x] Render Editor prompts with draft and reviewer-feedback paths instead of embedded bulky content
+- [x] Include `context_files` manifests in round-level and attempt-level prompt snapshots
+- [x] Use exact SHA256 content hashes for context file manifests
+- [x] Keep resume Editor attempts on the same file-backed prompt contract
+- [x] Update live CLI fixtures and prompt tests for file-backed context
+- [x] Document the file-backed context primitive in `spec.md`
+
+Acceptance:
+
+- [x] Focused live/prompt/CLI/resume tests pass with file-backed context
+- [x] Prompt snapshots identify every context file by label, path, and SHA256
+- [x] Editor and Reviewer prompts instruct clients to read only listed context files
+- [x] Full unit suite passes
+
+### Gate 4.4: File-Backed Context Hardening
+
+Goal: make file-backed live runs safe under real clients by allowing listed-file reads while preventing failed file access from wiping run drafts.
+
+Tasks:
+
+- [x] Update Reviewer and Editor prompts to explicitly allow read-only access to listed context files
+- [x] Keep file access constrained to listed context paths only
+- [x] Reject empty Editor-generated `draft_after_content` when the prior draft is non-empty
+- [x] Reject known Editor blocked/error placeholder text as a draft replacement
+- [x] Reject near-empty replacements for large non-empty drafts
+- [x] Preserve the prior valid draft when destructive draft validation fails
+- [x] Persist invalid destructive attempts as artifact validation failures
+- [x] Write terminal decision register and summary artifacts even when no decision points were captured
+- [x] Expose resolved effective profile budgets in `run_state.json`
+- [x] Preserve explicitly configured profile budget overrides separately from resolved defaults
+- [x] Update `spec.md` to define the hardened contract
+
+Acceptance:
+
+- [x] A client cannot replace a non-empty draft with empty content through `editor_summary.json`
+- [x] A blocked/error placeholder response cannot become `spec.md`
+- [x] `run_state.json` reports default profile budgets rather than `{}` when no overrides are configured
+- [x] Focused live/prompt/status/resume tests pass
+
+### Gate 4.5: Resume Effective Run Config Inheritance
+
+Goal: keep resumed runs faithful to the effective scheduling, decision, and timeout settings that were active when the run halted.
+
+Tasks:
+
+- [x] Persist `effective_run_config` in `rounds/run_state.json`
+- [x] Include effective profile budgets, decision-point configuration, and timeouts in `effective_run_config`
+- [x] Read persisted `effective_run_config` from `rounds/run_state.json` during `resume`
+- [x] Fall back to older top-level run-state budget/timeout fields when `effective_run_config` is absent
+- [x] Apply inherited run-state config before resume execution
+- [x] Preserve explicit resume CLI timeout overrides as highest precedence
+- [x] Add regression coverage for effective run config inheritance
+- [x] Update `spec.md` with the resume config inheritance rule
+
+Acceptance:
+
+- [x] Plain `resume` no longer falls back to default `editor_seconds` when the halted run used a different timeout
+- [x] Plain `resume` reconstructs Phase 1 with the halted run's persisted effective profile budgets
+- [x] Plain `resume --continue` uses the halted run's persisted decision-point mode and thresholds
+- [x] Focused resume/CLI/status tests pass
+
+### Gate 4.6: Expanding Contract Surface Detection
+
+Goal: detect when a profile is repeatedly discovering or creating a contract family instead of merely closing isolated findings, and give the Editor a bounded synthesis path.
+
+Tasks:
+
+- [x] Add `EXPANDING_CONTRACT_SURFACE` detector for repeated serious contract-bearing findings
+- [x] Persist `rounds/contract_surface_report.json`
+- [x] Persist human-readable `rounds/contract_surface_report.md`
+- [x] Keep detection non-terminal and advisory
+- [x] Include synthesis scope with affected sections and contract families
+- [x] Include matching contract surface report in Editor context files
+- [x] Add timeout-aware bounded synthesis guidance to Editor prompts
+- [x] Update `spec.md` to `0.33`
+- [x] Add regression coverage for detection and prompt guidance
+
+Acceptance:
+
+- [x] Repeated serious schema/failure/mapping findings produce a contract surface report
+- [x] Editor prompts reference the report and still require complete `draft_after_content`
+- [x] Focused live/prompt tests pass
+
+### Gate 4.7: Soft Phase 1 Profile Budget Sweep
+
+Goal: let operators run a full Phase 1 diagnostic sweep across all configured review profiles without pretending residual blockers, majors, or oscillation are convergence.
+
+Tasks:
+
+- [x] Add `review.budget_exhaustion_policy` with `hard | soft`
+- [x] Persist `review_budget_exhaustion_policy` in `effective_run_config`
+- [x] Let soft mode advance from an exhausted Phase 1 profile with residual status
+- [x] Let soft mode convert Phase 1 oscillation into profile residual status while preserving `oscillation_report.json`
+- [x] Add `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`
+- [x] Keep Phase 2 blocked unless Phase 1 reaches `PHASE_1_STABLE`
+- [x] Add `residual_status` to profile status schemas and reports
+- [x] Update `spec.md` to `0.34`
+- [x] Add regression coverage for exhausted-profile and oscillation residual sweeps
+
+Acceptance:
+
+- [x] Hard mode preserves existing strict budget halt behavior
+- [x] Soft mode completes all Phase 1 profiles and halts with residual sweep state when stability is not reached
+- [x] Residual profile status identifies exhausted and oscillating profiles
+- [x] Phase 2 remains unavailable after a residual sweep
+- [x] Focused scheduler/live/config/schema tests pass
+
 ## Remaining Build Checklist
 
-This checklist now tracks work remaining after Gates 1 through 4.2. Earlier live-client and live-round checklist items have been reconciled with the implemented gates above.
+This checklist now tracks work remaining after Gates 1 through 4.7. Earlier live-client and live-round checklist items have been reconciled with the implemented gates above.
 
 ### 1. Schema Completion
 
@@ -799,6 +915,88 @@ Acceptance:
 - [ ] Invalid Canonicalizer output can retry without rerunning Critic
 - [ ] Persisted `reviewer_feedback.json` is schema-valid and Orchestrator-canonicalized
 - [ ] Operator can trace Critic finding -> canonical feedback item -> editor handling
+
+### 15. Explanatory Failure Reports and Profile Budgets
+
+Goal: make `TARGET_NOT_REACHED` reports explain whether the draft still has unresolved issues or merely lacks reviewer-verified clean profile status, and move run budget control from phase-wide ceilings to profile-level constraints.
+
+Tasks:
+
+- [x] Add profile-level `round_budget` scheduling primitive
+- [x] Parse `review.profile_budgets` and `convergence.profile_budgets`
+- [x] Make live Phase 1 consume profile-step budgets instead of universal phase max rounds
+- [x] Make live Phase 2 consume profile-step budgets instead of universal phase max rounds
+- [x] Add `profile_status` and `last_reviewer_findings` to failure reports
+- [x] Update technical and convergence failure schemas
+- [x] Update `spec.md` to define the new scheduling and report contract
+- [x] Add soft profile-budget sweep option with residual status reporting
+- [ ] Add operator-facing status/help copy for profile budgets
+
+Acceptance:
+
+- [x] A run can halt with no unresolved Editor issues while still reporting unverified/exhausted profiles
+- [x] Failure reports distinguish Editor resolution from Reviewer verification
+- [x] Profile budgets are visible in `run_state.json`
+- [x] Default profile budgets preserve the prior default scheduler shape
+- [x] Soft budget mode can complete a Phase 1 diagnostic sweep without allowing Phase 2
+- [ ] Live replay against a medium Foreman spec shows less artificial convergence behavior
+
+### 16. Client Timeout Semantics And Role-Specific Timeouts
+
+Goal: make client invocation timeouts an explicit terminal condition and allow Reviewer and Editor calls to use different timeout windows.
+
+Tasks:
+
+- [x] Add `HALTED_CLIENT_TIMEOUT` terminal state
+- [x] Add `failure_type = client_timeout` to the artifact failure diagnostic
+- [x] Make timeout companion reports use `HALTED_CLIENT_TIMEOUT`
+- [x] Parse `timeouts.reviewer_seconds` and `timeouts.editor_seconds`
+- [x] Use role-specific timeouts when constructing live Reviewer and Editor clients
+- [x] Add CLI overrides for reviewer/editor timeout seconds
+- [x] Persist timeout configuration in live `run_state.json`
+- [x] Update `spec.md` to define timeout semantics
+
+Acceptance:
+
+- [x] Timeout halts no longer report as generic `HALTED_ARTIFACT_INVALID`
+- [x] Timeout attempts are not retried automatically
+- [x] Schema validation failures still report as `HALTED_ARTIFACT_INVALID`
+- [x] Reviewer and Editor calls can have different configured timeout windows
+
+### 17. Narrow Resume From Editor Timeout
+
+Goal: recover expensive live runs that halt after validated Reviewer feedback but before the Editor returns a valid artifact.
+
+Tasks:
+
+- [x] Add `whetstone resume`
+- [x] Support `HALTED_CLIENT_TIMEOUT` with `phase_1` and `client_role = editor`
+- [x] Hash-guard resume against the halted draft hash
+- [x] Reuse persisted `draft_before.md` and `reviewer_feedback.json`
+- [x] Validate persisted Reviewer feedback before invoking the Editor
+- [x] Reconstruct Phase 1 scheduler state from prior completed rounds
+- [x] Resume Editor attempts at the next attempt number
+- [x] Preserve original timeout artifacts and per-attempt diagnostics
+- [x] Clear top-level timeout reports only after successful resume
+- [x] Update `run_state.json` and `spec.history.md` after resume
+- [x] Add `resume --continue` for continuing Phase 1 after the recovered round
+- [x] Continue from reconstructed scheduler state rather than restarting the profile sequence
+- [x] Persist continued-round history entries and state updates
+- [x] Add `resume --dry-run` planning with the same eligibility checks as live resume
+- [x] Make `status` expose exact resume and resume-continue commands for eligible timeout halts
+- [x] Add CLI-shaped timeout/resume-continue smoke coverage using fake clients
+
+Acceptance:
+
+- [x] Resume does not rerun prior rounds
+- [x] Resume does not rerun the halted round's Reviewer
+- [x] Resume refuses when current `spec.md` hash differs from the halted hash
+- [x] Successful resume writes `editor_summary.json`, `draft_after.md`, `unresolved_issues.json`, and decision artifacts
+- [x] Successful resume leaves the prior `editor_invalid_attempt_1.json` diagnostic in place
+- [x] `resume --continue` can complete the remaining Phase 1 profiles after recovering the failed round
+- [x] `resume --dry-run` validates the resume plan without invoking an Editor
+- [x] `status --format text` gives an operator copyable resume commands when a run is eligible
+- [x] A CLI smoke covers timeout -> dry-run -> resume-continue -> `PHASE_1_STABLE`
 
 ## Identity-System Notes
 

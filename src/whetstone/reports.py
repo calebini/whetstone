@@ -75,6 +75,8 @@ class ReportWriter:
         last_accepted_draft_hash: str | None,
         exit_reason: str,
         recommendation: str,
+        profile_status: dict[str, Any] | None = None,
+        last_reviewer_findings: dict[str, Any] | None = None,
         terminal_state: str = "TARGET_NOT_REACHED",
     ) -> Path:
         current_hash = draft_hash(self.store.read_spec())
@@ -92,6 +94,14 @@ class ReportWriter:
             "last_draft_hash": current_hash,
             "exit_reason": exit_reason,
             "recommendation": recommendation,
+            "profile_status": profile_status or {
+                "profiles": [],
+                "unverified_profiles": [],
+                "exhausted_profiles": [],
+                "profiles_remaining": [],
+                "total_round_budget": 0,
+            },
+            "last_reviewer_findings": last_reviewer_findings,
         }
         return self._write_terminal_json("technical_failure_report.json", packet, "technical_failure_report")
 
@@ -115,6 +125,8 @@ class ReportWriter:
         last_accepted_draft_hash: str | None,
         exit_reason: str,
         recommendation: str,
+        profile_status: dict[str, Any] | None = None,
+        last_reviewer_findings: dict[str, Any] | None = None,
         terminal_state: str = "TARGET_NOT_REACHED",
     ) -> Path:
         current_hash = draft_hash(self.store.read_spec())
@@ -140,6 +152,14 @@ class ReportWriter:
             "last_draft_hash": current_hash,
             "exit_reason": exit_reason,
             "recommendation": recommendation,
+            "profile_status": profile_status or {
+                "profiles": [],
+                "unverified_profiles": [],
+                "exhausted_profiles": [],
+                "profiles_remaining": [],
+                "total_round_budget": 0,
+            },
+            "last_reviewer_findings": last_reviewer_findings,
         }
         return self._write_terminal_json("convergence_failure_report.json", packet, "convergence_failure_report")
 

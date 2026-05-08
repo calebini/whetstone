@@ -25,7 +25,9 @@
     "last_accepted_draft_hash",
     "last_draft_hash",
     "exit_reason",
-    "recommendation"
+    "recommendation",
+    "profile_status",
+    "last_reviewer_findings"
   ],
   "properties": {
     "terminal_state": { "$ref": "common.schema.json#/$defs/terminalState" },
@@ -81,6 +83,13 @@
     "recommendation": {
       "type": "string",
       "enum": ["return_to_phase_1", "continue_convergence", "lower_target", "manual_review_required"]
+    },
+    "profile_status": { "$ref": "technical_failure_report.schema.json#/$defs/profileStatus" },
+    "last_reviewer_findings": {
+      "anyOf": [
+        { "$ref": "technical_failure_report.schema.json#/$defs/lastReviewerFindings" },
+        { "type": "null" }
+      ]
     }
   }
 }

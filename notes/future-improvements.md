@@ -136,3 +136,55 @@ Possible target semantics:
 - Consider allowing documented non-MVP majors to remain outside the accepted-draft gate when explicitly classified as deferred hardening.
 
 This should remain a future improvement until the behavior is manually trialed on a few specs and the policy line feels stable.
+
+## Domain-Specific Rubric Layers
+
+Whetstone may be a strong fit for domain-specific certification and regulated software workflows, where the hard part is not only making a spec buildable, but making it traceable to external standards, controls, evidence expectations, and certification gates.
+
+Swapping a custom convergence rubric already works as a lightweight path, but certification use cases likely deserve a first-class layered model rather than silently replacing the base buildability rubric.
+
+Potential model:
+
+```yaml
+rubric_layers:
+  - kind: buildability
+    profile: standard-v1
+    enforcement_mode: blocking
+  - kind: domain
+    profile: iso-13485-software-v1
+    source: custom
+    path: ./rubrics/iso-13485-software-v1.md
+    authority_refs:
+      - ISO 13485:2016
+      - FDA QMSR
+    enforcement_mode: blocking
+    traceability_required: true
+```
+
+Design intent:
+
+- Keep the base Whetstone rubric responsible for deterministic buildability, state legality, artifact integrity, and operability.
+- Let domain rubric layers evaluate domain-specific obligations such as named controls, required evidence, compliance language, safety categories, auditability, and certification traceability.
+- Avoid hiding the active standard by making every rubric layer explicit, versioned, hash-pinned, and persisted in manifests.
+- Allow `enforcement_mode: advisory | blocking` so early exploratory reviews can surface domain gaps without making every gap terminal.
+
+Possible artifacts:
+
+- `rounds/rubric_layers_manifest.json`
+- `rounds/domain_gap_report.json`
+- `rounds/domain_traceability_matrix.json`
+- `rounds/domain_evidence_requirements.json`
+
+Potential schema additions:
+
+- Add `rubric_layer` to reviewer findings and rubric gaps.
+- Add `authority_ref` or `control_id` for domain findings.
+- Add `evidence_required: true|false` and `evidence_type`.
+- Add `traceability_status: missing | partial | satisfied | not_applicable`.
+
+Open design questions:
+
+- Should domain layers run in Phase 1, Phase 2, or both?
+- Should domain gaps participate in accepted-draft gating, convergence gating, or a separate certification-readiness gate?
+- How should Whetstone handle copyrighted or proprietary standards that cannot be fully embedded in prompts?
+- Should built-in domain profiles ever exist, or should Whetstone only provide the framework and let users supply domain packs?

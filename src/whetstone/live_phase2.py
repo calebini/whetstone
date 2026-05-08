@@ -18,8 +18,14 @@ from whetstone.hashing import draft_hash, rubric_content_hash, semantic_changes
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, run_telemetry_totals
 from whetstone.oscillation import OscillationTracker
 from whetstone.reports import ReportWriter
+from whetstone.run_state import effective_run_config
 from whetstone.rubrics import RubricManifest, read_rubric_text, rubric_manifest_identity, write_rubric_manifest
-from whetstone.scheduler import default_phase_2_scheduler
+from whetstone.scheduler import (
+    default_phase_1_scheduler,
+    default_phase_2_scheduler,
+    resolved_phase_1_profile_budgets,
+    resolved_phase_2_profile_budgets,
+)
 from whetstone.termination import TerminationCandidate, select_terminal_candidate
 from whetstone.versioning import promote_spec_file_for_phase2
 
@@ -70,7 +76,7 @@ class LivePhase2Runner:
         current_hash = promotion.after_hash
         last_accepted_draft_hash: str | None = current_hash
         start_round = int(state.get("current_round", 0)) + 1
-        scheduler = default_phase_2_scheduler()
+        scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
         oscillation_tracker = OscillationTracker()
         conflict_tracker = ConflictTracker()
         if overwrite and self.config.declaration_path.exists():
@@ -80,7 +86,7 @@ class LivePhase2Runner:
         last_rubric_gaps: list[dict[str, Any]] = []
         final_round_number = start_round - 1
         clean_profiles: set[str] = set()
-        required_clean_profiles = {step.profile for step in default_phase_2_scheduler().steps}
+        required_clean_profiles = {step.profile for step in default_phase_2_scheduler(self.config.convergence_profile_budgets).steps}
 
         oscillation_tracker.record_draft(
             round_number=start_round - 1,
@@ -96,14 +102,12 @@ class LivePhase2Runner:
             declaration_path=declaration_path,
         )
 
-        for offset in range(self.config.convergence.max_rounds):
+        total_round_budget = scheduler.total_round_budget()
+        for offset in range(total_round_budget):
             round_number = start_round + offset
             profile = scheduler.next_profile()
             if profile is None:
-                scheduler = default_phase_2_scheduler()
-                profile = scheduler.next_profile()
-            if profile is None:
-                raise ValueError("Phase 2 scheduler produced no profile")
+                break
             final_round_number = round_number
             self._write_state(
                 current_round=round_number,
@@ -138,18 +142,20 @@ class LivePhase2Runner:
             except ValueError:
                 artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                 if artifact_error.exists():
+                    error_packet = _read_json(artifact_error)
+                    terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
                     current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
                     self._write_state(
                         current_round=round_number,
                         active_profile=profile,
                         current_draft_hash=current_hash,
                         last_accepted_draft_hash=last_accepted_draft_hash,
-                        terminal_state="HALTED_ARTIFACT_INVALID",
+                        terminal_state=terminal_state,
                         declaration_path=declaration_path,
                     )
-                    self._write_decision_register("HALTED_ARTIFACT_INVALID")
+                    self._write_decision_register(terminal_state)
                     return LivePhase2Result(
-                        "HALTED_ARTIFACT_INVALID",
+                        terminal_state,
                         round_number,
                         current_hash,
                         last_accepted_draft_hash,
@@ -363,7 +369,9 @@ class LivePhase2Runner:
             last_accepted_draft_hash=last_accepted_draft_hash,
             declaration_path=declaration_path,
             terminal_state="TARGET_NOT_REACHED",
-            exit_reason="Phase 2 max rounds reached before convergence",
+            exit_reason="Phase 2 profile round budgets exhausted before convergence",
+            profile_status=scheduler.status(),
+            last_reviewer_findings=_last_reviewer_findings_from_round(self.config.rounds_dir, final_round_number),
         )
         self._write_state(
             current_round=max(final_round_number, 1),
@@ -450,6 +458,8 @@ class LivePhase2Runner:
         declaration_path: Path | None,
         terminal_state: str,
         exit_reason: str,
+        profile_status: dict[str, Any] | None = None,
+        last_reviewer_findings: dict[str, Any] | None = None,
     ) -> Path:
         blockers = [_issue_summary(issue) for issue in unresolved_issues if issue["normalized_severity"] == "blocker"]
         majors = [_issue_summary(issue) for issue in unresolved_issues if issue["normalized_severity"] == "major"]
@@ -472,6 +482,8 @@ class LivePhase2Runner:
             last_accepted_draft_hash=last_accepted_draft_hash,
             exit_reason=exit_reason,
             recommendation="manual_review_required",
+            profile_status=profile_status,
+            last_reviewer_findings=last_reviewer_findings,
             terminal_state=terminal_state,
         )
 
@@ -487,6 +499,10 @@ class LivePhase2Runner:
     ) -> None:
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
         phase_2_rounds_completed = max(0, current_round - self.phase_1_rounds_completed)
+        review_round_budget = default_phase_1_scheduler(self.config.review_profile_budgets).total_round_budget()
+        convergence_round_budget = default_phase_2_scheduler(self.config.convergence_profile_budgets).total_round_budget()
+        review_profile_budgets = resolved_phase_1_profile_budgets(self.config.review_profile_budgets)
+        convergence_profile_budgets = resolved_phase_2_profile_budgets(self.config.convergence_profile_budgets)
         packet = {
             "current_round": current_round,
             "current_absolute_round": current_round,
@@ -495,8 +511,20 @@ class LivePhase2Runner:
             "phase_1_rounds_completed": self.phase_1_rounds_completed,
             "phase_2_rounds_completed": phase_2_rounds_completed,
             "review_max_rounds": self.config.review_max_rounds,
+            "review_budget_exhaustion_policy": self.config.review_budget_exhaustion_policy,
+            "configured_review_profile_budgets": self.config.review_profile_budgets,
+            "review_profile_budgets": review_profile_budgets,
             "convergence_max_rounds": self.config.convergence.max_rounds,
-            "total_absolute_round_budget": self.config.review_max_rounds + self.config.convergence.max_rounds,
+            "configured_convergence_profile_budgets": self.config.convergence_profile_budgets,
+            "convergence_profile_budgets": convergence_profile_budgets,
+            "timeouts": {
+                "reviewer_seconds": self.config.timeouts.reviewer_seconds,
+                "editor_seconds": self.config.timeouts.editor_seconds,
+            },
+            "review_round_budget": review_round_budget,
+            "convergence_round_budget": convergence_round_budget,
+            "total_absolute_round_budget": review_round_budget + convergence_round_budget,
+            "effective_run_config": effective_run_config(self.config),
             "active_profile": active_profile,
             "current_draft_hash": current_draft_hash,
             "last_accepted_draft_hash": last_accepted_draft_hash,
@@ -505,7 +533,7 @@ class LivePhase2Runner:
             "declaration_path": str(declaration_path.relative_to(self.root)) if declaration_path else None,
             "rubric_manifest_path": self.rubric_manifest.relative_path if self.rubric_manifest else None,
             "telemetry_totals": run_telemetry_totals(self.config.rounds_dir),
-            "resumable": False,
+            "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT",
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -551,6 +579,24 @@ def _read_phase1_handoff(rounds_dir: Path) -> dict[str, Any]:
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _last_reviewer_findings_from_round(rounds_dir: Path, round_number: int) -> dict[str, Any] | None:
+    path = rounds_dir / f"round-{round_number}" / "reviewer_feedback.json"
+    if not path.exists():
+        return None
+    reviewer_feedback = _read_json(path)
+    return {
+        "round_number": round_number,
+        "profile": str(reviewer_feedback.get("profile", "")),
+        "blocker_count": _reviewer_count(reviewer_feedback, "blocker"),
+        "major_count": _reviewer_count(reviewer_feedback, "major"),
+        "feedback_ids": [
+            str(issue.get("feedback_id"))
+            for issue in reviewer_feedback.get("feedback", [])
+            if issue.get("normalized_severity") in {"blocker", "major"} and bool(issue.get("in_scope", True))
+        ],
+    }
 
 
 def _declaration_draft_hash(path: Path) -> str | None:

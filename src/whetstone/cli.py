@@ -17,15 +17,24 @@ from whetstone.live import LiveRoundRunner
 from whetstone.live_phase1 import LivePhase1Runner
 from whetstone.live_phase2 import LivePhase2Runner
 from whetstone.prompts import render_editor_prompt, render_reviewer_prompt
+from whetstone.resume import plan_resume_halted_run, resume_halted_run
 from whetstone.runner import FixtureRunner
+from whetstone.run_state import apply_effective_run_config
 from whetstone.rubrics import BUILTIN_RUBRIC_FILES, build_rubric_manifest
 from whetstone.sections import section_index
 from whetstone.status import read_status, render_status_text
 from whetstone.versioning import promote_spec_file_for_phase2
 
 
+FORMATTER = argparse.RawDescriptionHelpFormatter
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="whetstone")
+    parser = argparse.ArgumentParser(
+        prog="whetstone",
+        description="Run AI-assisted spec review, convergence, recovery, and apply-back workflows.",
+        formatter_class=FORMATTER,
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     fixture = subparsers.add_parser("fixture-round", help="run one deterministic fixture round")
@@ -86,30 +95,95 @@ def main(argv: list[str] | None = None) -> int:
     live_round.add_argument("--apply", action="store_true", help="apply validated draft_after to spec.md")
     live_round.add_argument("--overwrite", action="store_true", help="replace existing round directory")
     live_round.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
+    live_round.add_argument("--reviewer-timeout-seconds", type=int, help="optional reviewer subprocess timeout")
+    live_round.add_argument("--editor-timeout-seconds", type=int, help="optional editor subprocess timeout")
     live_round.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="workflow preset")
     live_round.add_argument("--rubric", help="built-in rubric profile or custom rubric path")
     live_round.add_argument("--rubric-label", help="required label when --rubric points to a custom path")
 
-    live_phase1 = subparsers.add_parser("live-phase1", help="run the minimal live Phase 1 multi-round loop")
-    live_phase1.add_argument("--root", default=".", help="repository root")
+    live_phase1 = subparsers.add_parser(
+        "live-phase1",
+        help="run Phase 1 technical stabilization",
+        description="Run Phase 1 technical stabilization in an isolated run root.",
+        epilog=(
+            "Example:\n"
+            "  whetstone live-phase1 --root \"$RUN_ROOT\"\n\n"
+            "Budget policy is configured in orchestrator_config.yaml:\n"
+            "  review.budget_exhaustion_policy: hard  # strict stop\n"
+            "  review.budget_exhaustion_policy: soft  # full diagnostic sweep, no Phase 2 unless stable\n\n"
+            "Use status after completion:\n"
+            "  whetstone status --root \"$RUN_ROOT\" --format text"
+        ),
+        formatter_class=FORMATTER,
+    )
+    live_phase1.add_argument("--root", default=".", help="isolated Whetstone run root")
     live_phase1.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
-    live_phase1.add_argument("--overwrite", action="store_true", help="replace existing round directories")
-    live_phase1.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
+    live_phase1.add_argument("--overwrite", action="store_true", help="danger: replace existing round directories")
+    live_phase1.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
+    live_phase1.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
+    live_phase1.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
 
-    live_phase2 = subparsers.add_parser("live-phase2", help="run the minimal live Phase 2 convergence loop")
-    live_phase2.add_argument("--root", default=".", help="repository root")
+    live_phase2 = subparsers.add_parser(
+        "live-phase2",
+        help="run Phase 2 convergence review",
+        description="Run Phase 2 convergence review after Phase 1 reaches PHASE_1_STABLE.",
+        epilog=(
+            "Examples:\n"
+            "  whetstone live-phase2 --root \"$RUN_ROOT\" --workflow standard\n"
+            "  whetstone live-phase2 --root \"$RUN_ROOT\" --workflow mvp --rubric mvp-v1\n"
+            "  whetstone live-phase2 --root \"$RUN_ROOT\" --workflow custom --rubric /path/domain.md --rubric-label domain-v1"
+        ),
+        formatter_class=FORMATTER,
+    )
+    live_phase2.add_argument("--root", default=".", help="isolated Whetstone run root")
     live_phase2.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
-    live_phase2.add_argument("--overwrite", action="store_true", help="replace existing round directories")
-    live_phase2.add_argument("--timeout-seconds", type=int, help="optional live client subprocess timeout")
-    live_phase2.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="workflow preset")
+    live_phase2.add_argument("--overwrite", action="store_true", help="danger: replace existing round directories")
+    live_phase2.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
+    live_phase2.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
+    live_phase2.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
+    live_phase2.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="rubric workflow preset")
     live_phase2.add_argument("--rubric", help="built-in rubric profile or custom rubric path")
     live_phase2.add_argument("--rubric-label", help="required label when --rubric points to a custom path")
 
-    status = subparsers.add_parser("status", help="summarize the current Whetstone run state")
-    status.add_argument("--root", default=".", help="repository root")
+    resume = subparsers.add_parser(
+        "resume",
+        help="resume a supported halted live run",
+        description="Resume a supported Phase 1 Editor timeout after validated Reviewer feedback.",
+        epilog=(
+            "Examples:\n"
+            "  whetstone resume --root \"$RUN_ROOT\" --dry-run --continue\n"
+            "  whetstone resume --root \"$RUN_ROOT\" --editor-timeout-seconds 1800 --continue\n\n"
+            "Current support is intentionally narrow: Phase 1 Editor timeouts only."
+        ),
+        formatter_class=FORMATTER,
+    )
+    resume.add_argument("--root", default=".", help="isolated Whetstone run root")
+    resume.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    resume.add_argument("--timeout-seconds", type=int, help="fallback timeout for the resumed client call")
+    resume.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer timeout for continued rounds")
+    resume.add_argument("--editor-timeout-seconds", type=int, help="override editor timeout for resume and continued rounds")
+    resume.add_argument("--continue", dest="continue_run", action="store_true", help="continue Phase 1 after recovering the failed round")
+    resume.add_argument("--dry-run", action="store_true", help="validate resume eligibility without invoking the editor")
+
+    status = subparsers.add_parser(
+        "status",
+        help="summarize run state and next action",
+        description=(
+            "Read run_state.json and artifacts to show terminal state, next action, resume commands, "
+            "telemetry, residual profile status, and apply-back status."
+        ),
+        epilog=(
+            "Example:\n"
+            "  whetstone status --root \"$RUN_ROOT\" --format text\n\n"
+            "PHASE_1_STABLE can proceed to Phase 2. "
+            "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS is a soft-budget diagnostic stop and requires manual review."
+        ),
+        formatter_class=FORMATTER,
+    )
+    status.add_argument("--root", default=".", help="Whetstone run root")
     status.add_argument("--run-root", help="isolated Whetstone run root; overrides --root")
     status.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
-    status.add_argument("--format", choices=["json", "text"], default="json", help="status output format")
+    status.add_argument("--format", choices=["json", "text"], default="json", help="status output format; text is best for operators")
 
     decision_scan = subparsers.add_parser("decision-scan", help="scan a before/after draft pair for decision points")
     decision_scan.add_argument("--before", required=True, help="starting draft path")
@@ -129,7 +203,18 @@ def main(argv: list[str] | None = None) -> int:
     promote_phase2.add_argument("--root", default=".", help="repository root")
     promote_phase2.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
 
-    apply_back_parser = subparsers.add_parser("apply-back", help="review or apply an isolated Whetstone result to a source spec")
+    apply_back_parser = subparsers.add_parser(
+        "apply-back",
+        help="review or apply an isolated run to a source spec",
+        description="Compare a completed isolated Whetstone run with its source spec, or apply the final draft after explicit approval.",
+        epilog=(
+            "Examples:\n"
+            "  whetstone apply-back --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\"\n"
+            "  whetstone apply-back --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\" --apply --approve\n\n"
+            "Run without --apply first. The apply path requires --approve on purpose."
+        ),
+        formatter_class=FORMATTER,
+    )
     apply_back_parser.add_argument("--source", required=True, help="source spec path to compare or update")
     apply_back_parser.add_argument("--run-root", required=True, help="completed isolated Whetstone run root")
     apply_back_parser.add_argument("--output-dir", help="directory for apply-back review artifacts; defaults to RUN_ROOT/rounds")
@@ -137,12 +222,12 @@ def main(argv: list[str] | None = None) -> int:
     apply_back_parser.add_argument(
         "--allow-source-hash-mismatch",
         action="store_true",
-        help="continue when --expected-source-hash does not match the current source hash",
+        help="danger: continue when --expected-source-hash does not match the current source hash",
     )
     apply_back_parser.add_argument(
         "--allow-non-converged",
         action="store_true",
-        help="allow writing back from a non-CONVERGED run; intended only for manual recovery",
+        help="danger: allow writing back from a non-CONVERGED run; intended only for manual recovery",
     )
     apply_back_parser.add_argument("--apply", action="store_true", help="write the final Whetstone draft back to --source")
     apply_back_parser.add_argument("--approve", action="store_true", help="required with --apply")
@@ -274,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
         root = Path(args.root)
         config = load_config(root / args.config)
         config = _apply_run_profile_overrides(config, root=root, args=args)
+        config = _apply_timeout_overrides(config, args=args)
         draft_after = (root / args.draft_after).read_text(encoding="utf-8") if args.draft_after else None
         result = LiveRoundRunner(root, config, timeout_seconds=args.timeout_seconds).run_round(
             round_number=args.round,
@@ -299,6 +385,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "live-phase1":
         root = Path(args.root)
         config = load_config(root / args.config)
+        config = _apply_timeout_overrides(config, args=args)
         result = LivePhase1Runner(root, config, timeout_seconds=args.timeout_seconds).run(overwrite=args.overwrite)
         print(
             json.dumps(
@@ -317,6 +404,7 @@ def main(argv: list[str] | None = None) -> int:
         root = Path(args.root)
         config = load_config(root / args.config)
         config = _apply_run_profile_overrides(config, root=root, args=args)
+        config = _apply_timeout_overrides(config, args=args)
         result = LivePhase2Runner(root, config, timeout_seconds=args.timeout_seconds).run(overwrite=args.overwrite)
         print(
             json.dumps(
@@ -328,6 +416,51 @@ def main(argv: list[str] | None = None) -> int:
                     "declaration_path": str(result.declaration_path) if result.declaration_path else None,
                     "report_path": str(result.report_path) if result.report_path else None,
                     "rubric_manifest": _manifest_summary(config),
+                }
+            )
+        )
+        return 0
+    if args.command == "resume":
+        root = Path(args.root)
+        config = load_config(root / args.config)
+        config = _apply_resume_run_state_config(config)
+        config = _apply_timeout_overrides(config, args=args)
+        if args.dry_run:
+            plan = plan_resume_halted_run(root, config, continue_run=args.continue_run)
+            print(
+                json.dumps(
+                    {
+                        "resumable": plan.resumable,
+                        "terminal_state": plan.terminal_state,
+                        "failure_type": plan.failure_type,
+                        "phase": plan.phase,
+                        "client_role": plan.client_role,
+                        "round_number": plan.round_number,
+                        "profile": plan.profile,
+                        "current_draft_hash": plan.current_draft_hash,
+                        "expected_draft_hash": plan.expected_draft_hash,
+                        "next_attempt_number": plan.next_attempt_number,
+                        "continue": plan.continue_run,
+                        "next_round_number": plan.next_round_number,
+                        "reason": plan.reason,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        result = resume_halted_run(root, config, continue_run=args.continue_run, timeout_seconds=args.timeout_seconds)
+        print(
+            json.dumps(
+                {
+                    "resumed": result.resumed,
+                    "terminal_state": result.terminal_state,
+                    "round_number": result.round_number,
+                    "phase": result.phase,
+                    "profile": result.profile,
+                    "current_draft_hash": result.current_draft_hash,
+                    "last_accepted_draft_hash": result.last_accepted_draft_hash,
+                    "ready_for_phase_2": result.ready_for_phase_2,
                 }
             )
         )
@@ -469,6 +602,32 @@ def _apply_run_profile_overrides(config: object, *, root: Path, args: object) ->
         updates["rubric_label"] = rubric_label
 
     return replace(config, workflow=workflow or config.workflow, convergence=replace(convergence, **updates))
+
+
+def _apply_timeout_overrides(config: object, *, args: object) -> object:
+    reviewer_timeout = getattr(args, "reviewer_timeout_seconds", None)
+    editor_timeout = getattr(args, "editor_timeout_seconds", None)
+    if reviewer_timeout is None and editor_timeout is None:
+        return config
+    return replace(
+        config,
+        timeouts=replace(
+            config.timeouts,
+            reviewer_seconds=reviewer_timeout if reviewer_timeout is not None else config.timeouts.reviewer_seconds,
+            editor_seconds=editor_timeout if editor_timeout is not None else config.timeouts.editor_seconds,
+        ),
+    )
+
+
+def _apply_resume_run_state_config(config: object) -> object:
+    state_path = config.rounds_dir / "run_state.json"
+    if not state_path.exists():
+        return config
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return config
+    return apply_effective_run_config(config, state)
 
 
 def _manifest_summary(config: object) -> dict:

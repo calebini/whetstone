@@ -39,6 +39,22 @@ class DecisionPointConfig:
 
 
 @dataclass(frozen=True)
+class TimeoutConfig:
+    reviewer_seconds: int | None
+    editor_seconds: int | None
+
+
+@dataclass(frozen=True)
+class ContractSurfaceConfig:
+    enabled: bool
+    action: str
+    min_profile_rounds: int
+    recent_window: int
+    min_recent_serious_rounds: int
+    min_contract_families: int
+
+
+@dataclass(frozen=True)
 class OrchestratorConfig:
     spec_path: Path
     history_path: Path
@@ -48,8 +64,13 @@ class OrchestratorConfig:
     editor: ClientConfig
     reviewer: ClientConfig
     review_max_rounds: int
+    review_profile_budgets: dict[str, int]
+    review_budget_exhaustion_policy: str
     convergence: ConvergenceConfig
+    convergence_profile_budgets: dict[str, int]
     decision_points: DecisionPointConfig
+    timeouts: TimeoutConfig
+    contract_surface: ContractSurfaceConfig
 
     @classmethod
     def default(cls, root: Path | str = ".") -> "OrchestratorConfig":
@@ -63,6 +84,8 @@ class OrchestratorConfig:
             editor=ClientConfig("fixture-editor", "fixture", "0.0.0", "fixture"),
             reviewer=ClientConfig("fixture-reviewer", "fixture", "0.0.0", "fixture"),
             review_max_rounds=12,
+            review_profile_budgets={},
+            review_budget_exhaustion_policy="hard",
             convergence=ConvergenceConfig(
                 enabled=True,
                 target_phase="final",
@@ -73,6 +96,7 @@ class OrchestratorConfig:
                 rubric_path=base / "convergence_rubric.md",
                 max_rounds=8,
             ),
+            convergence_profile_budgets={},
             decision_points=DecisionPointConfig(
                 enabled=True,
                 mode="end_of_cycle",
@@ -81,6 +105,15 @@ class OrchestratorConfig:
                 trigger_on_authority_boundary_change=True,
                 trigger_on_scope_change=True,
                 trigger_on_new_enum_or_error_code=True,
+            ),
+            timeouts=TimeoutConfig(reviewer_seconds=360, editor_seconds=900),
+            contract_surface=ContractSurfaceConfig(
+                enabled=True,
+                action="recommend_synthesis",
+                min_profile_rounds=4,
+                recent_window=4,
+                min_recent_serious_rounds=3,
+                min_contract_families=2,
             ),
         )
 
@@ -100,6 +133,8 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     reviewer = clients.get("reviewer", {})
     convergence = parsed.get("convergence", {})
     decision_points = parsed.get("decision_points", {})
+    timeouts = parsed.get("timeouts", {})
+    contract_surface = parsed.get("contract_surface_policy", {})
     thresholds = decision_points.get("intervention_thresholds", {})
     review = parsed.get("review", {})
 
@@ -122,6 +157,10 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             str(reviewer.get("model", default.reviewer.model)),
         ),
         review_max_rounds=int(review.get("max_rounds", default.review_max_rounds)),
+        review_profile_budgets=_parse_int_mapping(review.get("profile_budgets", default.review_profile_budgets)),
+        review_budget_exhaustion_policy=str(
+            review.get("budget_exhaustion_policy", default.review_budget_exhaustion_policy)
+        ),
         convergence=ConvergenceConfig(
             enabled=bool(convergence.get("enabled", default.convergence.enabled)),
             target_phase=str(convergence.get("target_phase", default.convergence.target_phase)),
@@ -131,6 +170,9 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             rubric_label=_optional_string(convergence.get("rubric_label", default.convergence.rubric_label)),
             rubric_path=root / str(convergence.get("rubric_path", default.convergence.rubric_path.name)),
             max_rounds=int(convergence.get("max_rounds", default.convergence.max_rounds)),
+        ),
+        convergence_profile_budgets=_parse_int_mapping(
+            convergence.get("profile_budgets", default.convergence_profile_budgets)
         ),
         decision_points=DecisionPointConfig(
             enabled=bool(decision_points.get("enabled", default.decision_points.enabled)),
@@ -156,6 +198,27 @@ def load_config(path: Path | str) -> OrchestratorConfig:
                     "trigger_on_new_enum_or_error_code",
                     default.decision_points.trigger_on_new_enum_or_error_code,
                 )
+            ),
+        ),
+        timeouts=TimeoutConfig(
+            reviewer_seconds=_optional_int(timeouts.get("reviewer_seconds", default.timeouts.reviewer_seconds)),
+            editor_seconds=_optional_int(timeouts.get("editor_seconds", default.timeouts.editor_seconds)),
+        ),
+        contract_surface=ContractSurfaceConfig(
+            enabled=bool(contract_surface.get("enabled", default.contract_surface.enabled)),
+            action=str(contract_surface.get("action", default.contract_surface.action)),
+            min_profile_rounds=int(
+                contract_surface.get("min_profile_rounds", default.contract_surface.min_profile_rounds)
+            ),
+            recent_window=int(contract_surface.get("recent_window", default.contract_surface.recent_window)),
+            min_recent_serious_rounds=int(
+                contract_surface.get(
+                    "min_recent_serious_rounds",
+                    default.contract_surface.min_recent_serious_rounds,
+                )
+            ),
+            min_contract_families=int(
+                contract_surface.get("min_contract_families", default.contract_surface.min_contract_families)
             ),
         ),
     )
@@ -207,8 +270,22 @@ def _parse_string_list(value: Any) -> list[str]:
     return [str(value)]
 
 
+def _parse_int_mapping(value: Any) -> dict[str, int]:
+    if not isinstance(value, dict):
+        return {}
+    return {str(key): int(item) for key, item in value.items()}
+
+
 def _optional_string(value: Any) -> str | None:
     if value is None:
         return None
     text = str(value)
     return text if text else None
+
+
+def _optional_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    if value == "":
+        return None
+    return int(value)

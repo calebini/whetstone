@@ -48,7 +48,7 @@ class FixtureEngine:
 
     def run(self, steps: Iterable[FixtureScriptStep], *, overwrite_rounds: bool = False) -> EngineResult:
         phase = "phase_1"
-        scheduler: PhaseScheduler = default_phase_1_scheduler()
+        scheduler: PhaseScheduler = default_phase_1_scheduler(self.config.review_profile_budgets)
         last_accepted_draft_hash: str | None = None
         last_result: FixtureRoundResult | None = None
         last_rubric_gaps: list[dict[str, Any]] = []
@@ -57,7 +57,7 @@ class FixtureEngine:
         oscillation_tracker = OscillationTracker()
         declaration_path: Path | None = None
         phase2_clean_profiles: set[str] = set()
-        required_phase2_clean_profiles = {step.profile for step in default_phase_2_scheduler().steps}
+        required_phase2_clean_profiles = {step.profile for step in default_phase_2_scheduler(self.config.convergence_profile_budgets).steps}
         oscillation_tracker.record_draft(
             round_number=0,
             draft_hash_value=draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
@@ -66,7 +66,7 @@ class FixtureEngine:
 
         for round_number, step in enumerate(steps, start=1):
             phase_rounds += 1
-            max_rounds = self.config.review_max_rounds if phase == "phase_1" else self.config.convergence.max_rounds
+            max_rounds = scheduler.total_round_budget()
             if phase_rounds > max_rounds:
                 return self._max_rounds_result(
                     phase=phase,
@@ -75,14 +75,26 @@ class FixtureEngine:
                     last_accepted_draft_hash=last_accepted_draft_hash,
                     declaration_path=declaration_path,
                     unresolved_rubric_gaps=last_rubric_gaps,
+                    profile_status=scheduler.status(),
                 )
 
             expected_profile = scheduler.next_profile()
             if expected_profile is None:
                 if phase == "phase_1":
+                    accepted_current_draft = bool(last_result and last_result.accepted)
+                    if not scheduler.phase_complete(accepted_draft=accepted_current_draft):
+                        return self._max_rounds_result(
+                            phase=phase,
+                            round_number=round_number - 1,
+                            last_result=last_result,
+                            last_accepted_draft_hash=last_accepted_draft_hash,
+                            declaration_path=declaration_path,
+                            unresolved_rubric_gaps=last_rubric_gaps,
+                            profile_status=scheduler.status(),
+                        )
                     phase = "phase_2"
                     phase_rounds = 1
-                    scheduler = default_phase_2_scheduler()
+                    scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
                     expected_profile = scheduler.next_profile()
                 if expected_profile is None:
                     return EngineResult("TARGET_NOT_REACHED", round_number - 1, phase, last_accepted_draft_hash)
@@ -199,7 +211,7 @@ class FixtureEngine:
             if phase == "phase_1" and scheduler.phase_complete(accepted_draft=result.accepted):
                     phase = "phase_2"
                     phase_rounds = 0
-                    scheduler = default_phase_2_scheduler()
+                    scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
                     phase2_clean_profiles.clear()
                     continue
 
@@ -297,6 +309,7 @@ class FixtureEngine:
             last_accepted_draft_hash=last_accepted_draft_hash,
             declaration_path=declaration_path,
             unresolved_rubric_gaps=last_rubric_gaps,
+            profile_status=scheduler.status(),
         )
 
     def _max_rounds_result(
@@ -308,6 +321,7 @@ class FixtureEngine:
         last_accepted_draft_hash: str | None,
         declaration_path: Path | None = None,
         unresolved_rubric_gaps: list[dict[str, Any]] | None = None,
+        profile_status: dict[str, Any] | None = None,
     ) -> EngineResult:
         unresolved = last_result.unresolved_issues if last_result else []
         blockers = [_issue_summary(issue) for issue in unresolved if issue["normalized_severity"] == "blocker"]
@@ -321,8 +335,9 @@ class FixtureEngine:
                 unresolved_conflicts=[],
                 unresolved_oscillation=None,
                 last_accepted_draft_hash=last_accepted_draft_hash,
-                exit_reason="max rounds or fixture script exhausted before Phase 1 completion",
+                exit_reason="profile round budgets or fixture script exhausted before Phase 1 completion",
                 recommendation="manual_review_required",
+                profile_status=profile_status,
             )
         else:
             report_path = self.report_writer.write_convergence_failure_report(
@@ -336,8 +351,9 @@ class FixtureEngine:
                 unresolved_rubric_gaps=[_rubric_gap_summary(gap) for gap in (unresolved_rubric_gaps or [])],
                 reviewer_final_status="not_run",
                 last_accepted_draft_hash=last_accepted_draft_hash,
-                exit_reason="max rounds or fixture script exhausted before convergence",
+                exit_reason="profile round budgets or fixture script exhausted before convergence",
                 recommendation="manual_review_required",
+                profile_status=profile_status,
             )
         return EngineResult("TARGET_NOT_REACHED", round_number, phase, last_accepted_draft_hash, report_path)
 
