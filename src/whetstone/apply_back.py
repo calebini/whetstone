@@ -11,6 +11,7 @@ from typing import Any
 
 from whetstone.contracts import validate_artifact
 from whetstone.hashing import draft_hash
+from whetstone.text_validation import validate_generated_text
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,7 @@ def apply_back(
 
     source_text = source.read_text(encoding="utf-8")
     final_text = final_draft_path.read_text(encoding="utf-8")
+    validate_generated_text(final_text, context="apply-back final draft")
     source_before_hash = draft_hash(source_text)
     final_draft_hash = draft_hash(final_text)
     run_state_current_draft_hash = _run_state_current_draft_hash(run_state)

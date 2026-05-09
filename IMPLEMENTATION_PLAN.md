@@ -436,9 +436,11 @@ Tasks:
 - [x] Persist human-readable `rounds/contract_surface_report.md`
 - [x] Keep detection non-terminal and advisory
 - [x] Include synthesis scope with affected sections and contract families
+- [x] Report terminal effect, context-injection action, next round, operator-action requirement, and synthesis execution status
 - [x] Include matching contract surface report in Editor context files
 - [x] Add timeout-aware bounded synthesis guidance to Editor prompts
 - [x] Update `spec.md` to `0.33`
+- [x] Update `spec.md` to `0.36` with explicit advisory/reporting semantics
 - [x] Add regression coverage for detection and prompt guidance
 
 Acceptance:
@@ -471,9 +473,33 @@ Acceptance:
 - [x] Phase 2 remains unavailable after a residual sweep
 - [x] Focused scheduler/live/config/schema tests pass
 
+### Gate 4.8: First-Contact Scope Contracts
+
+Goal: give Whetstone an operator-approved scope brake before review pressure starts, especially for MVP runs.
+
+Tasks:
+
+- [x] Add `scope_contract.json` schema
+- [x] Add config support for `scope_contract.path`
+- [x] Add manual approved scope contract loading and validation
+- [x] Inject approved scope contracts into Reviewer and Editor prompts as file-backed context
+- [x] Include scope contract summary/hash in prompt snapshots
+- [x] Require approved scope contracts for `workflow: mvp` live preflight
+- [x] Add `whetstone intake --template mvp`
+- [x] Add `whetstone intake --from-notes`
+- [x] Add regression coverage for intake, schema validation, prompt injection, and MVP preflight
+- [x] Update `spec.md` to `0.35`
+
+Acceptance:
+
+- [x] MVP live runs halt with `CONFIG_INVALID` when no approved scope contract exists
+- [x] Approved scope contracts are visible in round context files and prompt snapshots
+- [x] Operators can generate scope notes templates and canonical scope contracts from notes
+- [x] Focused CLI/config/contracts/prompt/live tests pass
+
 ## Remaining Build Checklist
 
-This checklist now tracks work remaining after Gates 1 through 4.7. Earlier live-client and live-round checklist items have been reconciled with the implemented gates above.
+This checklist now tracks work remaining after Gates 1 through 4.8. Earlier live-client and live-round checklist items have been reconciled with the implemented gates above.
 
 ### 1. Schema Completion
 
@@ -750,7 +776,9 @@ Goal: safely promote an isolated Whetstone run result back to the source spec re
 Tasks:
 
 - [x] Add an apply-back command or module that accepts a source spec path and completed run root
+- [x] Add `strop` as the preferred operator alias for apply-back
 - [x] Persist the original source hash before apply-back
+- [x] Reject final drafts with forbidden control/replacement characters before source mutation
 - [x] Compute a human-readable diff from source spec to final Whetstone draft
 - [x] Produce an apply-back review artifact before mutating the source file
 - [x] Require explicit approval or an explicit non-interactive flag before writing to the source file
@@ -763,6 +791,7 @@ Acceptance:
 - [x] Dry-run apply-back produces a diff and report without mutating the source file
 - [x] Approved apply-back updates only the requested source spec
 - [x] Hash mismatch refuses apply-back unless an explicit override is provided
+- [x] Final-draft text hygiene failures refuse apply-back
 - [x] Declaration artifacts do not leak into source specs by default
 - [x] Foreman HAG Adapter isolated-run result can be reviewed as an apply-back candidate
 
@@ -850,6 +879,7 @@ Tasks:
 - [x] Add config fields for `workflow`, `convergence.rubric_profile`, `convergence.rubric_source`, and `convergence.rubric_label`
 - [x] Resolve workflow defaults without hiding the final `rubric_profile`, target, or round budget
 - [x] Persist `/rounds/rubric_manifest.json` before Phase 2 begins
+- [x] Persist effective profile-budget maps and effective total round budget in rubric manifests
 - [x] Block Phase 2 entry when rubric identity is invalid, unlabeled for custom runs, or built-in hash-mismatched
 - [ ] Block Phase 2 entry when rubric identity is implicit rather than default-resolved
 - [x] Include rubric manifest identity in Phase 2 prompt snapshots, declarations, failure reports, and apply-back reports

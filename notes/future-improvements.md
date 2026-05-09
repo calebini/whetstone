@@ -83,6 +83,17 @@ Future improvements:
 - Treat `intervention` as a narrow high-risk escape hatch rather than a general approval workflow.
 - Improve end-of-cycle summaries with stronger clustering, de-duplication, and top-N policy choices.
 - Add an optional LLM-written decision brief layered on top of the mechanical register, while keeping the mechanical register authoritative.
+  - The mechanical register remains the source of truth for decision IDs, sections, trigger types, severities, round/profile provenance, and action status.
+  - The LLM brief is explicitly non-authoritative interpretation. It must cite the decision IDs and sections it summarizes, and it must not invent new decision state.
+  - The brief should produce an operator-facing top-level digest:
+    - top decisions requiring human judgment
+    - accepted mechanical hardening
+    - scope expansions and possible over-MVP additions
+    - deferred items preserved by the scope contract
+    - recommended operator actions before apply-back or Phase 2
+  - The brief should distinguish "routine precision hardening" from "owner-level policy choice" so large runs do not bury the handful of real decisions inside dozens of small MUST/SHOULD edits.
+  - The brief should call out when a `could` or deferred scope-contract surface appears to have become required behavior.
+  - The brief should include a confidence / review-needed marker per cluster, not just a polished narrative.
 - Distinguish routine spec hardening from true owner-level choices.
 - Consider intervention only for high-risk classes such as authority boundary changes, destructive or irreversible behavior, cross-system scope expansion, security/privacy-impacting decisions, or changes that override an explicit human constraint.
 - Consider cluster-level intervention instead of line-level intervention, so one pause can cover a coherent group of related decisions.
@@ -188,3 +199,17 @@ Open design questions:
 - Should domain gaps participate in accepted-draft gating, convergence gating, or a separate certification-readiness gate?
 - How should Whetstone handle copyrighted or proprietary standards that cannot be fully embedded in prompts?
 - Should built-in domain profiles ever exist, or should Whetstone only provide the framework and let users supply domain packs?
+
+## Interactive / LLM-Backed Scope Intake
+
+Whetstone now supports a thin first-contact scope contract path through `intake --template mvp` and deterministic `intake --from-notes`, but a fuller operator experience should remain on the roadmap.
+
+Future direction:
+
+- Interactive questionnaire with structured options plus an `Other` freeform escape hatch.
+- LLM-backed canonicalization from operator answers into `scope_contract.json`.
+- Review-and-approve loop showing how Whetstone interpreted freeform scope intent.
+- Scope promotion workflow when reviewers repeatedly identify valuable deferred work.
+- Versioned scope contract revisions during a run, with decision-register entries when scope changes.
+
+The key invariant should remain: freeform operator intent may help generate the contract, but Whetstone should only enforce persisted, approved, schema-valid scope fields.

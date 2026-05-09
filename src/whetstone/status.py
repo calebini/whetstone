@@ -17,6 +17,7 @@ from whetstone.scheduler import (
     resolved_phase_1_profile_budgets,
     resolved_phase_2_profile_budgets,
 )
+from whetstone.scope import read_scope_contract, scope_contract_summary
 
 
 ROUND_REQUIRED_ARTIFACTS = (
@@ -51,9 +52,11 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     inferred_rounds = _inferred_round_accounting(rounds_dir, run_state)
     decision_summary = _decision_summary(rounds_dir, root)
     terminal_report_path = _terminal_report_path(rounds_dir)
+    terminal_report = _read_json_object(terminal_report_path) if terminal_report_path else None
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
     apply_back = _apply_back_status(root, rounds_dir, run_state)
     resume_status = _resume_status(root, rounds_dir, run_state)
+    scope_status = _scope_status(root, config)
     default_review_round_budget = default_phase_1_scheduler(config.review_profile_budgets).total_round_budget()
     default_convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
     default_review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
@@ -89,10 +92,12 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "active_profile": run_state.get("active_profile") if run_state else None,
         "terminal_state": run_state.get("terminal_state") if run_state else None,
         "ready_for_phase_2": run_state.get("ready_for_phase_2") if run_state else False,
+        "current_draft_status": terminal_report.get("current_draft_status") if terminal_report else None,
         "current_draft_hash": run_state.get("current_draft_hash") if run_state else None,
         "last_accepted_draft_hash": run_state.get("last_accepted_draft_hash") if run_state else None,
         "resumable": run_state.get("resumable") if run_state else False,
         "resume": resume_status,
+        "scope_contract": scope_status,
         "latest_round": latest_round,
         "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
         "decision_register": _decision_register(rounds_dir, root),
@@ -129,7 +134,9 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"terminal_state: {_display(status.get('terminal_state'))}",
         f"active_profile: {_display(status.get('active_profile'))}",
         f"ready_for_phase_2: {str(bool(status.get('ready_for_phase_2'))).lower()}",
+        f"current_draft_status: {_display(status.get('current_draft_status'))}",
         f"resumable: {str(bool(status.get('resumable'))).lower()}",
+        f"scope_contract: {_scope_display(status.get('scope_contract'))}",
         f"last_accepted_draft_hash: {_display(status.get('last_accepted_draft_hash'))}",
         f"latest_round: {latest_round_text}",
         f"next_action: {_display(status.get('next_action'))}",
@@ -137,7 +144,8 @@ def render_status_text(status: dict[str, Any]) -> str:
         (
             "decisions: "
             f"{_display(decision_summary.get('decision_count', decision_register.get('decision_count')))}, "
-            f"human: {_display(decision_summary.get('unresolved_human_decision_count', decision_register.get('unresolved_human_decision_count')))}"
+            f"human: {_display(decision_summary.get('unresolved_human_decision_count', decision_register.get('unresolved_human_decision_count')))}, "
+            f"statuses: {_display(decision_summary.get('decision_status_counts', decision_register.get('decision_status_counts')))}"
         ),
         (
             "telemetry: "
@@ -189,6 +197,27 @@ def _latest_round(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
     }
 
 
+def _scope_status(root: Path, config: OrchestratorConfig) -> dict[str, Any]:
+    try:
+        contract = read_scope_contract(config.scope_contract.path)
+    except Exception as exc:
+        return {
+            "path": _path_or_none(config.scope_contract.path, root),
+            "exists": config.scope_contract.path.exists(),
+            "valid": False,
+            "error": str(exc),
+        }
+    if contract is None:
+        return {
+            "path": _path_or_none(config.scope_contract.path, root),
+            "exists": False,
+            "valid": False,
+            "approved": False,
+        }
+    summary = scope_contract_summary(contract, root=root) or {}
+    return {"exists": True, "valid": True, **summary}
+
+
 def _decision_register(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
     path = rounds_dir / "decision_register.json"
     packet = _read_json_object(path)
@@ -197,6 +226,7 @@ def _decision_register(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
     return {
         "path": _path_or_none(path, root),
         "decision_count": len(packet.get("decision_points", [])),
+        "decision_status_counts": packet.get("decision_status_counts"),
         "unresolved_human_decision_count": packet.get("unresolved_human_decision_count"),
     }
 
@@ -209,6 +239,7 @@ def _decision_summary(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
     return {
         "path": _path_or_none(path, root),
         "decision_count": packet.get("decision_count"),
+        "decision_status_counts": packet.get("decision_status_counts"),
         "unresolved_human_decision_count": packet.get("unresolved_human_decision_count"),
         "hotspots": packet.get("hotspots"),
     }
@@ -436,3 +467,13 @@ def _display(value: Any) -> str:
     if value is None:
         return "none"
     return str(value)
+
+
+def _scope_display(value: object) -> str:
+    if not isinstance(value, dict):
+        return "none"
+    if not value.get("exists"):
+        return "missing"
+    if not value.get("valid"):
+        return f"invalid ({value.get('error')})"
+    return f"{value.get('path')} approved={str(bool(value.get('approved'))).lower()}"

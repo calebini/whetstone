@@ -23,6 +23,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(config.timeouts.editor_seconds, 900)
             self.assertTrue(config.contract_surface.enabled)
             self.assertEqual(config.contract_surface.action, "recommend_synthesis")
+            self.assertEqual(config.scope_contract.path, Path(tmp) / "rounds" / "intake" / "scope_contract.json")
 
     def test_load_config_parses_project_yaml_subset(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -78,6 +79,8 @@ contract_surface_policy:
   recent_window: 5
   min_recent_serious_rounds: 2
   min_contract_families: 4
+scope_contract:
+  path: ./intake/scope.json
 """.strip(),
                 encoding="utf-8",
             )
@@ -106,6 +109,7 @@ contract_surface_policy:
             self.assertEqual(config.contract_surface.recent_window, 5)
             self.assertEqual(config.contract_surface.min_recent_serious_rounds, 2)
             self.assertEqual(config.contract_surface.min_contract_families, 4)
+            self.assertEqual(config.scope_contract.path, Path(tmp) / "intake" / "scope.json")
 
 
 if __name__ == "__main__":

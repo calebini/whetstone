@@ -271,6 +271,16 @@
         },
         "editor_rationale": { "$ref": "#/$defs/nonEmptyString" },
         "risk_if_wrong": { "$ref": "#/$defs/nonEmptyString" },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "editor_applied_decision",
+            "operator_review_recommended",
+            "operator_required_decision",
+            "record_only_hardening",
+            "deferred_scope_decision"
+          ]
+        },
         "requires_human_decision": { "type": "boolean" },
         "orchestrator_action": {
           "type": "string",

@@ -65,3 +65,9 @@
 - Revised the spec to `0.32` with `effective_run_config` persistence in `run_state.json`, requiring resume to inherit effective profile budgets, decision-point configuration, and timeouts while preserving explicit resume CLI overrides as highest precedence.
 - Revised the spec to `0.33` with `EXPANDING_CONTRACT_SURFACE` detection, a persisted synthesis recommendation artifact, and timeout-aware bounded synthesis guidance in Editor prompts when a matching contract surface report exists.
 - Revised the spec to `0.34` with opt-in soft Phase 1 budget sweeps, per-profile residual status, `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, and explicit Phase 2 blocking when residual review profiles remain.
+- Revised the spec to `0.35` with first-contact scope contracts, MVP scope-contract preflight, scope-contract prompt injection, and intake template/from-notes CLI support.
+- Revised the spec to `0.36` with explicit expanding-contract-surface terminal semantics, next-round context-injection reporting, and a clear distinction between synthesis recommendations and executed synthesis passes.
+- Revised the spec to `0.37` with generated-draft text hygiene validation, `whetstone strop` as the preferred apply-back command alias, and effective profile-budget reporting in rubric manifests.
+- Revised the spec to `0.38` with explicit decision-point status semantics, separating editor-applied choices, operator review recommendations, intervention-required decisions, and record-only hardening without changing default run-completion behavior.
+- Revised the spec to `0.39` with Phase 1 clean/budget precedence, scope-contract deferred-surface escalation labeling, and expanding-contract-surface lifecycle statuses.
+- Revised the spec to `0.40` with clearer Phase 1 technical failure report semantics: `current_draft_status` and `ready_for_phase_2` now distinguish accepted-but-unverified drafts from truly Phase 1-stable drafts.

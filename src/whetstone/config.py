@@ -55,6 +55,11 @@ class ContractSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class ScopeContractConfig:
+    path: Path
+
+
+@dataclass(frozen=True)
 class OrchestratorConfig:
     spec_path: Path
     history_path: Path
@@ -71,6 +76,7 @@ class OrchestratorConfig:
     decision_points: DecisionPointConfig
     timeouts: TimeoutConfig
     contract_surface: ContractSurfaceConfig
+    scope_contract: ScopeContractConfig
 
     @classmethod
     def default(cls, root: Path | str = ".") -> "OrchestratorConfig":
@@ -115,6 +121,7 @@ class OrchestratorConfig:
                 min_recent_serious_rounds=3,
                 min_contract_families=2,
             ),
+            scope_contract=ScopeContractConfig(path=base / "rounds" / "intake" / "scope_contract.json"),
         )
 
 
@@ -135,6 +142,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     decision_points = parsed.get("decision_points", {})
     timeouts = parsed.get("timeouts", {})
     contract_surface = parsed.get("contract_surface_policy", {})
+    scope_contract = parsed.get("scope_contract", {})
     thresholds = decision_points.get("intervention_thresholds", {})
     review = parsed.get("review", {})
 
@@ -221,7 +229,17 @@ def load_config(path: Path | str) -> OrchestratorConfig:
                 contract_surface.get("min_contract_families", default.contract_surface.min_contract_families)
             ),
         ),
+        scope_contract=ScopeContractConfig(
+            path=root / str(scope_contract.get("path", _relative_default_scope_path(default.scope_contract.path, root)))
+        ),
     )
+
+
+def _relative_default_scope_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
 
 
 def _parse_simple_yaml(text: str) -> dict[str, Any]:

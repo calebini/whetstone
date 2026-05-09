@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from whetstone.config import OrchestratorConfig
-from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report
+from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
 from whetstone.hashing import draft_hash
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, _validate_reviewer_feedback, run_telemetry_totals
@@ -22,6 +23,9 @@ from whetstone.scheduler import (
     resolved_phase_1_profile_budgets,
     resolved_phase_2_profile_budgets,
 )
+
+
+_VERSION_IN_LINE_RE = re.compile(r"\bv?\d+(?:\.\d+)+\b")
 
 
 @dataclass(frozen=True)
@@ -94,7 +98,16 @@ def resume_halted_run(
     scheduler.record_result(
         profile,
         blocker_count=reviewer_blocker_count,
-        major_count=reviewer_major_count + (1 if reviewer_clean and result.spec_mutated else 0),
+        major_count=reviewer_major_count + (
+            1
+            if reviewer_clean
+            and _mutation_requires_verification(
+                round_dir=config.rounds_dir / f"round-{round_number}",
+                editor_summary=editor_summary,
+                spec_mutated=result.spec_mutated,
+            )
+            else 0
+        ),
     )
     if result.accepted:
         last_accepted_draft_hash = result.draft_after_hash
@@ -123,6 +136,7 @@ def resume_halted_run(
         profile=profile,
         policy=_contract_surface_policy(config),
     )
+    update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=phase_complete)
     _write_phase1_state(
         config=config,
         current_round=round_number,
@@ -294,7 +308,16 @@ def _continue_phase1(
         scheduler.record_result(
             profile,
             blocker_count=reviewer_blocker_count,
-            major_count=reviewer_major_count + (1 if reviewer_clean and result.spec_mutated else 0),
+            major_count=reviewer_major_count + (
+                1
+                if reviewer_clean
+                and _mutation_requires_verification(
+                    round_dir=round_dir,
+                    editor_summary=editor_summary,
+                    spec_mutated=result.spec_mutated,
+                )
+                else 0
+            ),
         )
         if result.accepted:
             last_accepted_draft_hash = result.draft_after_hash
@@ -383,6 +406,7 @@ def _continue_phase1(
             profile=profile,
             policy=_contract_surface_policy(config),
         )
+        update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=phase_complete)
         _write_phase1_state(
             config=config,
             current_round=round_number,
@@ -433,6 +457,7 @@ def _continue_phase1(
         mode=config.decision_points.mode,
         terminal_state=terminal_state,
     )
+    update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
     return ResumeResult(True, terminal_state, total_budget, "phase_1", final_profile or "", current_hash, last_accepted_draft_hash, False)
 
 
@@ -519,7 +544,16 @@ def _reconstruct_phase1_state(config: OrchestratorConfig, *, through_round: int)
         scheduler.record_result(
             profile,
             blocker_count=reviewer_blocker_count,
-            major_count=reviewer_major_count + (1 if reviewer_clean and draft_before_hash != draft_after_hash else 0),
+            major_count=reviewer_major_count + (
+                1
+                if reviewer_clean
+                and _mutation_requires_verification(
+                    round_dir=round_dir,
+                    editor_summary=editor_summary,
+                    spec_mutated=draft_before_hash != draft_after_hash,
+                )
+                else 0
+            ),
         )
         unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
         if not any(issue.get("normalized_severity") in {"blocker", "major"} for issue in unresolved):
@@ -640,6 +674,37 @@ def _reviewer_count(reviewer_feedback: dict[str, Any], severity: str) -> int:
         for issue in reviewer_feedback.get("feedback", [])
         if issue.get("normalized_severity") == severity and bool(issue.get("in_scope", True))
     )
+
+
+def _mutation_requires_verification(*, round_dir: Path, editor_summary: dict[str, Any], spec_mutated: bool) -> bool:
+    if not spec_mutated:
+        return False
+    if editor_summary.get("accepted_feedback_ids") or editor_summary.get("modified_feedback_ids"):
+        return True
+    draft_before_path = round_dir / "draft_before.md"
+    draft_after_path = round_dir / "draft_after.md"
+    if not draft_before_path.exists() or not draft_after_path.exists():
+        return True
+    return not _is_version_only_change(
+        draft_before_path.read_text(encoding="utf-8"),
+        draft_after_path.read_text(encoding="utf-8"),
+    )
+
+
+def _is_version_only_change(before: str, after: str) -> bool:
+    return _strip_version_labels(before) == _strip_version_labels(after)
+
+
+def _strip_version_labels(text: str) -> str:
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            line = _VERSION_IN_LINE_RE.sub("(VERSION)", line)
+        elif stripped.lower().startswith("status:") or stripped.lower().startswith("version:"):
+            line = _VERSION_IN_LINE_RE.sub("(VERSION)", line)
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:

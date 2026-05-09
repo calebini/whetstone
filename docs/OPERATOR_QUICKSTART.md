@@ -28,6 +28,8 @@ Use these defaults for normal spec sharpening:
 
 Use `mvp` when you want first-useful-build readiness. Use `governance` only when you want the heavy convergence gate. Use `custom` only when you have a named custom rubric and want the run artifacts to make that rubric identity explicit.
 
+MVP runs require an approved scope contract. This is deliberate: MVP review needs a clear first-useful-build boundary or Whetstone will expand the surface area it discovers.
+
 ## Inputs
 
 Choose:
@@ -106,6 +108,9 @@ decision_points:
 timeouts:
   reviewer_seconds: 360
   editor_seconds: 900
+
+scope_contract:
+  path: ./rounds/intake/scope_contract.json
 YAML
 ```
 
@@ -118,6 +123,8 @@ convergence:
   target_mode: strict
   rubric_profile: mvp-v1
 ```
+
+Then create and approve a scope contract before running Phase 1.
 
 For governance review, use:
 
@@ -146,6 +153,44 @@ review:
 ```
 
 Soft mode does not mean "good enough." It lets Whetstone advance past exhausted or oscillating Phase 1 profiles, records a per-profile residual status, and then halts with `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS` if Phase 1 is not genuinely stable. Phase 2 is still blocked until status reports `PHASE_1_STABLE`.
+
+## Scope Intake For MVP
+
+Create a starter notes file:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli intake \
+  --root "$RUN_ROOT" \
+  --template mvp \
+  --output "$RUN_ROOT/scope-notes.md"
+```
+
+Edit `scope-notes.md` to define:
+
+- the one core outcome for the run
+- in-scope surfaces
+- deferred or out-of-scope surfaces
+- required depth for validation, schema, report, failure, and operational behavior
+- what counts as good enough
+
+See [Scope Notes Guide](SCOPE_NOTES_GUIDE.md) for examples and depth-level guidance.
+
+Generate an approved scope contract:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli intake \
+  --root "$RUN_ROOT" \
+  --from-notes "$RUN_ROOT/scope-notes.md" \
+  --approve
+```
+
+This writes:
+
+```text
+$RUN_ROOT/rounds/intake/scope_contract.json
+```
+
+Without `--approve`, Whetstone writes a draft scope contract. Draft scope contracts are useful for review, but they do not satisfy MVP preflight.
 
 ## Run Phase 1
 
@@ -303,10 +348,10 @@ Before changing the source spec, inspect:
 - `$RUN_ROOT/rounds/decision_summary.md`
 - `$RUN_ROOT/rounds/run_state.json`
 
-Generate the apply-back review without mutating the source:
+Generate the strop/apply-back review without mutating the source:
 
 ```bash
-PYTHONPATH=src python3 -m whetstone.cli apply-back \
+PYTHONPATH=src python3 -m whetstone.cli strop \
   --source "$SOURCE_SPEC" \
   --run-root "$RUN_ROOT"
 ```
@@ -324,12 +369,14 @@ The dry-run should show that the run is eligible and the final draft hash matche
 Only after human review:
 
 ```bash
-PYTHONPATH=src python3 -m whetstone.cli apply-back \
+PYTHONPATH=src python3 -m whetstone.cli strop \
   --source "$SOURCE_SPEC" \
   --run-root "$RUN_ROOT" \
   --apply \
   --approve
 ```
+
+`apply-back` remains supported as a legacy alias for `strop`.
 
 Confirm:
 
@@ -382,7 +429,7 @@ When something halts, read in this order:
 - Do not manually edit `$RUN_ROOT/spec.md` after a run starts unless you intend to invalidate resume/hash assumptions.
 - Do not use `--allow-source-hash-mismatch` unless intentionally overriding a changed source file.
 - Do not use `--allow-non-converged` for normal operation.
-- Do not auto-apply Whetstone results from an agent run. Run dry-run apply-back first.
+- Do not auto-apply Whetstone results from an agent run. Run dry-run strop/apply-back first.
 - Preserve failed run roots when diagnosing timeouts, oscillation, malformed output, or budget exhaustion.
 
 ## Troubleshooting
@@ -397,7 +444,7 @@ If Phase 1 reaches `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, check `profile_statu
 
 If Phase 2 converges suspiciously quickly or every run has the same shape, inspect profile budgets, profile status, and the latest Reviewer findings before trusting the run shape.
 
-If apply-back refuses to write, read `apply_back_review.json`; common causes are non-converged terminal state, source hash mismatch, or final draft hash mismatch against `run_state.current_draft_hash`.
+If strop/apply-back refuses to write, read `apply_back_review.json`; common causes are non-converged terminal state, source hash mismatch, final draft hash mismatch against `run_state.current_draft_hash`, or final-draft text hygiene failures.
 
 If the source repo diff is empty after apply-back, check whether the file is tracked:
 

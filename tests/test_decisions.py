@@ -99,6 +99,7 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
 
         self.assertTrue(packet["decision_points"])
         self.assertTrue(all(point["orchestrator_action"] == "pause_for_input" for point in packet["decision_points"]))
+        self.assertTrue(all(point["decision_status"] == "operator_required_decision" for point in packet["decision_points"]))
 
     def test_write_decision_register_aggregates_round_packets(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -122,6 +123,8 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
             self.assertTrue((rounds_dir / "decision_register.md").exists())
             self.assertTrue((rounds_dir / "decision_summary.json").exists())
             self.assertTrue((rounds_dir / "decision_summary.md").exists())
+            register = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(register["decision_status_counts"], {"operator_review_recommended": 1})
 
     def test_decision_summary_clusters_mechanically(self) -> None:
         register = {
@@ -160,11 +163,16 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
 
         self.assertEqual(summary["summary_method"], "mechanical_v1")
         self.assertEqual(summary["decision_count"], 3)
+        self.assertEqual(
+            summary["decision_status_counts"],
+            {"operator_review_recommended": 2, "record_only_hardening": 1},
+        )
         self.assertEqual(summary["hotspots"]["largest_clusters"][0]["cluster_key"], "Rules")
         self.assertEqual(summary["hotspots"]["largest_clusters"][0]["decision_count"], 2)
         self.assertEqual(summary["hotspots"]["human_decision_clusters"][0]["requires_human_decision_count"], 2)
         by_section = summary["clusters"]["by_section"]
         self.assertEqual([cluster["cluster_key"] for cluster in by_section], ["Errors", "Rules"])
+        self.assertEqual(by_section[0]["decision_status_counts"], {"record_only_hardening": 1})
         self.assertEqual(by_section[1]["decision_ids"], ["dec_aaaaaaaaaaaaaaaa", "dec_bbbbbbbbbbbbbbbb"])
         by_round_profile = summary["clusters"]["by_round_profile"]
         self.assertEqual([cluster["cluster_key"] for cluster in by_round_profile], ["round-1|operability", "round-2|determinism"])
@@ -198,6 +206,32 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
             self.assertTrue(outputs["decision_summary_markdown"].exists())
             summary = json.loads(outputs["decision_summary"].read_text(encoding="utf-8"))
             self.assertEqual(summary["clusters"]["by_section"][0]["cluster_key"], "Rules")
+            self.assertEqual(summary["decision_status_counts"], {"operator_review_recommended": 1})
+
+    def test_deferred_scope_must_change_is_flagged_as_deferred_scope_decision(self) -> None:
+        scope_contract = {
+            "scope_surfaces": [
+                {
+                    "name": "diagnostic mode",
+                    "status": "deferred",
+                }
+            ],
+            "core_flows": [],
+        }
+        packet = detect_decision_points(
+            draft_before="# Spec\n\n## Diagnostics\n\nDiagnostic mode is deferred.\n",
+            draft_after="# Spec\n\n## Diagnostics\n\nDiagnostic mode MUST emit a full report.\n",
+            round_number=1,
+            profile="operability",
+            reviewer_feedback=_feedback("minor"),
+            editor_summary={"accepted_feedback_ids": ["fb-1"], "modified_feedback_ids": []},
+            config=DecisionPointConfig(True, "end_of_cycle", ("major",), True, True, True, True),
+            scope_contract=scope_contract,
+        )
+
+        self.assertEqual(packet["decision_points"][0]["decision_status"], "deferred_scope_decision")
+        self.assertTrue(packet["decision_points"][0]["requires_human_decision"])
+        self.assertEqual(packet["decision_points"][0]["orchestrator_action"], "present_at_end")
 
 
 def _feedback(severity: str) -> dict:
@@ -242,6 +276,7 @@ def _decision_point(
         "editor_selected_option_id": "selected",
         "editor_rationale": "Detected from diff.",
         "risk_if_wrong": "The spec may encode an unintended decision.",
+        "decision_status": "operator_review_recommended" if requires_human_decision else "record_only_hardening",
         "requires_human_decision": requires_human_decision,
         "orchestrator_action": orchestrator_action,
     }

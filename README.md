@@ -2,7 +2,7 @@
 
 Whetstone is an AI spec convergence orchestrator. It runs iterative Reviewer and Editor passes over a technical spec, persists every round artifact, and stops on explicit terminal states instead of relying on conversational memory.
 
-The source of truth is [spec.md](spec.md), currently version `0.34`.
+The source of truth is [spec.md](spec.md), currently version `0.37`.
 
 ## Start Here
 
@@ -10,7 +10,7 @@ For live runs against real specs, use the operator guide:
 
 - [Operator Quickstart](docs/OPERATOR_QUICKSTART.md)
 
-The quickstart covers isolated run roots, Phase 1, Phase 2, status, timeout recovery, dry-run resume, decision summaries, and manual apply-back to an external source spec.
+The quickstart covers isolated run roots, scope intake, Phase 1, Phase 2, status, timeout recovery, dry-run resume, decision summaries, and manual strop/apply-back to an external source spec.
 
 ## Common Commands
 
@@ -25,6 +25,13 @@ Run Phase 1 in an isolated run root:
 
 ```bash
 PYTHONPATH=src python3 -m whetstone.cli live-phase1 --root "$RUN_ROOT"
+```
+
+Create MVP scope notes and an approved scope contract:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli intake --root "$RUN_ROOT" --template mvp --output "$RUN_ROOT/scope-notes.md"
+PYTHONPATH=src python3 -m whetstone.cli intake --root "$RUN_ROOT" --from-notes "$RUN_ROOT/scope-notes.md" --approve
 ```
 
 Check run status:
@@ -49,9 +56,11 @@ PYTHONPATH=src python3 -m whetstone.cli live-phase2 --root "$RUN_ROOT" --workflo
 Review or apply an isolated run back to its source spec:
 
 ```bash
-PYTHONPATH=src python3 -m whetstone.cli apply-back --source "$SOURCE_SPEC" --run-root "$RUN_ROOT"
-PYTHONPATH=src python3 -m whetstone.cli apply-back --source "$SOURCE_SPEC" --run-root "$RUN_ROOT" --apply --approve
+PYTHONPATH=src python3 -m whetstone.cli strop --source "$SOURCE_SPEC" --run-root "$RUN_ROOT"
+PYTHONPATH=src python3 -m whetstone.cli strop --source "$SOURCE_SPEC" --run-root "$RUN_ROOT" --apply --approve
 ```
+
+`apply-back` remains a supported legacy alias for `strop`.
 
 ## Repository Map
 
@@ -59,6 +68,7 @@ PYTHONPATH=src python3 -m whetstone.cli apply-back --source "$SOURCE_SPEC" --run
 - `spec.history.md` - append-only spec revision history
 - `IMPLEMENTATION_PLAN.md` - traceable implementation checklist
 - `docs/OPERATOR_QUICKSTART.md` - command-first live-run guide
+- `docs/SCOPE_NOTES_GUIDE.md` - guide for writing scope notes before intake
 - `contracts/schemas/` - JSON Schema contracts for persisted artifacts
 - `rubrics/` - built-in rubric profiles
 - `src/whetstone/` - implementation

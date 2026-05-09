@@ -15,6 +15,8 @@
     "unresolved_conflicts",
     "unresolved_oscillation",
     "last_accepted_draft_hash",
+    "current_draft_status",
+    "ready_for_phase_2",
     "last_draft_hash",
     "exit_reason",
     "recommendation",
@@ -51,6 +53,11 @@
         { "type": "null" }
       ]
     },
+    "current_draft_status": {
+      "type": "string",
+      "enum": ["not_accepted", "accepted_unverified_profiles", "phase_1_stable"]
+    },
+    "ready_for_phase_2": { "type": "boolean" },
     "last_draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
     "exit_reason": { "type": "string", "minLength": 1 },
     "recommendation": {

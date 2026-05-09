@@ -38,6 +38,7 @@ def render_reviewer_prompt(
     draft_path: str | None = None,
     rubric_path: str | None = None,
     declaration_path: str | None = None,
+    scope_contract_path: str | None = None,
     phase: str = "phase_1",
     section_ids: list[str] | None = None,
     round_number: int = 1,
@@ -94,7 +95,7 @@ def render_reviewer_prompt(
                 _phase_2_classification_table(section_ids or []),
             ]
         )
-    if draft_path or rubric_path:
+    if draft_path or rubric_path or scope_contract_path:
         lines.extend(
             [
                 "",
@@ -113,9 +114,22 @@ def render_reviewer_prompt(
             lines.append("- Rubric: (no rubric provided)")
         if declaration_path:
             lines.append(f"- Declaration artifact path: {declaration_path}")
+        if scope_contract_path:
+            lines.append(f"- Scope contract path: {scope_contract_path}")
         lines.append("Use the listed context files as authoritative input content.")
     else:
         lines.extend(["", "Rubric:", rubric_text, "", "Draft:", draft])
+    if scope_contract_path:
+        lines.extend(
+            [
+                "",
+                "Scope contract rules:",
+                "- The scope contract is authoritative for this run.",
+                "- Feedback outside the scope contract MUST set in_scope=false and cite the relevant surface or deferral rule in evidence or recommended_change.",
+                "- Out-of-scope or deferred feedback MUST NOT become blocker/major pressure unless it is required to satisfy an in-scope core flow.",
+                "- If a concern appears important but exceeds scope, recommend a scope-promotion decision instead of expanding the current spec.",
+            ]
+        )
     return "\n".join(lines)
 
 
@@ -194,6 +208,7 @@ def render_editor_prompt(
     reviewer_feedback_json: str,
     draft_path: str | None = None,
     reviewer_feedback_path: str | None = None,
+    scope_contract_path: str | None = None,
     phase: str = "phase_1",
     round_number: int = 1,
     draft_before_hash_value: str | None = None,
@@ -222,6 +237,18 @@ def render_editor_prompt(
         lines.append("Phase 2 declaration artifact rule: `convergence_declaration.md` is Orchestrator-owned and separate from spec.md.")
         lines.append("Do not add convergence declaration text or acceptance statements to spec.md.")
         lines.append("If feedback asks for a convergence declaration inside spec.md, decline it as out_of_scope unless the Orchestrator explicitly supplied that text in the editable draft.")
+    if scope_contract_path:
+        lines.extend(
+            [
+                "",
+                "Scope contract rules:",
+                "- The scope contract is authoritative for this run.",
+                "- Do not implement feedback that exceeds the approved scope contract.",
+                "- Decline out-of-scope feedback with decline_reason out_of_scope.",
+                "- Decline deferred feedback with deferred_to_later_round when the scope contract defers it to a later phase or profile.",
+                "- Preserve operator intent; do not silently promote deferred surfaces into scope.",
+            ]
+        )
     if synthesis_report_path:
         lines.extend(
             [
@@ -265,7 +292,7 @@ def render_editor_prompt(
             "If there are no entries for an array field, return an empty array for that field.",
         ]
     )
-    if draft_path or reviewer_feedback_path:
+    if draft_path or reviewer_feedback_path or scope_contract_path:
         lines.extend(
             [
                 "",
@@ -280,6 +307,8 @@ def render_editor_prompt(
             lines.append(f"- Draft path: {draft_path}")
         if synthesis_report_path:
             lines.append(f"- Contract surface report path: {synthesis_report_path}")
+        if scope_contract_path:
+            lines.append(f"- Scope contract path: {scope_contract_path}")
         lines.append("Use the listed context files as authoritative input content.")
     else:
         lines.extend(

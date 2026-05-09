@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
-from whetstone.config import ContractSurfaceConfig, DecisionPointConfig, OrchestratorConfig, TimeoutConfig
+from whetstone.config import ContractSurfaceConfig, DecisionPointConfig, OrchestratorConfig, ScopeContractConfig, TimeoutConfig
 from whetstone.scheduler import resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
 
 
@@ -41,6 +42,9 @@ def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
             "min_recent_serious_rounds": config.contract_surface.min_recent_serious_rounds,
             "min_contract_families": config.contract_surface.min_contract_families,
         },
+        "scope_contract": {
+            "path": str(config.scope_contract.path),
+        },
     }
 
 
@@ -75,6 +79,10 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
         effective.get("contract_surface_policy"),
         fallback=config.contract_surface,
     )
+    scope_contract = _scope_contract_config(
+        effective.get("scope_contract"),
+        fallback=config.scope_contract,
+    )
 
     return replace(
         config,
@@ -84,6 +92,7 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
         decision_points=decision_points,
         timeouts=timeouts,
         contract_surface=contract_surface,
+        scope_contract=scope_contract,
     )
 
 
@@ -153,6 +162,15 @@ def _contract_surface_config(value: Any, *, fallback: ContractSurfaceConfig) -> 
         ),
         min_contract_families=_positive_int(value.get("min_contract_families"), fallback.min_contract_families),
     )
+
+
+def _scope_contract_config(value: Any, *, fallback: ScopeContractConfig) -> ScopeContractConfig:
+    if not isinstance(value, dict):
+        return fallback
+    path = value.get("path")
+    if not isinstance(path, str) or not path:
+        return fallback
+    return ScopeContractConfig(path=Path(path))
 
 
 def _positive_int(value: Any, fallback: int) -> int:

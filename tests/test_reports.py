@@ -120,6 +120,9 @@ class ReportWriterTests(unittest.TestCase):
 
             self.assertTrue(technical.exists())
             self.assertTrue(convergence.exists())
+            packet = json.loads(technical.read_text(encoding="utf-8"))
+            self.assertEqual(packet["current_draft_status"], "not_accepted")
+            self.assertFalse(packet["ready_for_phase_2"])
 
 
 if __name__ == "__main__":

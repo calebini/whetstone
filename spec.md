@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.34 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.40 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.34` adds an opt-in soft Phase 1 budget policy that completes all configured review-profile passes, records residual blocker/major or oscillation status per profile, and halts with an explicit residual-sweep terminal state instead of stopping at the first exhausted profile.
+Version `0.40` clarifies Phase 1 technical failure reporting: `last_accepted_draft_hash` remains the latest draft hash that satisfied accepted-draft criteria, while `current_draft_status` and `ready_for_phase_2` explicitly distinguish Phase 1-stable drafts from accepted-but-unverified drafts.
 
 ---
 
@@ -26,6 +26,7 @@ Version `0.34` adds an opt-in soft Phase 1 budget policy that completes all conf
 ## PRIMARY INPUTS
 
 - spec.md
+- scope_contract.json (required for `workflow: mvp`, optional for other workflows unless configured)
 - convergence_rubric.md
 - orchestrator_config.yaml
 
@@ -51,6 +52,7 @@ Version `0.34` adds an opt-in soft Phase 1 budget policy that completes all conf
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
   - context/
     - draft_before.md
+    - scope_contract.json (when an approved scope contract is available)
     - rubric.md (when rubric text is provided to the client)
     - convergence_declaration.md (Phase 2 convergence-check rounds only)
     - reviewer_feedback.json (Editor prompts only)
@@ -67,6 +69,7 @@ Version `0.34` adds an opt-in soft Phase 1 budget policy that completes all conf
 - /rounds/decision_summary.json (at terminal state)
 - /rounds/decision_summary.md (human-readable decision summary, at terminal state)
 - /rounds/decision_intervention_request.json (if decision intervention is required)
+- /rounds/intake/scope_contract.json (approved scope contract, when present)
 - /rounds/contract_surface_report.json (if expanding contract surface is detected)
 - /rounds/contract_surface_report.md (human-readable synthesis recommendation, if detected)
 - /rounds/rubric_manifest.json (required before Phase 2 review begins)
@@ -140,6 +143,9 @@ contract_surface_policy:
   recent_window: 4
   min_recent_serious_rounds: 3
   min_contract_families: 2
+
+scope_contract:
+  path: ./rounds/intake/scope_contract.json
 ```
 
 Before entering `TECHNICAL_REVIEW`, the Orchestrator MUST validate configuration.
@@ -189,6 +195,65 @@ The initial canonical workflows are:
 
 `--workflow mvp` and any future `--mvp` shorthand are workflow selectors, not rubric definitions. The CLI MAY expose shorthand flags, but persisted configuration MUST normalize them to `workflow` plus explicit `rubric_profile`.
 
+### Scope Contract
+
+A scope contract is an operator-approved first-contact artifact that defines what Whetstone is allowed to pressure during a run.
+
+The canonical artifact path is configured by `scope_contract.path` and defaults to:
+
+```text
+rounds/intake/scope_contract.json
+```
+
+The scope contract MUST be treated as authoritative when present and approved. Reviewer prompts MUST instruct reviewers to mark concerns outside the contract as `in_scope = false` and to recommend a scope-promotion decision rather than silently expanding the current run. Editor prompts MUST instruct editors to decline out-of-scope or deferred feedback using the existing decline taxonomy.
+
+`workflow: mvp` requires an approved scope contract before live review begins. If the scope contract is missing, invalid, or not approved, preflight validation MUST halt with `CONFIG_INVALID`. This is intentional: an MVP run has no meaningful boundary unless the operator defines the first useful build and its deferrals.
+
+For other workflows, a scope contract is optional unless explicitly required by future configuration. If an approved scope contract exists, the Orchestrator SHOULD inject it into Reviewer and Editor context files and prompt snapshots.
+
+`scope_contract.json` MUST include:
+
+```yaml
+schema_version: scope-contract-v1
+status: draft | approved | superseded
+readiness_target: exploratory | mvp | standard | governance | custom
+core_outcome: string
+primary_actor_or_consumer: string | null
+core_flows:
+  - id: string
+    description: string
+    priority: must | should | could
+scope_surfaces:
+  - id: string
+    name: string
+    status: in_scope | deferred | out_of_scope
+    required_depth: mention | define | required_fields | full_schema | exhaustive | custom
+    rationale: string
+deferral_rules:
+  - id: string
+    trigger: string
+    action: defer | allow_if_core | allow | block
+    decline_reason: out_of_scope | deferred_to_later_round | architectural_conflict | ambiguous
+    rationale: string
+acceptance_floor:
+  minimum_buildable_result: string
+  must_answer: [string]
+  may_defer: [string]
+review_pressure_limits:
+  max_depth_default: mention | define | required_fields | full_schema | exhaustive | custom
+  expansion_policy: conservative | balanced | expansive
+operator_decisions:
+  - question: string
+    answer: string
+    rationale: string
+approval:
+  approved: boolean
+  approved_by: string | null
+  approved_at: timestamp | null
+```
+
+`whetstone intake --template mvp --output scope-notes.md` MUST produce a human-editable scope notes template. `whetstone intake --from-notes scope-notes.md` MUST produce a schema-valid scope contract. Unless `--approve` is supplied, generated contracts MUST remain `status = draft` and MUST NOT satisfy the MVP preflight requirement.
+
 ### Rubric Manifest
 
 Before the first Phase 2 review, the Orchestrator MUST write `/rounds/rubric_manifest.json`.
@@ -209,10 +274,21 @@ resolved_defaults:
   target_mode: permissive | strict
   max_rounds: integer
   required_artifacts: [string]
+configured_budgets:
+  review_max_rounds: integer
+  convergence_max_rounds: integer
+  review_profile_budgets: object
+  convergence_profile_budgets: object
+  review_round_budget: integer
+  convergence_round_budget: integer
+  total_absolute_round_budget: integer
+  effective_total_absolute_round_budget: integer
 warnings: [string]
 ```
 
 Phase 2 MUST NOT start unless rubric identity is explicit and manifest validation passes.
+
+Rubric manifest budget fields MUST distinguish legacy global round fields from effective profile-level budgets. Operators MUST be able to see the actual scheduler budget used for profile-based review, even when legacy `review_max_rounds` or `convergence.max_rounds` remain present for compatibility.
 
 For built-in rubrics:
 
@@ -226,7 +302,7 @@ For custom rubrics:
 - The run start summary and manifest MUST mark the rubric as custom.
 - The CLI SHOULD warn that custom rubric identity is hash-based and may not be comparable to built-in profile results.
 
-Phase 2 prompt snapshots, convergence declarations, convergence failure reports, decision summaries, and apply-back reports MUST include the manifest path or the full rubric identity tuple:
+Phase 2 prompt snapshots, convergence declarations, convergence failure reports, decision summaries, and strop/apply-back reports MUST include the manifest path or the full rubric identity tuple:
 
 ```text
 (workflow, rubric_profile, rubric_source, rubric_label, rubric_content_hash, target_phase, target_mode)
@@ -578,6 +654,8 @@ effective_run_config:
     recent_window: integer
     min_recent_serious_rounds: integer
     min_contract_families: integer
+  scope_contract:
+    path: string
 ```
 
 The budget maps in `effective_run_config` MUST be the resolved effective maps used by the scheduler, not merely the operator-supplied override maps.
@@ -588,6 +666,10 @@ The budget maps in `effective_run_config` MUST be the resolved effective maps us
 - `soft`: the Orchestrator MAY advance from an exhausted or oscillating Phase 1 profile to the next configured Phase 1 profile, but it MUST mark the prior profile with a residual status and MUST NOT mark the profile clean.
 
 Soft budget mode is a diagnostic sweep mode, not convergence. If all Phase 1 profiles have been visited but one or more required profiles has residual status, the Orchestrator MUST halt with `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, produce `technical_failure_report.json`, set `ready_for_phase_2 = false`, and require external input before any Phase 2 run.
+
+A clean Reviewer pass for a profile MUST take precedence over budget exhaustion for that same profile. If the latest consumed budget round for a profile has zero in-scope blockers and zero in-scope majors, the profile MUST be marked clean even when that round equals the profile's configured budget. Budget exhaustion MUST NOT create a residual profile status after a clean latest pass.
+
+If a clean Reviewer pass is followed only by Orchestrator-owned metadata mutation such as version stamping, that metadata mutation MUST NOT by itself invalidate the clean profile. If the Editor accepts or modifies feedback and changes the draft, the clean Reviewer pass applies only to the pre-edit draft and the profile still requires later clean verification.
 
 Allowed Phase 1 residual statuses are:
 
@@ -618,6 +700,13 @@ If detected, the Orchestrator MUST persist:
 /rounds/contract_surface_report.json:
   detected: true
   type: EXPANDING_CONTRACT_SURFACE
+  terminal_effect: none
+  action_taken: injected_into_next_round_context | report_only
+  next_round_number: integer | null
+  requires_operator_action: false
+  synthesis_pass_executed: false
+  lifecycle_status: synthesis_pass_recommended | resolved_by_later_rounds | still_open | operator_review_recommended
+  resolution_round_number: integer | null
   round_number: integer
   profile: string
   draft_hash: sha256
@@ -635,11 +724,22 @@ If detected, the Orchestrator MUST persist:
     instruction: string
 ```
 
-`contract_surface_report.md` SHOULD summarize the same information for operators.
+`terminal_effect` MUST be `none` for this version. `EXPANDING_CONTRACT_SURFACE` is advisory only: it does not halt execution, skip a profile, mark a profile clean, waive accepted-draft requirements, or imply that a synthesis pass has already occurred.
+
+When `action_taken = injected_into_next_round_context`, the Orchestrator MUST expose the report to the next matching Editor round as a context file and set `next_round_number` to the first round where the report is expected to be available. This action is prompt context injection, not an automatic synthesis pass. `synthesis_pass_executed` MUST remain `false` unless a future explicit synthesis-pass workflow is implemented and actually run.
+
+`contract_surface_report.md` SHOULD summarize the same information for operators, including terminal effect, action taken, next round, operator-action requirement, whether synthesis was executed, lifecycle status, and resolution round.
+
+The Orchestrator SHOULD update `lifecycle_status` as later rounds complete:
+
+- `synthesis_pass_recommended`: initial detected state when the report is injected into future Editor context.
+- `resolved_by_later_rounds`: a later round for the same profile produced clean Reviewer feedback after the report was generated.
+- `still_open`: later profile rounds have occurred, but no later clean Reviewer pass has resolved the surface.
+- `operator_review_recommended`: the run reached terminal state while the surface remained unresolved or ambiguous.
 
 When a matching `contract_surface_report.json` exists for the active profile, Editor prompts MAY include timeout-aware bounded synthesis guidance. A resumed Editor prompt after timeout SHOULD tell the Editor to read the contract surface report, prefer bounded synthesis over the report's listed sections and contract families, preserve global coherence, and still return `draft_after_content` as the complete revised draft text.
 
-The initial action is `recommend_synthesis`. Future versions MAY add automatic synthesis-pass scheduling, but automatic synthesis MUST remain explicit in configuration and MUST NOT silently replace normal profile review.
+The initial action is `recommend_synthesis`, which currently means "recommend and prepare bounded synthesis by injecting the report into the next applicable Editor context." Future versions MAY add automatic synthesis-pass scheduling, but automatic synthesis MUST remain explicit in configuration and MUST NOT silently replace normal profile review.
 
 ---
 
@@ -1037,8 +1137,11 @@ The Orchestrator MUST reject destructive Editor-generated draft replacements bef
 - empty or whitespace-only `draft_after_content`
 - known Editor blocked/error placeholder text in `draft_after_content`
 - near-empty replacements that are destructively smaller than a large non-empty draft
+- forbidden text-corruption characters in `draft_after_content`
 
-Such rejection is an artifact validation failure, not an accepted draft mutation. The invalid attempt MUST be persisted and the previous valid draft MUST remain authoritative.
+Forbidden text-corruption characters are Unicode category `Cc` control characters except LF, CR, and TAB, plus `U+FFFD` replacement characters. Such rejection is an artifact validation failure, not an accepted draft mutation. The invalid attempt MUST be persisted and the previous valid draft MUST remain authoritative.
+
+Apply-back preflight MUST run the same text hygiene validation against the final draft before writing to the source spec. A final draft that violates text hygiene MUST NOT be applied, even if the run predates the validation guard or was manually edited after convergence.
 
 When `draft_after.md` is supplied by an external fixture or explicit Orchestrator input, `draft_after_content` MAY be null or omitted.
 
@@ -1064,11 +1167,24 @@ decision_points:
     editor_selected_option_id: string | null
     editor_rationale: string
     risk_if_wrong: string
+    decision_status: editor_applied_decision | operator_review_recommended | operator_required_decision | record_only_hardening | deferred_scope_decision
     requires_human_decision: boolean
     orchestrator_action: record_only | present_at_end | pause_for_input
 ```
 
 Decision points capture consequential choices made or proposed during revision. They are separate from issue identity and from conflict escalation. A decision point does not imply the Editor made an invalid change; it means the change carries product, policy, scope, authority, or operational consequences that should be visible outside the model turn.
+
+`decision_status` disambiguates what kind of decision point was captured:
+
+- `editor_applied_decision`: the Editor already encoded the choice in the draft and no special operator review was requested.
+- `operator_review_recommended`: the Editor already encoded the choice in the draft, but the choice should be visible to the operator before apply-back, Phase 2, or implementation.
+- `operator_required_decision`: the Orchestrator paused in intervention mode and external input is required before continuing.
+- `record_only_hardening`: the change is routine precision hardening captured for audit, not a live owner decision.
+- `deferred_scope_decision`: the decision concerns behavior that should remain deferred unless an operator explicitly pulls it into scope.
+
+In `end_of_cycle` mode, `operator_review_recommended` is advisory and MUST NOT halt the run by itself. In `intervention` mode, `operator_required_decision` maps to `orchestrator_action = pause_for_input` and MAY halt through the existing `PAUSED_DECISION` path.
+
+If an Editor change promotes a scope-contract `could`, `deferred`, or `out_of_scope` surface into normative `MUST` behavior, the Orchestrator SHOULD classify the resulting decision point as `deferred_scope_decision`. In `end_of_cycle` mode this is surfaced for operator review and MUST NOT halt the run by itself. In `intervention` mode it MAY pause only through the existing `PAUSED_DECISION` path.
 
 The Editor MUST create a decision point when accepting or modifying feedback causes any of:
 - changes normative strength among `MUST`, `SHOULD`, `MAY`, `MUST NOT`, or equivalent language
@@ -1122,6 +1238,7 @@ generated_at: string
 mode: end_of_cycle | intervention
 terminal_state: string
 decision_points: [decision_point]
+decision_status_counts: object
 unresolved_human_decision_count: integer
 ```
 
@@ -1145,6 +1262,7 @@ generated_at: string
 source_register_path: string
 terminal_state: string
 decision_point_count: integer
+decision_status_counts: object
 unresolved_human_decision_count: integer
 section_clusters:
   - cluster_id: string
@@ -1838,6 +1956,11 @@ Includes:
 - unresolved_conflicts
 - unresolved_oscillation
 - last_accepted_draft_hash
+- current_draft_status:
+  - not_accepted
+  - accepted_unverified_profiles
+  - phase_1_stable
+- ready_for_phase_2
 - last_draft_hash
 - profile_status
 - last_reviewer_findings: object | null
@@ -1854,6 +1977,14 @@ Orchestrator MUST halt and require external input.
 The system does not proceed automatically to Phase 2.
 
 In Phase 1, empty `unresolved_blockers` and `unresolved_major_issues` do not imply Phase 1 stability. They mean the latest Editor summary did not leave blocker/major issues unresolved. Phase 1 stability still requires valid clean Reviewer status for every required Phase 1 profile and an accepted current draft. If profile-budget exhaustion occurs before that verification, `technical_failure_report.json` MUST make the missing verification visible through `profile_status` and `last_reviewer_findings`.
+
+`last_accepted_draft_hash` records the latest draft hash that satisfied accepted-draft criteria. It MUST NOT be interpreted by itself as Phase 1 stability. `current_draft_status` MUST provide the operator-facing interpretation:
+
+- `not_accepted`: `last_accepted_draft_hash` is null or does not match `last_draft_hash`.
+- `accepted_unverified_profiles`: `last_accepted_draft_hash` matches `last_draft_hash`, but one or more required Phase 1 profiles remains unverified, exhausted with residual status, or unvisited.
+- `phase_1_stable`: `last_accepted_draft_hash` matches `last_draft_hash` and every required Phase 1 profile has a clean Reviewer verification for the current draft.
+
+`ready_for_phase_2` MUST be true only when `current_draft_status = phase_1_stable`.
 
 If `terminal_state = PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, the report means Phase 1 soft budget mode completed the configured profile sweep but did not produce a Phase 1 stable draft. The report MUST be interpreted as a manual-review checkpoint, not a successful stabilization result.
 
@@ -1990,6 +2121,7 @@ prompt_snapshot.json MUST include:
 - rubric source
 - rubric content hash
 - rubric manifest path in Phase 2
+- scope contract path/hash/status when present
 - draft_hash
 - semantic_change_hash when a draft mutation is requested
 - context_files manifest when file-backed context is used
@@ -2010,10 +2142,13 @@ prompt_snapshot.json MUST include:
 - rubric profile
 - rubric source
 - rubric manifest path in Phase 2
+- scope contract path/hash/status when present
 - context_files manifest when file-backed context is used
 - validation errors that caused the attempt, or an empty list for the first attempt
 
 Live client prompts MAY use file-backed context for large authoritative inputs. File-backed context MUST be written under `rounds/round-N/context/`, and prompt text MUST reference those files by path instead of duplicating the full content. This mechanism is intended for bulky round inputs such as the draft, rubric, convergence declaration, and reviewer feedback.
+
+When an approved scope contract is present, it MUST be supplied as file-backed context to Reviewer and Editor prompts. Prompt snapshots MUST include the scope contract context-file hash and a top-level `scope_contract_hash` or equivalent scope-contract summary.
 
 When file-backed context is used:
 - the Orchestrator MUST persist each context file before the client attempt begins
@@ -2058,7 +2193,7 @@ Future config MUST include:
 
 If implemented later, weighted mode MUST define numeric severity mapping, reviewer weights, and rounding behavior before use.
 
-Not implemented in 0.34.
+Not implemented in 0.37.
 
 ---
 

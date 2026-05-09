@@ -53,11 +53,31 @@
     "configured_budgets": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["review_max_rounds", "convergence_max_rounds", "total_absolute_round_budget"],
+      "required": [
+        "review_max_rounds",
+        "convergence_max_rounds",
+        "review_profile_budgets",
+        "convergence_profile_budgets",
+        "review_round_budget",
+        "convergence_round_budget",
+        "total_absolute_round_budget",
+        "effective_total_absolute_round_budget"
+      ],
       "properties": {
         "review_max_rounds": { "type": "integer", "minimum": 1 },
         "convergence_max_rounds": { "type": "integer", "minimum": 1 },
-        "total_absolute_round_budget": { "type": "integer", "minimum": 2 }
+        "review_profile_budgets": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "convergence_profile_budgets": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "review_round_budget": { "type": "integer", "minimum": 1 },
+        "convergence_round_budget": { "type": "integer", "minimum": 1 },
+        "total_absolute_round_budget": { "type": "integer", "minimum": 2 },
+        "effective_total_absolute_round_budget": { "type": "integer", "minimum": 2 }
       }
     },
     "warnings": { "$ref": "common.schema.json#/$defs/stringArray" }

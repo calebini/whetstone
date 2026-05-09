@@ -10,6 +10,7 @@ from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
 from whetstone.identity import oscillation_fingerprint, oscillation_opposition_key
 from whetstone.live import LiveRoundRunner
+from whetstone.scope import render_mvp_scope_notes_template, scope_contract_from_notes, write_scope_contract
 
 
 HASH_RE = re.compile(r"([a-f0-9]{64})")
@@ -349,6 +350,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 decision_points=config.decision_points,
                 timeouts=config.timeouts,
                 contract_surface=config.contract_surface,
+                scope_contract=config.scope_contract,
             )
 
             with self.assertRaises(ValueError):
@@ -362,6 +364,30 @@ class LiveRoundRunnerTests(unittest.TestCase):
             error = json.loads(root.joinpath("rounds/config_validation_error.json").read_text(encoding="utf-8"))
             self.assertEqual(error["terminal_state"], "CONFIG_INVALID")
             self.assertFalse(root.joinpath("rounds/round-1").exists())
+
+    def test_live_round_injects_scope_contract_context(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            write_scope_contract(
+                root / "rounds" / "intake" / "scope_contract.json",
+                scope_contract_from_notes(render_mvp_scope_notes_template(), approved=True),
+            )
+            reviewer = PromptRecordingReviewerClient(root)
+
+            LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=FakeEditorClient(root),
+            ).run_round(round_number=1, profile="determinism")
+
+            snapshot = json.loads(root.joinpath("rounds/round-1/prompt_snapshot.json").read_text(encoding="utf-8"))
+            labels = [item["label"] for item in snapshot["context_files"]]
+            self.assertIn("scope_contract", labels)
+            self.assertIn("scope_contract_hash", snapshot)
+            self.assertIn("The scope contract is authoritative", reviewer.prompts[0])
 
     def test_malformed_reviewer_output_rejects_before_editor_invocation(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -458,6 +484,28 @@ class LiveRoundRunnerTests(unittest.TestCase):
             convergence = json.loads(root.joinpath("rounds/convergence_failure_report.json").read_text(encoding="utf-8"))
             self.assertEqual(convergence["terminal_state"], "HALTED_ARTIFACT_INVALID")
             self.assertEqual(convergence["final_draft_path"], "rounds/round-1/draft_after.md")
+
+    def test_editor_draft_with_control_character_rejects_before_spec_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec\n\n## Hashing\n\nBefore.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "editor_summary.json validation failed after retry"):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodEmptyReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient("# Spec\n\nBad\x1a text.\n"),
+                ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), before)
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_1.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_2.json").exists())
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["client_role"], "editor")
+            self.assertIn("FORBIDDEN_CONTROL_CHARACTER", error["attempts"][0]["validation_errors"][0])
 
     def test_editor_validation_retry_can_recover_after_valid_review(self) -> None:
         with TemporaryDirectory() as tmp:

@@ -13,6 +13,7 @@ from whetstone.hashing import draft_hash
 
 ROOT_HEADING_RE = re.compile(r"^(# .*)$", re.MULTILINE)
 STATUS_VERSION_RE = re.compile(r"^(Status:\s+.*?)(v?)(\d+(?:\.\d+)?)(.*)$", re.MULTILINE)
+VERSION_FIELD_RE = re.compile(r"^(Version:\s+)(v?)(\d+(?:\.\d+)?)(.*)$", re.MULTILINE)
 VERSION_RE = re.compile(r"(?<!\d)(\d+)(?:\.(\d+))?(?!\d)")
 
 
@@ -161,5 +162,13 @@ def _find_version_target(spec_text: str) -> _VersionTarget | None:
             end=status_match.end(3),
             version=status_match.group(3),
             prefix=status_match.group(2),
+        )
+    version_field_match = VERSION_FIELD_RE.search(spec_text)
+    if version_field_match is not None:
+        return _VersionTarget(
+            start=version_field_match.start(2),
+            end=version_field_match.end(3),
+            version=version_field_match.group(3),
+            prefix=version_field_match.group(2),
         )
     return None

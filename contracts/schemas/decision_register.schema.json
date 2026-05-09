@@ -16,6 +16,10 @@
       "type": "array",
       "items": { "$ref": "common.schema.json#/$defs/decisionPoint" }
     },
+    "decision_status_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
     "unresolved_human_decision_count": { "type": "integer", "minimum": 0 }
   }
 }

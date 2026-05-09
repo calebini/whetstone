@@ -49,6 +49,21 @@ class ApplyBackTests(unittest.TestCase):
 
             self.assertEqual(source.read_text(encoding="utf-8"), "# Spec\n\nBefore.\n")
 
+    def test_apply_back_refuses_final_draft_with_control_characters(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.md"
+            run_root = root / "run"
+            run_root.mkdir()
+            source.write_text("# Spec\n\nBefore.\n", encoding="utf-8")
+            run_root.joinpath("spec.md").write_text("# Spec\n\nBad\x1a text.\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "FORBIDDEN_CONTROL_CHARACTER"):
+                apply_back(source_path=source, run_root=run_root)
+
+            self.assertFalse(run_root.joinpath("rounds/apply_back_review.json").exists())
+            self.assertEqual(source.read_text(encoding="utf-8"), "# Spec\n\nBefore.\n")
+
     def test_apply_requires_converged_run_by_default(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

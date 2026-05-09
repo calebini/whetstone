@@ -277,6 +277,13 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertTrue(report["detected"])
             self.assertEqual(report["type"], "EXPANDING_CONTRACT_SURFACE")
             self.assertEqual(report["profile"], "structural_integrity")
+            self.assertEqual(report["terminal_effect"], "none")
+            self.assertEqual(report["action_taken"], "injected_into_next_round_context")
+            self.assertEqual(report["next_round_number"], report["round_number"] + 1)
+            self.assertFalse(report["requires_operator_action"])
+            self.assertFalse(report["synthesis_pass_executed"])
+            self.assertEqual(report["lifecycle_status"], "resolved_by_later_rounds")
+            self.assertGreater(report["resolution_round_number"], report["round_number"])
             self.assertIn("schema/data-contract", report["contract_families"])
             self.assertIn("failure-semantics", report["contract_families"])
             self.assertTrue((root / "rounds" / "contract_surface_report.md").exists())
@@ -299,10 +306,49 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertFalse(state["ready_for_phase_2"])
             report = _read_json(root / "rounds" / "technical_failure_report.json")
             self.assertEqual(report["terminal_state"], "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
+            self.assertFalse(report["ready_for_phase_2"])
             self.assertEqual(
                 report["profile_status"]["exhausted_profiles"],
                 ["structural_integrity", "determinism", "operability"],
             )
+
+    def test_soft_budget_report_distinguishes_accepted_but_profile_unverified_draft(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=1)
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=ScriptedReviewerClient(root, ["major", None, None]),
+                editor_client=ResolvingEditorClient(root),
+                draft_after_provider=lambda round_number, profile, draft: draft + f"\nResolved {round_number}.\n",
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
+            report = _read_json(root / "rounds" / "technical_failure_report.json")
+            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
+            self.assertFalse(report["ready_for_phase_2"])
+            self.assertEqual(report["last_accepted_draft_hash"], report["last_draft_hash"])
+            self.assertIn("structural_integrity", report["profile_status"]["unverified_profiles"])
+
+    def test_clean_final_budget_round_is_not_reported_as_residual_for_version_only_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(
+                Path(tmp),
+                budget_exhaustion_policy="soft",
+                profile_budget=2,
+                spec="# Spec\n\nStatus: Draft v1.00\n\nDraft.\n",
+            )
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=ScriptedReviewerClient(root, [None, "major", None, None]),
+                editor_client=VersionOnlyOnCleanEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertTrue(state["ready_for_phase_2"])
 
     def test_soft_budget_oscillation_advances_profile_with_residual_status(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -436,6 +482,34 @@ class ResolvingMutatingEditorClient:
         issue_ids = _issue_ids_from_prompt(prompt, self.root)
         if issue_ids:
             draft_after_content += "\nVerified fix.\n"
+        round_number = _editor_round_number(prompt)
+        return {
+            "round_number": round_number,
+            "draft_before_hash": before_hash,
+            "draft_after_hash": explicit_after_hash,
+            "accepted_feedback_ids": [],
+            "modified_feedback_ids": [f"fb-{round_number}"] if issue_ids else [],
+            "declined_feedback": [],
+            "created_conflict_ids": [],
+            "resolved_issue_ids": issue_ids,
+            "unresolved_issue_ids": [],
+            **({"draft_after_content": draft_after_content} if explicit_after_hash is None else {}),
+        }
+
+
+class VersionOnlyOnCleanEditorClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
+    def revise(self, prompt: str) -> dict:
+        before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
+        explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
+        draft_after_content = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
+        if issue_ids:
+            draft_after_content += "\nResolved issue.\n"
+        else:
+            draft_after_content = draft_after_content.replace("Status: Draft v1.00", "Status: Draft v1.01")
         round_number = _editor_round_number(prompt)
         return {
             "round_number": round_number,

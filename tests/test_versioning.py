@@ -43,6 +43,17 @@ class VersioningTests(unittest.TestCase):
         self.assertIn("Status: Draft v1.0", promoted)
         self.assertIn("Body 0.02 remains.", promoted)
 
+    def test_promote_spec_text_supports_version_field_when_heading_has_no_version(self) -> None:
+        draft = "# Foreman Replay / Verification Specification (MVP)\n\nVersion: v0.02  \nStatus: Draft\n"
+
+        promoted, before_version, after_version, changed = promote_spec_text_for_phase2(draft)
+
+        self.assertTrue(changed)
+        self.assertEqual(before_version, "0.02")
+        self.assertEqual(after_version, "1.0")
+        self.assertIn("Version: v1.0", promoted)
+        self.assertIn("Status: Draft", promoted)
+
     def test_promote_spec_file_requires_stable_phase1_gate(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

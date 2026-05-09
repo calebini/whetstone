@@ -28,6 +28,7 @@ class DecisionContext:
     source_feedback_ids: list[str]
     requires_human_decision: bool
     mode: str
+    scope_contract: dict[str, Any] | None = None
 
 
 def detect_decision_points(
@@ -39,6 +40,7 @@ def detect_decision_points(
     reviewer_feedback: dict[str, Any],
     editor_summary: dict[str, Any],
     config: DecisionPointConfig,
+    scope_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     source_feedback_ids = list(editor_summary.get("accepted_feedback_ids", [])) + list(
         editor_summary.get("modified_feedback_ids", [])
@@ -50,6 +52,7 @@ def detect_decision_points(
         source_feedback_ids=source_feedback_ids,
         requires_human_decision=requires_human,
         mode=config.mode,
+        scope_contract=scope_contract,
     )
     points: list[dict[str, Any]] = []
     if config.enabled:
@@ -69,6 +72,7 @@ def scan_decision_points(
     draft_after: str,
     mode: str = "end_of_cycle",
     profile: str = "decision_scan",
+    scope_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Detect decision points for an ad hoc before/after draft pair."""
     config = DecisionPointConfig(
@@ -88,6 +92,7 @@ def scan_decision_points(
         reviewer_feedback={"feedback": [{"feedback_id": "decision-scan", "normalized_severity": "major"}]},
         editor_summary={"accepted_feedback_ids": ["decision-scan"], "modified_feedback_ids": []},
         config=config,
+        scope_contract=scope_contract,
     )
 
 
@@ -107,6 +112,7 @@ def write_decision_scan_outputs(
         "mode": mode,
         "terminal_state": terminal_state,
         "decision_points": packet["decision_points"],
+        "decision_status_counts": _decision_status_counts(packet["decision_points"]),
         "unresolved_human_decision_count": sum(
             1 for point in packet["decision_points"] if point["requires_human_decision"]
         ),
@@ -156,6 +162,7 @@ def write_decision_register(
         "mode": mode,
         "terminal_state": terminal_state,
         "decision_points": points,
+        "decision_status_counts": _decision_status_counts(points),
         "unresolved_human_decision_count": sum(1 for point in points if point["requires_human_decision"]),
     }
     validate_artifact(packet, "decision_register")
@@ -205,6 +212,7 @@ def render_decision_register_markdown(packet: dict[str, Any]) -> str:
         "",
         f"- mode: `{packet['mode']}`",
         f"- terminal_state: `{packet['terminal_state']}`",
+        f"- decision_status_counts: {_format_status_counts(packet.get('decision_status_counts') or _decision_status_counts(packet.get('decision_points', [])))}",
         f"- unresolved_human_decision_count: `{packet['unresolved_human_decision_count']}`",
         "",
     ]
@@ -214,6 +222,7 @@ def render_decision_register_markdown(packet: dict[str, Any]) -> str:
                 f"## {point['decision_id']}",
                 "",
                 f"- type: `{point['decision_type']}`",
+                f"- status: `{point.get('decision_status') or _legacy_decision_status(point)}`",
                 f"- triggers: {', '.join(f'`{trigger}`' for trigger in point.get('trigger_types', []))}",
                 f"- round: `{point['round_number']}`",
                 f"- profile: `{point['profile']}`",
@@ -247,6 +256,7 @@ def summarize_decision_register(register: dict[str, Any], *, source_register_pat
         "mode": register["mode"],
         "terminal_state": register["terminal_state"],
         "decision_count": len(points),
+        "decision_status_counts": _decision_status_counts(points),
         "unresolved_human_decision_count": register["unresolved_human_decision_count"],
         "summary_method": "mechanical_v1",
         "hotspots": _decision_hotspots(clusters),
@@ -264,6 +274,7 @@ def render_decision_summary_markdown(summary: dict[str, Any]) -> str:
         f"- mode: `{summary['mode']}`",
         f"- terminal_state: `{summary['terminal_state']}`",
         f"- decision_count: `{summary['decision_count']}`",
+        f"- decision_status_counts: {_format_status_counts(summary['decision_status_counts'])}",
         f"- unresolved_human_decision_count: `{summary['unresolved_human_decision_count']}`",
         f"- summary_method: `{summary['summary_method']}`",
         "",
@@ -299,6 +310,7 @@ def render_decision_summary_markdown(summary: dict[str, Any]) -> str:
                     "",
                     f"- decisions: `{cluster['decision_count']}`",
                     f"- human decisions: `{cluster['requires_human_decision_count']}`",
+                    f"- status_counts: {_format_status_counts(cluster['decision_status_counts'])}",
                     f"- actions: {_format_inline_values(cluster['orchestrator_actions'])}",
                     f"- decision_types: {_format_inline_values(cluster['decision_types'])}",
                     f"- trigger_types: {_format_inline_values(cluster['trigger_types'])}",
@@ -425,6 +437,7 @@ def _cluster(*, key: str, label: str, points: list[dict[str, Any]]) -> dict[str,
         "cluster_label": label,
         "decision_count": len(points),
         "requires_human_decision_count": sum(1 for point in points if point.get("requires_human_decision") is True),
+        "decision_status_counts": _decision_status_counts(points),
         "orchestrator_actions": _sorted_unique(str(point["orchestrator_action"]) for point in points),
         "decision_types": _sorted_unique(str(point["decision_type"]) for point in points),
         "trigger_types": _sorted_unique(trigger for point in points for trigger in point.get("trigger_types", [])),
@@ -453,6 +466,70 @@ def _format_inline_values(values: list[str]) -> str:
     return ", ".join(f"`{value}`" for value in values)
 
 
+def _format_status_counts(counts: dict[str, int]) -> str:
+    if not counts:
+        return "`none`"
+    return ", ".join(f"`{key}`={value}" for key, value in sorted(counts.items()))
+
+
+def _decision_status_counts(points: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for point in points:
+        status = str(point.get("decision_status") or _legacy_decision_status(point))
+        counts[status] = counts.get(status, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _legacy_decision_status(point: dict[str, Any]) -> str:
+    return _decision_status(
+        action=str(point.get("orchestrator_action", "record_only")),
+        requires_human_decision=bool(point.get("requires_human_decision")),
+    )
+
+
+def _decision_status(*, action: str, requires_human_decision: bool) -> str:
+    if action == "pause_for_input":
+        return "operator_required_decision"
+    if action == "present_at_end" and requires_human_decision:
+        return "operator_review_recommended"
+    if action == "record_only":
+        return "record_only_hardening"
+    return "editor_applied_decision"
+
+
+def _is_scope_escalation(scope_contract: dict[str, Any] | None, *, section: str, evidence_line: str) -> bool:
+    if not scope_contract or not _contains_strong_normative(evidence_line):
+        return False
+    haystack = f"{section} {evidence_line}".lower()
+    for surface in scope_contract.get("scope_surfaces", []):
+        if not isinstance(surface, dict):
+            continue
+        status = str(surface.get("status", "")).lower()
+        if status not in {"deferred", "out_of_scope"}:
+            continue
+        if _surface_matches(haystack, str(surface.get("name", ""))):
+            return True
+    for flow in scope_contract.get("core_flows", []):
+        if not isinstance(flow, dict):
+            continue
+        if str(flow.get("priority", "")).lower() != "could":
+            continue
+        if _surface_matches(haystack, str(flow.get("description", ""))):
+            return True
+    return False
+
+
+def _surface_matches(haystack: str, text: str) -> bool:
+    words = [
+        word
+        for word in re.findall(r"[a-z0-9_]+", text.lower())
+        if len(word) >= 5 and word not in {"required", "fields", "behavior", "surface"}
+    ]
+    if not words:
+        return False
+    return any(word in haystack for word in words[:8])
+
+
 def _trigger_types(text: str, config: DecisionPointConfig) -> list[str]:
     trigger_types: list[str] = []
     if config.trigger_on_requirement_strength_change and _contains_normative(text):
@@ -472,9 +549,15 @@ def _point(context: DecisionContext, trigger_types: list[str], section: str, evi
     decision_type = _primary_decision_type(trigger_types)
     question = _question(trigger_types, section, [evidence_line])
     fingerprint = _decision_fingerprint(decision_type, [section], question)
+    scope_escalation = _is_scope_escalation(context.scope_contract, section=section, evidence_line=evidence_line)
     action = "record_only"
-    if context.requires_human_decision:
+    if context.requires_human_decision or scope_escalation:
         action = "pause_for_input" if context.mode == "intervention" else "present_at_end"
+    decision_status = (
+        "deferred_scope_decision"
+        if scope_escalation and action != "pause_for_input"
+        else _decision_status(action=action, requires_human_decision=context.requires_human_decision or scope_escalation)
+    )
     return {
         "decision_id": f"dec_{fingerprint[:16]}",
         "round_number": context.round_number,
@@ -500,7 +583,8 @@ def _point(context: DecisionContext, trigger_types: list[str], section: str, evi
         "editor_selected_option_id": "selected",
         "editor_rationale": "Detected from the editor-produced draft diff.",
         "risk_if_wrong": "The spec may silently encode a policy, scope, authority, or operational choice the owner did not intend.",
-        "requires_human_decision": context.requires_human_decision,
+        "decision_status": decision_status,
+        "requires_human_decision": context.requires_human_decision or scope_escalation,
         "orchestrator_action": action,
     }
 

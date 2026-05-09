@@ -22,11 +22,52 @@ from whetstone.runner import FixtureRunner
 from whetstone.run_state import apply_effective_run_config
 from whetstone.rubrics import BUILTIN_RUBRIC_FILES, build_rubric_manifest
 from whetstone.sections import section_index
+from whetstone.scope import render_mvp_scope_notes_template, scope_contract_from_notes, write_scope_contract
 from whetstone.status import read_status, render_status_text
 from whetstone.versioning import promote_spec_file_for_phase2
 
 
 FORMATTER = argparse.RawDescriptionHelpFormatter
+
+
+def _add_apply_back_parser(subparsers: argparse._SubParsersAction, command: str, *, preferred: bool) -> None:
+    label = "strop" if preferred else "apply-back"
+    alias_note = (
+        "Preferred operator command for dry-run review or manual apply-back."
+        if preferred
+        else "Supported legacy alias for `strop`."
+    )
+    parser = subparsers.add_parser(
+        command,
+        help="review or apply an isolated run to a source spec" if preferred else "legacy alias for strop",
+        description=(
+            f"{alias_note} Compare a completed isolated Whetstone run with its source spec, "
+            "or apply the final draft after explicit approval."
+        ),
+        epilog=(
+            "Examples:\n"
+            f"  whetstone {label} --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\"\n"
+            f"  whetstone {label} --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\" --apply --approve\n\n"
+            "Run without --apply first. The apply path requires --approve on purpose."
+        ),
+        formatter_class=FORMATTER,
+    )
+    parser.add_argument("--source", required=True, help="source spec path to compare or update")
+    parser.add_argument("--run-root", required=True, help="completed isolated Whetstone run root")
+    parser.add_argument("--output-dir", help="directory for apply-back review artifacts; defaults to RUN_ROOT/rounds")
+    parser.add_argument("--expected-source-hash", help="optional source hash guard")
+    parser.add_argument(
+        "--allow-source-hash-mismatch",
+        action="store_true",
+        help="danger: continue when --expected-source-hash does not match the current source hash",
+    )
+    parser.add_argument(
+        "--allow-non-converged",
+        action="store_true",
+        help="danger: allow writing back from a non-CONVERGED run; intended only for manual recovery",
+    )
+    parser.add_argument("--apply", action="store_true", help="write the final Whetstone draft back to --source")
+    parser.add_argument("--approve", action="store_true", help="required with --apply")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -111,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
             "Budget policy is configured in orchestrator_config.yaml:\n"
             "  review.budget_exhaustion_policy: hard  # strict stop\n"
             "  review.budget_exhaustion_policy: soft  # full diagnostic sweep, no Phase 2 unless stable\n\n"
+            "MVP workflow requires an approved scope contract:\n"
+            "  whetstone intake --root \"$RUN_ROOT\" --from-notes scope-notes.md --approve\n\n"
             "Use status after completion:\n"
             "  whetstone status --root \"$RUN_ROOT\" --format text"
         ),
@@ -185,6 +228,26 @@ def main(argv: list[str] | None = None) -> int:
     status.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
     status.add_argument("--format", choices=["json", "text"], default="json", help="status output format; text is best for operators")
 
+    intake = subparsers.add_parser(
+        "intake",
+        help="create scope notes templates or scope contracts",
+        description="Create first-contact scope artifacts before live review pressure begins.",
+        epilog=(
+            "Examples:\n"
+            "  whetstone intake --template mvp --output scope-notes.md\n"
+            "  whetstone intake --root \"$RUN_ROOT\" --from-notes scope-notes.md\n"
+            "  whetstone intake --root \"$RUN_ROOT\" --from-notes scope-notes.md --approve\n\n"
+            "MVP live runs require an approved scope contract."
+        ),
+        formatter_class=FORMATTER,
+    )
+    intake.add_argument("--root", default=".", help="Whetstone run root")
+    intake.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    intake.add_argument("--template", choices=["mvp"], help="write a scope-notes template")
+    intake.add_argument("--from-notes", help="create scope_contract.json from a filled scope-notes file")
+    intake.add_argument("--output", help="output path; defaults to scope contract path for --from-notes")
+    intake.add_argument("--approve", action="store_true", help="mark generated scope contract approved by operator")
+
     decision_scan = subparsers.add_parser("decision-scan", help="scan a before/after draft pair for decision points")
     decision_scan.add_argument("--before", required=True, help="starting draft path")
     decision_scan.add_argument("--after", required=True, help="final draft path")
@@ -203,34 +266,8 @@ def main(argv: list[str] | None = None) -> int:
     promote_phase2.add_argument("--root", default=".", help="repository root")
     promote_phase2.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
 
-    apply_back_parser = subparsers.add_parser(
-        "apply-back",
-        help="review or apply an isolated run to a source spec",
-        description="Compare a completed isolated Whetstone run with its source spec, or apply the final draft after explicit approval.",
-        epilog=(
-            "Examples:\n"
-            "  whetstone apply-back --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\"\n"
-            "  whetstone apply-back --source \"$SOURCE_SPEC\" --run-root \"$RUN_ROOT\" --apply --approve\n\n"
-            "Run without --apply first. The apply path requires --approve on purpose."
-        ),
-        formatter_class=FORMATTER,
-    )
-    apply_back_parser.add_argument("--source", required=True, help="source spec path to compare or update")
-    apply_back_parser.add_argument("--run-root", required=True, help="completed isolated Whetstone run root")
-    apply_back_parser.add_argument("--output-dir", help="directory for apply-back review artifacts; defaults to RUN_ROOT/rounds")
-    apply_back_parser.add_argument("--expected-source-hash", help="optional source hash guard")
-    apply_back_parser.add_argument(
-        "--allow-source-hash-mismatch",
-        action="store_true",
-        help="danger: continue when --expected-source-hash does not match the current source hash",
-    )
-    apply_back_parser.add_argument(
-        "--allow-non-converged",
-        action="store_true",
-        help="danger: allow writing back from a non-CONVERGED run; intended only for manual recovery",
-    )
-    apply_back_parser.add_argument("--apply", action="store_true", help="write the final Whetstone draft back to --source")
-    apply_back_parser.add_argument("--approve", action="store_true", help="required with --apply")
+    _add_apply_back_parser(subparsers, "strop", preferred=True)
+    _add_apply_back_parser(subparsers, "apply-back", preferred=False)
 
     args = parser.parse_args(argv)
     if args.command == "fixture-round":
@@ -474,6 +511,37 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(json.dumps(packet, indent=2, sort_keys=True))
         return 0
+    if args.command == "intake":
+        root = Path(args.root)
+        config = load_config(root / args.config)
+        if args.template:
+            output = Path(args.output) if args.output else root / "scope-notes.md"
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(render_mvp_scope_notes_template(), encoding="utf-8")
+            print(json.dumps({"output": str(output), "template": args.template}))
+            return 0
+        if args.from_notes:
+            notes_path = Path(args.from_notes)
+            notes = notes_path.read_text(encoding="utf-8")
+            output = Path(args.output) if args.output else config.scope_contract.path
+            packet = scope_contract_from_notes(
+                notes,
+                source_path=str(notes_path),
+                approved=bool(args.approve),
+            )
+            write_scope_contract(output, packet)
+            print(
+                json.dumps(
+                    {
+                        "output": str(output),
+                        "approved": bool(packet["approval"]["approved"]),
+                        "status": packet["status"],
+                        "readiness_target": packet["readiness_target"],
+                    }
+                )
+            )
+            return 0
+        raise SystemExit("intake requires --template or --from-notes")
     if args.command == "decision-scan":
         before = Path(args.before).read_text(encoding="utf-8")
         after = Path(args.after).read_text(encoding="utf-8")
@@ -536,7 +604,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
-    if args.command == "apply-back":
+    if args.command in {"apply-back", "strop"}:
         result = apply_back(
             source_path=Path(args.source),
             run_root=Path(args.run_root),

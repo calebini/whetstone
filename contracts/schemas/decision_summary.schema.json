@@ -24,6 +24,10 @@
     },
     "terminal_state": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
     "decision_count": { "type": "integer", "minimum": 0 },
+    "decision_status_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
     "unresolved_human_decision_count": { "type": "integer", "minimum": 0 },
     "summary_method": {
       "type": "string",
@@ -108,6 +112,10 @@
         "cluster_label": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "decision_count": { "type": "integer", "minimum": 0 },
         "requires_human_decision_count": { "type": "integer", "minimum": 0 },
+        "decision_status_counts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
         "orchestrator_actions": { "$ref": "common.schema.json#/$defs/stringArray" },
         "decision_types": { "$ref": "common.schema.json#/$defs/stringArray" },
         "trigger_types": { "$ref": "common.schema.json#/$defs/stringArray" },

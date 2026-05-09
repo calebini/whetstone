@@ -10,6 +10,7 @@ import unittest
 
 from whetstone.cli import main
 from whetstone.hashing import draft_hash
+from whetstone.scope import render_mvp_scope_notes_template, scope_contract_from_notes, write_scope_contract
 
 
 class CliTests(unittest.TestCase):
@@ -35,6 +36,73 @@ class CliTests(unittest.TestCase):
         self.assertIn("Run without --apply first", rendered)
         self.assertIn("danger: continue when --expected-source-hash", rendered)
         self.assertIn("danger: allow writing back from a non-CONVERGED run", rendered)
+
+    def test_strop_help_marks_preferred_apply_back_alias(self) -> None:
+        output = io.StringIO()
+
+        with redirect_stdout(output), self.assertRaises(SystemExit) as raised:
+            main(["strop", "--help"])
+
+        self.assertEqual(raised.exception.code, 0)
+        rendered = output.getvalue()
+        self.assertIn("Preferred operator command", rendered)
+        self.assertIn("whetstone strop --source", rendered)
+        self.assertIn("Run without --apply first", rendered)
+
+    def test_intake_template_and_from_notes_create_scope_contract(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            notes = root / "scope-notes.md"
+
+            template_stdout = io.StringIO()
+            with redirect_stdout(template_stdout):
+                template_exit = main(["intake", "--root", str(root), "--template", "mvp", "--output", str(notes)])
+
+            self.assertEqual(template_exit, 0)
+            self.assertIn("Core Outcome", notes.read_text(encoding="utf-8"))
+
+            contract_stdout = io.StringIO()
+            with redirect_stdout(contract_stdout):
+                contract_exit = main(["intake", "--root", str(root), "--from-notes", str(notes), "--approve"])
+
+            self.assertEqual(contract_exit, 0)
+            packet = json.loads(root.joinpath("rounds/intake/scope_contract.json").read_text(encoding="utf-8"))
+            self.assertTrue(packet["approval"]["approved"])
+            self.assertEqual(packet["readiness_target"], "mvp")
+            self.assertEqual(json.loads(contract_stdout.getvalue())["status"], "approved")
+
+    def test_mvp_live_phase1_requires_approved_scope_contract(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            root.joinpath("orchestrator_config.yaml").write_text(
+                """
+spec_path: ./spec.md
+history_path: ./spec.history.md
+rounds_dir: ./rounds
+workflow: mvp
+clients:
+  reviewer:
+    name: fixture-reviewer
+    command: fixture
+    version: "0"
+    model: fixture
+  editor:
+    name: fixture-editor
+    command: fixture
+    version: "0"
+    model: fixture
+""".strip(),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(ValueError):
+                main(["live-phase1", "--root", str(root)])
+
+            error = json.loads(root.joinpath("rounds/config_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "CONFIG_INVALID")
+            self.assertIn("MVP workflow requires an approved scope contract", error["invalid_fields"][0]["reason"])
 
     def test_codex_review_writes_schema_valid_output(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -221,6 +289,23 @@ JSON
             run_root.joinpath("spec.md").write_text("# Spec\n\nAfter.\n", encoding="utf-8")
 
             exit_code = main(["apply-back", "--source", str(source), "--run-root", str(run_root)])
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(source.read_text(encoding="utf-8"), "# Spec\n\nBefore.\n")
+            report = json.loads(run_root.joinpath("rounds/apply_back_review.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["mode"], "dry_run")
+            self.assertFalse(report["applied"])
+
+    def test_strop_dry_run_cli_writes_review_without_mutating_source(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.md"
+            run_root = root / "run"
+            run_root.mkdir()
+            source.write_text("# Spec\n\nBefore.\n", encoding="utf-8")
+            run_root.joinpath("spec.md").write_text("# Spec\n\nAfter.\n", encoding="utf-8")
+
+            exit_code = main(["strop", "--source", str(source), "--run-root", str(run_root)])
 
             self.assertEqual(exit_code, 0)
             self.assertEqual(source.read_text(encoding="utf-8"), "# Spec\n\nBefore.\n")
@@ -506,6 +591,7 @@ convergence:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _seed_cli_phase2_root(root)
+            _write_approved_scope_contract(root)
 
             exit_code = main(
                 [
@@ -945,6 +1031,15 @@ convergence:
 """,
         encoding="utf-8",
     )
+
+
+def _write_approved_scope_contract(root: Path) -> None:
+    packet = scope_contract_from_notes(
+        render_mvp_scope_notes_template(),
+        source_path=str(root / "scope-notes.md"),
+        approved=True,
+    )
+    write_scope_contract(root / "rounds" / "intake" / "scope_contract.json", packet)
 
 
 if __name__ == "__main__":

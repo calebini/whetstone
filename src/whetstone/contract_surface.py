@@ -65,6 +65,9 @@ def maybe_write_contract_surface_report(
     recent = profile_rounds[-policy.recent_window :]
     serious_recent = [item for item in recent if item["blocker_count"] + item["major_count"] > 0]
     families = sorted({family for item in recent for family in item["contract_families"]})
+    current = recent[-1]
+    if current["blocker_count"] + current["major_count"] == 0:
+        return None
     if len(serious_recent) < policy.min_recent_serious_rounds or len(families) < policy.min_contract_families:
         return None
 
@@ -78,6 +81,13 @@ def maybe_write_contract_surface_report(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "detected": True,
         "type": "EXPANDING_CONTRACT_SURFACE",
+        "terminal_effect": "none",
+        "action_taken": "injected_into_next_round_context" if policy.action == "recommend_synthesis" else "report_only",
+        "next_round_number": current_round + 1 if policy.action == "recommend_synthesis" else None,
+        "requires_operator_action": False,
+        "synthesis_pass_executed": False,
+        "lifecycle_status": "synthesis_pass_recommended" if policy.action == "recommend_synthesis" else "still_open",
+        "resolution_round_number": None,
         "round_number": current_round,
         "profile": profile,
         "draft_hash": _current_draft_hash(rounds_dir, current_round),
@@ -100,6 +110,49 @@ def maybe_write_contract_surface_report(
     }
     validate_artifact(report, "contract_surface_report")
     path = rounds_dir / "contract_surface_report.json"
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_markdown_report(path.with_suffix(".md"), report)
+    return path
+
+
+def update_contract_surface_lifecycle(
+    *,
+    rounds_dir: Path,
+    terminal: bool = False,
+) -> Path | None:
+    path = rounds_dir / "contract_surface_report.json"
+    if not path.exists():
+        return None
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if report.get("detected") is not True:
+        return None
+    profile = str(report.get("profile", ""))
+    report_round = int(report.get("round_number", 0))
+    later_rounds = [
+        row
+        for row in _profile_rounds(rounds_dir, profile=profile, through_round=_latest_round_number(rounds_dir))
+        if int(row["round_number"]) > report_round
+    ]
+    clean_later_rounds = [
+        row
+        for row in later_rounds
+        if int(row["blocker_count"]) == 0 and int(row["major_count"]) == 0
+    ]
+    if clean_later_rounds:
+        report["lifecycle_status"] = "resolved_by_later_rounds"
+        report["resolution_round_number"] = int(clean_later_rounds[0]["round_number"])
+        report["requires_operator_action"] = False
+    elif terminal:
+        report["lifecycle_status"] = "operator_review_recommended"
+        report["resolution_round_number"] = None
+        report["requires_operator_action"] = True
+    else:
+        report["lifecycle_status"] = "still_open"
+        report["resolution_round_number"] = None
+    validate_artifact(report, "contract_surface_report")
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _write_markdown_report(path.with_suffix(".md"), report)
     return path
@@ -177,6 +230,16 @@ def _current_draft_hash(rounds_dir: Path, round_number: int) -> str:
     return draft_hash(draft_path.read_text(encoding="utf-8"))
 
 
+def _latest_round_number(rounds_dir: Path) -> int:
+    latest = 0
+    for path in rounds_dir.glob("round-*"):
+        try:
+            latest = max(latest, int(path.name.removeprefix("round-")))
+        except ValueError:
+            continue
+    return latest
+
+
 def _write_markdown_report(path: Path, report: dict[str, Any]) -> None:
     lines = [
         "# Contract Surface Report",
@@ -185,6 +248,13 @@ def _write_markdown_report(path: Path, report: dict[str, Any]) -> None:
         f"- profile: `{report['profile']}`",
         f"- round_number: `{report['round_number']}`",
         f"- recommendation: `{report['recommendation']}`",
+        f"- terminal_effect: `{report['terminal_effect']}`",
+        f"- action_taken: `{report['action_taken']}`",
+        f"- next_round_number: `{report['next_round_number']}`",
+        f"- requires_operator_action: `{str(report['requires_operator_action']).lower()}`",
+        f"- synthesis_pass_executed: `{str(report['synthesis_pass_executed']).lower()}`",
+        f"- lifecycle_status: `{report.get('lifecycle_status', 'unknown')}`",
+        f"- resolution_round_number: `{report.get('resolution_round_number')}`",
         "",
         "## Contract Families",
         "",

@@ -8,6 +8,11 @@
     "generated_at",
     "detected",
     "type",
+    "terminal_effect",
+    "action_taken",
+    "next_round_number",
+    "requires_operator_action",
+    "synthesis_pass_executed",
     "round_number",
     "profile",
     "draft_hash",
@@ -25,6 +30,29 @@
     "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
     "detected": { "type": "boolean" },
     "type": { "type": "string", "const": "EXPANDING_CONTRACT_SURFACE" },
+    "terminal_effect": { "type": "string", "const": "none" },
+    "action_taken": {
+      "type": "string",
+      "enum": ["injected_into_next_round_context", "report_only"]
+    },
+    "next_round_number": {
+      "anyOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "null" }
+      ]
+    },
+    "requires_operator_action": { "type": "boolean" },
+    "synthesis_pass_executed": { "type": "boolean" },
+    "lifecycle_status": {
+      "type": "string",
+      "enum": ["synthesis_pass_recommended", "resolved_by_later_rounds", "still_open", "operator_review_recommended"]
+    },
+    "resolution_round_number": {
+      "anyOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "null" }
+      ]
+    },
     "round_number": { "type": "integer", "minimum": 1 },
     "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
     "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },

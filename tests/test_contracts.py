@@ -212,12 +212,66 @@ class ContractValidationTests(unittest.TestCase):
             "configured_budgets": {
                 "review_max_rounds": 12,
                 "convergence_max_rounds": 8,
+                "review_profile_budgets": {"structural_integrity": 10},
+                "convergence_profile_budgets": {"convergence_strict_check": 10},
+                "review_round_budget": 10,
+                "convergence_round_budget": 10,
                 "total_absolute_round_budget": 20,
+                "effective_total_absolute_round_budget": 20,
             },
             "warnings": [],
         }
 
         validate_artifact(artifact, "rubric_manifest")
+
+    def test_scope_contract_validates(self) -> None:
+        artifact = {
+            "schema_version": "scope-contract-v1",
+            "generated_at": "2026-05-01T00:00:00+00:00",
+            "status": "approved",
+            "readiness_target": "mvp",
+            "core_outcome": "Make the MVP replay flow buildable.",
+            "primary_actor_or_consumer": "engineer",
+            "core_flows": [{"id": "flow-1", "description": "Replay one audit stream.", "priority": "must"}],
+            "scope_surfaces": [
+                {
+                    "id": "validation",
+                    "name": "Validation",
+                    "status": "in_scope",
+                    "required_depth": "required_fields",
+                    "rationale": "MVP needs required field validation.",
+                }
+            ],
+            "deferral_rules": [
+                {
+                    "id": "rule-1",
+                    "trigger": "Reviewer asks for exhaustive errors.",
+                    "action": "defer",
+                    "decline_reason": "out_of_scope",
+                    "rationale": "MVP keeps error categories coarse.",
+                }
+            ],
+            "acceptance_floor": {
+                "minimum_buildable_result": "Core flow can be built.",
+                "must_answer": ["inputs"],
+                "may_defer": ["exhaustive errors"],
+            },
+            "review_pressure_limits": {
+                "max_depth_default": "required_fields",
+                "expansion_policy": "conservative",
+            },
+            "operator_decisions": [
+                {"question": "Scope?", "answer": "MVP only.", "rationale": "Avoid surface expansion."}
+            ],
+            "source_notes_path": None,
+            "approval": {
+                "approved": True,
+                "approved_by": "operator",
+                "approved_at": "2026-05-01T00:00:00+00:00",
+            },
+        }
+
+        validate_artifact(artifact, "scope_contract")
 
     def test_config_validation_error_validates(self) -> None:
         artifact = {

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/scope_contract.schema.json",
+  "title": "Whetstone Scope Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "readiness_target",
+    "core_outcome",
+    "primary_actor_or_consumer",
+    "core_flows",
+    "scope_surfaces",
+    "deferral_rules",
+    "acceptance_floor",
+    "review_pressure_limits",
+    "operator_decisions",
+    "source_notes_path",
+    "approval"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["scope-contract-v1"] },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "status": { "type": "string", "enum": ["draft", "approved", "superseded"] },
+    "readiness_target": {
+      "type": "string",
+      "enum": ["exploratory", "mvp", "standard", "governance", "custom"]
+    },
+    "core_outcome": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "primary_actor_or_consumer": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "core_flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "priority"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "description": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "priority": { "type": "string", "enum": ["must", "should", "could"] }
+        }
+      }
+    },
+    "scope_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "status", "required_depth", "rationale"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "name": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "status": { "type": "string", "enum": ["in_scope", "deferred", "out_of_scope"] },
+          "required_depth": {
+            "type": "string",
+            "enum": ["mention", "define", "required_fields", "full_schema", "exhaustive", "custom"]
+          },
+          "rationale": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "deferral_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "trigger", "action", "decline_reason", "rationale"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "trigger": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "action": { "type": "string", "enum": ["defer", "allow_if_core", "allow", "block"] },
+          "decline_reason": {
+            "type": "string",
+            "enum": ["out_of_scope", "deferred_to_later_round", "architectural_conflict", "ambiguous"]
+          },
+          "rationale": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "acceptance_floor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_buildable_result", "must_answer", "may_defer"],
+      "properties": {
+        "minimum_buildable_result": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "must_answer": { "$ref": "common.schema.json#/$defs/stringArray" },
+        "may_defer": { "$ref": "common.schema.json#/$defs/stringArray" }
+      }
+    },
+    "review_pressure_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_depth_default", "expansion_policy"],
+      "properties": {
+        "max_depth_default": {
+          "type": "string",
+          "enum": ["mention", "define", "required_fields", "full_schema", "exhaustive", "custom"]
+        },
+        "expansion_policy": { "type": "string", "enum": ["conservative", "balanced", "expansive"] }
+      }
+    },
+    "operator_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "answer", "rationale"],
+        "properties": {
+          "question": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "answer": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "rationale": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "source_notes_path": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approved", "approved_by", "approved_at"],
+      "properties": {
+        "approved": { "type": "boolean" },
+        "approved_by": {
+          "anyOf": [
+            { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+            { "type": "null" }
+          ]
+        },
+        "approved_at": {
+          "anyOf": [
+            { "$ref": "common.schema.json#/$defs/timestamp" },
+            { "type": "null" }
+          ]
+        }
+      }
+    }
+  }
+}

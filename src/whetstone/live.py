@@ -22,6 +22,8 @@ from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
 from whetstone.rubrics import read_rubric_text, write_rubric_manifest
 from whetstone.sections import section_index
+from whetstone.scope import LoadedScopeContract, read_scope_contract, scope_contract_summary
+from whetstone.text_validation import validate_generated_text
 from whetstone.versioning import promote_spec_file_for_phase2, stamp_spec_text_for_round
 
 
@@ -98,6 +100,7 @@ class LiveRoundRunner:
         draft_after_hash = draft_hash(draft_after_content)
         rubric = read_rubric_text(self.config)
         rubric_hash = rubric_content_hash(rubric) if rubric is not None else "0" * 64
+        scope_contract = read_scope_contract(self.config.scope_contract.path)
         declaration = (
             _read_optional(self.config.declaration_path)
             if phase == "phase_2" and profile == "convergence_strict_check"
@@ -109,6 +112,7 @@ class LiveRoundRunner:
             draft_before=draft_before,
             rubric=rubric,
             declaration=declaration,
+            scope_contract=scope_contract,
         )
         context_path_by_label = {item.label: item.path for item in reviewer_context_files}
 
@@ -120,6 +124,7 @@ class LiveRoundRunner:
             draft_path=context_path_by_label.get("draft_before"),
             rubric_path=context_path_by_label.get("rubric"),
             declaration_path=context_path_by_label.get("declaration"),
+            scope_contract_path=context_path_by_label.get("scope_contract"),
             phase=phase,
             section_ids=section_ids,
             round_number=round_number,
@@ -136,6 +141,7 @@ class LiveRoundRunner:
             draft_after=draft_after_content,
             rubric_hash=rubric_hash,
             context_files=reviewer_context_files,
+            scope_contract=scope_contract,
         )
         self._write_pre_review_artifacts(round_number, draft_before, draft_after_content, prompt_snapshot, profile)
 
@@ -193,6 +199,7 @@ class LiveRoundRunner:
             reviewer_feedback_json="",
             draft_path=editor_context_path_by_label.get("draft_before"),
             reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
+            scope_contract_path=editor_context_path_by_label.get("scope_contract"),
             phase=phase,
             round_number=round_number,
             draft_before_hash_value=draft_before_hash,
@@ -211,6 +218,7 @@ class LiveRoundRunner:
             draft_after=draft_after_content,
             rubric_hash=rubric_hash,
             context_files=editor_context_files,
+            scope_contract=scope_contract,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
@@ -274,6 +282,7 @@ class LiveRoundRunner:
                 draft_after=draft_after_content,
                 rubric_hash=rubric_hash,
                 context_files=editor_context_files,
+                scope_contract=scope_contract,
             )
             self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
         self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
@@ -286,6 +295,7 @@ class LiveRoundRunner:
             reviewer_feedback=reviewer_feedback,
             editor_summary=editor_summary,
             config=self.config.decision_points,
+            scope_contract=scope_contract.packet if scope_contract is not None else None,
         )
         self.store.write_round_json(
             round_number,
@@ -342,6 +352,7 @@ class LiveRoundRunner:
             schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
         )
         reviewer_feedback_json = json.dumps(reviewer_feedback, indent=2, sort_keys=True)
+        scope_contract = read_scope_contract(self.config.scope_contract.path)
         editor_context_files = [
             self._write_context_file(
                 round_number=round_number,
@@ -356,6 +367,15 @@ class LiveRoundRunner:
                 content=reviewer_feedback_json + "\n",
             ),
         ]
+        if scope_contract is not None:
+            editor_context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="scope_contract",
+                    filename="scope_contract.json",
+                    content=json.dumps(scope_contract.packet, indent=2, sort_keys=True) + "\n",
+                )
+            )
         synthesis_report = read_contract_surface_report(self.config.rounds_dir, profile=profile)
         if synthesis_report is not None:
             editor_context_files.append(
@@ -372,6 +392,7 @@ class LiveRoundRunner:
             reviewer_feedback_json="",
             draft_path=editor_context_path_by_label.get("draft_before"),
             reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
+            scope_contract_path=editor_context_path_by_label.get("scope_contract"),
             phase=phase,
             round_number=round_number,
             draft_before_hash_value=draft_before_hash,
@@ -390,6 +411,7 @@ class LiveRoundRunner:
             draft_after=draft_before,
             rubric_hash=_read_prompt_snapshot_field(round_dir, "rubric_content_hash") or "0" * 64,
             context_files=editor_context_files,
+            scope_contract=scope_contract,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
@@ -447,6 +469,7 @@ class LiveRoundRunner:
             reviewer_feedback=reviewer_feedback,
             editor_summary=editor_summary,
             config=self.config.decision_points,
+            scope_contract=scope_contract.packet if scope_contract is not None else None,
         )
         self.store.write_round_json(round_number, "decision_points.json", decision_packet, schema_name="decision_points")
         self.store.write_round_json(
@@ -471,6 +494,7 @@ class LiveRoundRunner:
             draft_after=draft_after_content,
             rubric_hash=_read_prompt_snapshot_field(round_dir, "rubric_content_hash") or "0" * 64,
             context_files=editor_context_files,
+            scope_contract=scope_contract,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
         spec_mutated = False
@@ -814,6 +838,7 @@ class LiveRoundRunner:
         draft_before: str,
         rubric: str | None,
         declaration: str | None,
+        scope_contract: LoadedScopeContract | None = None,
     ) -> list[ContextFile]:
         context_files = [
             self._write_context_file(
@@ -839,6 +864,15 @@ class LiveRoundRunner:
                     label="declaration",
                     filename="convergence_declaration.md",
                     content=declaration,
+                )
+            )
+        if scope_contract is not None:
+            context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label="scope_contract",
+                    filename="scope_contract.json",
+                    content=json.dumps(scope_contract.packet, indent=2, sort_keys=True) + "\n",
                 )
             )
         return context_files
@@ -867,6 +901,7 @@ class LiveRoundRunner:
         draft_after: str,
         rubric_hash: str,
         context_files: list[ContextFile] | None = None,
+        scope_contract: LoadedScopeContract | None = None,
     ) -> dict[str, Any]:
         semantic_hash = semantic_change_hash(draft_before, draft_after)
         return {
@@ -890,6 +925,7 @@ class LiveRoundRunner:
                 "rubric_source": self.config.convergence.rubric_source,
                 "rubric_label": self.config.convergence.rubric_label,
                 "rubric_manifest_path": _rubric_manifest_path(self.config) if phase == "phase_2" else None,
+                "scope_contract": scope_contract_summary(scope_contract, root=self.root),
             },
             "workflow": self.config.workflow,
             "rubric_profile": self.config.convergence.rubric_profile,
@@ -897,6 +933,8 @@ class LiveRoundRunner:
             "rubric_label": self.config.convergence.rubric_label,
             "rubric_manifest_path": _rubric_manifest_path(self.config) if phase == "phase_2" else None,
             "rubric_content_hash": rubric_hash,
+            "scope_contract": scope_contract_summary(scope_contract, root=self.root),
+            "scope_contract_hash": scope_contract.content_hash if scope_contract is not None else None,
             "draft_hash": draft_before_hash,
             "draft_after_hash": draft_after_hash,
             "semantic_change_hash": semantic_hash,
@@ -966,6 +1004,19 @@ def validate_live_config(config: OrchestratorConfig) -> list[dict[str, str]]:
         invalid.append({"path": "contract_surface_policy.action", "reason": "must be recommend_synthesis or report_only"})
     if config.review_budget_exhaustion_policy not in {"hard", "soft"}:
         invalid.append({"path": "review.budget_exhaustion_policy", "reason": "must be hard or soft"})
+    scope_contract_path = config.scope_contract.path
+    if scope_contract_path.exists():
+        try:
+            scope_contract = read_scope_contract(scope_contract_path)
+        except Exception as exc:
+            invalid.append({"path": "scope_contract.path", "reason": f"invalid scope contract: {exc}"})
+            scope_contract = None
+        if scope_contract is not None and config.workflow == "mvp":
+            approval = scope_contract.packet.get("approval") or {}
+            if not bool(approval.get("approved")) or scope_contract.packet.get("status") != "approved":
+                invalid.append({"path": "scope_contract.path", "reason": "MVP workflow requires an approved scope contract"})
+    elif config.workflow == "mvp":
+        invalid.append({"path": "scope_contract.path", "reason": "MVP workflow requires an approved scope contract"})
     for field_name, value in (
         ("contract_surface_policy.min_profile_rounds", config.contract_surface.min_profile_rounds),
         ("contract_surface_policy.recent_window", config.contract_surface.recent_window),
@@ -1368,6 +1419,7 @@ def _validate_editor_summary(
     if require_draft_after_content and not isinstance(artifact.get("draft_after_content"), str):
         raise ValueError("editor_summary draft_after_content is required for applied editor-generated revisions")
     if isinstance(artifact.get("draft_after_content"), str):
+        validate_generated_text(artifact["draft_after_content"], context="editor_summary draft_after_content")
         _reject_destructive_draft_after(
             draft_before_content=draft_before_content,
             draft_after_content=artifact["draft_after_content"],

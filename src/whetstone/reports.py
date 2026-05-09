@@ -80,6 +80,18 @@ class ReportWriter:
         terminal_state: str = "TARGET_NOT_REACHED",
     ) -> Path:
         current_hash = draft_hash(self.store.read_spec())
+        effective_profile_status = profile_status or {
+            "profiles": [],
+            "unverified_profiles": [],
+            "exhausted_profiles": [],
+            "profiles_remaining": [],
+            "total_round_budget": 0,
+        }
+        current_draft_status = _current_draft_status(
+            current_hash=current_hash,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            profile_status=effective_profile_status,
+        )
         packet = {
             "terminal_state": terminal_state,
             "generated_at": _now(),
@@ -91,16 +103,12 @@ class ReportWriter:
             "unresolved_conflicts": unresolved_conflicts,
             "unresolved_oscillation": unresolved_oscillation,
             "last_accepted_draft_hash": last_accepted_draft_hash,
+            "current_draft_status": current_draft_status,
+            "ready_for_phase_2": current_draft_status == "phase_1_stable",
             "last_draft_hash": current_hash,
             "exit_reason": exit_reason,
             "recommendation": recommendation,
-            "profile_status": profile_status or {
-                "profiles": [],
-                "unverified_profiles": [],
-                "exhausted_profiles": [],
-                "profiles_remaining": [],
-                "total_round_budget": 0,
-            },
+            "profile_status": effective_profile_status,
             "last_reviewer_findings": last_reviewer_findings,
         }
         return self._write_terminal_json("technical_failure_report.json", packet, "technical_failure_report")
@@ -177,3 +185,18 @@ class ReportWriter:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _current_draft_status(
+    *,
+    current_hash: str,
+    last_accepted_draft_hash: str | None,
+    profile_status: dict[str, Any],
+) -> str:
+    if last_accepted_draft_hash != current_hash:
+        return "not_accepted"
+    has_profile_debt = any(
+        profile_status.get(key)
+        for key in ("unverified_profiles", "exhausted_profiles", "profiles_remaining")
+    )
+    return "accepted_unverified_profiles" if has_profile_debt else "phase_1_stable"

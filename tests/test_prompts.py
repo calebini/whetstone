@@ -64,21 +64,27 @@ class PromptTests(unittest.TestCase):
             draft="",
             draft_path="rounds/round-1/context/draft_before.md",
             rubric_path="rounds/round-1/context/rubric.md",
+            scope_contract_path="rounds/round-1/context/scope_contract.json",
         )
         editor_prompt = render_editor_prompt(
             draft="",
             reviewer_feedback_json="",
             draft_path="rounds/round-1/context/draft_before.md",
             reviewer_feedback_path="rounds/round-1/context/reviewer_feedback.json",
+            scope_contract_path="rounds/round-1/context/scope_contract.json",
         )
 
         self.assertIn("Context files:", reviewer_prompt)
         self.assertIn("Draft path: rounds/round-1/context/draft_before.md", reviewer_prompt)
         self.assertIn("Rubric path: rounds/round-1/context/rubric.md", reviewer_prompt)
+        self.assertIn("Scope contract path: rounds/round-1/context/scope_contract.json", reviewer_prompt)
+        self.assertIn("The scope contract is authoritative", reviewer_prompt)
         self.assertNotIn("\nDraft:\n# Spec", reviewer_prompt)
         self.assertIn("Context files:", editor_prompt)
         self.assertIn("Reviewer feedback JSON path: rounds/round-1/context/reviewer_feedback.json", editor_prompt)
         self.assertIn("Draft path: rounds/round-1/context/draft_before.md", editor_prompt)
+        self.assertIn("Scope contract path: rounds/round-1/context/scope_contract.json", editor_prompt)
+        self.assertIn("Decline out-of-scope feedback", editor_prompt)
         self.assertNotIn("\nReviewer feedback JSON:\n{", editor_prompt)
 
     def test_phase_2_editor_prompt_forbids_declaration_in_spec(self) -> None:
