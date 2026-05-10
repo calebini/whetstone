@@ -25,6 +25,18 @@ class CliTests(unittest.TestCase):
         self.assertIn("whetstone resume --root \"$RUN_ROOT\" --dry-run --continue", rendered)
         self.assertIn("Phase 1 Editor timeouts only", rendered)
 
+    def test_live_focused_phase1_help_explains_targeted_rechecks(self) -> None:
+        output = io.StringIO()
+
+        with redirect_stdout(output), self.assertRaises(SystemExit) as raised:
+            main(["live-focused-phase1", "--help"])
+
+        self.assertEqual(raised.exception.code, 0)
+        rendered = output.getvalue()
+        self.assertIn("focused Phase 1 mini-run", rendered)
+        self.assertIn("--profile", rendered)
+        self.assertIn("--budget", rendered)
+
     def test_apply_back_help_marks_dangerous_flags(self) -> None:
         output = io.StringIO()
 
@@ -758,12 +770,34 @@ def write(packet):
     print(text)
 
 if "reviewer_feedback" in schema_path:
+    calls_path = cd_path / ".fake_editor_calls"
+    feedback = []
+    if not calls_path.exists():
+        feedback = [{
+            "feedback_id": "fb-1",
+            "issue_id": "iss_aaaaaaaaaaaaaaaa",
+            "issue_fingerprint": "a" * 64,
+            "issue_type": "precision_gap",
+            "affected_sections": ["spec"],
+            "baseline_severity": "major",
+            "authority_impact": None,
+            "determinism_impact": None,
+            "rubric_impact": None,
+            "normalized_severity": "major",
+            "invariant_violated": None,
+            "claim": "Fixture issue.",
+            "evidence": "Fixture.",
+            "recommended_change": "Clarify.",
+            "in_scope": True,
+            "severity_rationale": None,
+            "oscillation_key": None
+        }]
     write({
         "round_number": int(match(r"- round_number: (\\d+)", "1")),
         "profile": match(r"Review profile: ([^\\n]+)", "structural_integrity"),
         "reviewer": {"name": "fake-codex", "version": "0", "model": "fake"},
         "draft_hash": match(r"- draft_hash: ([0-9a-f]{64})", "0" * 64),
-        "feedback": []
+        "feedback": feedback
     })
     raise SystemExit(0)
 
@@ -794,7 +828,7 @@ write({
     "modified_feedback_ids": [],
     "declined_feedback": [],
     "created_conflict_ids": [],
-    "resolved_issue_ids": [],
+    "resolved_issue_ids": ["iss_aaaaaaaaaaaaaaaa"],
     "unresolved_issue_ids": [],
     "draft_after_content": draft
 })

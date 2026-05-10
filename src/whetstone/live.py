@@ -115,6 +115,7 @@ class LiveRoundRunner:
             scope_contract=scope_contract,
         )
         context_path_by_label = {item.label: item.path for item in reviewer_context_files}
+        reference_context_paths = _reference_context_prompt_paths(reviewer_context_files, self.config)
 
         reviewer_prompt = render_reviewer_prompt(
             profile=profile,
@@ -125,6 +126,7 @@ class LiveRoundRunner:
             rubric_path=context_path_by_label.get("rubric"),
             declaration_path=context_path_by_label.get("declaration"),
             scope_contract_path=context_path_by_label.get("scope_contract"),
+            reference_context_paths=reference_context_paths,
             phase=phase,
             section_ids=section_ids,
             round_number=round_number,
@@ -172,6 +174,66 @@ class LiveRoundRunner:
             context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
+        if not reviewer_feedback.get("feedback") and not explicit_draft_after:
+            editor_summary = _no_op_editor_summary(
+                round_number=round_number,
+                draft_hash_value=draft_before_hash,
+                draft_after_content=draft_before if apply else None,
+            )
+            _validate_editor_summary(
+                editor_summary,
+                round_number=round_number,
+                draft_before_hash=draft_before_hash,
+                draft_after_hash=draft_before_hash,
+                require_draft_after_content=False,
+                draft_before_content=draft_before if apply else None,
+            )
+            unresolved: list[dict[str, Any]] = []
+            accepted = True
+            if apply:
+                self.store.write_round_text(round_number, "draft_after.md", draft_before)
+            self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
+            decision_packet = detect_decision_points(
+                draft_before=draft_before,
+                draft_after=draft_before,
+                round_number=round_number,
+                profile=profile,
+                reviewer_feedback=reviewer_feedback,
+                editor_summary=editor_summary,
+                config=self.config.decision_points,
+                scope_contract=scope_contract.packet if scope_contract is not None else None,
+            )
+            self.store.write_round_json(
+                round_number,
+                "decision_points.json",
+                decision_packet,
+                schema_name="decision_points",
+            )
+            unresolved_packet = {
+                "round_number": round_number,
+                "draft_hash": draft_before_hash,
+                "unresolved_issues": unresolved,
+            }
+            self.store.write_round_json(
+                round_number,
+                "unresolved_issues.json",
+                unresolved_packet,
+                schema_name="unresolved_issues",
+            )
+            self.store.write_round_text(
+                round_number,
+                "reviewer_working_notes.md",
+                "Live round; reviewer notes are captured in structured feedback.\n",
+            )
+            return LiveRoundResult(
+                round_number=round_number,
+                round_dir=round_dir,
+                draft_before_hash=draft_before_hash,
+                draft_after_hash=draft_before_hash,
+                accepted=accepted,
+                reviewer_feedback_count=0,
+                spec_mutated=False,
+            )
 
         reviewer_feedback_json = json.dumps(reviewer_feedback, indent=2, sort_keys=True)
         editor_context_files = [
@@ -194,12 +256,14 @@ class LiveRoundRunner:
                 )
             )
         editor_context_path_by_label = {item.label: item.path for item in editor_context_files}
+        editor_reference_context_paths = _reference_context_prompt_paths(editor_context_files, self.config)
         editor_prompt = render_editor_prompt(
             draft="",
             reviewer_feedback_json="",
             draft_path=editor_context_path_by_label.get("draft_before"),
             reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
             scope_contract_path=editor_context_path_by_label.get("scope_contract"),
+            reference_context_paths=editor_reference_context_paths,
             phase=phase,
             round_number=round_number,
             draft_before_hash_value=draft_before_hash,
@@ -327,6 +391,137 @@ class LiveRoundRunner:
             spec_mutated=spec_mutated,
         )
 
+    def run_review_only_round(
+        self,
+        *,
+        round_number: int,
+        profile: str,
+        phase: str = "phase_1",
+        overwrite: bool = False,
+    ) -> LiveRoundResult:
+        """Run and persist an independent reviewer pass without invoking the Editor."""
+
+        invalid_fields = validate_live_config(self.config)
+        if invalid_fields:
+            _write_config_error(self.config.rounds_dir, invalid_fields)
+            raise ValueError("configuration validation failed")
+        round_dir = self.store.begin_round(round_number, overwrite=overwrite)
+        draft_before = self.config.spec_path.read_text(encoding="utf-8")
+        draft_before_hash = draft_hash(draft_before)
+        rubric = read_rubric_text(self.config)
+        rubric_hash = rubric_content_hash(rubric) if rubric is not None else "0" * 64
+        scope_contract = read_scope_contract(self.config.scope_contract.path)
+        section_ids = [section.id for section in section_index(draft_before)] if phase == "phase_2" else []
+        reviewer_context_files = self._write_reviewer_context_files(
+            round_number=round_number,
+            draft_before=draft_before,
+            rubric=rubric,
+            declaration=None,
+            scope_contract=scope_contract,
+        )
+        context_path_by_label = {item.label: item.path for item in reviewer_context_files}
+        reviewer_prompt = render_reviewer_prompt(
+            profile=profile,
+            draft="",
+            rubric=None,
+            declaration=None,
+            draft_path=context_path_by_label.get("draft_before"),
+            rubric_path=context_path_by_label.get("rubric"),
+            scope_contract_path=context_path_by_label.get("scope_contract"),
+            reference_context_paths=_reference_context_prompt_paths(reviewer_context_files, self.config),
+            phase=phase,
+            section_ids=section_ids,
+            round_number=round_number,
+            draft_hash_value=draft_before_hash,
+        )
+        prompt_snapshot = self._prompt_snapshot(
+            profile=profile,
+            phase=phase,
+            reviewer_prompt=reviewer_prompt,
+            editor_prompt=None,
+            draft_before_hash=draft_before_hash,
+            draft_after_hash=draft_before_hash,
+            draft_before=draft_before,
+            draft_after=draft_before,
+            rubric_hash=rubric_hash,
+            context_files=reviewer_context_files,
+            scope_contract=scope_contract,
+        )
+        self._write_pre_review_artifacts(round_number, draft_before, draft_before, prompt_snapshot, profile)
+
+        reviewer = self.reviewer_client or create_reviewer_client(
+            self.config.reviewer,
+            cwd=self.root,
+            phase=phase,
+            section_ids=section_ids,
+            timeout_seconds=self._timeout_for_role("reviewer"),
+        )
+        reviewer_feedback = self._call_with_validation_retry(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            client_role="reviewer",
+            client_config=self.config.reviewer,
+            artifact_name="reviewer_feedback.json",
+            prompt=reviewer_prompt,
+            call=reviewer.review,
+            validate=lambda artifact: _validate_reviewer_feedback(
+                artifact,
+                round_number=round_number,
+                profile=profile,
+                draft_hash_value=draft_before_hash,
+                schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
+            ),
+            last_valid_draft_hash=draft_before_hash,
+            context_files=reviewer_context_files,
+        )
+        self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
+        editor_summary = _no_op_editor_summary(
+            round_number=round_number,
+            draft_hash_value=draft_before_hash,
+            draft_after_content=draft_before,
+        )
+        self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
+        self.store.write_round_json(
+            round_number,
+            "decision_points.json",
+            detect_decision_points(
+                draft_before=draft_before,
+                draft_after=draft_before,
+                round_number=round_number,
+                profile=profile,
+                reviewer_feedback=reviewer_feedback,
+                editor_summary=editor_summary,
+                config=self.config.decision_points,
+                scope_contract=scope_contract.packet if scope_contract is not None else None,
+            ),
+            schema_name="decision_points",
+        )
+        self.store.write_round_json(
+            round_number,
+            "unresolved_issues.json",
+            {
+                "round_number": round_number,
+                "draft_hash": draft_before_hash,
+                "unresolved_issues": _unresolved_issues(reviewer_feedback, editor_summary),
+            },
+            schema_name="unresolved_issues",
+        )
+        self.store.write_round_text(
+            round_number,
+            "reviewer_working_notes.md",
+            "Live review-only round; reviewer notes are captured in structured feedback.\n",
+        )
+        return LiveRoundResult(
+            round_number=round_number,
+            round_dir=round_dir,
+            draft_before_hash=draft_before_hash,
+            draft_after_hash=draft_before_hash,
+            accepted=not reviewer_feedback.get("feedback"),
+            reviewer_feedback_count=len(reviewer_feedback.get("feedback", [])),
+            spec_mutated=False,
+        )
+
     def resume_editor_round(
         self,
         *,
@@ -376,6 +571,7 @@ class LiveRoundRunner:
                     content=json.dumps(scope_contract.packet, indent=2, sort_keys=True) + "\n",
                 )
             )
+        editor_context_files.extend(self._write_reference_context_files(round_number=round_number))
         synthesis_report = read_contract_surface_report(self.config.rounds_dir, profile=profile)
         if synthesis_report is not None:
             editor_context_files.append(
@@ -387,12 +583,14 @@ class LiveRoundRunner:
                 )
             )
         editor_context_path_by_label = {item.label: item.path for item in editor_context_files}
+        reference_context_paths = _reference_context_prompt_paths(editor_context_files, self.config)
         editor_prompt = render_editor_prompt(
             draft="",
             reviewer_feedback_json="",
             draft_path=editor_context_path_by_label.get("draft_before"),
             reviewer_feedback_path=editor_context_path_by_label.get("reviewer_feedback"),
             scope_contract_path=editor_context_path_by_label.get("scope_contract"),
+            reference_context_paths=reference_context_paths,
             phase=phase,
             round_number=round_number,
             draft_before_hash_value=draft_before_hash,
@@ -749,6 +947,7 @@ class LiveRoundRunner:
                 "rubric_source": self.config.convergence.rubric_source,
                 "rubric_label": self.config.convergence.rubric_label,
                 "rubric_manifest_path": _rubric_manifest_path(self.config) if phase == "phase_2" else None,
+                "reference_context": _reference_context_config_snapshot(self.config, self.root),
             },
         }
         path = snapshot_dir / filename
@@ -875,6 +1074,24 @@ class LiveRoundRunner:
                     content=json.dumps(scope_contract.packet, indent=2, sort_keys=True) + "\n",
                 )
             )
+        context_files.extend(self._write_reference_context_files(round_number=round_number))
+        return context_files
+
+    def _write_reference_context_files(self, *, round_number: int) -> list[ContextFile]:
+        context_files: list[ContextFile] = []
+        for item in self.config.reference_context_files:
+            if not item.path.exists():
+                continue
+            label = f"reference:{item.label}"
+            filename = f"reference_{_safe_context_filename(item.label)}{item.path.suffix or '.md'}"
+            context_files.append(
+                self._write_context_file(
+                    round_number=round_number,
+                    label=label,
+                    filename=filename,
+                    content=item.path.read_text(encoding="utf-8"),
+                )
+            )
         return context_files
 
     def _write_context_file(self, *, round_number: int, label: str, filename: str, content: str) -> ContextFile:
@@ -926,6 +1143,7 @@ class LiveRoundRunner:
                 "rubric_label": self.config.convergence.rubric_label,
                 "rubric_manifest_path": _rubric_manifest_path(self.config) if phase == "phase_2" else None,
                 "scope_contract": scope_contract_summary(scope_contract, root=self.root),
+                "reference_context": _reference_context_config_snapshot(self.config, self.root),
             },
             "workflow": self.config.workflow,
             "rubric_profile": self.config.convergence.rubric_profile,
@@ -935,6 +1153,7 @@ class LiveRoundRunner:
             "rubric_content_hash": rubric_hash,
             "scope_contract": scope_contract_summary(scope_contract, root=self.root),
             "scope_contract_hash": scope_contract.content_hash if scope_contract is not None else None,
+            "reference_context": _reference_context_config_snapshot(self.config, self.root),
             "draft_hash": draft_before_hash,
             "draft_after_hash": draft_after_hash,
             "semantic_change_hash": semantic_hash,
@@ -1004,6 +1223,8 @@ def validate_live_config(config: OrchestratorConfig) -> list[dict[str, str]]:
         invalid.append({"path": "contract_surface_policy.action", "reason": "must be recommend_synthesis or report_only"})
     if config.review_budget_exhaustion_policy not in {"hard", "soft"}:
         invalid.append({"path": "review.budget_exhaustion_policy", "reason": "must be hard or soft"})
+    if config.review_mode not in {"horizontal", "vertical"}:
+        invalid.append({"path": "review.mode", "reason": "must be horizontal or vertical"})
     scope_contract_path = config.scope_contract.path
     if scope_contract_path.exists():
         try:
@@ -1017,6 +1238,17 @@ def validate_live_config(config: OrchestratorConfig) -> list[dict[str, str]]:
                 invalid.append({"path": "scope_contract.path", "reason": "MVP workflow requires an approved scope contract"})
     elif config.workflow == "mvp":
         invalid.append({"path": "scope_contract.path", "reason": "MVP workflow requires an approved scope contract"})
+    seen_reference_labels: set[str] = set()
+    for item in config.reference_context_files:
+        if not item.label:
+            invalid.append({"path": "reference_context.files", "reason": "reference context label must be non-empty"})
+        if item.label in seen_reference_labels:
+            invalid.append({"path": f"reference_context.files.{item.label}", "reason": "duplicate label"})
+        seen_reference_labels.add(item.label)
+        if item.required and not item.path.exists():
+            invalid.append({"path": f"reference_context.files.{item.label}.path", "reason": "required reference file missing"})
+        if item.path.exists() and not item.path.is_file():
+            invalid.append({"path": f"reference_context.files.{item.label}.path", "reason": "reference path must be a file"})
     for field_name, value in (
         ("contract_surface_policy.min_profile_rounds", config.contract_surface.min_profile_rounds),
         ("contract_surface_policy.recent_window", config.contract_surface.recent_window),
@@ -1404,6 +1636,7 @@ def _validate_reviewer_feedback(
         profile=profile,
         draft_hash_value=draft_hash_value,
     )
+    _reject_reviewer_process_failure_feedback(artifact)
     validate_artifact(artifact, schema_name)
 
 
@@ -1459,6 +1692,25 @@ def _reject_destructive_draft_after(*, draft_before_content: str | None, draft_a
         )
 
 
+def _no_op_editor_summary(
+    *, round_number: int, draft_hash_value: str, draft_after_content: str | None = None
+) -> dict[str, Any]:
+    artifact: dict[str, Any] = {
+        "round_number": round_number,
+        "draft_before_hash": draft_hash_value,
+        "draft_after_hash": draft_hash_value,
+        "accepted_feedback_ids": [],
+        "modified_feedback_ids": [],
+        "declined_feedback": [],
+        "created_conflict_ids": [],
+        "resolved_issue_ids": [],
+        "unresolved_issue_ids": [],
+    }
+    if draft_after_content is not None:
+        artifact["draft_after_content"] = draft_after_content
+    return artifact
+
+
 def _read_optional(path: Path) -> str | None:
     if not path.exists():
         return None
@@ -1509,6 +1761,48 @@ def _context_file_packets(context_files: list[ContextFile]) -> list[dict[str, st
         }
         for item in context_files
     ]
+
+
+def _reference_context_prompt_paths(context_files: list[ContextFile], config: OrchestratorConfig) -> list[dict[str, str]]:
+    role_by_label = {item.label: item.role for item in config.reference_context_files}
+    output: list[dict[str, str]] = []
+    for item in context_files:
+        if not item.label.startswith("reference:"):
+            continue
+        label = item.label.split(":", 1)[1]
+        output.append(
+            {
+                "label": label,
+                "role": role_by_label.get(label, "reference_context"),
+                "path": item.path,
+            }
+        )
+    return output
+
+
+def _reference_context_config_snapshot(config: OrchestratorConfig, root: Path) -> dict[str, Any]:
+    return {
+        "files": [
+            {
+                "label": item.label,
+                "path": _relative_path(item.path, root),
+                "role": item.role,
+                "required": item.required,
+                "exists": item.path.exists(),
+                "sha256": _file_sha256(item.path) if item.path.exists() and item.path.is_file() else None,
+            }
+            for item in config.reference_context_files
+        ]
+    }
+
+
+def _safe_context_filename(label: str) -> str:
+    safe = "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in label.strip())
+    return safe or "reference"
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _append_version_stamp_history(history_path: Path, *, round_number: int, phase: str, result: Any) -> None:
@@ -1583,3 +1877,38 @@ def _require_reviewer_context(
     for key, value in expected.items():
         if reviewer_feedback.get(key) != value:
             raise ValueError(f"reviewer_feedback {key} mismatch: expected {value!r}, got {reviewer_feedback.get(key)!r}")
+
+
+def _reject_reviewer_process_failure_feedback(reviewer_feedback: dict[str, Any]) -> None:
+    feedback = reviewer_feedback.get("feedback")
+    if not isinstance(feedback, list) or not feedback:
+        return
+    if all(isinstance(item, dict) and _is_reviewer_process_failure_item(item) for item in feedback):
+        raise ValueError(
+            "reviewer_feedback reports a process/context-loading failure instead of semantic review; "
+            "retry reviewer invocation"
+        )
+
+
+def _is_reviewer_process_failure_item(item: dict[str, Any]) -> bool:
+    issue_type = str(item.get("issue_type", "")).strip().lower()
+    affected_sections = [str(section).strip().lower() for section in item.get("affected_sections", []) if section is not None]
+    if issue_type in {"process_error", "context_loading", "context_unread"}:
+        return True
+    if any(section in {"context_loading", "context_unread", "process_error"} for section in affected_sections):
+        return True
+    haystack = " ".join(
+        str(item.get(key, ""))
+        for key in ("claim", "evidence", "recommended_change", "invariant_violated", "severity_rationale")
+    ).lower()
+    process_markers = (
+        "review cannot be performed",
+        "review could not be performed",
+        "required context files were not read",
+        "context files were not read",
+        "no file-reading tool call",
+        "did not read",
+        "unable to read context",
+        "could not read context",
+    )
+    return any(marker in haystack for marker in process_markers)

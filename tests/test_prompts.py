@@ -65,6 +65,13 @@ class PromptTests(unittest.TestCase):
             draft_path="rounds/round-1/context/draft_before.md",
             rubric_path="rounds/round-1/context/rubric.md",
             scope_contract_path="rounds/round-1/context/scope_contract.json",
+            reference_context_paths=[
+                {
+                    "label": "parley_hld",
+                    "role": "architecture_authority",
+                    "path": "rounds/round-1/context/reference_parley_hld.md",
+                }
+            ],
         )
         editor_prompt = render_editor_prompt(
             draft="",
@@ -72,18 +79,33 @@ class PromptTests(unittest.TestCase):
             draft_path="rounds/round-1/context/draft_before.md",
             reviewer_feedback_path="rounds/round-1/context/reviewer_feedback.json",
             scope_contract_path="rounds/round-1/context/scope_contract.json",
+            reference_context_paths=[
+                {
+                    "label": "parley_hld",
+                    "role": "architecture_authority",
+                    "path": "rounds/round-1/context/reference_parley_hld.md",
+                }
+            ],
         )
 
         self.assertIn("Context files:", reviewer_prompt)
         self.assertIn("Draft path: rounds/round-1/context/draft_before.md", reviewer_prompt)
         self.assertIn("Rubric path: rounds/round-1/context/rubric.md", reviewer_prompt)
         self.assertIn("Scope contract path: rounds/round-1/context/scope_contract.json", reviewer_prompt)
+        self.assertIn(
+            "Reference context [parley_hld] (architecture_authority): rounds/round-1/context/reference_parley_hld.md",
+            reviewer_prompt,
+        )
         self.assertIn("The scope contract is authoritative", reviewer_prompt)
         self.assertNotIn("\nDraft:\n# Spec", reviewer_prompt)
         self.assertIn("Context files:", editor_prompt)
         self.assertIn("Reviewer feedback JSON path: rounds/round-1/context/reviewer_feedback.json", editor_prompt)
         self.assertIn("Draft path: rounds/round-1/context/draft_before.md", editor_prompt)
         self.assertIn("Scope contract path: rounds/round-1/context/scope_contract.json", editor_prompt)
+        self.assertIn(
+            "Reference context [parley_hld] (architecture_authority): rounds/round-1/context/reference_parley_hld.md",
+            editor_prompt,
+        )
         self.assertIn("Decline out-of-scope feedback", editor_prompt)
         self.assertNotIn("\nReviewer feedback JSON:\n{", editor_prompt)
 

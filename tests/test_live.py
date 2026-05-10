@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 import re
 from tempfile import TemporaryDirectory
 import unittest
 
-from whetstone.config import OrchestratorConfig
+from whetstone.config import OrchestratorConfig, ReferenceContextFileConfig
 from whetstone.hashing import draft_hash
 from whetstone.identity import oscillation_fingerprint, oscillation_opposition_key
 from whetstone.live import LiveRoundRunner
@@ -145,6 +146,51 @@ class FlakyReviewerClient:
         }
 
 
+class ProcessFailureReviewerClient:
+    def __init__(self, root: Path, *, recover: bool = False) -> None:
+        self.root = root
+        self.recover = recover
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        if self.recover and self.calls > 1:
+            return {
+                "round_number": 1,
+                "profile": "determinism",
+                "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+                "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+                "feedback": [],
+            }
+        return {
+            "round_number": 1,
+            "profile": "determinism",
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": [
+                {
+                    "feedback_id": "fb-context",
+                    "issue_id": "iss_aaaaaaaaaaaaaaaa",
+                    "issue_fingerprint": "a" * 64,
+                    "issue_type": "process_error",
+                    "affected_sections": ["context_loading"],
+                    "baseline_severity": "blocker",
+                    "authority_impact": "blocker",
+                    "determinism_impact": "blocker",
+                    "rubric_impact": "blocker",
+                    "normalized_severity": "blocker",
+                    "invariant_violated": "Required context files must be read before review output.",
+                    "claim": "The review cannot be performed because the required context files were not read in this turn.",
+                    "evidence": "No file-reading tool call was made before this response.",
+                    "recommended_change": "Rerun the reviewer with read-only access to the listed context files.",
+                    "in_scope": True,
+                    "severity_rationale": "Without context, substantive review would be ungrounded.",
+                    "oscillation_key": None,
+                }
+            ],
+        }
+
+
 class GoodEmptyReviewerClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -161,6 +207,53 @@ class GoodEmptyReviewerClient:
         }
 
 
+class GoodIssueReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
+    def review(self, prompt: str) -> dict:
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        phase = _line_value(prompt, "Phase:")
+        oscillation_key = None
+        if phase == "phase_2":
+            oscillation_key = {
+                "section_id": "hashing",
+                "concern_type": "precision_gap",
+                "direction": "clarify",
+                "scope": "local",
+                "fingerprint": oscillation_fingerprint("hashing", "precision_gap", "clarify", "local"),
+                "opposition_key": oscillation_opposition_key("hashing", "precision_gap", "local"),
+            }
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": [
+                {
+                    "feedback_id": "fb-1",
+                    "issue_id": "iss_aaaaaaaaaaaaaaaa",
+                    "issue_fingerprint": "a" * 64,
+                    "issue_type": "precision_gap",
+                    "affected_sections": ["spec"],
+                    "baseline_severity": "major",
+                    "authority_impact": None,
+                    "determinism_impact": None,
+                    "rubric_impact": None,
+                    "normalized_severity": "major",
+                    "invariant_violated": None,
+                    "claim": "The draft needs a deterministic clarification.",
+                    "evidence": "Fixture.",
+                    "recommended_change": "Clarify deterministic behavior.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": oscillation_key,
+                }
+            ],
+        }
+
+
 class InvalidTelemetryReviewerClient(GoodEmptyReviewerClient):
     def review(self, prompt: str) -> dict:
         artifact = super().review(prompt)
@@ -174,8 +267,9 @@ class InvalidTelemetryReviewerClient(GoodEmptyReviewerClient):
 
 
 class AppliedDraftEditorClient:
-    def __init__(self, draft_after_content: str) -> None:
+    def __init__(self, draft_after_content: str, resolved_issue_ids: list[str] | None = None) -> None:
         self.draft_after_content = draft_after_content
+        self.resolved_issue_ids = resolved_issue_ids or []
 
     def revise(self, prompt: str) -> dict:
         current_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
@@ -188,7 +282,7 @@ class AppliedDraftEditorClient:
             "modified_feedback_ids": [],
             "declined_feedback": [],
             "created_conflict_ids": [],
-            "resolved_issue_ids": [],
+            "resolved_issue_ids": self.resolved_issue_ids,
             "unresolved_issue_ids": [],
             "draft_after_content": self.draft_after_content,
         }
@@ -237,7 +331,7 @@ class FlakyEditorClient:
             "modified_feedback_ids": [],
             "declined_feedback": [],
             "created_conflict_ids": [],
-            "resolved_issue_ids": [],
+            "resolved_issue_ids": ["iss_aaaaaaaaaaaaaaaa"],
             "unresolved_issue_ids": [],
         }
 
@@ -326,7 +420,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertEqual(warnings[0]["client_role"], "reviewer")
             self.assertIn("client telemetry persistence failed", warnings[0]["warning"])
             summary = json.loads(round_dir.joinpath("telemetry_summary.json").read_text(encoding="utf-8"))
-            self.assertEqual(summary["attempt_count"], 1)
+            self.assertEqual(summary["attempt_count"], 0)
             self.assertEqual(len(summary["warnings"]), 1)
 
     def test_live_round_writes_config_error_before_round_when_client_metadata_missing(self) -> None:
@@ -343,6 +437,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 editor=config.editor,
                 reviewer=type(config.reviewer)(config.reviewer.name, config.reviewer.command, "", config.reviewer.model),
                 review_max_rounds=config.review_max_rounds,
+                review_mode=config.review_mode,
                 review_profile_budgets=config.review_profile_budgets,
                 review_budget_exhaustion_policy=config.review_budget_exhaustion_policy,
                 convergence=config.convergence,
@@ -351,6 +446,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 timeouts=config.timeouts,
                 contract_surface=config.contract_surface,
                 scope_contract=config.scope_contract,
+                reference_context_files=config.reference_context_files,
             )
 
             with self.assertRaises(ValueError):
@@ -388,6 +484,45 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertIn("scope_contract", labels)
             self.assertIn("scope_contract_hash", snapshot)
             self.assertIn("The scope contract is authoritative", reviewer.prompts[0])
+
+    def test_live_round_injects_reference_context_files(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            hld = root / "docs" / "hld-architecture.md"
+            hld.parent.mkdir()
+            hld.write_text("# HLD\n\nArchitecture authority.\n", encoding="utf-8")
+            config = replace(
+                OrchestratorConfig.default(root),
+                reference_context_files=(
+                    ReferenceContextFileConfig(
+                        label="parley_hld",
+                        path=hld,
+                        role="architecture_authority",
+                        required=True,
+                    ),
+                ),
+            )
+            reviewer = PromptRecordingReviewerClient(root)
+
+            LiveRoundRunner(
+                root,
+                config,
+                reviewer_client=reviewer,
+                editor_client=FakeEditorClient(root),
+            ).run_round(round_number=1, profile="determinism")
+
+            snapshot = json.loads(root.joinpath("rounds/round-1/prompt_snapshot.json").read_text(encoding="utf-8"))
+            context_files = snapshot["context_files"]
+            labels = [item["label"] for item in context_files]
+            self.assertIn("reference:parley_hld", labels)
+            self.assertEqual(snapshot["reference_context"]["files"][0]["role"], "architecture_authority")
+            self.assertIn("Reference context [parley_hld] (architecture_authority)", reviewer.prompts[0])
+            self.assertEqual(
+                root.joinpath("rounds/round-1/context/reference_parley_hld.md").read_text(encoding="utf-8"),
+                "# HLD\n\nArchitecture authority.\n",
+            )
 
     def test_malformed_reviewer_output_rejects_before_editor_invocation(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -449,6 +584,75 @@ class LiveRoundRunnerTests(unittest.TestCase):
             )
             self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
 
+    def test_reviewer_process_failure_feedback_is_retried_not_sent_to_editor(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n", encoding="utf-8")
+            editor = RecordingEditorClient()
+            reviewer = ProcessFailureReviewerClient(root)
+
+            with self.assertRaises(ValueError):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=reviewer,
+                    editor_client=editor,
+                ).run_round(round_number=1, profile="determinism")
+
+            self.assertEqual(reviewer.calls, 2)
+            self.assertFalse(editor.called)
+            self.assertFalse(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_invalid_attempt_1.json").exists())
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["client_role"], "reviewer")
+            self.assertEqual(error["failure_type"], "artifact_validation")
+            self.assertIn("process/context-loading failure", error["attempts"][0]["validation_errors"][0])
+
+    def test_reviewer_process_failure_feedback_can_recover_on_retry(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n", encoding="utf-8")
+            reviewer = ProcessFailureReviewerClient(root, recover=True)
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=FakeEditorClient(root),
+            ).run_round(round_number=1, profile="determinism")
+
+            self.assertTrue(result.accepted)
+            self.assertEqual(reviewer.calls, 2)
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_invalid_attempt_1.json").exists())
+            self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
+
+    def test_clean_reviewer_feedback_skips_editor_client(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = "# Spec\n\nClean.\n"
+            root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            editor = RecordingEditorClient()
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodEmptyReviewerClient(root),
+                editor_client=editor,
+            ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertTrue(result.accepted)
+            self.assertFalse(editor.called)
+            self.assertFalse(root.joinpath("rounds/round-1/context/reviewer_feedback.json").exists())
+            self.assertFalse(root.joinpath("rounds/round-1/prompt_snapshots/editor-editor_summary.json-attempt-1.json").exists())
+            editor_summary = json.loads(root.joinpath("rounds/round-1/editor_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(editor_summary["draft_before_hash"], draft_hash(spec))
+            self.assertEqual(editor_summary["draft_after_hash"], draft_hash(spec))
+            self.assertEqual(editor_summary["draft_after_content"], spec)
+            summary = json.loads(root.joinpath("rounds/round-1/telemetry_summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["attempt_count"], 1)
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), spec)
+
     def test_malformed_editor_output_rejects_before_spec_mutation(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -495,7 +699,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 LiveRoundRunner(
                     root,
                     OrchestratorConfig.default(root),
-                    reviewer_client=GoodEmptyReviewerClient(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
                     editor_client=AppliedDraftEditorClient("# Spec\n\nBad\x1a text.\n"),
                 ).run_round(round_number=1, profile="determinism", apply=True)
 
@@ -516,7 +720,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
             result = LiveRoundRunner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=editor,
             ).run_round(round_number=1, profile="determinism")
 
@@ -536,7 +740,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 LiveRoundRunner(
                     root,
                     OrchestratorConfig.default(root),
-                    reviewer_client=GoodEmptyReviewerClient(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
                     editor_client=editor,
                 ).run_round(round_number=1, profile="determinism", apply=True)
 
@@ -565,7 +769,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 LiveRoundRunner(
                     root,
                     OrchestratorConfig.default(root),
-                    reviewer_client=GoodEmptyReviewerClient(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
                     editor_client=AppliedDraftEditorClient(""),
                 ).run_round(round_number=1, profile="structural_integrity", apply=True)
 
@@ -585,7 +789,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 LiveRoundRunner(
                     root,
                     OrchestratorConfig.default(root),
-                    reviewer_client=GoodEmptyReviewerClient(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
                     editor_client=AppliedDraftEditorClient("[Whetstone editor blocked] Cannot read context files."),
                 ).run_round(round_number=1, profile="structural_integrity", apply=True)
 
@@ -604,8 +808,8 @@ class LiveRoundRunnerTests(unittest.TestCase):
             result = LiveRoundRunner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
-                editor_client=AppliedDraftEditorClient(after),
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(after, resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"]),
             ).run_round(round_number=1, profile="determinism", phase="phase_1", apply=True)
 
             stamped = root.joinpath("spec.md").read_text(encoding="utf-8")
@@ -629,8 +833,8 @@ class LiveRoundRunnerTests(unittest.TestCase):
             result = LiveRoundRunner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
-                editor_client=AppliedDraftEditorClient(after),
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(after, resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"]),
             ).run_round(round_number=1, profile="convergence_strict_check", phase="phase_2", apply=True)
 
             stamped = root.joinpath("spec.md").read_text(encoding="utf-8")

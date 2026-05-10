@@ -170,6 +170,38 @@ class LivePhase2Runner:
             unresolved_packet = _read_json(round_dir / "unresolved_issues.json")
             last_unresolved = list(unresolved_packet.get("unresolved_issues", []))
             last_rubric_gaps = []
+
+            if declaration_path is not None and _declaration_draft_hash(declaration_path) != result.draft_after_hash:
+                active_unresolved = [issue for issue in last_unresolved if not _is_declaration_hash_mismatch_issue(issue)]
+                declaration_path = self._write_declaration(
+                    draft_hash_value=result.draft_after_hash,
+                    reviewer_final_status="not_run",
+                    declaration_status="rejected",
+                    blocker_count=_count(active_unresolved, "blocker"),
+                    major_count=_count(active_unresolved, "major"),
+                    rubric_gap_count=len(last_rubric_gaps),
+                )
+                if len(active_unresolved) != len(last_unresolved):
+                    last_unresolved = active_unresolved
+                    self.store.write_round_json(
+                        round_number,
+                        "unresolved_issues.json",
+                        {
+                            "round_number": round_number,
+                            "draft_hash": result.draft_after_hash,
+                            "unresolved_issues": last_unresolved,
+                        },
+                        schema_name="unresolved_issues",
+                    )
+                    reviewer_feedback = {
+                        **reviewer_feedback,
+                        "feedback": [
+                            issue
+                            for issue in reviewer_feedback.get("feedback", [])
+                            if not _is_declaration_hash_mismatch_issue(issue)
+                        ],
+                    }
+
             reviewer_blocker_count = _reviewer_count(reviewer_feedback, "blocker")
             reviewer_major_count = _reviewer_count(reviewer_feedback, "major")
             reviewer_clean = reviewer_blocker_count == 0 and reviewer_major_count == 0
@@ -606,6 +638,19 @@ def _declaration_draft_hash(path: Path) -> str | None:
         if line.startswith("- final_draft_hash: "):
             return line.removeprefix("- final_draft_hash: ").strip()
     return None
+
+
+def _is_declaration_hash_mismatch_issue(issue: dict[str, Any]) -> bool:
+    if issue.get("issue_type") == "declaration_hash_mismatch":
+        return True
+    affected_sections = {str(section) for section in issue.get("affected_sections", [])}
+    if affected_sections == {"convergence_declaration.md"}:
+        haystack = " ".join(
+            str(issue.get(field, ""))
+            for field in ("claim", "evidence", "recommended_change", "invariant_violated")
+        ).lower()
+        return "final_draft_hash" in haystack or "draft hash" in haystack
+    return False
 
 
 def _count(issues: list[dict[str, Any]], severity: str) -> int:

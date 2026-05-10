@@ -11,7 +11,7 @@ from whetstone.config import OrchestratorConfig
 from whetstone.cli import main, _apply_resume_run_state_config
 from whetstone.live_phase1 import LivePhase1Runner
 from whetstone.resume import plan_resume_halted_run, resume_halted_run
-from tests.test_live import AppliedDraftEditorClient, GoodEmptyReviewerClient, TimeoutEditorClient
+from tests.test_live import AppliedDraftEditorClient, GoodEmptyReviewerClient, GoodIssueReviewerClient, TimeoutEditorClient
 
 
 class ResumeTests(unittest.TestCase):
@@ -24,7 +24,7 @@ class ResumeTests(unittest.TestCase):
             halted = LivePhase1Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=TimeoutEditorClient(),
             ).run()
 
@@ -36,7 +36,10 @@ class ResumeTests(unittest.TestCase):
             resumed = resume_halted_run(
                 root,
                 OrchestratorConfig.default(root),
-                editor_client=AppliedDraftEditorClient("# Spec\n\n## Hashing\n\nDraft.\n\nClarified.\n"),
+                editor_client=AppliedDraftEditorClient(
+                    "# Spec\n\n## Hashing\n\nDraft.\n\nClarified.\n",
+                    resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"],
+                ),
             )
 
             self.assertTrue(resumed.resumed)
@@ -62,7 +65,7 @@ class ResumeTests(unittest.TestCase):
             halted = LivePhase1Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=TimeoutEditorClient(),
             ).run()
             self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
@@ -72,7 +75,10 @@ class ResumeTests(unittest.TestCase):
                 OrchestratorConfig.default(root),
                 continue_run=True,
                 reviewer_client=GoodEmptyReviewerClient(root),
-                editor_client=AppliedDraftEditorClient("# Spec\n\n## Hashing\n\nDraft.\n\nClarified.\n"),
+                editor_client=AppliedDraftEditorClient(
+                    "# Spec\n\n## Hashing\n\nDraft.\n\nClarified.\n",
+                    resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"],
+                ),
             )
 
             self.assertEqual(resumed.terminal_state, "PHASE_1_STABLE")
@@ -95,7 +101,7 @@ class ResumeTests(unittest.TestCase):
             halted = LivePhase1Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=TimeoutEditorClient(),
             ).run()
             self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
@@ -118,7 +124,7 @@ class ResumeTests(unittest.TestCase):
             halted = LivePhase1Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=TimeoutEditorClient(),
             ).run()
             self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
@@ -142,7 +148,7 @@ class ResumeTests(unittest.TestCase):
             halted = LivePhase1Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=GoodEmptyReviewerClient(root),
+                reviewer_client=GoodIssueReviewerClient(root),
                 editor_client=TimeoutEditorClient(),
             ).run()
             self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")

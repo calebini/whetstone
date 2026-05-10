@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.40 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.46 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.40` clarifies Phase 1 technical failure reporting: `last_accepted_draft_hash` remains the latest draft hash that satisfied accepted-draft criteria, while `current_draft_status` and `ready_for_phase_2` explicitly distinguish Phase 1-stable drafts from accepted-but-unverified drafts.
+Version `0.46` adds Phase 1 `review.mode: vertical`, allowing independent profile reviews over the same draft before one consolidated Editor revision.
 
 ---
 
@@ -27,6 +27,7 @@ Version `0.40` clarifies Phase 1 technical failure reporting: `last_accepted_dra
 
 - spec.md
 - scope_contract.json (required for `workflow: mvp`, optional for other workflows unless configured)
+- reference context files (optional; e.g., HLDs, architecture notes, authority maps)
 - convergence_rubric.md
 - orchestrator_config.yaml
 
@@ -100,6 +101,7 @@ clients:
 
 review:
   max_rounds: 12             # legacy/safety metadata; profile_budgets drive scheduling
+  mode: horizontal            # horizontal | vertical
   budget_exhaustion_policy: hard  # hard | soft
   profile_budgets:
     structural_integrity: 10
@@ -146,11 +148,28 @@ contract_surface_policy:
 
 scope_contract:
   path: ./rounds/intake/scope_contract.json
+
+reference_context:
+  files:
+    architecture_hld:
+      path: ./docs/hld-architecture.md
+      role: architecture_authority
+      required: true
 ```
 
 Before entering `TECHNICAL_REVIEW`, the Orchestrator MUST validate configuration.
 
 Client `version` and `model` fields MUST be non-empty strings after trimming whitespace. If any required client field is empty, the Orchestrator MUST halt before the first review round and produce `/rounds/config_validation_error.json` identifying the invalid fields. This preflight failure does not consume a Phase 1 or Phase 2 round.
+
+`reference_context.files` is an optional map keyed by stable context label. Each entry MUST include:
+
+- `path`: filesystem path to the reference document
+- `role`: short role label, such as `architecture_authority`, `domain_requirements`, `source_policy`, or `implementation_context`
+- `required`: boolean
+
+If a required reference context file is missing, the Orchestrator MUST halt before the first review round with `CONFIG_INVALID`. Optional missing reference context files are ignored for context injection but remain visible in config snapshots.
+
+Reference context files are not mutable draft artifacts. The Orchestrator MUST NOT edit them. When present, they are supplied as read-only file-backed context to Reviewer and Editor prompts. Reviewers and Editors MUST treat them as authority according to their configured `role` and MUST NOT inspect unlisted files to recover missing architecture or domain context.
 
 ---
 
@@ -584,9 +603,22 @@ round_strategy:
 
 ## ROUND SCHEDULING ALGORITHM
 
-Phase 1 executes configured profiles in order.
+Phase 1 supports two review modes:
 
-For each Phase 1 profile:
+- `horizontal` (default): execute one profile review, run the Editor, then repeat or advance according to that profile's result.
+- `vertical`: execute each configured Phase 1 profile as an independent Reviewer pass over the same `draft_before.md`, merge the resulting feedback, run one consolidated Editor revision, then repeat the full profile stack against the revised draft until every profile verifies clean on the same draft or profile budgets are exhausted.
+
+In `vertical` mode, each profile review remains independent: it MUST have its own prompt, profile focus, `reviewer_feedback.json`, `profile_used.yaml`, prompt snapshot, context files, telemetry, and validation. Only the Editor step is consolidated.
+
+The vertical merge artifact MUST preserve each finding's source profile. If feedback IDs are not globally unique across profile reviews, the Orchestrator MUST rewrite feedback IDs in the consolidated Editor packet using a deterministic profile-qualified form. Issue IDs and issue fingerprints remain those of the original reviewer findings.
+
+`vertical` mode MUST NOT mark a profile clean from Editor resolution claims. After any consolidated Editor mutation, all Phase 1 profiles must be reviewed again against the revised draft before Phase 1 can become stable.
+
+In `vertical` mode, `review_round_budget` MUST include the configured profile review budgets plus the maximum number of possible consolidated Editor rounds. Profile budget maps still count only independent profile review passes.
+
+Phase 1 `horizontal` mode executes configured profiles in order.
+
+For each Phase 1 profile in `horizontal` mode:
 - run the profile unless `skip_if_clean = true` and the current draft already has a valid clean result for that profile
 - the profile result is clean only when the Reviewer review of `draft_before.md` for that round returns zero in-scope blocker issues and zero in-scope major issues
 - editor resolution claims in `editor_summary.json` determine which findings remain unresolved after the edit, but they MUST NOT by themselves mark the reviewed profile clean
@@ -626,12 +658,19 @@ Clean convergence is achieved when:
 - every required distinct Phase 2 profile has produced a clean Reviewer result for the current unmodified draft lineage,
 - no halt condition with higher or equal precedence has already fired.
 
+Candidate convergence declarations are Orchestrator-owned and MAY exist before final acceptance with `reviewer_final_status: not_run` and `declaration_status: rejected`.
+
+After each Phase 2 round, if an existing candidate `convergence_declaration.md` has `final_draft_hash` that differs from the current `draft_after_hash`, the Orchestrator MUST regenerate the candidate declaration for the current draft before oscillation, conflict, or terminal-state evaluation for that round.
+
+If the only remaining blocker or major findings are declaration hash-binding mismatches that are repaired by this Orchestrator-owned regeneration, those findings MUST be removed from the active unresolved issue set for scheduler, conflict, oscillation, target-matrix, and failure-report evaluation. The Editor MUST NOT be asked to repair `convergence_declaration.md` by mutating `spec.md`.
+
 `rounds/run_state.json` MUST expose both configured and effective profile budgets. `configured_review_profile_budgets` and `configured_convergence_profile_budgets` preserve the explicit config overrides supplied by the operator. `review_profile_budgets` and `convergence_profile_budgets` MUST contain the resolved effective budgets used by the scheduler, including defaults for omitted profiles.
 
 `rounds/run_state.json` MUST also include `effective_run_config`, a compact persisted run-identity block used by resume. It MUST include:
 
 ```yaml
 effective_run_config:
+  review_mode: horizontal | vertical
   review_profile_budgets: map<string, integer>
   review_budget_exhaustion_policy: hard | soft
   convergence_profile_budgets: map<string, integer>
@@ -656,6 +695,12 @@ effective_run_config:
     min_contract_families: integer
   scope_contract:
     path: string
+  reference_context:
+    files:
+      <label>:
+        path: string
+        role: string
+        required: boolean
 ```
 
 The budget maps in `effective_run_config` MUST be the resolved effective maps used by the scheduler, not merely the operator-supplied override maps.
@@ -1133,6 +1178,8 @@ When an applied live round expects the Editor to generate a revised draft, the E
 
 Persisted `editor_summary.json` MUST contain the Orchestrator-computed `draft_after_hash`. The Editor is not authoritative for derived hashes in editor-generated applied revisions.
 
+If a live Reviewer returns valid feedback with `feedback = []` and no explicit external `draft_after.md` fixture is being evaluated, the Orchestrator SHOULD NOT invoke the Editor. It MUST instead persist a deterministic no-op `editor_summary.json` with empty accepted/modified/declined/resolved/unresolved arrays, `draft_before_hash = draft_after_hash`, and, for applied rounds, `draft_after_content` equal to the unchanged draft. This no-op summary is Orchestrator-owned and has the same acceptance semantics as an Editor-confirmed no-op.
+
 The Orchestrator MUST reject destructive Editor-generated draft replacements before writing `draft_after.md` or mutating `spec.md`. At minimum, when `draft_before.md` is non-empty, the Orchestrator MUST reject:
 - empty or whitespace-only `draft_after_content`
 - known Editor blocked/error placeholder text in `draft_after_content`
@@ -1491,10 +1538,13 @@ The Orchestrator MUST validate every client-produced artifact before using it fo
 
 Validation order:
 1. parse the client response as a single JSON object
-2. validate the object against the phase-appropriate artifact schema
-3. validate contextual fields such as `round_number`, `profile`, `draft_hash`, `draft_before_hash`, and `draft_after_hash`
-4. apply Orchestrator-owned canonicalization steps such as Phase 2 `oscillation_key` fingerprint and opposition-key computation
-5. validate the canonicalized artifact against the persisted artifact schema
+2. validate contextual fields such as `round_number`, `profile`, `draft_hash`, `draft_before_hash`, and `draft_after_hash`
+3. reject reviewer self-reported process/context-loading failure artifacts before semantic scheduling
+4. validate the object against the phase-appropriate artifact schema
+5. apply Orchestrator-owned canonicalization steps such as Phase 2 `oscillation_key` fingerprint and opposition-key computation
+6. validate the canonicalized artifact against the persisted artifact schema
+
+Reviewer feedback that declares the review could not be performed because context files were not read, context was unavailable, or another client-process prerequisite failed MUST be treated as an invalid reviewer artifact, not semantic feedback. The Orchestrator MUST retry it under the artifact validation policy. If the retry also returns process/context-loading failure feedback, the run MUST halt with `HALTED_ARTIFACT_INVALID`. Such process failure artifacts MUST NOT dirty profile cleanliness, create issue/conflict/oscillation identity, consume a successful review result, or be sent to the Editor as feedback to apply or decline.
 
 If validation fails, the Orchestrator MUST NOT persist the invalid artifact under its canonical artifact filename. It MAY persist the raw response and validation errors under diagnostic filenames in the current round directory.
 
@@ -1575,6 +1625,26 @@ By default, resume recovers only the halted round and then stops. If invoked wit
 Read-only run status MUST expose whether a run is resumable and, when eligible, the exact `resume` and `resume --continue` commands an operator can run. Status guidance MUST be advisory; live resume remains responsible for enforcing the hash guard and artifact validation before invoking the Editor.
 
 If a resumed Editor call times out again, the Orchestrator MUST halt again with `HALTED_CLIENT_TIMEOUT` and preserve both the original and resumed attempt artifacts.
+
+---
+
+## FOCUSED PHASE 1 PROFILE RUNS
+
+The Orchestrator MAY provide a focused Phase 1 profile run mode for targeted verification after an earlier run leaves one profile uncertain or an operator applies a bounded manual/synthesis fix.
+
+A focused Phase 1 profile run:
+- executes exactly one configured Phase 1 review profile, such as `structural_integrity`, `determinism`, or `operability`
+- uses the same guarded Reviewer, Editor, artifact validation, context-file, prompt snapshot, telemetry, decision-point, text-hygiene, and contract-surface rules as `live-phase1`
+- MUST write ordinary round artifacts under `/rounds/round-N/`
+- MUST write `/rounds/run_state.json`
+- MUST write decision register and decision summary artifacts when decision capture is enabled
+- MUST preserve `spec.md`, `spec.history.md`, and per-round rollback snapshots like a normal Phase 1 run
+
+Focused profile mode is not Phase 1 convergence. A clean focused profile run proves only that the selected profile is clean for the focused run's current draft. It MUST NOT set `ready_for_phase_2 = true` and MUST NOT claim `PHASE_1_STABLE` unless it actually executes the full configured Phase 1 profile sequence.
+
+When a focused profile run's selected profile reaches reviewer-verified clean status, the terminal state MUST be `FOCUSED_PROFILE_STABLE`. When the selected profile exhausts its focused budget without reviewer-verified clean status, the Orchestrator MUST produce `technical_failure_report.json` with profile status limited to the focused profile and terminal state `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS` or a future focused-profile residual state.
+
+The focused run root SHOULD be isolated from the source run root unless the operator explicitly requests in-place continuation. This preserves comparison between the original run artifacts and the targeted recheck.
 
 ---
 
@@ -2122,6 +2192,7 @@ prompt_snapshot.json MUST include:
 - rubric content hash
 - rubric manifest path in Phase 2
 - scope contract path/hash/status when present
+- reference context labels/roles/paths/hashes when present
 - draft_hash
 - semantic_change_hash when a draft mutation is requested
 - context_files manifest when file-backed context is used
@@ -2143,12 +2214,15 @@ prompt_snapshot.json MUST include:
 - rubric source
 - rubric manifest path in Phase 2
 - scope contract path/hash/status when present
+- reference context labels/roles/paths/hashes when present
 - context_files manifest when file-backed context is used
 - validation errors that caused the attempt, or an empty list for the first attempt
 
-Live client prompts MAY use file-backed context for large authoritative inputs. File-backed context MUST be written under `rounds/round-N/context/`, and prompt text MUST reference those files by path instead of duplicating the full content. This mechanism is intended for bulky round inputs such as the draft, rubric, convergence declaration, and reviewer feedback.
+Live client prompts MAY use file-backed context for large authoritative inputs. File-backed context MUST be written under `rounds/round-N/context/`, and prompt text MUST reference those files by path instead of duplicating the full content. This mechanism is intended for bulky round inputs such as the draft, rubric, convergence declaration, reviewer feedback, scope contract, and reference context files.
 
 When an approved scope contract is present, it MUST be supplied as file-backed context to Reviewer and Editor prompts. Prompt snapshots MUST include the scope contract context-file hash and a top-level `scope_contract_hash` or equivalent scope-contract summary.
+
+When reference context files are configured and available, the Orchestrator MUST copy each available file into `rounds/round-N/context/`, label it as `reference:<label>` in the context manifest, and include its configured role in prompt text and prompt snapshots. A reference context file's copied round context content and SHA-256 hash are the replay authority for that attempt.
 
 When file-backed context is used:
 - the Orchestrator MUST persist each context file before the client attempt begins

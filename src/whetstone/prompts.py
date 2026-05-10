@@ -39,6 +39,7 @@ def render_reviewer_prompt(
     rubric_path: str | None = None,
     declaration_path: str | None = None,
     scope_contract_path: str | None = None,
+    reference_context_paths: list[dict[str, str]] | None = None,
     phase: str = "phase_1",
     section_ids: list[str] | None = None,
     round_number: int = 1,
@@ -95,7 +96,8 @@ def render_reviewer_prompt(
                 _phase_2_classification_table(section_ids or []),
             ]
         )
-    if draft_path or rubric_path or scope_contract_path:
+    reference_context_paths = reference_context_paths or []
+    if draft_path or rubric_path or scope_contract_path or reference_context_paths:
         lines.extend(
             [
                 "",
@@ -116,6 +118,10 @@ def render_reviewer_prompt(
             lines.append(f"- Declaration artifact path: {declaration_path}")
         if scope_contract_path:
             lines.append(f"- Scope contract path: {scope_contract_path}")
+        for item in reference_context_paths:
+            lines.append(
+                f"- Reference context [{item['label']}] ({item['role']}): {item['path']}"
+            )
         lines.append("Use the listed context files as authoritative input content.")
     else:
         lines.extend(["", "Rubric:", rubric_text, "", "Draft:", draft])
@@ -209,6 +215,7 @@ def render_editor_prompt(
     draft_path: str | None = None,
     reviewer_feedback_path: str | None = None,
     scope_contract_path: str | None = None,
+    reference_context_paths: list[dict[str, str]] | None = None,
     phase: str = "phase_1",
     round_number: int = 1,
     draft_before_hash_value: str | None = None,
@@ -292,7 +299,8 @@ def render_editor_prompt(
             "If there are no entries for an array field, return an empty array for that field.",
         ]
     )
-    if draft_path or reviewer_feedback_path or scope_contract_path:
+    reference_context_paths = reference_context_paths or []
+    if draft_path or reviewer_feedback_path or scope_contract_path or reference_context_paths:
         lines.extend(
             [
                 "",
@@ -309,6 +317,10 @@ def render_editor_prompt(
             lines.append(f"- Contract surface report path: {synthesis_report_path}")
         if scope_contract_path:
             lines.append(f"- Scope contract path: {scope_contract_path}")
+        for item in reference_context_paths:
+            lines.append(
+                f"- Reference context [{item['label']}] ({item['role']}): {item['path']}"
+            )
         lines.append("Use the listed context files as authoritative input content.")
     else:
         lines.extend(

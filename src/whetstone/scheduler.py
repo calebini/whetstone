@@ -217,6 +217,22 @@ def default_phase_1_scheduler(profile_budgets: dict[str, int] | None = None) -> 
     )
 
 
+def focused_phase_1_scheduler(profile: str, *, round_budget: int) -> PhaseScheduler:
+    """Build a Phase 1 scheduler constrained to one review profile."""
+
+    return PhaseScheduler(
+        [
+            ProfileStep(
+                profile,
+                focus=DEFAULT_PROFILE_FOCUS_ANCHORS.get(profile, frozenset()),
+                skip_if_clean=False,
+                repeat_if_blockers=True,
+                round_budget=max(1, int(round_budget)),
+            )
+        ]
+    )
+
+
 def default_phase_2_scheduler(profile_budgets: dict[str, int] | None = None) -> PhaseScheduler:
     budgets = resolved_phase_2_profile_budgets(profile_budgets)
     return PhaseScheduler(

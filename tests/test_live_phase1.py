@@ -10,6 +10,7 @@ from whetstone.config import OrchestratorConfig, load_config
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
 from whetstone.live_phase1 import LivePhase1Runner
+from whetstone.scheduler import focused_phase_1_scheduler
 
 
 HASH_RE = re.compile(r"([a-f0-9]{64})")
@@ -25,6 +26,7 @@ class ScriptedReviewerClient:
     def review(self, prompt: str) -> dict:
         self.calls += 1
         profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
         self.profiles.append(profile)
         severity = self.severities[self.calls - 1] if self.calls - 1 < len(self.severities) else None
         feedback = []
@@ -51,7 +53,7 @@ class ScriptedReviewerClient:
                 }
             )
         return {
-            "round_number": self.calls,
+            "round_number": round_number,
             "profile": profile,
             "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
             "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
@@ -217,8 +219,8 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertEqual(state["effective_run_config"]["decision_points"]["mode"], "end_of_cycle")
             self.assertEqual(state["effective_run_config"]["timeouts"]["editor_seconds"], 900)
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
-            self.assertEqual(state["telemetry_totals"]["attempt_count"], 6)
-            self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 6)
+            self.assertEqual(state["telemetry_totals"]["attempt_count"], 3)
+            self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 3)
 
     def test_blocker_profile_repeats_before_advancing(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -233,6 +235,69 @@ class LivePhase1RunnerTests(unittest.TestCase):
 
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
             self.assertEqual(reviewer.profiles, ["structural_integrity", "structural_integrity", "determinism", "operability"])
+
+    def test_vertical_review_mode_reviews_all_profiles_before_one_editor_call(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), review_mode="vertical", profile_budget=2)
+            reviewer = ScriptedReviewerClient(root, ["major", "major", "major", None, None, None])
+            editor = ResolvingMutatingEditorClient(root)
+
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=editor,
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            self.assertEqual(
+                reviewer.profiles,
+                [
+                    "structural_integrity",
+                    "determinism",
+                    "operability",
+                    "structural_integrity",
+                    "determinism",
+                    "operability",
+                ],
+            )
+            self.assertEqual(editor.calls, 1)
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["review_mode"], "vertical")
+            self.assertEqual(state["current_round"], 7)
+            self.assertEqual(state["review_round_budget"], 8)
+            self.assertEqual(state["effective_run_config"]["review_mode"], "vertical")
+            merged_feedback = _read_json(root / "rounds" / "round-4" / "reviewer_feedback.json")
+            self.assertEqual(merged_feedback["profile"], "vertical")
+            self.assertEqual(len(merged_feedback["feedback"]), 3)
+
+    def test_focused_phase1_runs_one_profile_with_normal_state_artifacts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp))
+            reviewer = ScriptedReviewerClient(root, ["major", None])
+            result = LivePhase1Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=reviewer,
+                editor_client=ResolvingMutatingEditorClient(root),
+                scheduler_factory=lambda _budgets: focused_phase_1_scheduler("structural_integrity", round_budget=3),
+                state_review_profile_budgets={"structural_integrity": 3},
+                run_mode="focused_phase_1",
+                completion_terminal_state="FOCUSED_PROFILE_STABLE",
+                completion_ready_for_phase_2=False,
+            ).run()
+
+            self.assertEqual(result.terminal_state, "FOCUSED_PROFILE_STABLE")
+            self.assertFalse(result.ready_for_phase_2)
+            self.assertEqual(reviewer.profiles, ["structural_integrity", "structural_integrity"])
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "FOCUSED_PROFILE_STABLE")
+            self.assertEqual(state["run_mode"], "focused_phase_1")
+            self.assertFalse(state["ready_for_phase_2"])
+            self.assertEqual(state["review_profile_budgets"], {"structural_integrity": 3})
+            self.assertEqual(state["review_round_budget"], 3)
+            self.assertTrue(root.joinpath("rounds/decision_register.json").exists())
+            self.assertTrue(root.joinpath("rounds/decision_summary.md").exists())
 
     def test_editor_resolution_requires_reviewer_verification_before_profile_advances(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -474,8 +539,10 @@ class BlockingThenResolvingEditorClient:
 class ResolvingMutatingEditorClient:
     def __init__(self, root: Path) -> None:
         self.root = root
+        self.calls = 0
 
     def revise(self, prompt: str) -> dict:
+        self.calls += 1
         before_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
         explicit_after_hash = _optional_hash_line(prompt, "The draft_after_hash MUST be ")
         draft_after_content = _draft_from_prompt(prompt, self.root)
@@ -531,12 +598,19 @@ def _seed_root(
     review_max_rounds: int | None = None,
     budget_exhaustion_policy: str | None = None,
     profile_budget: int | None = None,
+    review_mode: str | None = None,
     decision_mode: str | None = None,
     spec: str = "# Spec\n\nDraft.\n",
 ) -> Path:
     root.joinpath("spec.md").write_text(spec, encoding="utf-8")
     root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
-    if review_max_rounds is not None or budget_exhaustion_policy is not None or decision_mode is not None:
+    if (
+        review_max_rounds is not None
+        or budget_exhaustion_policy is not None
+        or profile_budget is not None
+        or review_mode is not None
+        or decision_mode is not None
+    ):
         root.joinpath("orchestrator_config.yaml").write_text(
             f"""
 spec_path: spec.md
@@ -556,6 +630,7 @@ clients:
     model: fixture
 review:
   max_rounds: {review_max_rounds or 12}
+  mode: {review_mode or "horizontal"}
   budget_exhaustion_policy: {budget_exhaustion_policy or "hard"}
   profile_budgets:
     structural_integrity: {profile_budget or 10}

@@ -67,6 +67,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "rounds_dir": _path_or_none(rounds_dir, root),
         "run_state_path": _path_or_none(state_path, root) if state_path.exists() else None,
         "run_state_exists": run_state is not None,
+        "run_mode": run_state.get("run_mode") if run_state else None,
         "phase": run_state.get("phase") if run_state else None,
         "current_round": run_state.get("current_round") if run_state else None,
         "current_absolute_round": run_state.get("current_absolute_round", run_state.get("current_round")) if run_state else None,
@@ -125,6 +126,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         "Whetstone Status",
         f"root: {status.get('root')}",
         f"phase: {_display(status.get('phase'))}",
+        f"run_mode: {_display(status.get('run_mode'))}",
         f"current_round: {_display(status.get('current_round'))}",
         f"current_absolute_round: {_display(status.get('current_absolute_round'))}",
         f"current_phase_round: {_display(status.get('current_phase_round'))}",
@@ -431,6 +433,8 @@ def _next_action(run_state: dict[str, Any] | None, *, terminal_report_path: Path
         return "resolve_decision_intervention"
     if terminal_state == "PHASE_1_STABLE" and run_state.get("ready_for_phase_2") is True:
         return "run_live_phase2"
+    if terminal_state == "FOCUSED_PROFILE_STABLE":
+        return "review_focused_result"
     if terminal_state == "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS":
         return "manual_review_required"
     if terminal_state == "CONVERGED":

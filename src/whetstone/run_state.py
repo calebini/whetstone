@@ -6,7 +6,14 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from whetstone.config import ContractSurfaceConfig, DecisionPointConfig, OrchestratorConfig, ScopeContractConfig, TimeoutConfig
+from whetstone.config import (
+    ContractSurfaceConfig,
+    DecisionPointConfig,
+    OrchestratorConfig,
+    ReferenceContextFileConfig,
+    ScopeContractConfig,
+    TimeoutConfig,
+)
 from whetstone.scheduler import resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
 
 
@@ -15,6 +22,7 @@ def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
 
     return {
         "review_profile_budgets": resolved_phase_1_profile_budgets(config.review_profile_budgets),
+        "review_mode": config.review_mode,
         "review_budget_exhaustion_policy": config.review_budget_exhaustion_policy,
         "convergence_profile_budgets": resolved_phase_2_profile_budgets(config.convergence_profile_budgets),
         "decision_points": {
@@ -45,6 +53,16 @@ def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
         "scope_contract": {
             "path": str(config.scope_contract.path),
         },
+        "reference_context": {
+            "files": {
+                item.label: {
+                    "path": str(item.path),
+                    "role": item.role,
+                    "required": item.required,
+                }
+                for item in config.reference_context_files
+            }
+        },
     }
 
 
@@ -64,6 +82,7 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
             getattr(config, "review_budget_exhaustion_policy", "hard"),
         )
     )
+    review_mode = str(effective.get("review_mode", getattr(config, "review_mode", "horizontal")))
     convergence_profile_budgets = _int_mapping(
         effective.get("convergence_profile_budgets", packet.get("convergence_profile_budgets"))
     )
@@ -83,16 +102,22 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
         effective.get("scope_contract"),
         fallback=config.scope_contract,
     )
+    reference_context_files = _reference_context_files_config(
+        effective.get("reference_context"),
+        fallback=config.reference_context_files,
+    )
 
     return replace(
         config,
         review_profile_budgets=review_profile_budgets or config.review_profile_budgets,
+        review_mode=review_mode,
         review_budget_exhaustion_policy=review_budget_exhaustion_policy,
         convergence_profile_budgets=convergence_profile_budgets or config.convergence_profile_budgets,
         decision_points=decision_points,
         timeouts=timeouts,
         contract_surface=contract_surface,
         scope_contract=scope_contract,
+        reference_context_files=reference_context_files,
     )
 
 
@@ -171,6 +196,32 @@ def _scope_contract_config(value: Any, *, fallback: ScopeContractConfig) -> Scop
     if not isinstance(path, str) or not path:
         return fallback
     return ScopeContractConfig(path=Path(path))
+
+
+def _reference_context_files_config(
+    value: Any, *, fallback: tuple[ReferenceContextFileConfig, ...]
+) -> tuple[ReferenceContextFileConfig, ...]:
+    if not isinstance(value, dict):
+        return fallback
+    files = value.get("files")
+    if not isinstance(files, dict):
+        return fallback
+    parsed: list[ReferenceContextFileConfig] = []
+    for label, item in files.items():
+        if not isinstance(item, dict):
+            continue
+        path = item.get("path")
+        if not isinstance(path, str) or not path:
+            continue
+        parsed.append(
+            ReferenceContextFileConfig(
+                label=str(label),
+                path=Path(path),
+                role=str(item.get("role", "reference_context")),
+                required=_bool(item.get("required"), True),
+            )
+        )
+    return tuple(parsed) if parsed else fallback
 
 
 def _positive_int(value: Any, fallback: int) -> int:

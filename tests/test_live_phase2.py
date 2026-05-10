@@ -97,7 +97,7 @@ class EchoEditorClient:
             "modified_feedback_ids": [],
             "declined_feedback": [],
             "created_conflict_ids": [],
-            "resolved_issue_ids": [],
+            "resolved_issue_ids": ["iss_0000000000000001"],
             "unresolved_issue_ids": [],
             "draft_after_content": _draft_from_prompt(prompt, self.root),
         }
@@ -169,7 +169,7 @@ class DecisionPointEditorClient:
     def revise(self, prompt: str) -> dict:
         self.calls += 1
         draft = _draft_from_prompt(prompt, self.root)
-        if self.calls == 2:
+        if self.calls == 1:
             draft = draft + "\n## Canonicalizer Summary Policy\n\nThe Orchestrator MUST preserve attempt-scoped summaries.\n"
         return {
             "round_number": _editor_round_number(prompt),
@@ -181,6 +181,85 @@ class DecisionPointEditorClient:
             "created_conflict_ids": [],
             "resolved_issue_ids": [],
             "unresolved_issue_ids": [],
+            "draft_after_content": draft,
+        }
+
+
+class DeclarationMismatchAfterMutationReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        feedback = []
+        if self.calls == 3:
+            feedback = [
+                _phase2_issue(
+                    "fb-source",
+                    "iss_0000000000000001",
+                    "source_spec_truncated",
+                    "blocker",
+                    "Source needs a repair.",
+                    "Add the missing source material.",
+                    direction="add",
+                ),
+                _phase2_issue(
+                    "fb-declaration",
+                    "iss_0000000000000002",
+                    "declaration_hash_mismatch",
+                    "blocker",
+                    "The declaration final_draft_hash is stale.",
+                    "Regenerate the Orchestrator-owned declaration.",
+                    direction="modify",
+                ),
+            ]
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": feedback,
+        }
+
+
+class SourceOnlyResolvingEditorClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
+    def revise(self, prompt: str) -> dict:
+        draft = _draft_from_prompt(prompt, self.root)
+        issue_ids = _issue_ids_from_prompt(prompt, self.root)
+        feedback_text = ""
+        path_match = re.search(r"Reviewer feedback JSON path: ([^\n]+)", prompt)
+        if path_match:
+            feedback_text = (self.root / path_match.group(1)).read_text(encoding="utf-8")
+        else:
+            feedback_text = prompt
+        if "iss_0000000000000001" in issue_ids:
+            draft += "\nSource repair applied.\n"
+        return {
+            "round_number": _editor_round_number(prompt),
+            "draft_before_hash": _hash_line(prompt, "The draft_before_hash MUST be "),
+            "draft_after_hash": None,
+            "accepted_feedback_ids": [],
+            "modified_feedback_ids": ["fb-source"] if "fb-source" in feedback_text else [],
+            "declined_feedback": [
+                {
+                    "feedback_id": "fb-declaration",
+                    "decline_reason": "out_of_scope",
+                    "rationale": "The declaration is Orchestrator-owned.",
+                    "target_profile": None,
+                    "target_round_or_phase": None,
+                }
+            ]
+            if "fb-declaration" in feedback_text
+            else [],
+            "created_conflict_ids": [],
+            "resolved_issue_ids": ["iss_0000000000000001"] if "iss_0000000000000001" in issue_ids else [],
+            "unresolved_issue_ids": ["iss_0000000000000002"] if "iss_0000000000000002" in issue_ids else [],
             "draft_after_content": draft,
         }
 
@@ -220,8 +299,8 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertEqual(state["convergence_round_budget"], 30)
             self.assertEqual(state["rubric_manifest_path"], "rounds/rubric_manifest.json")
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
-            self.assertEqual(state["telemetry_totals"]["attempt_count"], 6)
-            self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 6)
+            self.assertEqual(state["telemetry_totals"]["attempt_count"], 3)
+            self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 3)
 
     def test_phase2_editor_resolution_requires_clean_reviewer_pass_before_convergence(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -309,6 +388,25 @@ class LivePhase2RunnerTests(unittest.TestCase):
             declaration = root.joinpath("convergence_declaration.md").read_text(encoding="utf-8")
             self.assertIn(f"final_draft_hash: {final_hash}", declaration)
 
+    def test_phase2_repairs_stale_declaration_hash_before_conflict_churn(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_phase1_stable(Path(tmp))
+
+            result = LivePhase2Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=DeclarationMismatchAfterMutationReviewerClient(root),
+                editor_client=SourceOnlyResolvingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            final_hash = draft_hash(root.joinpath("spec.md").read_text(encoding="utf-8"))
+            declaration = root.joinpath("convergence_declaration.md").read_text(encoding="utf-8")
+            self.assertIn(f"final_draft_hash: {final_hash}", declaration)
+            round_6_unresolved = _read_json(root / "rounds" / "round-6" / "unresolved_issues.json")
+            self.assertEqual(round_6_unresolved["unresolved_issues"], [])
+            self.assertFalse(root.joinpath("rounds/conflict_report.json").exists())
+
     def test_phase2_refreshes_decision_register_and_summary_on_convergence(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_phase1_stable(Path(tmp))
@@ -346,7 +444,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
             result = LivePhase2Runner(
                 root,
                 OrchestratorConfig.default(root),
-                reviewer_client=CleanPhase2ReviewerClient(root),
+                reviewer_client=ScriptedPhase2ReviewerClient(root, ["major", None, None]),
                 editor_client=DecisionPointEditorClient(root),
             ).run()
 
@@ -357,7 +455,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertEqual(summary["terminal_state"], "CONVERGED")
             self.assertEqual(summary["decision_count"], len(register["decision_points"]))
             self.assertGreater(summary["decision_count"], 0)
-            self.assertIn(5, {point["round_number"] for point in register["decision_points"]})
+            self.assertIn(4, {point["round_number"] for point in register["decision_points"]})
 
 
 def _seed_phase1_stable(root: Path, *, convergence_max_rounds: int | None = None) -> Path:
@@ -452,6 +550,46 @@ def _editor_round_number(prompt: str) -> int:
     if match is None:
         raise AssertionError("missing editor round number")
     return int(match.group(1))
+
+
+def _phase2_issue(
+    feedback_id: str,
+    issue_id: str,
+    issue_type: str,
+    severity: str,
+    claim: str,
+    recommended_change: str,
+    *,
+    direction: str,
+) -> dict:
+    return {
+        "feedback_id": feedback_id,
+        "issue_id": issue_id,
+        "issue_fingerprint": issue_id.removeprefix("iss_").ljust(64, "0"),
+        "issue_type": issue_type,
+        "affected_sections": ["whetstone-1-0-rules"]
+        if issue_type != "declaration_hash_mismatch"
+        else ["convergence_declaration.md"],
+        "baseline_severity": severity,
+        "authority_impact": None,
+        "determinism_impact": None,
+        "rubric_impact": severity,
+        "normalized_severity": severity,
+        "invariant_violated": "fixture invariant",
+        "claim": claim,
+        "evidence": "Fixture evidence.",
+        "recommended_change": recommended_change,
+        "in_scope": True,
+        "severity_rationale": "Fixture rationale.",
+        "oscillation_key": {
+            "section_id": "whetstone-1-0-rules",
+            "concern_type": "consistency_violation",
+            "direction": direction,
+            "scope": "structural",
+            "fingerprint": "a" * 64,
+            "opposition_key": "b" * 64,
+        },
+    }
 
 
 def _read_json(path: Path) -> dict:

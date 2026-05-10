@@ -24,6 +24,7 @@ class ConfigTests(unittest.TestCase):
             self.assertTrue(config.contract_surface.enabled)
             self.assertEqual(config.contract_surface.action, "recommend_synthesis")
             self.assertEqual(config.scope_contract.path, Path(tmp) / "rounds" / "intake" / "scope_contract.json")
+            self.assertEqual(config.reference_context_files, ())
 
     def test_load_config_parses_project_yaml_subset(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -48,6 +49,7 @@ clients:
     model: gpt-fixture
 review:
   max_rounds: 3
+  mode: vertical
   budget_exhaustion_policy: soft
   profile_budgets:
     structural_integrity: 4
@@ -81,6 +83,13 @@ contract_surface_policy:
   min_contract_families: 4
 scope_contract:
   path: ./intake/scope.json
+reference_context:
+  files:
+    parley_hld:
+      path: ./docs/hld-architecture.md
+      role: architecture_authority
+      required: true
+    notes: ./docs/notes.md
 """.strip(),
                 encoding="utf-8",
             )
@@ -91,6 +100,7 @@ scope_contract:
             self.assertEqual(config.editor.version, "1.2.3")
             self.assertEqual(config.reviewer.model, "gpt-fixture")
             self.assertEqual(config.review_max_rounds, 3)
+            self.assertEqual(config.review_mode, "vertical")
             self.assertEqual(config.review_budget_exhaustion_policy, "soft")
             self.assertEqual(config.review_profile_budgets["structural_integrity"], 4)
             self.assertEqual(config.review_profile_budgets["determinism"], 5)
@@ -110,6 +120,13 @@ scope_contract:
             self.assertEqual(config.contract_surface.min_recent_serious_rounds, 2)
             self.assertEqual(config.contract_surface.min_contract_families, 4)
             self.assertEqual(config.scope_contract.path, Path(tmp) / "intake" / "scope.json")
+            self.assertEqual(len(config.reference_context_files), 2)
+            self.assertEqual(config.reference_context_files[0].label, "parley_hld")
+            self.assertEqual(config.reference_context_files[0].path, Path(tmp) / "docs/hld-architecture.md")
+            self.assertEqual(config.reference_context_files[0].role, "architecture_authority")
+            self.assertTrue(config.reference_context_files[0].required)
+            self.assertEqual(config.reference_context_files[1].label, "notes")
+            self.assertEqual(config.reference_context_files[1].role, "reference_context")
 
 
 if __name__ == "__main__":

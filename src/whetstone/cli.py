@@ -21,6 +21,7 @@ from whetstone.resume import plan_resume_halted_run, resume_halted_run
 from whetstone.runner import FixtureRunner
 from whetstone.run_state import apply_effective_run_config
 from whetstone.rubrics import BUILTIN_RUBRIC_FILES, build_rubric_manifest
+from whetstone.scheduler import focused_phase_1_scheduler
 from whetstone.sections import section_index
 from whetstone.scope import render_mvp_scope_notes_template, scope_contract_from_notes, write_scope_contract
 from whetstone.status import read_status, render_status_text
@@ -165,6 +166,29 @@ def main(argv: list[str] | None = None) -> int:
     live_phase1.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
     live_phase1.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
     live_phase1.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
+
+    live_focused_phase1 = subparsers.add_parser(
+        "live-focused-phase1",
+        help="run a normal-artifact Phase 1 loop for one review profile",
+        description=(
+            "Run a focused Phase 1 mini-run for one profile while still writing normal run artifacts "
+            "such as rounds/run_state.json, decision summaries, telemetry, and terminal state."
+        ),
+        epilog=(
+            "Example:\n"
+            "  whetstone live-focused-phase1 --root \"$RUN_ROOT\" --profile structural_integrity --budget 3\n\n"
+            "Use this for targeted rechecks after a full run leaves one profile uncertain."
+        ),
+        formatter_class=FORMATTER,
+    )
+    live_focused_phase1.add_argument("--root", default=".", help="isolated Whetstone run root")
+    live_focused_phase1.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    live_focused_phase1.add_argument("--profile", required=True, help="Phase 1 review profile to run")
+    live_focused_phase1.add_argument("--budget", type=int, default=3, help="round budget for the focused profile")
+    live_focused_phase1.add_argument("--overwrite", action="store_true", help="danger: replace existing round directories")
+    live_focused_phase1.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
+    live_focused_phase1.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
+    live_focused_phase1.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
 
     live_phase2 = subparsers.add_parser(
         "live-phase2",
@@ -431,6 +455,39 @@ def main(argv: list[str] | None = None) -> int:
                     "round_number": result.round_number,
                     "current_draft_hash": result.current_draft_hash,
                     "last_accepted_draft_hash": result.last_accepted_draft_hash,
+                    "ready_for_phase_2": result.ready_for_phase_2,
+                    "report_path": str(result.report_path) if result.report_path else None,
+                }
+            )
+        )
+        return 0
+    if args.command == "live-focused-phase1":
+        root = Path(args.root)
+        config = load_config(root / args.config)
+        config = _apply_timeout_overrides(config, args=args)
+        focused_budgets = {args.profile: max(1, int(args.budget))}
+        result = LivePhase1Runner(
+            root,
+            config,
+            scheduler_factory=lambda _budgets: focused_phase_1_scheduler(
+                args.profile,
+                round_budget=max(1, int(args.budget)),
+            ),
+            state_review_profile_budgets=focused_budgets,
+            run_mode="focused_phase_1",
+            completion_terminal_state="FOCUSED_PROFILE_STABLE",
+            completion_ready_for_phase_2=False,
+            timeout_seconds=args.timeout_seconds,
+        ).run(overwrite=args.overwrite)
+        print(
+            json.dumps(
+                {
+                    "terminal_state": result.terminal_state,
+                    "round_number": result.round_number,
+                    "profile": args.profile,
+                    "current_draft_hash": result.current_draft_hash,
+                    "last_accepted_draft_hash": result.last_accepted_draft_hash,
+                    "profile_clean": result.terminal_state == "FOCUSED_PROFILE_STABLE",
                     "ready_for_phase_2": result.ready_for_phase_2,
                     "report_path": str(result.report_path) if result.report_path else None,
                 }

@@ -60,6 +60,14 @@ class ScopeContractConfig:
 
 
 @dataclass(frozen=True)
+class ReferenceContextFileConfig:
+    label: str
+    path: Path
+    role: str
+    required: bool
+
+
+@dataclass(frozen=True)
 class OrchestratorConfig:
     spec_path: Path
     history_path: Path
@@ -69,6 +77,7 @@ class OrchestratorConfig:
     editor: ClientConfig
     reviewer: ClientConfig
     review_max_rounds: int
+    review_mode: str
     review_profile_budgets: dict[str, int]
     review_budget_exhaustion_policy: str
     convergence: ConvergenceConfig
@@ -77,6 +86,7 @@ class OrchestratorConfig:
     timeouts: TimeoutConfig
     contract_surface: ContractSurfaceConfig
     scope_contract: ScopeContractConfig
+    reference_context_files: tuple[ReferenceContextFileConfig, ...]
 
     @classmethod
     def default(cls, root: Path | str = ".") -> "OrchestratorConfig":
@@ -90,6 +100,7 @@ class OrchestratorConfig:
             editor=ClientConfig("fixture-editor", "fixture", "0.0.0", "fixture"),
             reviewer=ClientConfig("fixture-reviewer", "fixture", "0.0.0", "fixture"),
             review_max_rounds=12,
+            review_mode="horizontal",
             review_profile_budgets={},
             review_budget_exhaustion_policy="hard",
             convergence=ConvergenceConfig(
@@ -122,6 +133,7 @@ class OrchestratorConfig:
                 min_contract_families=2,
             ),
             scope_contract=ScopeContractConfig(path=base / "rounds" / "intake" / "scope_contract.json"),
+            reference_context_files=(),
         )
 
 
@@ -143,6 +155,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     timeouts = parsed.get("timeouts", {})
     contract_surface = parsed.get("contract_surface_policy", {})
     scope_contract = parsed.get("scope_contract", {})
+    reference_context = parsed.get("reference_context", {})
     thresholds = decision_points.get("intervention_thresholds", {})
     review = parsed.get("review", {})
 
@@ -165,6 +178,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             str(reviewer.get("model", default.reviewer.model)),
         ),
         review_max_rounds=int(review.get("max_rounds", default.review_max_rounds)),
+        review_mode=str(review.get("mode", default.review_mode)),
         review_profile_budgets=_parse_int_mapping(review.get("profile_budgets", default.review_profile_budgets)),
         review_budget_exhaustion_policy=str(
             review.get("budget_exhaustion_policy", default.review_budget_exhaustion_policy)
@@ -232,6 +246,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
         scope_contract=ScopeContractConfig(
             path=root / str(scope_contract.get("path", _relative_default_scope_path(default.scope_contract.path, root)))
         ),
+        reference_context_files=_parse_reference_context_files(reference_context, root=root),
     )
 
 
@@ -292,6 +307,37 @@ def _parse_int_mapping(value: Any) -> dict[str, int]:
     if not isinstance(value, dict):
         return {}
     return {str(key): int(item) for key, item in value.items()}
+
+
+def _parse_reference_context_files(value: Any, *, root: Path) -> tuple[ReferenceContextFileConfig, ...]:
+    if not isinstance(value, dict):
+        return ()
+    files = value.get("files")
+    if not isinstance(files, dict):
+        return ()
+    parsed: list[ReferenceContextFileConfig] = []
+    for label, item in files.items():
+        if isinstance(item, str):
+            path_value = item
+            role = "reference_context"
+            required = True
+        elif isinstance(item, dict):
+            path_value = item.get("path")
+            if not path_value:
+                continue
+            role = str(item.get("role", "reference_context"))
+            required = bool(item.get("required", True))
+        else:
+            continue
+        parsed.append(
+            ReferenceContextFileConfig(
+                label=str(label),
+                path=root / str(path_value),
+                role=role,
+                required=required,
+            )
+        )
+    return tuple(parsed)
 
 
 def _optional_string(value: Any) -> str | None:

@@ -78,6 +78,7 @@ clients:
 
 review:
   max_rounds: 12
+  mode: horizontal
   budget_exhaustion_policy: hard
   profile_budgets:
     structural_integrity: 10
@@ -111,6 +112,15 @@ timeouts:
 
 scope_contract:
   path: ./rounds/intake/scope_contract.json
+
+# Optional but strongly recommended when leaf specs depend on an HLD,
+# architecture note, policy document, or domain contract.
+reference_context:
+  files:
+    architecture_hld:
+      path: /absolute/path/to/docs/hld-architecture.md
+      role: architecture_authority
+      required: true
 YAML
 ```
 
@@ -135,6 +145,24 @@ convergence:
   target_mode: strict
   rubric_profile: governance-v6
 ```
+
+## Review Mode
+
+Use `horizontal` for the original careful profile-by-profile loop:
+
+```yaml
+review:
+  mode: horizontal
+```
+
+Use `vertical` when you want fewer Editor turns. In vertical mode, Whetstone runs independent structural, determinism, and operability Reviewer passes over the same draft, merges the feedback, then asks the Editor for one consolidated revision:
+
+```yaml
+review:
+  mode: vertical
+```
+
+Vertical mode is usually the better economy choice for MVP and medium-size specs. It preserves separate Reviewer artifacts per profile, but the Editor sees the full cross-profile problem set before changing the draft.
 
 ## Budget Exhaustion Policy
 
@@ -231,6 +259,28 @@ next_action: manual_review_required
 ```
 
 read `rounds/technical_failure_report.json`. The run completed a soft Phase 1 diagnostic sweep, but at least one profile still has residual blocker/major or oscillation status. Do not proceed to Phase 2 from this state.
+
+## Run A Focused Profile Recheck
+
+Use a focused Phase 1 profile run when a prior run leaves one profile uncertain and you want normal Whetstone artifacts for a targeted recheck.
+
+Create a new isolated comparison run root, seed it with the latest valid draft from the prior run, copy or recreate the config and scope contract, then run:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli live-focused-phase1 \
+  --root "$FOCUSED_RUN_ROOT" \
+  --profile structural_integrity \
+  --budget 3
+```
+
+Focused profile runs write ordinary round artifacts and `rounds/run_state.json`. A clean focused run ends with:
+
+```text
+terminal_state: FOCUSED_PROFILE_STABLE
+ready_for_phase_2: false
+```
+
+That state means the selected profile is clean for the focused draft. It does not replace a full Phase 1 stable run and does not by itself authorize Phase 2.
 
 ## Recover A Timeout
 

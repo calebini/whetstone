@@ -71,3 +71,9 @@
 - Revised the spec to `0.38` with explicit decision-point status semantics, separating editor-applied choices, operator review recommendations, intervention-required decisions, and record-only hardening without changing default run-completion behavior.
 - Revised the spec to `0.39` with Phase 1 clean/budget precedence, scope-contract deferred-surface escalation labeling, and expanding-contract-surface lifecycle statuses.
 - Revised the spec to `0.40` with clearer Phase 1 technical failure report semantics: `current_draft_status` and `ready_for_phase_2` now distinguish accepted-but-unverified drafts from truly Phase 1-stable drafts.
+- Revised the spec to `0.41` with reviewer process/context-loading failure handling: self-reported inability to perform review is now a retryable artifact-validation failure rather than semantic profile feedback.
+- Revised the spec to `0.42` with focused Phase 1 profile runs, allowing targeted single-profile rechecks to write normal run state, decision, telemetry, and terminal artifacts without claiming full Phase 1 stability.
+- Revised the spec to `0.43` with first-class reference context files, allowing HLDs and other architectural/domain authority documents to be injected into live Reviewer and Editor prompts as hash-tracked, read-only file-backed context.
+- Revised the spec to `0.44` with Orchestrator-owned no-op Editor summaries for clean Reviewer passes, preventing unnecessary Editor calls when there is no feedback to apply.
+- Revised the spec to `0.45` with Phase 2 stale declaration binding repair, requiring the Orchestrator to regenerate mismatched candidate declarations before treating declaration hash mismatches as unresolved feedback churn.
+- Revised the spec to `0.46` with Phase 1 vertical review mode, preserving independent profile review artifacts while merging profile feedback into one consolidated Editor revision per cycle.
