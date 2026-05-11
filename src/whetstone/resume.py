@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -171,6 +171,80 @@ def resume_halted_run(
     )
 
 
+def resume_budget_exhausted_run(
+    root: Path | str,
+    config: OrchestratorConfig,
+    *,
+    extend_review_budget: int,
+    reviewer_client: ReviewerClient | None = None,
+    editor_client: EditorClient | None = None,
+    timeout_seconds: int | None = None,
+) -> ResumeResult:
+    """Append Phase 1 rounds after a budget-exhausted terminal state."""
+
+    root = Path(root)
+    state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
+    original_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    current_round = int(state["current_round"])
+    if config.review_mode == "vertical":
+        vertical_state = _reconstruct_vertical_phase1_state(config, through_round=current_round)
+        extended_budgets = _extended_vertical_budgets(
+            original_budgets,
+            vertical_state["profile_state"],
+            extend_review_budget=extend_review_budget,
+        )
+        extended_config = replace(config, review_profile_budgets=extended_budgets)
+        _write_budget_extension_event(
+            config=extended_config,
+            previous_state=state,
+            original_budgets=original_budgets,
+            extended_budgets=extended_budgets,
+            extension_rounds=extend_review_budget,
+        )
+        return _continue_vertical_phase1(
+            root,
+            extended_config,
+            profile_state=_extend_vertical_profile_state(vertical_state["profile_state"], extended_budgets),
+            start_round=current_round + 1,
+            last_accepted_draft_hash=vertical_state["last_accepted_draft_hash"],
+            seen_hashes=vertical_state["seen_hashes"],
+            last_unresolved=vertical_state["last_unresolved"],
+            last_reviewer_findings=vertical_state["last_reviewer_findings"],
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        )
+    scheduler, last_accepted_draft_hash, seen_hashes = _reconstruct_phase1_state(
+        config,
+        through_round=current_round,
+    )
+    extended_budgets = _extended_horizontal_budgets(
+        original_budgets,
+        scheduler,
+        extend_review_budget=extend_review_budget,
+    )
+    _extend_phase1_scheduler_budgets(scheduler, extended_budgets)
+    extended_config = replace(config, review_profile_budgets=extended_budgets)
+    _write_budget_extension_event(
+        config=extended_config,
+        previous_state=state,
+        original_budgets=original_budgets,
+        extended_budgets=extended_budgets,
+        extension_rounds=extend_review_budget,
+    )
+    return _continue_phase1(
+        root,
+        extended_config,
+        scheduler=scheduler,
+        start_round=current_round + 1,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        seen_hashes=seen_hashes,
+        reviewer_client=reviewer_client,
+        editor_client=editor_client,
+        timeout_seconds=timeout_seconds,
+    )
+
+
 def plan_resume_halted_run(
     root: Path | str,
     config: OrchestratorConfig,
@@ -201,6 +275,38 @@ def plan_resume_halted_run(
         next_round_number=next_round_number,
         reason="supported Phase 1 Editor timeout with validated Reviewer feedback",
     )
+
+
+def plan_budget_extension_resume(
+    root: Path | str,
+    config: OrchestratorConfig,
+    *,
+    extend_review_budget: int,
+) -> ResumePlan:
+    """Validate a budget-extension continuation without invoking clients."""
+
+    _ = Path(root)
+    state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
+    current_round = int(state["current_round"])
+    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+    return ResumePlan(
+        resumable=True,
+        terminal_state=str(state["terminal_state"]),
+        failure_type="budget_exhausted",
+        phase=str(state.get("phase", "phase_1")),
+        client_role="orchestrator",
+        round_number=current_round,
+        profile=str(state.get("active_profile") or ""),
+        current_draft_hash=current_hash,
+        expected_draft_hash=str(state["current_draft_hash"]),
+        next_attempt_number=1,
+        continue_run=True,
+        next_round_number=current_round + 1,
+        reason=f"supported Phase 1 budget extension by {extend_review_budget} round(s) per profile",
+    )
+
+
+BUDGET_EXTENSION_TERMINAL_STATES = {"TARGET_NOT_REACHED", "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"}
 
 
 def _continue_phase1(
@@ -461,6 +567,381 @@ def _continue_phase1(
     return ResumeResult(True, terminal_state, total_budget, "phase_1", final_profile or "", current_hash, last_accepted_draft_hash, False)
 
 
+def _continue_vertical_phase1(
+    root: Path,
+    config: OrchestratorConfig,
+    *,
+    profile_state: dict[str, dict[str, Any]],
+    start_round: int,
+    last_accepted_draft_hash: str | None,
+    seen_hashes: list[str],
+    last_unresolved: list[dict[str, Any]],
+    last_reviewer_findings: dict[str, Any] | None,
+    reviewer_client: ReviewerClient | None,
+    editor_client: EditorClient | None,
+    timeout_seconds: int | None,
+) -> ResumeResult:
+    profiles = ["structural_integrity", "determinism", "operability"]
+    round_number = start_round - 1
+    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+    while any(int(profile_state[profile]["rounds_used"]) < int(profile_state[profile]["round_budget"]) for profile in profiles):
+        merged_feedback: list[dict[str, Any]] = []
+        draft_hash_at_cycle_start = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+        for profile in profiles:
+            if int(profile_state[profile]["rounds_used"]) >= int(profile_state[profile]["round_budget"]):
+                continue
+            round_number += 1
+            _write_phase1_state(
+                config=config,
+                current_round=round_number,
+                active_profile=profile,
+                current_draft_hash=draft_hash_at_cycle_start,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state=None,
+                ready_for_phase_2=False,
+            )
+            try:
+                review_result = LiveRoundRunner(
+                    root,
+                    config,
+                    reviewer_client=reviewer_client,
+                    editor_client=editor_client,
+                    timeout_seconds=timeout_seconds,
+                ).run_review_only_round(round_number=round_number, profile=profile, phase="phase_1", overwrite=False)
+            except ValueError:
+                artifact_error = config.rounds_dir / "artifact_validation_error.json"
+                if artifact_error.exists():
+                    packet = _read_json(artifact_error)
+                    terminal_state = str(packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+                    _write_phase1_state(
+                        config=config,
+                        current_round=round_number,
+                        active_profile=profile,
+                        current_draft_hash=current_hash,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        seen_draft_hashes=seen_hashes,
+                        terminal_state=terminal_state,
+                        ready_for_phase_2=False,
+                    )
+                    return ResumeResult(True, terminal_state, round_number, "phase_1", profile, current_hash, last_accepted_draft_hash, False)
+                raise
+            reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
+            blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            major_count = _reviewer_count(reviewer_feedback, "major")
+            state = profile_state[profile]
+            state["rounds_used"] = int(state["rounds_used"]) + 1
+            state["clean"] = blocker_count == 0 and major_count == 0
+            state["verified_draft_hash"] = review_result.draft_after_hash
+            state["exhausted"] = not state["clean"] and int(state["rounds_used"]) >= int(state["round_budget"])
+            state["residual_status"] = "exhausted_with_residuals" if state["exhausted"] else None
+            last_reviewer_findings = _last_reviewer_findings(
+                round_number=round_number,
+                profile=profile,
+                reviewer_feedback=reviewer_feedback,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+            for issue in reviewer_feedback.get("feedback", []):
+                merged_feedback.append({**issue, "feedback_id": f"{profile}:{issue.get('feedback_id')}"})
+            _append_continue_history(
+                config.history_path,
+                round_number=round_number,
+                profile=profile,
+                before_hash=review_result.draft_before_hash,
+                after_hash=review_result.draft_after_hash,
+                accepted=not reviewer_feedback.get("feedback"),
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+
+        if all(bool(profile_state[profile]["clean"]) for profile in profiles) and not merged_feedback:
+            current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+            last_accepted_draft_hash = current_hash
+            _write_phase1_state(
+                config=config,
+                current_round=round_number,
+                active_profile=None,
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state="PHASE_1_STABLE",
+                ready_for_phase_2=True,
+            )
+            write_decision_register(
+                rounds_dir=config.rounds_dir,
+                mode=config.decision_points.mode,
+                terminal_state="PHASE_1_STABLE",
+            )
+            update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
+            return ResumeResult(True, "PHASE_1_STABLE", round_number, "phase_1", "operability", current_hash, last_accepted_draft_hash, True)
+
+        if merged_feedback:
+            round_number += 1
+            editor_profile = "vertical"
+            draft_before = config.spec_path.read_text(encoding="utf-8")
+            draft_before_hash = draft_hash(draft_before)
+            synthetic_feedback = {
+                "round_number": round_number,
+                "profile": editor_profile,
+                "reviewer": {"name": "whetstone-vertical-merge", "version": "1.0", "model": "orchestrator"},
+                "draft_hash": draft_before_hash,
+                "feedback": merged_feedback,
+            }
+            round_dir = LiveRoundRunner(root, config).store.begin_round(round_number, overwrite=False)
+            round_dir.joinpath("draft_before.md").write_text(draft_before, encoding="utf-8")
+            round_dir.joinpath("draft_after.md").write_text(draft_before, encoding="utf-8")
+            round_dir.joinpath("profile_used.yaml").write_text(json.dumps({"profile": editor_profile}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            result = LiveRoundRunner(
+                root,
+                config,
+                reviewer_client=reviewer_client,
+                editor_client=editor_client,
+                timeout_seconds=timeout_seconds,
+            ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+            editor_summary = _read_json(round_dir / "editor_summary.json")
+            last_unresolved = _unresolved_issues(synthetic_feedback, editor_summary)
+            if result.accepted:
+                last_accepted_draft_hash = result.draft_after_hash
+            current_hash = result.draft_after_hash
+            seen_hashes.append(result.draft_after_hash)
+            _append_continue_history(
+                config.history_path,
+                round_number=round_number,
+                profile=editor_profile,
+                before_hash=result.draft_before_hash,
+                after_hash=result.draft_after_hash,
+                accepted=result.accepted,
+                blocker_count=_count(last_unresolved, "blocker"),
+                major_count=_count(last_unresolved, "major"),
+            )
+            maybe_write_contract_surface_report(
+                rounds_dir=config.rounds_dir,
+                current_round=round_number,
+                profile=editor_profile,
+                policy=_contract_surface_policy(config),
+            )
+            update_contract_surface_lifecycle(rounds_dir=config.rounds_dir)
+            _write_phase1_state(
+                config=config,
+                current_round=round_number,
+                active_profile=editor_profile,
+                current_draft_hash=result.draft_after_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state=None,
+                ready_for_phase_2=False,
+            )
+
+    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+    terminal_state = "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(config) else "TARGET_NOT_REACHED"
+    profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
+    if _vertical_closeout_eligible(
+        current_hash=current_hash,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        last_unresolved=last_unresolved,
+        profile_status=profile_status,
+    ):
+        closeout_result = _run_vertical_closeout_check(
+            root,
+            config,
+            start_round=round_number + 1,
+            profile_state=profile_state,
+            seen_hashes=seen_hashes,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        )
+        if closeout_result["terminal_state"] == "PHASE_1_STABLE":
+            _write_phase1_state(
+                config=config,
+                current_round=closeout_result["round_number"],
+                active_profile=None,
+                current_draft_hash=closeout_result["current_hash"],
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state="PHASE_1_STABLE",
+                ready_for_phase_2=True,
+            )
+            write_decision_register(
+                rounds_dir=config.rounds_dir,
+                mode=config.decision_points.mode,
+                terminal_state="PHASE_1_STABLE",
+            )
+            update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
+            return ResumeResult(
+                True,
+                "PHASE_1_STABLE",
+                closeout_result["round_number"],
+                "phase_1",
+                "operability",
+                closeout_result["current_hash"],
+                last_accepted_draft_hash,
+                True,
+            )
+        if closeout_result["terminal_state"] is not None:
+            return ResumeResult(
+                True,
+                closeout_result["terminal_state"],
+                closeout_result["round_number"],
+                "phase_1",
+                "vertical",
+                closeout_result["current_hash"],
+                last_accepted_draft_hash,
+                False,
+            )
+        round_number = closeout_result["round_number"]
+        current_hash = closeout_result["current_hash"]
+        profile_status = closeout_result["profile_status"]
+        last_unresolved = closeout_result["last_unresolved"]
+        last_reviewer_findings = closeout_result["last_reviewer_findings"]
+    ReportWriter(root).write_technical_failure_report(
+        round_number=round_number,
+        final_draft_path="./spec.md",
+        unresolved_blockers=[_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"],
+        unresolved_major_issues=[_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"],
+        unresolved_conflicts=[],
+        unresolved_oscillation=None,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        exit_reason="Phase 1 vertical review mode exhausted before reviewer-verified stable draft during resume continuation",
+        recommendation="manual_review_required",
+        profile_status=profile_status,
+        last_reviewer_findings=last_reviewer_findings,
+        terminal_state=terminal_state,
+    )
+    _write_phase1_state(
+        config=config,
+        current_round=round_number,
+        active_profile=None,
+        current_draft_hash=current_hash,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        seen_draft_hashes=seen_hashes,
+        terminal_state=terminal_state,
+        ready_for_phase_2=False,
+    )
+    write_decision_register(
+        rounds_dir=config.rounds_dir,
+        mode=config.decision_points.mode,
+        terminal_state=terminal_state,
+    )
+    update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
+    return ResumeResult(True, terminal_state, round_number, "phase_1", "vertical", current_hash, last_accepted_draft_hash, False)
+
+
+def _run_vertical_closeout_check(
+    root: Path,
+    config: OrchestratorConfig,
+    *,
+    start_round: int,
+    profile_state: dict[str, dict[str, Any]],
+    seen_hashes: list[str],
+    last_accepted_draft_hash: str | None,
+    reviewer_client: ReviewerClient | None,
+    editor_client: EditorClient | None,
+    timeout_seconds: int | None,
+) -> dict[str, Any]:
+    profiles = ["structural_integrity", "determinism", "operability"]
+    round_number = start_round - 1
+    closeout_unresolved: list[dict[str, Any]] = []
+    last_reviewer_findings: dict[str, Any] | None = None
+    for profile in profiles:
+        current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+        round_number += 1
+        _write_phase1_state(
+            config=config,
+            current_round=round_number,
+            active_profile=profile,
+            current_draft_hash=current_hash,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            seen_draft_hashes=seen_hashes,
+            terminal_state=None,
+            ready_for_phase_2=False,
+        )
+        try:
+            review_result = LiveRoundRunner(
+                root,
+                config,
+                reviewer_client=reviewer_client,
+                editor_client=editor_client,
+                timeout_seconds=timeout_seconds,
+            ).run_review_only_round(round_number=round_number, profile=profile, phase="phase_1", overwrite=False)
+        except ValueError:
+            artifact_error = config.rounds_dir / "artifact_validation_error.json"
+            if artifact_error.exists():
+                packet = _read_json(artifact_error)
+                terminal_state = str(packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+                _write_phase1_state(
+                    config=config,
+                    current_round=round_number,
+                    active_profile=profile,
+                    current_draft_hash=current_hash,
+                    last_accepted_draft_hash=last_accepted_draft_hash,
+                    seen_draft_hashes=seen_hashes,
+                    terminal_state=terminal_state,
+                    ready_for_phase_2=False,
+                )
+                return {
+                    "terminal_state": terminal_state,
+                    "round_number": round_number,
+                    "current_hash": current_hash,
+                    "profile_status": _vertical_profile_status(profile_state, current_draft_hash=current_hash),
+                    "last_unresolved": closeout_unresolved,
+                    "last_reviewer_findings": last_reviewer_findings,
+                }
+            raise
+        reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
+        editor_summary = _read_json(review_result.round_dir / "editor_summary.json")
+        unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
+        closeout_unresolved.extend(unresolved)
+        blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+        major_count = _reviewer_count(reviewer_feedback, "major")
+        state = profile_state[profile]
+        state["rounds_used"] = int(state["rounds_used"]) + 1
+        state["clean"] = blocker_count == 0 and major_count == 0
+        state["verified_draft_hash"] = review_result.draft_after_hash
+        state["exhausted"] = not state["clean"]
+        state["residual_status"] = "exhausted_with_residuals" if state["exhausted"] else None
+        last_reviewer_findings = _last_reviewer_findings(
+            round_number=round_number,
+            profile=profile,
+            reviewer_feedback=reviewer_feedback,
+            blocker_count=blocker_count,
+            major_count=major_count,
+        )
+        _append_continue_history(
+            config.history_path,
+            round_number=round_number,
+            profile=profile,
+            before_hash=review_result.draft_before_hash,
+            after_hash=review_result.draft_after_hash,
+            accepted=blocker_count == 0 and major_count == 0,
+            blocker_count=blocker_count,
+            major_count=major_count,
+        )
+    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+    profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
+    terminal_state = None
+    if (
+        last_accepted_draft_hash == current_hash
+        and not profile_status["unverified_profiles"]
+        and not profile_status["exhausted_profiles"]
+        and not _has_serious_issues(closeout_unresolved)
+    ):
+        terminal_state = "PHASE_1_STABLE"
+    return {
+        "terminal_state": terminal_state,
+        "round_number": round_number,
+        "current_hash": current_hash,
+        "profile_status": profile_status,
+        "last_unresolved": closeout_unresolved,
+        "last_reviewer_findings": last_reviewer_findings,
+    }
+
+
 def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool) -> dict[str, Any]:
     state_path = config.rounds_dir / "run_state.json"
     error_path = config.rounds_dir / "artifact_validation_error.json"
@@ -520,6 +1001,159 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
     }
 
 
+def _validated_budget_extension_context(config: OrchestratorConfig, *, extend_review_budget: int) -> dict[str, Any]:
+    if extend_review_budget < 1:
+        raise ValueError("--extend-review-budget must be greater than or equal to 1")
+    state_path = config.rounds_dir / "run_state.json"
+    if not state_path.exists():
+        raise ValueError("budget-extension resume requires rounds/run_state.json")
+    state = _read_json(state_path)
+    terminal_state = str(state.get("terminal_state") or "")
+    if terminal_state not in BUDGET_EXTENSION_TERMINAL_STATES:
+        raise ValueError(
+            "budget-extension resume supports only TARGET_NOT_REACHED or "
+            "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"
+        )
+    if state.get("phase") != "phase_1":
+        raise ValueError("budget-extension resume currently supports only Phase 1 runs")
+    if config.review_mode not in {"horizontal", "vertical"}:
+        raise ValueError("budget-extension resume currently supports only horizontal or vertical review mode")
+    current_round = int(state.get("current_round") or 0)
+    if current_round < 1:
+        raise ValueError("budget-extension resume requires at least one completed round")
+    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+    expected_hash = str(state.get("current_draft_hash") or "")
+    if current_hash != expected_hash:
+        raise ValueError(f"current spec hash mismatch: expected {expected_hash}, got {current_hash}")
+    if config.review_mode == "vertical":
+        _reconstruct_vertical_phase1_state(config, through_round=current_round)
+    else:
+        _reconstruct_phase1_state(config, through_round=current_round)
+    return state
+
+
+def _empty_vertical_profile_state(budgets: dict[str, int]) -> dict[str, dict[str, Any]]:
+    return {
+        profile: {
+            "profile": profile,
+            "clean": False,
+            "rounds_used": 0,
+            "round_budget": budgets[profile],
+            "exhausted": False,
+            "residual_status": None,
+            "active": False,
+            "verified_draft_hash": None,
+        }
+        for profile in ("structural_integrity", "determinism", "operability")
+    }
+
+
+def _reconstruct_vertical_phase1_state(config: OrchestratorConfig, *, through_round: int) -> dict[str, Any]:
+    budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    profile_state = _empty_vertical_profile_state(budgets)
+    seen_hashes: list[str] = []
+    last_accepted_draft_hash: str | None = None
+    last_unresolved: list[dict[str, Any]] = []
+    last_reviewer_findings: dict[str, Any] | None = None
+    if through_round < 1:
+        seen_hashes.append(draft_hash(config.spec_path.read_text(encoding="utf-8")))
+        return {
+            "profile_state": profile_state,
+            "last_accepted_draft_hash": last_accepted_draft_hash,
+            "seen_hashes": seen_hashes,
+            "last_unresolved": last_unresolved,
+            "last_reviewer_findings": last_reviewer_findings,
+        }
+    for round_number in range(1, through_round + 1):
+        round_dir = config.rounds_dir / f"round-{round_number}"
+        reviewer_feedback = _read_json(round_dir / "reviewer_feedback.json")
+        editor_summary = _read_json(round_dir / "editor_summary.json")
+        draft_before_hash = draft_hash(round_dir.joinpath("draft_before.md").read_text(encoding="utf-8"))
+        draft_after_hash = draft_hash(round_dir.joinpath("draft_after.md").read_text(encoding="utf-8"))
+        if round_number == 1:
+            seen_hashes.append(draft_before_hash)
+        profile = str(reviewer_feedback["profile"])
+        if profile in profile_state:
+            state = profile_state[profile]
+            blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            major_count = _reviewer_count(reviewer_feedback, "major")
+            state["rounds_used"] = int(state["rounds_used"]) + 1
+            state["clean"] = blocker_count == 0 and major_count == 0
+            state["verified_draft_hash"] = draft_after_hash
+            state["exhausted"] = not state["clean"] and int(state["rounds_used"]) >= int(state["round_budget"])
+            state["residual_status"] = "exhausted_with_residuals" if state["exhausted"] else None
+            last_reviewer_findings = _last_reviewer_findings(
+                round_number=round_number,
+                profile=profile,
+                reviewer_feedback=reviewer_feedback,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+        elif profile == "vertical":
+            last_unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
+            if not any(issue.get("normalized_severity") in {"blocker", "major"} for issue in last_unresolved):
+                last_accepted_draft_hash = draft_after_hash
+            seen_hashes.append(draft_after_hash)
+        else:
+            raise ValueError(f"round-{round_number} has unsupported vertical resume profile {profile!r}")
+    return {
+        "profile_state": profile_state,
+        "last_accepted_draft_hash": last_accepted_draft_hash,
+        "seen_hashes": seen_hashes,
+        "last_unresolved": last_unresolved,
+        "last_reviewer_findings": last_reviewer_findings,
+    }
+
+
+def _extend_vertical_profile_state(
+    profile_state: dict[str, dict[str, Any]],
+    extended_budgets: dict[str, int],
+) -> dict[str, dict[str, Any]]:
+    for profile, state in profile_state.items():
+        state["round_budget"] = extended_budgets[profile]
+        if bool(state["clean"]):
+            state["exhausted"] = False
+            state["residual_status"] = None
+        else:
+            state["exhausted"] = int(state["rounds_used"]) >= int(state["round_budget"])
+            state["residual_status"] = "exhausted_with_residuals" if state["exhausted"] else None
+    return profile_state
+
+
+def _extended_vertical_budgets(
+    original_budgets: dict[str, int],
+    profile_state: dict[str, dict[str, Any]],
+    *,
+    extend_review_budget: int,
+) -> dict[str, int]:
+    return {
+        profile: max(original_budgets[profile], int(profile_state[profile]["rounds_used"])) + extend_review_budget
+        for profile in original_budgets
+    }
+
+
+def _extended_horizontal_budgets(
+    original_budgets: dict[str, int],
+    scheduler: Any,
+    *,
+    extend_review_budget: int,
+) -> dict[str, int]:
+    return {
+        step.profile: max(original_budgets[step.profile], int(state.rounds_used)) + extend_review_budget
+        for step, state in zip(scheduler.steps, scheduler.states)
+    }
+
+
+def _extend_phase1_scheduler_budgets(scheduler: Any, extended_budgets: dict[str, int]) -> None:
+    for index, step in enumerate(scheduler.steps):
+        scheduler.steps[index] = replace(step, round_budget=extended_budgets[step.profile])
+    for index, (step, state) in enumerate(zip(scheduler.steps, scheduler.states)):
+        if not state.clean and state.rounds_used < step.effective_round_budget:
+            scheduler.index = index
+            return
+    scheduler.index = len(scheduler.steps)
+
+
 def _reconstruct_phase1_state(config: OrchestratorConfig, *, through_round: int) -> tuple[Any, str | None, list[str]]:
     scheduler = default_phase_1_scheduler(config.review_profile_budgets)
     seen_hashes: list[str] = []
@@ -577,7 +1211,13 @@ def _write_phase1_state(
     review_round_budget = default_phase_1_scheduler(config.review_profile_budgets).total_round_budget()
     convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
     review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    if config.review_mode == "vertical" and review_profile_budgets:
+        review_round_budget += max(review_profile_budgets.values())
     convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
+    existing_state = _read_json_object(config.rounds_dir / "run_state.json")
+    budget_extensions = []
+    if existing_state and isinstance(existing_state.get("budget_extensions"), list):
+        budget_extensions = existing_state["budget_extensions"]
     packet = {
         "current_round": current_round,
         "current_absolute_round": current_round,
@@ -586,6 +1226,7 @@ def _write_phase1_state(
         "phase_1_rounds_completed": current_round,
         "phase_2_rounds_completed": 0,
         "review_max_rounds": config.review_max_rounds,
+        "review_mode": config.review_mode,
         "review_budget_exhaustion_policy": config.review_budget_exhaustion_policy,
         "configured_review_profile_budgets": config.review_profile_budgets,
         "review_profile_budgets": review_profile_budgets,
@@ -607,10 +1248,43 @@ def _write_phase1_state(
         "terminal_state": terminal_state,
         "ready_for_phase_2": ready_for_phase_2,
         "telemetry_totals": run_telemetry_totals(config.rounds_dir),
-        "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT",
+        "budget_extensions": budget_extensions,
+        "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT" or terminal_state in BUDGET_EXTENSION_TERMINAL_STATES,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     (config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_budget_extension_event(
+    *,
+    config: OrchestratorConfig,
+    previous_state: dict[str, Any],
+    original_budgets: dict[str, int],
+    extended_budgets: dict[str, int],
+    extension_rounds: int,
+) -> None:
+    state_path = config.rounds_dir / "run_state.json"
+    state = _read_json_object(state_path) or previous_state
+    events = state.get("budget_extensions")
+    if not isinstance(events, list):
+        events = []
+    events.append(
+        {
+            "event_id": f"budget_extension_{len(events) + 1:03d}",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "phase": "phase_1",
+            "previous_terminal_state": previous_state.get("terminal_state"),
+            "previous_current_round": previous_state.get("current_round"),
+            "previous_review_profile_budgets": original_budgets,
+            "new_review_profile_budgets": extended_budgets,
+            "added_rounds_per_profile": extension_rounds,
+            "reason": "operator_requested_resume_budget_extension",
+        }
+    )
+    state["budget_extensions"] = events
+    state["review_profile_budgets"] = extended_budgets
+    state["effective_run_config"] = effective_run_config(config)
+    state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _append_resume_history(
@@ -662,6 +1336,13 @@ def _next_attempt_number(error: dict[str, Any]) -> int:
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _read_json_object(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, dict) else None
 
 
 def _count(issues: list[dict[str, Any]], severity: str) -> int:
@@ -738,6 +1419,40 @@ def _last_reviewer_findings(
     }
 
 
+def _vertical_profile_status(
+    profile_state: dict[str, dict[str, Any]],
+    *,
+    current_draft_hash: str | None = None,
+) -> dict[str, object]:
+    profiles = [profile_state[key] for key in ("structural_integrity", "determinism", "operability")]
+    unverified_profiles = [
+        item["profile"]
+        for item in profiles
+        if (
+            not item["clean"]
+            or (
+                current_draft_hash is not None
+                and item.get("verified_draft_hash") != current_draft_hash
+            )
+        )
+    ]
+    report_profiles = [
+        {key: value for key, value in item.items() if key != "verified_draft_hash"}
+        for item in profiles
+    ]
+    return {
+        "profiles": report_profiles,
+        "unverified_profiles": unverified_profiles,
+        "exhausted_profiles": [item["profile"] for item in profiles if item["exhausted"]],
+        "profiles_remaining": [
+            item["profile"]
+            for item in profiles
+            if not item["clean"] and not item["exhausted"] and int(item["rounds_used"]) < int(item["round_budget"])
+        ],
+        "total_round_budget": sum(int(item["round_budget"]) for item in profiles),
+    }
+
+
 def _contract_surface_policy(config: OrchestratorConfig) -> ContractSurfacePolicy:
     return ContractSurfacePolicy(
         enabled=config.contract_surface.enabled,
@@ -751,3 +1466,21 @@ def _contract_surface_policy(config: OrchestratorConfig) -> ContractSurfacePolic
 
 def _soft_budget_policy(config: OrchestratorConfig) -> bool:
     return config.review_budget_exhaustion_policy == "soft"
+
+
+def _vertical_closeout_eligible(
+    *,
+    current_hash: str,
+    last_accepted_draft_hash: str | None,
+    last_unresolved: list[dict[str, Any]],
+    profile_status: dict[str, Any],
+) -> bool:
+    return (
+        last_accepted_draft_hash == current_hash
+        and bool(profile_status.get("unverified_profiles"))
+        and not _has_serious_issues(last_unresolved)
+    )
+
+
+def _has_serious_issues(issues: list[dict[str, Any]]) -> bool:
+    return any(issue.get("normalized_severity") in {"blocker", "major"} for issue in issues)

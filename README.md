@@ -47,6 +47,13 @@ PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --dry-run --co
 PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --continue
 ```
 
+Append rounds after Phase 1 budget exhaustion:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --extend-review-budget 3 --dry-run
+PYTHONPATH=src python3 -m whetstone.cli resume --root "$RUN_ROOT" --extend-review-budget 3
+```
+
 Run Phase 2:
 
 ```bash

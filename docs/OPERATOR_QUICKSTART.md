@@ -164,6 +164,10 @@ review:
 
 Vertical mode is usually the better economy choice for MVP and medium-size specs. It preserves separate Reviewer artifacts per profile, but the Editor sees the full cross-profile problem set before changing the draft.
 
+If a vertical run ends immediately after a consolidated Editor mutation, Whetstone may report the draft as accepted but still unverified. That means the edit resolved the known blocker/major feedback, but the revised draft still needs another clean profile-review cycle before Phase 2.
+
+When this happens at the end of the budget, Whetstone can run one verification-only closeout cycle. It calls Reviewers only, does not mutate the draft, and either marks Phase 1 stable or stops with the remaining blocker/major verification debt.
+
 ## Budget Exhaustion Policy
 
 Use the default `hard` policy when you want Phase 1 to stop as soon as a required profile cannot reach clean verification within its budget:
@@ -325,7 +329,26 @@ PYTHONPATH=src python3 -m whetstone.cli resume \
   --continue
 ```
 
-Current resume support is intentionally narrow. It supports Phase 1 Editor timeouts after validated Reviewer feedback. It does not resume arbitrary artifact validation failures, Reviewer timeouts, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
+If status says Phase 1 ended with `TARGET_NOT_REACHED` or `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS` because profile budgets were exhausted, you can append rounds to the same run root instead of overwriting it:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli resume \
+  --root "$RUN_ROOT" \
+  --extend-review-budget 3 \
+  --dry-run
+```
+
+If the dry-run is resumable, run the same command without `--dry-run`:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli resume \
+  --root "$RUN_ROOT" \
+  --extend-review-budget 3
+```
+
+Budget-extension resume appends new `round-N/` directories, preserves prior artifacts, and records the extension in `rounds/run_state.json` under `budget_extensions`. In horizontal mode it appends profile rounds. In vertical mode it appends additional vertical review cycles: profile review passes over the same draft, followed by one consolidated Editor revision when feedback remains.
+
+Current resume support is intentionally narrow. It supports Phase 1 Editor timeouts after validated Reviewer feedback and explicit Phase 1 budget-extension continuation. It does not resume arbitrary artifact validation failures, Reviewer timeouts, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
 
 ## Run Phase 2
 

@@ -17,7 +17,12 @@ from whetstone.live import LiveRoundRunner
 from whetstone.live_phase1 import LivePhase1Runner
 from whetstone.live_phase2 import LivePhase2Runner
 from whetstone.prompts import render_editor_prompt, render_reviewer_prompt
-from whetstone.resume import plan_resume_halted_run, resume_halted_run
+from whetstone.resume import (
+    plan_budget_extension_resume,
+    plan_resume_halted_run,
+    resume_budget_exhausted_run,
+    resume_halted_run,
+)
 from whetstone.runner import FixtureRunner
 from whetstone.run_state import apply_effective_run_config
 from whetstone.rubrics import BUILTIN_RUBRIC_FILES, build_rubric_manifest
@@ -215,12 +220,14 @@ def main(argv: list[str] | None = None) -> int:
     resume = subparsers.add_parser(
         "resume",
         help="resume a supported halted live run",
-        description="Resume a supported Phase 1 Editor timeout after validated Reviewer feedback.",
+        description="Resume a supported halted Phase 1 run.",
         epilog=(
             "Examples:\n"
             "  whetstone resume --root \"$RUN_ROOT\" --dry-run --continue\n"
             "  whetstone resume --root \"$RUN_ROOT\" --editor-timeout-seconds 1800 --continue\n\n"
-            "Current support is intentionally narrow: Phase 1 Editor timeouts only."
+            "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3 --dry-run\n"
+            "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3\n\n"
+            "Supported paths: Phase 1 Editor timeouts, or explicit Phase 1 budget extension."
         ),
         formatter_class=FORMATTER,
     )
@@ -230,6 +237,11 @@ def main(argv: list[str] | None = None) -> int:
     resume.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer timeout for continued rounds")
     resume.add_argument("--editor-timeout-seconds", type=int, help="override editor timeout for resume and continued rounds")
     resume.add_argument("--continue", dest="continue_run", action="store_true", help="continue Phase 1 after recovering the failed round")
+    resume.add_argument(
+        "--extend-review-budget",
+        type=int,
+        help="append Phase 1 rounds after budget exhaustion by adding N rounds to each review profile budget",
+    )
     resume.add_argument("--dry-run", action="store_true", help="validate resume eligibility without invoking the editor")
 
     status = subparsers.add_parser(
@@ -519,6 +531,54 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(root / args.config)
         config = _apply_resume_run_state_config(config)
         config = _apply_timeout_overrides(config, args=args)
+        if args.extend_review_budget is not None:
+            if args.dry_run:
+                plan = plan_budget_extension_resume(root, config, extend_review_budget=args.extend_review_budget)
+                print(
+                    json.dumps(
+                        {
+                            "resumable": plan.resumable,
+                            "terminal_state": plan.terminal_state,
+                            "failure_type": plan.failure_type,
+                            "phase": plan.phase,
+                            "client_role": plan.client_role,
+                            "round_number": plan.round_number,
+                            "profile": plan.profile,
+                            "current_draft_hash": plan.current_draft_hash,
+                            "expected_draft_hash": plan.expected_draft_hash,
+                            "next_attempt_number": plan.next_attempt_number,
+                            "continue": plan.continue_run,
+                            "next_round_number": plan.next_round_number,
+                            "extend_review_budget": args.extend_review_budget,
+                            "reason": plan.reason,
+                        },
+                        indent=2,
+                        sort_keys=True,
+                    )
+                )
+                return 0
+            result = resume_budget_exhausted_run(
+                root,
+                config,
+                extend_review_budget=args.extend_review_budget,
+                timeout_seconds=args.timeout_seconds,
+            )
+            print(
+                json.dumps(
+                    {
+                        "resumed": result.resumed,
+                        "terminal_state": result.terminal_state,
+                        "round_number": result.round_number,
+                        "phase": result.phase,
+                        "profile": result.profile,
+                        "current_draft_hash": result.current_draft_hash,
+                        "last_accepted_draft_hash": result.last_accepted_draft_hash,
+                        "ready_for_phase_2": result.ready_for_phase_2,
+                        "extend_review_budget": args.extend_review_budget,
+                    }
+                )
+            )
+            return 0
         if args.dry_run:
             plan = plan_resume_halted_run(root, config, continue_run=args.continue_run)
             print(

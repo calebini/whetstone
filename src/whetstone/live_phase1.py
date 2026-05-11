@@ -377,7 +377,16 @@ class LivePhase1Runner:
         budgets = resolved_phase_1_profile_budgets(self.config.review_profile_budgets)
         max_cycles = max(budgets.values())
         profile_state = {
-            profile: {"profile": profile, "clean": False, "rounds_used": 0, "round_budget": budgets[profile], "exhausted": False, "residual_status": None, "active": False}
+            profile: {
+                "profile": profile,
+                "clean": False,
+                "rounds_used": 0,
+                "round_budget": budgets[profile],
+                "exhausted": False,
+                "residual_status": None,
+                "active": False,
+                "verified_draft_hash": None,
+            }
             for profile in profiles
         }
         seen_hashes: list[str] = [draft_hash(self.config.spec_path.read_text(encoding="utf-8"))]
@@ -455,6 +464,7 @@ class LivePhase1Runner:
                 major_count = _reviewer_count(reviewer_feedback, "major")
                 profile_state[profile]["rounds_used"] = int(profile_state[profile]["rounds_used"]) + 1
                 profile_state[profile]["clean"] = blocker_count == 0 and major_count == 0
+                profile_state[profile]["verified_draft_hash"] = review_result.draft_after_hash
                 profile_state[profile]["exhausted"] = (
                     not profile_state[profile]["clean"]
                     and profile_state[profile]["rounds_used"] >= profile_state[profile]["round_budget"]
@@ -570,7 +580,41 @@ class LivePhase1Runner:
                 )
 
         current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
-        profile_status = _vertical_profile_status(profile_state)
+        profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
+        if _vertical_closeout_eligible(
+            current_hash=current_hash,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            last_unresolved=last_unresolved,
+            profile_status=profile_status,
+        ):
+            closeout_result = self._run_vertical_closeout_check(
+                start_round=round_number + 1,
+                profile_state=profile_state,
+                seen_hashes=seen_hashes,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                overwrite=overwrite,
+            )
+            if closeout_result["terminal_state"] == "PHASE_1_STABLE":
+                return self._complete(
+                    round_number=closeout_result["round_number"],
+                    current_draft_hash=closeout_result["current_hash"],
+                    last_accepted_draft_hash=closeout_result["last_accepted_draft_hash"],
+                    seen_draft_hashes=seen_hashes,
+                )
+            if closeout_result["terminal_state"] is not None:
+                return LivePhase1Result(
+                    closeout_result["terminal_state"],
+                    closeout_result["round_number"],
+                    closeout_result["current_hash"],
+                    last_accepted_draft_hash,
+                    False,
+                    self.config.rounds_dir / "artifact_validation_error.json",
+                )
+            round_number = closeout_result["round_number"]
+            current_hash = closeout_result["current_hash"]
+            profile_status = closeout_result["profile_status"]
+            last_unresolved = closeout_result["last_unresolved"]
+            last_reviewer_findings = closeout_result["last_reviewer_findings"]
         blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
         majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
         report_path = self.report_writer.write_technical_failure_report(
@@ -602,6 +646,117 @@ class LivePhase1Runner:
             terminal_state="TARGET_NOT_REACHED",
         )
         return LivePhase1Result("TARGET_NOT_REACHED", round_number, current_hash, last_accepted_draft_hash, False, report_path)
+
+    def _run_vertical_closeout_check(
+        self,
+        *,
+        start_round: int,
+        profile_state: dict[str, dict[str, Any]],
+        seen_hashes: list[str],
+        last_accepted_draft_hash: str | None,
+        overwrite: bool,
+    ) -> dict[str, Any]:
+        profiles = ["structural_integrity", "determinism", "operability"]
+        round_number = start_round - 1
+        closeout_unresolved: list[dict[str, Any]] = []
+        last_reviewer_findings: dict[str, Any] | None = None
+        for profile in profiles:
+            current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+            round_number += 1
+            self._write_state(
+                current_round=round_number,
+                active_profile=profile,
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state=None,
+                ready_for_phase_2=False,
+            )
+            try:
+                review_result = LiveRoundRunner(
+                    self.root,
+                    self.config,
+                    reviewer_client=self.reviewer_client,
+                    editor_client=self.editor_client,
+                    timeout_seconds=self.timeout_seconds,
+                ).run_review_only_round(
+                    round_number=round_number,
+                    profile=profile,
+                    phase="phase_1",
+                    overwrite=overwrite,
+                )
+            except ValueError:
+                artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
+                if artifact_error.exists():
+                    error_packet = _read_json(artifact_error)
+                    terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                    current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                    self._write_state(
+                        current_round=round_number,
+                        active_profile=profile,
+                        current_draft_hash=current_hash,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        seen_draft_hashes=seen_hashes,
+                        terminal_state=terminal_state,
+                        ready_for_phase_2=False,
+                    )
+                    return {
+                        "terminal_state": terminal_state,
+                        "round_number": round_number,
+                        "current_hash": current_hash,
+                        "last_accepted_draft_hash": last_accepted_draft_hash,
+                        "profile_status": _vertical_profile_status(profile_state, current_draft_hash=current_hash),
+                        "last_unresolved": closeout_unresolved,
+                        "last_reviewer_findings": last_reviewer_findings,
+                    }
+                raise
+            reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
+            editor_summary = _read_json(review_result.round_dir / "editor_summary.json")
+            unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
+            closeout_unresolved.extend(unresolved)
+            blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            major_count = _reviewer_count(reviewer_feedback, "major")
+            state = profile_state[profile]
+            state["rounds_used"] = int(state["rounds_used"]) + 1
+            state["clean"] = blocker_count == 0 and major_count == 0
+            state["verified_draft_hash"] = review_result.draft_after_hash
+            state["exhausted"] = not state["clean"]
+            state["residual_status"] = "exhausted_with_residuals" if state["exhausted"] else None
+            last_reviewer_findings = _last_reviewer_findings(
+                round_number=round_number,
+                profile=profile,
+                reviewer_feedback=reviewer_feedback,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+            self._append_history(
+                round_number=round_number,
+                profile=profile,
+                before_hash=review_result.draft_before_hash,
+                after_hash=review_result.draft_after_hash,
+                accepted=blocker_count == 0 and major_count == 0,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
+        terminal_state = None
+        if (
+            last_accepted_draft_hash == current_hash
+            and not profile_status["unverified_profiles"]
+            and not profile_status["exhausted_profiles"]
+            and not _has_serious_issues(closeout_unresolved)
+        ):
+            terminal_state = "PHASE_1_STABLE"
+        return {
+            "terminal_state": terminal_state,
+            "round_number": round_number,
+            "current_hash": current_hash,
+            "last_accepted_draft_hash": last_accepted_draft_hash,
+            "profile_status": profile_status,
+            "last_unresolved": closeout_unresolved,
+            "last_reviewer_findings": last_reviewer_findings,
+        }
 
     def _complete(
         self,
@@ -708,6 +863,11 @@ class LivePhase1Runner:
         if self.config.review_mode == "vertical" and review_profile_budgets:
             review_round_budget += max(review_profile_budgets.values())
         convergence_profile_budgets = resolved_phase_2_profile_budgets(self.config.convergence_profile_budgets)
+        previous_state = _read_json_object(self.config.rounds_dir / "run_state.json")
+        budget_extensions = []
+        if previous_state and isinstance(previous_state.get("budget_extensions"), list):
+            budget_extensions = previous_state["budget_extensions"]
+        budget_resumable_states = {"TARGET_NOT_REACHED", "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"}
         packet = {
             "current_round": current_round,
             "current_absolute_round": current_round,
@@ -739,7 +899,8 @@ class LivePhase1Runner:
             "terminal_state": terminal_state,
             "ready_for_phase_2": ready_for_phase_2,
             "telemetry_totals": run_telemetry_totals(self.config.rounds_dir),
-            "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT",
+            "budget_extensions": budget_extensions,
+            "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT" or terminal_state in budget_resumable_states,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -857,11 +1018,48 @@ def _soft_budget_policy(config: OrchestratorConfig) -> bool:
     return config.review_budget_exhaustion_policy == "soft"
 
 
-def _vertical_profile_status(profile_state: dict[str, dict[str, Any]]) -> dict[str, object]:
+def _vertical_closeout_eligible(
+    *,
+    current_hash: str,
+    last_accepted_draft_hash: str | None,
+    last_unresolved: list[dict[str, Any]],
+    profile_status: dict[str, Any],
+) -> bool:
+    return (
+        last_accepted_draft_hash == current_hash
+        and bool(profile_status.get("unverified_profiles"))
+        and not _has_serious_issues(last_unresolved)
+    )
+
+
+def _has_serious_issues(issues: list[dict[str, Any]]) -> bool:
+    return any(issue.get("normalized_severity") in {"blocker", "major"} for issue in issues)
+
+
+def _vertical_profile_status(
+    profile_state: dict[str, dict[str, Any]],
+    *,
+    current_draft_hash: str | None = None,
+) -> dict[str, object]:
     profiles = [profile_state[key] for key in ("structural_integrity", "determinism", "operability")]
+    unverified_profiles = [
+        item["profile"]
+        for item in profiles
+        if (
+            not item["clean"]
+            or (
+                current_draft_hash is not None
+                and item.get("verified_draft_hash") != current_draft_hash
+            )
+        )
+    ]
+    report_profiles = [
+        {key: value for key, value in item.items() if key != "verified_draft_hash"}
+        for item in profiles
+    ]
     return {
-        "profiles": profiles,
-        "unverified_profiles": [item["profile"] for item in profiles if not item["clean"]],
+        "profiles": report_profiles,
+        "unverified_profiles": unverified_profiles,
         "exhausted_profiles": [item["profile"] for item in profiles if item["exhausted"]],
         "profiles_remaining": [
             item["profile"]
@@ -870,6 +1068,13 @@ def _vertical_profile_status(profile_state: dict[str, dict[str, Any]]) -> dict[s
         ],
         "total_round_budget": sum(int(item["round_budget"]) for item in profiles),
     }
+
+
+def _read_json_object(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, dict) else None
 
 
 def _clear_top_level_run_artifacts(rounds_dir: Path) -> None:

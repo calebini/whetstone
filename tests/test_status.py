@@ -86,11 +86,50 @@ class StatusTests(unittest.TestCase):
             status = read_status(root=root, config=OrchestratorConfig.default(root))
 
             self.assertEqual(status["terminal_state"], "PHASE_1_STABLE")
+            self.assertEqual(status["current_draft_status"], "phase_1_stable")
             self.assertEqual(status["next_action"], "run_live_phase2")
             self.assertTrue(status["latest_round"]["complete"])
             self.assertEqual(status["decision_register"]["decision_count"], 2)
             self.assertEqual(status["decision_summary"]["decision_count"], 2)
             self.assertEqual(status["telemetry_totals"]["attempt_count"], 6)
+
+    def test_status_prefers_stable_run_state_over_stale_failure_report(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 71,
+                        "active_profile": None,
+                        "terminal_state": "PHASE_1_STABLE",
+                        "ready_for_phase_2": True,
+                        "current_draft_hash": "a" * 64,
+                        "last_accepted_draft_hash": "a" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("technical_failure_report.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS",
+                        "current_draft_status": "accepted_unverified_profiles",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+
+            self.assertEqual(status["terminal_state"], "PHASE_1_STABLE")
+            self.assertTrue(status["ready_for_phase_2"])
+            self.assertEqual(status["current_draft_status"], "phase_1_stable")
+            self.assertEqual(status["next_action"], "run_live_phase2")
 
     def test_status_prefers_round_telemetry_over_stale_run_state(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -214,6 +253,33 @@ class StatusTests(unittest.TestCase):
             self.assertIn("--continue", status["resume"]["continue_command"])
             self.assertIn("resume_command:", rendered)
             self.assertIn("resume_continue_command:", rendered)
+
+    def test_status_reports_budget_extension_resume_command(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 9,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "resumable": False,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertTrue(status["resumable"])
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertEqual(status["resume"]["failure_type"], "budget_exhausted")
+            self.assertIn("--extend-review-budget 3", status["resume"]["command"])
+            self.assertIn("resume_command:", rendered)
 
     def test_render_status_text_includes_operator_fields(self) -> None:
         status = {

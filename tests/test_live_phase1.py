@@ -271,6 +271,45 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertEqual(merged_feedback["profile"], "vertical")
             self.assertEqual(len(merged_feedback["feedback"]), 3)
 
+    def test_vertical_closeout_check_refuses_when_reviewer_finds_major(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), review_mode="vertical", profile_budget=1)
+            reviewer = ScriptedReviewerClient(root, [None, None, "minor", "major", None, None])
+
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=ResolvingMutatingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            self.assertFalse(result.ready_for_phase_2)
+            report = _read_json(root / "rounds" / "technical_failure_report.json")
+            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
+            self.assertFalse(report["ready_for_phase_2"])
+            self.assertEqual(report["last_accepted_draft_hash"], report["last_draft_hash"])
+            self.assertIn("structural_integrity", report["profile_status"]["unverified_profiles"])
+
+    def test_vertical_closeout_check_stabilizes_accepted_minor_only_editor_change(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), review_mode="vertical", profile_budget=1)
+            reviewer = ScriptedReviewerClient(root, [None, None, "minor", None, None, None])
+
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=ResolvingMutatingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            self.assertTrue(result.ready_for_phase_2)
+            self.assertEqual(result.round_number, 7)
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
+            self.assertTrue(state["ready_for_phase_2"])
+
     def test_focused_phase1_runs_one_profile_with_normal_state_artifacts(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_root(Path(tmp))

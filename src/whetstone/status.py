@@ -53,6 +53,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     decision_summary = _decision_summary(rounds_dir, root)
     terminal_report_path = _terminal_report_path(rounds_dir)
     terminal_report = _read_json_object(terminal_report_path) if terminal_report_path else None
+    current_draft_status = _current_draft_status(run_state, terminal_report)
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
     apply_back = _apply_back_status(root, rounds_dir, run_state)
     resume_status = _resume_status(root, rounds_dir, run_state)
@@ -93,10 +94,10 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "active_profile": run_state.get("active_profile") if run_state else None,
         "terminal_state": run_state.get("terminal_state") if run_state else None,
         "ready_for_phase_2": run_state.get("ready_for_phase_2") if run_state else False,
-        "current_draft_status": terminal_report.get("current_draft_status") if terminal_report else None,
+        "current_draft_status": current_draft_status,
         "current_draft_hash": run_state.get("current_draft_hash") if run_state else None,
         "last_accepted_draft_hash": run_state.get("last_accepted_draft_hash") if run_state else None,
-        "resumable": run_state.get("resumable") if run_state else False,
+        "resumable": bool(run_state.get("resumable")) or bool(resume_status.get("eligible")) if run_state else False,
         "resume": resume_status,
         "scope_contract": scope_status,
         "latest_round": latest_round,
@@ -255,6 +256,14 @@ def _terminal_report_path(rounds_dir: Path) -> Path | None:
     return None
 
 
+def _current_draft_status(run_state: dict[str, Any] | None, terminal_report: dict[str, Any] | None) -> str | None:
+    if run_state and run_state.get("terminal_state") == "PHASE_1_STABLE" and run_state.get("ready_for_phase_2") is True:
+        return "phase_1_stable"
+    if run_state and run_state.get("terminal_state") == "CONVERGED":
+        return "converged"
+    return terminal_report.get("current_draft_status") if terminal_report else None
+
+
 def _inferred_round_accounting(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, int | None]:
     current_round = (run_state or {}).get("current_round")
     if not isinstance(current_round, int):
@@ -330,7 +339,25 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
         "client_role": None,
         "failure_type": None,
     }
-    if not run_state or run_state.get("terminal_state") != "HALTED_CLIENT_TIMEOUT":
+    if not run_state:
+        return packet
+    terminal_state = run_state.get("terminal_state")
+    if terminal_state in {"TARGET_NOT_REACHED", "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"} and run_state.get("phase") == "phase_1":
+        command_root = shlex.quote(str(root))
+        packet.update(
+            {
+                "eligible": True,
+                "reason": "supported Phase 1 budget extension",
+                "round_number": run_state.get("current_round"),
+                "profile": run_state.get("active_profile"),
+                "client_role": "orchestrator",
+                "failure_type": "budget_exhausted",
+                "command": f"whetstone resume --root {command_root} --extend-review-budget 3",
+                "continue_command": f"whetstone resume --root {command_root} --extend-review-budget 3",
+            }
+        )
+        return packet
+    if terminal_state != "HALTED_CLIENT_TIMEOUT":
         return packet
     error = _read_json_object(rounds_dir / "artifact_validation_error.json")
     if error is None:

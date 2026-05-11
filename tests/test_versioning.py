@@ -54,6 +54,16 @@ class VersioningTests(unittest.TestCase):
         self.assertIn("Version: v1.0", promoted)
         self.assertIn("Status: Draft", promoted)
 
+    def test_promote_spec_text_skips_unversioned_specs(self) -> None:
+        draft = "# Parley HLD Architecture\n\nThis HLD intentionally has no numeric version anchor.\n"
+
+        promoted, before_version, after_version, changed = promote_spec_text_for_phase2(draft)
+
+        self.assertFalse(changed)
+        self.assertEqual(before_version, "")
+        self.assertEqual(after_version, "")
+        self.assertEqual(promoted, draft)
+
     def test_promote_spec_file_requires_stable_phase1_gate(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -106,6 +116,44 @@ class VersioningTests(unittest.TestCase):
             state = json.loads(rounds_dir.joinpath("run_state.json").read_text(encoding="utf-8"))
             self.assertEqual(state["current_draft_hash"], result.after_hash)
             self.assertEqual(state["last_accepted_draft_hash"], result.after_hash)
+
+    def test_promote_spec_file_allows_stable_unversioned_spec(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec_path = root / "spec.md"
+            history_path = root / "spec.history.md"
+            rounds_dir = root / "rounds"
+            rounds_dir.mkdir()
+            spec = "# Parley HLD Architecture\n\nUnversioned HLD.\n"
+            spec_path.write_text(spec, encoding="utf-8")
+            history_path.write_text("# History\n", encoding="utf-8")
+            before_hash = draft_hash(spec)
+            rounds_dir.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "PHASE_1_STABLE",
+                        "ready_for_phase_2": True,
+                        "current_draft_hash": before_hash,
+                        "last_accepted_draft_hash": before_hash,
+                        "seen_draft_hashes": [before_hash],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = promote_spec_file_for_phase2(spec_path=spec_path, history_path=history_path, rounds_dir=rounds_dir)
+
+            self.assertFalse(result.promoted)
+            self.assertEqual(result.before_version, "")
+            self.assertEqual(result.after_version, "")
+            self.assertEqual(result.before_hash, before_hash)
+            self.assertEqual(result.after_hash, before_hash)
+            self.assertEqual(spec_path.read_text(encoding="utf-8"), spec)
+            self.assertNotIn("Phase 2 version promotion", history_path.read_text(encoding="utf-8"))
+            state = json.loads(rounds_dir.joinpath("run_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["current_draft_hash"], before_hash)
+            self.assertEqual(state["last_accepted_draft_hash"], before_hash)
 
     def test_stamped_round_version_increments_phase1_hundredths(self) -> None:
         self.assertEqual(stamped_round_version("0.17", phase="phase_1"), "0.18")

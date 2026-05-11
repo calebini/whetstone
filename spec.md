@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.46 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.53 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.46` adds Phase 1 `review.mode: vertical`, allowing independent profile reviews over the same draft before one consolidated Editor revision.
+Version `0.53` clarifies that read-only status must let superseding stable run state override stale historical terminal reports.
 
 ---
 
@@ -452,7 +452,7 @@ Spec version labels express maturity:
 
 Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft.
 
-For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading contains a numeric version label. If no numeric root-heading version exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
+For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading, `Status:` line, or `Version:` field contains a supported numeric version label. If no supported numeric version anchor exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
 
 Version stamping rules:
 
@@ -460,6 +460,7 @@ Version stamping rules:
 - Phase 1 non-mutating round: do not change the version label.
 - Phase 1 rejected or unresolved round: do not change the version label.
 - Phase 2 entry: promote to the smallest whole major version that is greater than or equal to the current numeric version, with a minimum of `1.0`.
+- Unversioned Phase 2 entry: if no supported numeric version anchor exists, promotion MUST be a no-op (`promoted = false`) and MUST NOT block Phase 2 when the Phase 1 stable hash guard otherwise passes.
 - Phase 2 accepted mutating revision after entry: increment the first decimal place under the current major version.
 - Phase 2 non-mutating round: do not change the version label.
 - Phase 2 rejected or unresolved round: do not change the version label.
@@ -613,6 +614,20 @@ In `vertical` mode, each profile review remains independent: it MUST have its ow
 The vertical merge artifact MUST preserve each finding's source profile. If feedback IDs are not globally unique across profile reviews, the Orchestrator MUST rewrite feedback IDs in the consolidated Editor packet using a deterministic profile-qualified form. Issue IDs and issue fingerprints remain those of the original reviewer findings.
 
 `vertical` mode MUST NOT mark a profile clean from Editor resolution claims. After any consolidated Editor mutation, all Phase 1 profiles must be reviewed again against the revised draft before Phase 1 can become stable.
+
+For terminal reporting, a vertical profile's clean status applies only to the draft hash reviewed by that profile. If a later consolidated Editor mutation changes the draft, `technical_failure_report.json` MUST treat previously clean vertical profiles as unverified for the current draft until they review the changed draft again.
+
+If vertical mode exhausts profile review budgets immediately after an accepted consolidated Editor mutation and there are no unresolved blocker or major issues, the Orchestrator MAY run one verification-only closeout cycle. The closeout cycle MUST:
+- run each required Phase 1 profile once against the current draft
+- invoke only Reviewer clients
+- MUST NOT invoke the Editor
+- MUST NOT mutate `spec.md`
+- be persisted as normal review-only `round-N/` artifacts
+- mark Phase 1 stable only if every closeout profile review is clean for the current draft hash
+
+Stale profile residual status from a prior draft, including `exhausted_with_residuals`, MUST NOT by itself prevent the closeout cycle. The closeout cycle is the bounded mechanism that either clears stale profile debt by producing clean review-only passes for the current draft or confirms that blocker/major debt remains.
+
+If the closeout cycle finds any blocker or major issue, the Orchestrator MUST NOT run another automatic Editor revision. It MUST halt using the applicable Phase 1 budget-exhaustion terminal state and report the remaining verification debt.
 
 In `vertical` mode, `review_round_budget` MUST include the configured profile review budgets plus the maximum number of possible consolidated Editor rounds. Profile budget maps still count only independent profile review passes.
 
@@ -1573,7 +1588,14 @@ For Phase 2 reviewer feedback, an invalid or missing reviewer-proposed `oscillat
 
 ## RESUME POLICY
 
-The Orchestrator MAY resume only explicitly resumable terminal states. In this version, the supported resume path is:
+The Orchestrator MAY resume only explicitly resumable terminal states. In this version, the supported resume paths are:
+
+1. Phase 1 Editor timeout recovery.
+2. Phase 1 budget-extension continuation after explicit operator request.
+
+### Editor Timeout Resume
+
+The supported Editor-timeout resume path is:
 
 - `terminal_state = HALTED_CLIENT_TIMEOUT`
 - `failure_type = client_timeout`
@@ -1625,6 +1647,63 @@ By default, resume recovers only the halted round and then stops. If invoked wit
 Read-only run status MUST expose whether a run is resumable and, when eligible, the exact `resume` and `resume --continue` commands an operator can run. Status guidance MUST be advisory; live resume remains responsible for enforcing the hash guard and artifact validation before invoking the Editor.
 
 If a resumed Editor call times out again, the Orchestrator MUST halt again with `HALTED_CLIENT_TIMEOUT` and preserve both the original and resumed attempt artifacts.
+
+### Budget-Extension Resume
+
+The Orchestrator MAY resume a Phase 1 run after budget exhaustion only when the operator explicitly requests a review-budget extension.
+
+Supported budget-extension terminal states are:
+- `TARGET_NOT_REACHED`
+- `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`
+
+In this version, budget-extension resume is supported for Phase 1 `review.mode: horizontal` and `review.mode: vertical`.
+
+Budget-extension resume MUST be hash-guarded. Before appending rounds, the Orchestrator MUST verify that the current `spec.md` hash equals `run_state.json.current_draft_hash`. If the hash differs, budget-extension resume MUST refuse unless a future explicit override is defined.
+
+Budget-extension resume MUST NOT overwrite, delete, renumber, or rerun prior rounds. It MUST:
+- read `rounds/run_state.json`
+- inherit persisted `effective_run_config` before applying CLI overrides
+- validate the run is a Phase 1 budget-exhausted terminal state
+- reconstruct Phase 1 scheduler state from completed prior round artifacts
+- increase the effective Phase 1 profile budgets by the operator-requested extension amount
+- start at `current_round + 1`
+- append new `round-N/` artifacts after the existing highest round number
+- continue applying normal Phase 1 scheduling, validation, timeout, decision, oscillation, and halting rules
+- update `run_state.json`, `spec.md`, and `spec.history.md` after each appended round
+
+For `review.mode: vertical`, budget-extension resume MUST replay the prior vertical event stream to reconstruct:
+- per-profile `rounds_used`
+- per-profile clean/exhausted/residual status
+- `last_accepted_draft_hash`
+- `seen_draft_hashes`
+- latest unresolved issues from the most recent synthetic `profile: vertical` editor round
+
+After reconstruction, vertical budget-extension resume MUST increase each effective Phase 1 profile review budget by the operator-requested extension amount, then append additional vertical cycles. Each appended vertical cycle MUST:
+- run each non-exhausted profile review pass against the same draft at the start of that cycle
+- merge profile feedback into a synthetic `profile: vertical` reviewer artifact when any profile reports feedback
+- run one consolidated Editor revision for the merged feedback
+- stop with `PHASE_1_STABLE` only when all required profiles are clean on the current draft and the current draft is accepted
+
+If reconstructed `rounds_used` for any profile is greater than the configured effective budget, including because a prior verification-only closeout consumed profile review rounds, the new budget for that profile MUST be `rounds_used + added_rounds_per_profile`, not the lower configured value plus the extension. Budget extension MUST always create additional available review capacity for every Phase 1 profile.
+
+Budget-extension resume MUST record an auditable event in `run_state.json.budget_extensions[]` before invoking any live client for the appended continuation. Each event MUST include:
+- stable `event_id`
+- `generated_at`
+- `phase`
+- `previous_terminal_state`
+- `previous_current_round`
+- `previous_review_profile_budgets`
+- `new_review_profile_budgets`
+- `added_rounds_per_profile`
+- `reason`
+
+The default reason for an operator-requested budget extension is `operator_requested_resume_budget_extension`.
+
+Budget-extension events MUST be preserved across subsequent `run_state.json` rewrites during the resumed continuation.
+
+Budget-extension resume is a continuation of the same run, not a new run. Prior terminal reports remain historical artifacts unless a later run-state field supersedes their operational interpretation. Operators SHOULD treat `run_state.json` as the current status source of truth and preserved terminal reports as historical checkpoints.
+
+Read-only status MUST prefer superseding `run_state.json` terminal state over stale historical terminal reports. If `run_state.json.terminal_state = PHASE_1_STABLE` and `ready_for_phase_2 = true`, status MUST report `current_draft_status = phase_1_stable` even if a prior `technical_failure_report.json` remains in `/rounds/`.
 
 ---
 

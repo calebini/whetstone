@@ -80,7 +80,7 @@ def promote_spec_text_for_phase2(spec_text: str) -> tuple[str, str, str, bool]:
     """Promote the primary spec version anchor to the Phase 2 version."""
     target = _find_version_target(spec_text)
     if target is None:
-        raise ValueError("spec does not contain a supported numeric version anchor")
+        return spec_text, "", "", False
     before_version = target.version
     after_version = promoted_phase2_version(before_version)
     if before_version == after_version:
