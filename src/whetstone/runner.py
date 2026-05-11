@@ -73,7 +73,7 @@ class FixtureRunner:
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback, schema_name="reviewer_feedback")
         self.store.write_round_json(round_number, "editor_summary.json", editor_summary, schema_name="editor_summary")
         self.store.write_round_json(round_number, "unresolved_issues.json", unresolved_packet, schema_name="unresolved_issues")
-        self.store.write_round_json(round_number, "profile_used.yaml", {"profile": reviewer_feedback["profile"]})
+        self.store.write_round_json(round_number, "profile_used.yaml", {"profile": reviewer_feedback["profile"], "round_kind": "fixture"})
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
         if draft_after_content != draft_before:

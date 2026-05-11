@@ -270,6 +270,10 @@ class LivePhase1RunnerTests(unittest.TestCase):
             merged_feedback = _read_json(root / "rounds" / "round-4" / "reviewer_feedback.json")
             self.assertEqual(merged_feedback["profile"], "vertical")
             self.assertEqual(len(merged_feedback["feedback"]), 3)
+            review_profile = _read_json(root / "rounds" / "round-1" / "profile_used.yaml")
+            editor_profile = _read_json(root / "rounds" / "round-4" / "profile_used.yaml")
+            self.assertEqual(review_profile["round_kind"], "review_only")
+            self.assertEqual(editor_profile["round_kind"], "consolidated_editor")
 
     def test_vertical_closeout_check_refuses_when_reviewer_finds_major(self) -> None:
         with TemporaryDirectory() as tmp:

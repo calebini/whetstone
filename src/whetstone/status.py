@@ -51,7 +51,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     latest_round = _latest_round(rounds_dir, root)
     inferred_rounds = _inferred_round_accounting(rounds_dir, run_state)
     decision_summary = _decision_summary(rounds_dir, root)
-    terminal_report_path = _terminal_report_path(rounds_dir)
+    terminal_report_path = _terminal_report_path(rounds_dir, run_state)
     terminal_report = _read_json_object(terminal_report_path) if terminal_report_path else None
     current_draft_status = _current_draft_status(run_state, terminal_report)
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
@@ -122,7 +122,12 @@ def render_status_text(status: dict[str, Any]) -> str:
     latest_round_text = "none"
     if latest_round:
         completeness = "complete" if latest_round.get("complete") else "partial"
+        profile = latest_round.get("profile")
+        round_kind = latest_round.get("round_kind")
+        details = ", ".join(str(item) for item in (profile, round_kind) if item)
         latest_round_text = f"round-{latest_round.get('round_number')} {completeness}"
+        if details:
+            latest_round_text += f" ({details})"
     lines = [
         "Whetstone Status",
         f"root: {status.get('root')}",
@@ -194,6 +199,7 @@ def _latest_round(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
         "round_number": int(round_dir.name.removeprefix("round-")),
         "path": _path_or_none(round_dir, root),
         "complete": not missing,
+        **_round_profile_metadata(round_dir / "profile_used.yaml"),
         "present_artifacts": present,
         "missing_required_artifacts": missing,
         "pending_client_attempt": _pending_client_attempt(round_dir, root),
@@ -248,7 +254,10 @@ def _decision_summary(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
     }
 
 
-def _terminal_report_path(rounds_dir: Path) -> Path | None:
+def _terminal_report_path(rounds_dir: Path, run_state: dict[str, Any] | None = None) -> Path | None:
+    terminal_state = (run_state or {}).get("terminal_state")
+    if terminal_state in {"CONVERGED", "PHASE_1_STABLE", "FOCUSED_PROFILE_STABLE"}:
+        return None
     for name in TERMINAL_REPORTS:
         path = rounds_dir / name
         if path.exists():
@@ -296,14 +305,37 @@ def _round_profile_sort_key(path: Path) -> int:
 
 
 def _profile_name(path: Path) -> str | None:
-    for line in path.read_text(encoding="utf-8").splitlines():
+    return _round_profile_metadata(path).get("profile")
+
+
+def _round_profile_metadata(path: Path) -> dict[str, str | None]:
+    metadata: dict[str, str | None] = {"profile": None, "round_kind": None}
+    if not path.exists():
+        return metadata
+    text = path.read_text(encoding="utf-8")
+    try:
+        packet = json.loads(text)
+    except json.JSONDecodeError:
+        packet = None
+    if isinstance(packet, dict):
+        profile = packet.get("profile")
+        round_kind = packet.get("round_kind")
+        metadata["profile"] = str(profile) if profile is not None else None
+        metadata["round_kind"] = str(round_kind) if round_kind is not None else None
+        return metadata
+    for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith('"profile"'):
             _, _, value = stripped.partition(":")
-            return value.strip().strip('",')
+            metadata["profile"] = value.strip().strip('",')
+        if stripped.startswith('"round_kind"'):
+            _, _, value = stripped.partition(":")
+            metadata["round_kind"] = value.strip().strip('",')
         if stripped.startswith("profile:"):
-            return stripped.removeprefix("profile:").strip().strip('"')
-    return None
+            metadata["profile"] = stripped.removeprefix("profile:").strip().strip('"')
+        if stripped.startswith("round_kind:"):
+            metadata["round_kind"] = stripped.removeprefix("round_kind:").strip().strip('"')
+    return metadata
 
 
 def _apply_back_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:

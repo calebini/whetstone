@@ -164,6 +164,8 @@ review:
 
 Vertical mode is usually the better economy choice for MVP and medium-size specs. It preserves separate Reviewer artifacts per profile, but the Editor sees the full cross-profile problem set before changing the draft.
 
+Round folders identify their shape in `profile_used.yaml` with `round_kind`. In vertical runs, profile rounds use `review_only`; the merged Editor round uses `consolidated_editor`.
+
 If a vertical run ends immediately after a consolidated Editor mutation, Whetstone may report the draft as accepted but still unverified. That means the edit resolved the known blocker/major feedback, but the revised draft still needs another clean profile-review cycle before Phase 2.
 
 When this happens at the end of the budget, Whetstone can run one verification-only closeout cycle. It calls Reviewers only, does not mutate the draft, and either marks Phase 1 stable or stops with the remaining blocker/major verification debt.

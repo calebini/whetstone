@@ -515,7 +515,10 @@ class LivePhase1Runner:
                 round_dir = LiveRoundRunner(self.root, self.config).store.begin_round(round_number, overwrite=overwrite)
                 round_dir.joinpath("draft_before.md").write_text(draft_before, encoding="utf-8")
                 round_dir.joinpath("draft_after.md").write_text(draft_before, encoding="utf-8")
-                round_dir.joinpath("profile_used.yaml").write_text(json.dumps({"profile": editor_profile}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                round_dir.joinpath("profile_used.yaml").write_text(
+                    json.dumps({"profile": editor_profile, "round_kind": "consolidated_editor"}, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
                 round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
                 result = LiveRoundRunner(
                     self.root,

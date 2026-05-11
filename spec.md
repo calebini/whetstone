@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.53 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.54 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.53` clarifies that read-only status must let superseding stable run state override stale historical terminal reports.
+Version `0.54` adds explicit per-round kind metadata so operators can distinguish review-only, reviewer/editor, fixture, and consolidated vertical Editor rounds.
 
 ---
 
@@ -47,7 +47,7 @@ Version `0.53` clarifies that read-only status must let superseding stable run s
   - unresolved_issues.json
   - decision_points.json
   - rubric_gaps.json (Phase 2 only)
-  - profile_used.yaml
+  - profile_used.yaml (JSON-compatible metadata despite `.yaml` suffix)
   - prompt_snapshot.json
   - prompt_snapshots/
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
@@ -612,6 +612,10 @@ Phase 1 supports two review modes:
 In `vertical` mode, each profile review remains independent: it MUST have its own prompt, profile focus, `reviewer_feedback.json`, `profile_used.yaml`, prompt snapshot, context files, telemetry, and validation. Only the Editor step is consolidated.
 
 The vertical merge artifact MUST preserve each finding's source profile. If feedback IDs are not globally unique across profile reviews, the Orchestrator MUST rewrite feedback IDs in the consolidated Editor packet using a deterministic profile-qualified form. Issue IDs and issue fingerprints remain those of the original reviewer findings.
+
+Each round's `profile_used.yaml` MUST include:
+- `profile`: the review profile or synthetic profile label
+- `round_kind`: one of `review_editor`, `review_only`, `consolidated_editor`, or `fixture`
 
 `vertical` mode MUST NOT mark a profile clean from Editor resolution claims. After any consolidated Editor mutation, all Phase 1 profiles must be reviewed again against the revised draft before Phase 1 can become stable.
 

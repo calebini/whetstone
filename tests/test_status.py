@@ -51,6 +51,10 @@ class StatusTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            round_dir.joinpath("profile_used.yaml").write_text(
+                json.dumps({"profile": "operability", "round_kind": "review_only"}),
+                encoding="utf-8",
+            )
             rounds.joinpath("run_state.json").write_text(
                 json.dumps(
                     {
@@ -89,6 +93,8 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(status["current_draft_status"], "phase_1_stable")
             self.assertEqual(status["next_action"], "run_live_phase2")
             self.assertTrue(status["latest_round"]["complete"])
+            self.assertEqual(status["latest_round"]["profile"], "operability")
+            self.assertEqual(status["latest_round"]["round_kind"], "review_only")
             self.assertEqual(status["decision_register"]["decision_count"], 2)
             self.assertEqual(status["decision_summary"]["decision_count"], 2)
             self.assertEqual(status["telemetry_totals"]["attempt_count"], 6)
@@ -303,6 +309,7 @@ class StatusTests(unittest.TestCase):
 
         self.assertIn("terminal_state: PHASE_1_STABLE", rendered)
         self.assertIn("next_action: run_live_phase2", rendered)
+        self.assertIn("latest_round: round-3 complete", rendered)
         self.assertIn("decisions: 9, human: 9", rendered)
 
 

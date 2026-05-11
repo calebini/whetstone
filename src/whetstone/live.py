@@ -145,7 +145,14 @@ class LiveRoundRunner:
             context_files=reviewer_context_files,
             scope_contract=scope_contract,
         )
-        self._write_pre_review_artifacts(round_number, draft_before, draft_after_content, prompt_snapshot, profile)
+        self._write_pre_review_artifacts(
+            round_number,
+            draft_before,
+            draft_after_content,
+            prompt_snapshot,
+            profile,
+            round_kind="review_editor",
+        )
 
         reviewer = self.reviewer_client or create_reviewer_client(
             self.config.reviewer,
@@ -447,7 +454,14 @@ class LiveRoundRunner:
             context_files=reviewer_context_files,
             scope_contract=scope_contract,
         )
-        self._write_pre_review_artifacts(round_number, draft_before, draft_before, prompt_snapshot, profile)
+        self._write_pre_review_artifacts(
+            round_number,
+            draft_before,
+            draft_before,
+            prompt_snapshot,
+            profile,
+            round_kind="review_only",
+        )
 
         reviewer = self.reviewer_client or create_reviewer_client(
             self.config.reviewer,
@@ -1024,10 +1038,11 @@ class LiveRoundRunner:
         draft_after: str,
         prompt_snapshot: dict[str, Any],
         profile: str,
+        round_kind: str,
     ) -> None:
         self.store.write_round_text(round_number, "draft_before.md", draft_before)
         self.store.write_round_text(round_number, "draft_after.md", draft_after)
-        self.store.write_round_json(round_number, "profile_used.yaml", {"profile": profile})
+        self.store.write_round_json(round_number, "profile_used.yaml", {"profile": profile, "round_kind": round_kind})
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 
     def _write_reviewer_context_files(

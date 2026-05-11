@@ -155,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
         epilog=(
             "Example:\n"
             "  whetstone live-phase1 --root \"$RUN_ROOT\"\n\n"
+            "Review mode is configured in orchestrator_config.yaml:\n"
+            "  review.mode: horizontal  # one Reviewer+Editor loop per profile\n"
+            "  review.mode: vertical    # all Phase 1 Reviewers first, then one consolidated Editor\n\n"
             "Budget policy is configured in orchestrator_config.yaml:\n"
             "  review.budget_exhaustion_policy: hard  # strict stop\n"
             "  review.budget_exhaustion_policy: soft  # full diagnostic sweep, no Phase 2 unless stable\n\n"
@@ -227,7 +230,8 @@ def main(argv: list[str] | None = None) -> int:
             "  whetstone resume --root \"$RUN_ROOT\" --editor-timeout-seconds 1800 --continue\n\n"
             "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3 --dry-run\n"
             "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3\n\n"
-            "Supported paths: Phase 1 Editor timeouts, or explicit Phase 1 budget extension."
+            "Supported paths: Phase 1 Editor timeouts, or explicit Phase 1 budget extension. "
+            "Budget extension appends rounds in place and preserves prior artifacts."
         ),
         formatter_class=FORMATTER,
     )

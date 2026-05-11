@@ -75,6 +75,9 @@ class FixtureRunnerTests(unittest.TestCase):
                 "prompt_snapshot.json",
             }
             self.assertEqual({path.name for path in (root / "rounds" / "round-1").iterdir()}, expected_files)
+            profile_used = json.loads((root / "rounds" / "round-1" / "profile_used.yaml").read_text())
+            self.assertEqual(profile_used["profile"], "structural_integrity")
+            self.assertEqual(profile_used["round_kind"], "fixture")
             unresolved = json.loads((root / "rounds" / "round-1" / "unresolved_issues.json").read_text())
             self.assertEqual(unresolved["unresolved_issues"], [])
 
