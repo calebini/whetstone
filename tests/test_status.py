@@ -34,6 +34,7 @@ class StatusTests(unittest.TestCase):
                 "editor_summary.json",
                 "unresolved_issues.json",
                 "decision_points.json",
+                "operator_decision_checkpoint.json",
             ):
                 round_dir.joinpath(artifact).write_text("{}\n", encoding="utf-8")
             round_dir.joinpath("telemetry_summary.json").write_text(
@@ -86,6 +87,18 @@ class StatusTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            rounds.joinpath("operator_decision_checkpoint_summary.json").write_text(
+                json.dumps(
+                    {
+                        "checkpoint_count": 1,
+                        "rounds_with_checkpoints": [3],
+                        "trigger_reason_counts": {"failure_or_reporting_policy": 1},
+                        "source_type_counts": {"unresolved_issue": 1},
+                        "recommended_operator_review": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
 
             status = read_status(root=root, config=OrchestratorConfig.default(root))
 
@@ -97,6 +110,7 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(status["latest_round"]["round_kind"], "review_only")
             self.assertEqual(status["decision_register"]["decision_count"], 2)
             self.assertEqual(status["decision_summary"]["decision_count"], 2)
+            self.assertEqual(status["operator_decision_checkpoint_summary"]["checkpoint_count"], 1)
             self.assertEqual(status["telemetry_totals"]["attempt_count"], 6)
 
     def test_status_prefers_stable_run_state_over_stale_failure_report(self) -> None:

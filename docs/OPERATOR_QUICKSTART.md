@@ -413,6 +413,22 @@ $RUN_ROOT/rounds/decision_intervention_request.json
 
 In normal `end_of_cycle` mode, decisions are surfaced for review after the run rather than interrupting every round.
 
+For round-by-round owner-choice hints, inspect:
+
+```text
+$RUN_ROOT/rounds/round-N/operator_decision_checkpoint.json
+```
+
+These checkpoint artifacts are advisory in the current runtime. They frame likely policy, scope, validation, failure, or reporting choices, but they do not pause the run or change scheduler behavior.
+
+For a compact run-level view, inspect:
+
+```text
+$RUN_ROOT/rounds/operator_decision_checkpoint_summary.md
+```
+
+This summary clusters checkpoint candidates and shows the top cards worth operator review.
+
 ## Review Before Apply-Back
 
 Before changing the source spec, inspect:
@@ -482,6 +498,7 @@ When something halts, read in this order:
 4. latest `rounds/round-N/reviewer_feedback.json`
 5. latest `rounds/round-N/editor_summary.json`
 6. `rounds/decision_summary.md`
+7. `rounds/operator_decision_checkpoint_summary.md`
 7. `rounds/apply_back_review.md`, if apply-back has been dry-run
 
 ## Terminal States

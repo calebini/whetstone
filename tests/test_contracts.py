@@ -499,6 +499,91 @@ class ContractValidationTests(unittest.TestCase):
             },
             "decision_intervention_request",
         )
+        validate_artifact(
+            {
+                "generated_at": "2026-05-01T00:00:00+00:00",
+                "round_number": 1,
+                "profile": "determinism",
+                "draft_hash": HASH,
+                "mode": "artifact_only",
+                "runtime_effect": "none",
+                "default_action": "continue_without_operator_input",
+                "checkpoint_count": 1,
+                "checkpoints": [
+                    {
+                        "checkpoint_id": "chk_aaaaaaaaaaaaaaaa",
+                        "round_number": 1,
+                        "profile": "determinism",
+                        "source_type": "unresolved_issue",
+                        "source_ids": ["iss_aaaaaaaaaaaaaaaa"],
+                        "severity": "major",
+                        "trigger_reason": "failure_or_reporting_policy",
+                        "affected_sections": ["Validate"],
+                        "question": "How should `Validate` write reports?",
+                        "options": [
+                            {
+                                "option_id": "define_mvp_rule_now",
+                                "label": "Define deterministic rule",
+                                "description": "Add the smallest closed rule needed for the current MVP or target scope.",
+                                "recommended": True,
+                            }
+                        ],
+                        "recommended_option_id": "define_mvp_rule_now",
+                        "evidence_lines": ["Validate report behavior is undefined."],
+                        "risk_if_skipped": "The next Editor pass may invent policy.",
+                        "status": "candidate",
+                        "runtime_effect": "none",
+                    }
+                ],
+            },
+            "operator_decision_checkpoint",
+        )
+        validate_artifact(
+            {
+                "generated_at": "2026-05-01T00:00:00+00:00",
+                "terminal_state": "TARGET_NOT_REACHED",
+                "source_glob": "rounds/round-*/operator_decision_checkpoint.json",
+                "summary_method": "mechanical_checkpoint_v1",
+                "checkpoint_count": 1,
+                "rounds_with_checkpoints": [1],
+                "trigger_reason_counts": {"failure_or_reporting_policy": 1},
+                "source_type_counts": {"unresolved_issue": 1},
+                "clusters": {
+                    "by_trigger_reason": [
+                        {
+                            "cluster_key": "failure_or_reporting_policy",
+                            "cluster_label": "failure_or_reporting_policy",
+                            "checkpoint_count": 1,
+                            "checkpoint_ids": ["chk_aaaaaaaaaaaaaaaa"],
+                            "round_numbers": [1],
+                            "profiles": ["determinism"],
+                            "source_types": ["unresolved_issue"],
+                            "trigger_reasons": ["failure_or_reporting_policy"],
+                            "affected_sections": ["Validate"],
+                            "representative_questions": ["How should `Validate` write reports?"],
+                        }
+                    ],
+                    "by_section": [],
+                    "by_source_type": [],
+                },
+                "recommended_operator_review": [
+                    {
+                        "checkpoint_id": "chk_aaaaaaaaaaaaaaaa",
+                        "round_number": 1,
+                        "profile": "determinism",
+                        "source_type": "unresolved_issue",
+                        "source_ids": ["iss_aaaaaaaaaaaaaaaa"],
+                        "severity": "major",
+                        "trigger_reason": "failure_or_reporting_policy",
+                        "affected_sections": ["Validate"],
+                        "question": "How should `Validate` write reports?",
+                        "recommended_option_id": "define_mvp_rule_now",
+                        "risk_if_skipped": "The next Editor pass may invent policy.",
+                    }
+                ],
+            },
+            "operator_decision_checkpoint_summary",
+        )
 
 
 if __name__ == "__main__":

@@ -1340,6 +1340,8 @@ def _clear_top_level_run_artifacts(rounds_dir: Path) -> None:
         "decision_register.md",
         "decision_summary.json",
         "decision_summary.md",
+        "operator_decision_checkpoint_summary.json",
+        "operator_decision_checkpoint_summary.md",
         "decision_intervention_request.json",
         "contract_surface_report.json",
         "contract_surface_report.md",

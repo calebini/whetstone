@@ -77,3 +77,5 @@
 - Revised the spec to `0.44` with Orchestrator-owned no-op Editor summaries for clean Reviewer passes, preventing unnecessary Editor calls when there is no feedback to apply.
 - Revised the spec to `0.45` with Phase 2 stale declaration binding repair, requiring the Orchestrator to regenerate mismatched candidate declarations before treating declaration hash mismatches as unresolved feedback churn.
 - Revised the spec to `0.46` with Phase 1 vertical review mode, preserving independent profile review artifacts while merging profile feedback into one consolidated Editor revision per cycle.
+- Revised the spec to `0.57` with nonblocking per-round operator decision checkpoint artifacts that frame likely owner-level choices while leaving scheduler behavior unchanged.
+- Revised the spec to `0.58` with terminal operator decision checkpoint summaries that cluster checkpoint candidates by trigger reason, section, and source type.

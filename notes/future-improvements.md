@@ -101,9 +101,7 @@ Future improvements:
 
 ### Between-Round Operator Decision Checkpoints
 
-Add an optional decision checkpoint mode that can pause between rounds when Whetstone detects findings that are probably owner-level policy, scope, authority, or product choices rather than routine editor-fixable spec defects.
-
-This should remain a future feature until the runtime can enforce it cleanly. The current spec should not promise this behavior yet.
+Whetstone now has an artifact-only slice that writes nonblocking `operator_decision_checkpoint.json` candidates plus terminal `operator_decision_checkpoint_summary.*` outputs. The remaining future work is to turn those candidates into an optional between-round operator or LLM-guided checkpoint mode.
 
 Potential flow:
 
@@ -162,6 +160,8 @@ decisions:
 Possible artifacts:
 
 - `rounds/round-N/operator_decision_checkpoint.json`
+- `rounds/operator_decision_checkpoint_summary.json`
+- `rounds/operator_decision_checkpoint_summary.md`
 - `rounds/round-N/operator_decision_response.json`
 - `rounds/decision_register.json`
 - `rounds/decision_summary.md`
@@ -173,6 +173,7 @@ Design constraints:
 - The operator response must be persisted as a versioned, hashable artifact.
 - Editor prompts must distinguish operator decisions from reviewer suggestions.
 - The feature should have a noninteractive mode for automation, where checkpoints are recorded but not paused.
+- Auto mode should consume the same checkpoint artifact shape as human mode and persist the same response artifact shape, with the selected option marked as LLM-guided rather than operator-selected.
 
 ## Client Capability Notes
 

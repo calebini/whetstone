@@ -29,6 +29,7 @@ ROUND_REQUIRED_ARTIFACTS = (
     "editor_summary.json",
     "unresolved_issues.json",
     "decision_points.json",
+    "operator_decision_checkpoint.json",
     "telemetry_summary.json",
 )
 
@@ -51,6 +52,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     latest_round = _latest_round(rounds_dir, root)
     inferred_rounds = _inferred_round_accounting(rounds_dir, run_state)
     decision_summary = _decision_summary(rounds_dir, root)
+    checkpoint_summary = _checkpoint_summary(rounds_dir, root)
     terminal_report_path = _terminal_report_path(rounds_dir, run_state)
     terminal_report = _read_json_object(terminal_report_path) if terminal_report_path else None
     current_draft_status = _current_draft_status(run_state, terminal_report)
@@ -104,6 +106,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
         "decision_register": _decision_register(rounds_dir, root),
         "decision_summary": decision_summary,
+        "operator_decision_checkpoint_summary": checkpoint_summary,
         "apply_back": apply_back,
         "telemetry_totals": telemetry_totals,
         "next_action": _next_action(run_state, terminal_report_path=terminal_report_path),
@@ -116,6 +119,7 @@ def render_status_text(status: dict[str, Any]) -> str:
     latest_round = status.get("latest_round") or {}
     decision_register = status.get("decision_register") or {}
     decision_summary = status.get("decision_summary") or {}
+    checkpoint_summary = status.get("operator_decision_checkpoint_summary") or {}
     telemetry = status.get("telemetry_totals") or {}
     apply_back = status.get("apply_back") or {}
     resume_status = status.get("resume") or {}
@@ -154,6 +158,12 @@ def render_status_text(status: dict[str, Any]) -> str:
             f"{_display(decision_summary.get('decision_count', decision_register.get('decision_count')))}, "
             f"human: {_display(decision_summary.get('unresolved_human_decision_count', decision_register.get('unresolved_human_decision_count')))}, "
             f"statuses: {_display(decision_summary.get('decision_status_counts', decision_register.get('decision_status_counts')))}"
+        ),
+        (
+            "decision_checkpoints: "
+            f"{_display(checkpoint_summary.get('checkpoint_count'))}, "
+            f"rounds: {_display(checkpoint_summary.get('rounds_with_checkpoints'))}, "
+            f"triggers: {_display(checkpoint_summary.get('trigger_reason_counts'))}"
         ),
         (
             "telemetry: "
@@ -251,6 +261,21 @@ def _decision_summary(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
         "decision_status_counts": packet.get("decision_status_counts"),
         "unresolved_human_decision_count": packet.get("unresolved_human_decision_count"),
         "hotspots": packet.get("hotspots"),
+    }
+
+
+def _checkpoint_summary(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    path = rounds_dir / "operator_decision_checkpoint_summary.json"
+    packet = _read_json_object(path)
+    if packet is None:
+        return None
+    return {
+        "path": _path_or_none(path, root),
+        "checkpoint_count": packet.get("checkpoint_count"),
+        "rounds_with_checkpoints": packet.get("rounds_with_checkpoints"),
+        "trigger_reason_counts": packet.get("trigger_reason_counts"),
+        "source_type_counts": packet.get("source_type_counts"),
+        "recommended_operator_review": packet.get("recommended_operator_review"),
     }
 
 

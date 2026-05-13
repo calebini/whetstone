@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/operator_decision_checkpoint.schema.json",
+  "title": "Whetstone Operator Decision Checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "round_number",
+    "profile",
+    "draft_hash",
+    "mode",
+    "runtime_effect",
+    "default_action",
+    "checkpoint_count",
+    "checkpoints"
+  ],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "mode": {
+      "type": "string",
+      "enum": ["artifact_only"]
+    },
+    "runtime_effect": {
+      "type": "string",
+      "enum": ["none"]
+    },
+    "default_action": {
+      "type": "string",
+      "enum": ["continue_without_operator_input"]
+    },
+    "checkpoint_count": { "type": "integer", "minimum": 0 },
+    "checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "checkpoint_id",
+          "round_number",
+          "profile",
+          "source_type",
+          "source_ids",
+          "severity",
+          "trigger_reason",
+          "affected_sections",
+          "question",
+          "options",
+          "recommended_option_id",
+          "evidence_lines",
+          "risk_if_skipped",
+          "status",
+          "runtime_effect"
+        ],
+        "properties": {
+          "checkpoint_id": {
+            "type": "string",
+            "pattern": "^chk_[a-f0-9]{16}$"
+          },
+          "round_number": { "type": "integer", "minimum": 1 },
+          "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "source_type": {
+            "type": "string",
+            "enum": ["decision_point", "unresolved_issue"]
+          },
+          "source_ids": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          },
+          "severity": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/severity" },
+              { "type": "null" }
+            ]
+          },
+          "trigger_reason": {
+            "type": "string",
+            "enum": [
+              "operator_policy_choice",
+              "deferable_scope_boundary",
+              "authority_boundary",
+              "validation_policy",
+              "failure_or_reporting_policy"
+            ]
+          },
+          "affected_sections": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "question": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["option_id", "label", "description", "recommended"],
+              "properties": {
+                "option_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+                "label": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+                "description": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+                "recommended": { "type": "boolean" }
+              }
+            }
+          },
+          "recommended_option_id": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+              { "type": "null" }
+            ]
+          },
+          "evidence_lines": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          },
+          "risk_if_skipped": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "status": {
+            "type": "string",
+            "enum": ["candidate"]
+          },
+          "runtime_effect": {
+            "type": "string",
+            "enum": ["none"]
+          }
+        }
+      }
+    }
+  }
+}

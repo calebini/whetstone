@@ -150,6 +150,25 @@ def write_decision_summary_outputs(
     return {"decision_summary": summary_path, "decision_summary_markdown": markdown_path}
 
 
+def write_operator_decision_checkpoint_summary_outputs(
+    *,
+    rounds_dir: Path,
+    terminal_state: str,
+) -> dict[str, Path]:
+    """Write terminal summaries for per-round operator checkpoint artifacts."""
+    summary = summarize_operator_decision_checkpoints(rounds_dir=rounds_dir, terminal_state=terminal_state)
+    validate_artifact(summary, "operator_decision_checkpoint_summary")
+    rounds_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = rounds_dir / "operator_decision_checkpoint_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    markdown_path = rounds_dir / "operator_decision_checkpoint_summary.md"
+    markdown_path.write_text(render_operator_decision_checkpoint_summary_markdown(summary), encoding="utf-8")
+    return {
+        "operator_decision_checkpoint_summary": summary_path,
+        "operator_decision_checkpoint_summary_markdown": markdown_path,
+    }
+
+
 def write_decision_register(
     *,
     rounds_dir: Path,
@@ -171,6 +190,7 @@ def write_decision_register(
     output.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (rounds_dir / "decision_register.md").write_text(render_decision_register_markdown(packet), encoding="utf-8")
     write_decision_summary_outputs(register_path=output)
+    write_operator_decision_checkpoint_summary_outputs(rounds_dir=rounds_dir, terminal_state=terminal_state)
     return output
 
 
@@ -196,6 +216,128 @@ def write_decision_intervention_request(
     output = rounds_dir / "decision_intervention_request.json"
     output.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return output
+
+
+def operator_decision_checkpoint(
+    *,
+    round_number: int,
+    profile: str,
+    draft_hash_value: str,
+    reviewer_feedback: dict[str, Any],
+    decision_points: dict[str, Any],
+    unresolved_issues: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build nonblocking operator decision checkpoint candidates for a round."""
+    checkpoints = _checkpoint_cards_from_decisions(decision_points)
+    checkpoints.extend(_checkpoint_cards_from_unresolved(round_number, profile, reviewer_feedback, unresolved_issues))
+    checkpoints = _dedupe_checkpoints(checkpoints)
+    packet = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "round_number": round_number,
+        "profile": profile,
+        "draft_hash": draft_hash_value,
+        "mode": "artifact_only",
+        "runtime_effect": "none",
+        "default_action": "continue_without_operator_input",
+        "checkpoint_count": len(checkpoints),
+        "checkpoints": checkpoints,
+    }
+    validate_artifact(packet, "operator_decision_checkpoint")
+    return packet
+
+
+def summarize_operator_decision_checkpoints(*, rounds_dir: Path, terminal_state: str) -> dict[str, Any]:
+    """Build a deterministic terminal summary from per-round checkpoint artifacts."""
+    checkpoints = collect_operator_decision_checkpoints(rounds_dir)
+    clusters = {
+        "by_trigger_reason": _checkpoint_clusters_by(checkpoints, "trigger_reason"),
+        "by_section": _checkpoint_clusters_by_section(checkpoints),
+        "by_source_type": _checkpoint_clusters_by(checkpoints, "source_type"),
+    }
+    summary = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "terminal_state": terminal_state,
+        "source_glob": "rounds/round-*/operator_decision_checkpoint.json",
+        "summary_method": "mechanical_checkpoint_v1",
+        "checkpoint_count": len(checkpoints),
+        "rounds_with_checkpoints": sorted({int(checkpoint["round_number"]) for checkpoint in checkpoints}),
+        "trigger_reason_counts": _count_values(checkpoint["trigger_reason"] for checkpoint in checkpoints),
+        "source_type_counts": _count_values(checkpoint["source_type"] for checkpoint in checkpoints),
+        "clusters": clusters,
+        "recommended_operator_review": _top_checkpoint_cards(checkpoints, limit=5),
+    }
+    validate_artifact(summary, "operator_decision_checkpoint_summary")
+    return summary
+
+
+def collect_operator_decision_checkpoints(rounds_dir: Path) -> list[dict[str, Any]]:
+    checkpoints: list[dict[str, Any]] = []
+    for path in sorted(rounds_dir.glob("round-*/operator_decision_checkpoint.json")):
+        packet = json.loads(path.read_text(encoding="utf-8"))
+        for checkpoint in packet.get("checkpoints", []):
+            enriched = dict(checkpoint)
+            enriched["round_artifact_path"] = str(path)
+            checkpoints.append(enriched)
+    return _dedupe_checkpoints(checkpoints)
+
+
+def render_operator_decision_checkpoint_summary_markdown(summary: dict[str, Any]) -> str:
+    lines = [
+        "# Operator Decision Checkpoint Summary",
+        "",
+        f"- terminal_state: `{summary['terminal_state']}`",
+        f"- checkpoint_count: `{summary['checkpoint_count']}`",
+        f"- rounds_with_checkpoints: {_format_inline_values([str(round_number) for round_number in summary['rounds_with_checkpoints']])}",
+        f"- trigger_reason_counts: {_format_status_counts(summary['trigger_reason_counts'])}",
+        f"- source_type_counts: {_format_status_counts(summary['source_type_counts'])}",
+        f"- summary_method: `{summary['summary_method']}`",
+        "",
+        "## Recommended Operator Review",
+        "",
+    ]
+    if not summary["recommended_operator_review"]:
+        lines.extend(["No checkpoint candidates.", ""])
+    for card in summary["recommended_operator_review"]:
+        lines.extend(
+            [
+                f"### {card['checkpoint_id']}",
+                "",
+                f"- round: `{card['round_number']}`",
+                f"- profile: `{card['profile']}`",
+                f"- trigger_reason: `{card['trigger_reason']}`",
+                f"- source_type: `{card['source_type']}`",
+                f"- sections: {_format_inline_values(card['affected_sections'])}",
+                f"- recommended_option_id: `{card['recommended_option_id']}`",
+                "",
+                card["question"],
+                "",
+            ]
+        )
+    for key, title in (
+        ("by_trigger_reason", "By Trigger Reason"),
+        ("by_section", "By Section"),
+        ("by_source_type", "By Source Type"),
+    ):
+        lines.extend([f"## {title}", ""])
+        clusters = summary["clusters"][key]
+        if not clusters:
+            lines.extend(["No checkpoint candidates.", ""])
+            continue
+        for cluster in clusters:
+            lines.extend(
+                [
+                    f"### {cluster['cluster_label']}",
+                    "",
+                    f"- checkpoints: `{cluster['checkpoint_count']}`",
+                    f"- rounds: {_format_inline_values([str(number) for number in cluster['round_numbers']])}",
+                    f"- profiles: {_format_inline_values(cluster['profiles'])}",
+                    f"- trigger_reasons: {_format_inline_values(cluster['trigger_reasons'])}",
+                    f"- sections: {_format_inline_values(cluster['affected_sections'])}",
+                    f"- checkpoint_ids: {_format_inline_values(cluster['checkpoint_ids'])}",
+                    "",
+                ]
+            )
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def collect_decision_points(rounds_dir: Path) -> list[dict[str, Any]]:
@@ -326,6 +468,328 @@ def render_decision_summary_markdown(summary: dict[str, Any]) -> str:
                 lines.append(f"- `{decision['decision_id']}`: {decision['question']}")
             lines.append("")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _checkpoint_cards_from_decisions(decision_points: dict[str, Any]) -> list[dict[str, Any]]:
+    checkpoints: list[dict[str, Any]] = []
+    for point in decision_points.get("decision_points", []):
+        status = str(point.get("decision_status", ""))
+        if status not in {"operator_review_recommended", "operator_required_decision", "deferred_scope_decision"}:
+            continue
+        question = str(point["question"])
+        checkpoints.append(
+            _checkpoint_card(
+                round_number=int(point["round_number"]),
+                profile=str(point["profile"]),
+                source_type="decision_point",
+                source_ids=[str(point["decision_id"])],
+                severity=None,
+                trigger_reason=_checkpoint_reason(point),
+                affected_sections=[str(section) for section in point.get("affected_sections", [])],
+                question=question,
+                evidence_lines=[str(line) for line in point.get("evidence_lines", [])],
+                options=_decision_point_options(),
+                recommended_option_id="accept_editor_choice",
+                risk_if_skipped=str(point.get("risk_if_wrong", "The Editor may encode an owner-level decision without review.")),
+            )
+        )
+    return checkpoints
+
+
+def _checkpoint_clusters_by(checkpoints: list[dict[str, Any]], field: str) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for checkpoint in checkpoints:
+        groups.setdefault(str(checkpoint.get(field, "(none)")), []).append(checkpoint)
+    return _checkpoint_clusters_from_groups(groups)
+
+
+def _checkpoint_clusters_by_section(checkpoints: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for checkpoint in checkpoints:
+        sections = checkpoint.get("affected_sections") or ["(unsectioned)"]
+        primary = str(sections[0])
+        groups.setdefault(primary, []).append(checkpoint)
+    return _checkpoint_clusters_from_groups(groups)
+
+
+def _checkpoint_clusters_from_groups(groups: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    clusters = []
+    for key in sorted(groups):
+        cards = sorted(
+            groups[key],
+            key=lambda checkpoint: (int(checkpoint["round_number"]), str(checkpoint["checkpoint_id"])),
+        )
+        clusters.append(
+            {
+                "cluster_key": key,
+                "cluster_label": key,
+                "checkpoint_count": len(cards),
+                "checkpoint_ids": [str(checkpoint["checkpoint_id"]) for checkpoint in cards],
+                "round_numbers": sorted({int(checkpoint["round_number"]) for checkpoint in cards}),
+                "profiles": _sorted_unique(str(checkpoint["profile"]) for checkpoint in cards),
+                "source_types": _sorted_unique(str(checkpoint["source_type"]) for checkpoint in cards),
+                "trigger_reasons": _sorted_unique(str(checkpoint["trigger_reason"]) for checkpoint in cards),
+                "affected_sections": _sorted_unique(
+                    section for checkpoint in cards for section in checkpoint.get("affected_sections", [])
+                ),
+                "representative_questions": [str(checkpoint["question"]) for checkpoint in cards[:3]],
+            }
+        )
+    return clusters
+
+
+def _top_checkpoint_cards(checkpoints: list[dict[str, Any]], *, limit: int) -> list[dict[str, Any]]:
+    priority = {
+        "authority_boundary": 0,
+        "deferable_scope_boundary": 1,
+        "failure_or_reporting_policy": 2,
+        "validation_policy": 3,
+        "operator_policy_choice": 4,
+    }
+    severity_priority = {"blocker": 0, "major": 1, "minor": 2, "nit": 3, "None": 4, "": 4}
+    cards = sorted(
+        checkpoints,
+        key=lambda checkpoint: (
+            priority.get(str(checkpoint["trigger_reason"]), 99),
+            severity_priority.get(str(checkpoint.get("severity")), 4),
+            int(checkpoint["round_number"]),
+            str(checkpoint["checkpoint_id"]),
+        ),
+    )
+    return [_checkpoint_summary_card(checkpoint) for checkpoint in cards[:limit]]
+
+
+def _checkpoint_summary_card(checkpoint: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "checkpoint_id": str(checkpoint["checkpoint_id"]),
+        "round_number": int(checkpoint["round_number"]),
+        "profile": str(checkpoint["profile"]),
+        "source_type": str(checkpoint["source_type"]),
+        "source_ids": [str(value) for value in checkpoint.get("source_ids", [])],
+        "severity": checkpoint.get("severity"),
+        "trigger_reason": str(checkpoint["trigger_reason"]),
+        "affected_sections": [str(section) for section in checkpoint.get("affected_sections", [])],
+        "question": str(checkpoint["question"]),
+        "recommended_option_id": checkpoint.get("recommended_option_id"),
+        "risk_if_skipped": str(checkpoint["risk_if_skipped"]),
+    }
+
+
+def _count_values(values: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        key = str(value)
+        counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _checkpoint_cards_from_unresolved(
+    round_number: int,
+    profile: str,
+    reviewer_feedback: dict[str, Any],
+    unresolved_issues: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    feedback_by_issue = {str(item.get("issue_id")): item for item in reviewer_feedback.get("feedback", [])}
+    checkpoints: list[dict[str, Any]] = []
+    for issue in unresolved_issues:
+        severity = str(issue.get("normalized_severity", ""))
+        if severity not in {"blocker", "major"} or not bool(issue.get("in_scope", True)):
+            continue
+        feedback = feedback_by_issue.get(str(issue.get("issue_id")), {})
+        text = " ".join(
+            str(value)
+            for value in (
+                issue.get("claim"),
+                feedback.get("evidence"),
+                feedback.get("recommended_change"),
+                feedback.get("invariant_violated"),
+            )
+            if value is not None
+        )
+        reason = _unresolved_checkpoint_reason(text)
+        if reason is None:
+            continue
+        sections = [str(section) for section in issue.get("affected_sections", [])]
+        evidence_lines = [str(issue.get("claim", ""))]
+        if feedback.get("recommended_change"):
+            evidence_lines.append(f"Recommended change: {feedback['recommended_change']}")
+        checkpoints.append(
+            _checkpoint_card(
+                round_number=round_number,
+                profile=profile,
+                source_type="unresolved_issue",
+                source_ids=[str(issue["issue_id"])],
+                severity=severity,
+                trigger_reason=reason,
+                affected_sections=sections,
+                question=_unresolved_question(issue, reason),
+                evidence_lines=evidence_lines,
+                options=_unresolved_options(reason, severity),
+                recommended_option_id="define_mvp_rule_now",
+                risk_if_skipped="The next Editor pass may invent policy or scope intent instead of applying an operator choice.",
+            )
+        )
+    return checkpoints
+
+
+def _checkpoint_card(
+    *,
+    round_number: int,
+    profile: str,
+    source_type: str,
+    source_ids: list[str],
+    severity: str | None,
+    trigger_reason: str,
+    affected_sections: list[str],
+    question: str,
+    evidence_lines: list[str],
+    options: list[dict[str, Any]],
+    recommended_option_id: str | None,
+    risk_if_skipped: str,
+) -> dict[str, Any]:
+    fingerprint = sha256_text(
+        "\n".join(
+            [
+                source_type,
+                "|".join(sorted(source_ids)),
+                trigger_reason,
+                "|".join(affected_sections),
+                _normalize(question),
+            ]
+        )
+    )
+    return {
+        "checkpoint_id": f"chk_{fingerprint[:16]}",
+        "round_number": round_number,
+        "profile": profile,
+        "source_type": source_type,
+        "source_ids": source_ids,
+        "severity": severity,
+        "trigger_reason": trigger_reason,
+        "affected_sections": affected_sections or ["(unsectioned)"],
+        "question": question,
+        "options": options,
+        "recommended_option_id": recommended_option_id,
+        "evidence_lines": [line for line in evidence_lines if line],
+        "risk_if_skipped": risk_if_skipped,
+        "status": "candidate",
+        "runtime_effect": "none",
+    }
+
+
+def _decision_point_options() -> list[dict[str, Any]]:
+    return [
+        {
+            "option_id": "accept_editor_choice",
+            "label": "Accept editor choice",
+            "description": "Treat the Editor's selected option as acceptable operator intent for now.",
+            "recommended": True,
+        },
+        {
+            "option_id": "revise_policy",
+            "label": "Revise policy",
+            "description": "Ask the next Editor pass to rewrite the decision using different operator intent.",
+            "recommended": False,
+        },
+        {
+            "option_id": "defer_from_scope",
+            "label": "Defer from scope",
+            "description": "Mark this behavior as outside the current scope unless it is required for correctness.",
+            "recommended": False,
+        },
+    ]
+
+
+def _unresolved_options(reason: str, severity: str) -> list[dict[str, Any]]:
+    if reason == "deferable_scope_boundary":
+        return [
+            {
+                "option_id": "define_mvp_rule_now",
+                "label": "Keep in MVP",
+                "description": "Define the minimum deterministic rule needed for the current scope.",
+                "recommended": severity == "blocker",
+            },
+            {
+                "option_id": "defer_from_scope",
+                "label": "Defer from MVP",
+                "description": "Preserve the issue as deferred hardening with an explicit scope boundary.",
+                "recommended": severity != "blocker",
+            },
+            {
+                "option_id": "custom_operator_rule",
+                "label": "Other",
+                "description": "Provide a custom scope rule for the next Editor pass.",
+                "recommended": False,
+            },
+        ]
+    return [
+        {
+            "option_id": "define_mvp_rule_now",
+            "label": "Define deterministic rule",
+            "description": "Add the smallest closed rule needed for the current MVP or target scope.",
+            "recommended": True,
+        },
+        {
+            "option_id": "defer_from_scope",
+            "label": "Defer detailed behavior",
+            "description": "State that detailed behavior is outside the current scope and identify the safe default.",
+            "recommended": False,
+        },
+        {
+            "option_id": "custom_operator_rule",
+            "label": "Other",
+            "description": "Provide a custom operator policy for the next Editor pass.",
+            "recommended": False,
+        },
+    ]
+
+
+def _checkpoint_reason(point: dict[str, Any]) -> str:
+    status = str(point.get("decision_status", ""))
+    triggers = {str(trigger) for trigger in point.get("trigger_types", [])}
+    if status == "deferred_scope_decision" or "scope_change" in triggers:
+        return "deferable_scope_boundary"
+    if "choose_policy" in triggers:
+        return "operator_policy_choice"
+    if "add_operational_requirement" in triggers:
+        return "failure_or_reporting_policy"
+    return "operator_policy_choice"
+
+
+def _unresolved_checkpoint_reason(text: str) -> str | None:
+    normalized = text.lower()
+    if re.search(r"\b(defer|scope|post-mvp|out of scope|future)\b", normalized):
+        return "deferable_scope_boundary"
+    if re.search(r"\b(authority|authoritative|owner|override|precedence)\b", normalized):
+        return "authority_boundary"
+    if re.search(r"\b(report|diagnostic|summary|artifact|emit|write|stderr|stdout)\b", normalized):
+        return "failure_or_reporting_policy"
+    if re.search(r"\b(validation|validate|schema|missing|unreadable|unparsable|malformed|required)\b", normalized):
+        return "validation_policy"
+    if re.search(r"\b(failure|fail|retry|timeout|rollback|restore|partial|atomic|exit code)\b", normalized):
+        return "failure_or_reporting_policy"
+    if re.search(r"\b(whether|policy|choose|decision|allow|forbid|fallback|default)\b", normalized):
+        return "operator_policy_choice"
+    return None
+
+
+def _unresolved_question(issue: dict[str, Any], reason: str) -> str:
+    section = ", ".join(str(section) for section in issue.get("affected_sections", [])) or "(unsectioned)"
+    claim = re.sub(r"\s+", " ", str(issue.get("claim", "")).strip())
+    reason_text = reason.replace("_", " ")
+    return f"How should `{section}` resolve this {reason_text}: {claim}"
+
+
+def _dedupe_checkpoints(checkpoints: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    deduped: list[dict[str, Any]] = []
+    for checkpoint in checkpoints:
+        identifier = str(checkpoint["checkpoint_id"])
+        if identifier in seen:
+            continue
+        seen.add(identifier)
+        deduped.append(checkpoint)
+    return deduped
 
 
 def _detect_added_line_points(

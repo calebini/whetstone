@@ -199,7 +199,12 @@ def rubric_manifest_identity(manifest: RubricManifest | dict[str, Any]) -> dict[
 def _required_artifacts_for_workflow(workflow: str) -> list[str]:
     common = ["spec.md", "spec.history.md", "run_state.json"]
     if workflow == "exploratory":
-        return common + ["decision_register.json"]
+        return common + ["decision_register.json", "operator_decision_checkpoint_summary.json"]
     if workflow == "mvp":
-        return common + ["decision_register.json", "decision_summary.json"]
-    return common + ["convergence_declaration.md", "decision_register.json", "decision_summary.json"]
+        return common + ["decision_register.json", "decision_summary.json", "operator_decision_checkpoint_summary.json"]
+    return common + [
+        "convergence_declaration.md",
+        "decision_register.json",
+        "decision_summary.json",
+        "operator_decision_checkpoint_summary.json",
+    ]

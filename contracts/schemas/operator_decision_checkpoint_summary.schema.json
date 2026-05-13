@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/operator_decision_checkpoint_summary.schema.json",
+  "title": "Whetstone Operator Decision Checkpoint Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "terminal_state",
+    "source_glob",
+    "summary_method",
+    "checkpoint_count",
+    "rounds_with_checkpoints",
+    "trigger_reason_counts",
+    "source_type_counts",
+    "clusters",
+    "recommended_operator_review"
+  ],
+  "properties": {
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "terminal_state": { "type": "string", "minLength": 1 },
+    "source_glob": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "summary_method": {
+      "type": "string",
+      "enum": ["mechanical_checkpoint_v1"]
+    },
+    "checkpoint_count": { "type": "integer", "minimum": 0 },
+    "rounds_with_checkpoints": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 }
+    },
+    "trigger_reason_counts": { "$ref": "common.schema.json#/$defs/stringIntegerMap" },
+    "source_type_counts": { "$ref": "common.schema.json#/$defs/stringIntegerMap" },
+    "clusters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by_trigger_reason", "by_section", "by_source_type"],
+      "properties": {
+        "by_trigger_reason": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/checkpointCluster" }
+        },
+        "by_section": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/checkpointCluster" }
+        },
+        "by_source_type": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/checkpointCluster" }
+        }
+      }
+    },
+    "recommended_operator_review": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/checkpointSummaryCard" }
+    }
+  }
+}

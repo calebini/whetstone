@@ -372,6 +372,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 "context",
                 "decision_points.json",
                 "editor_summary.json",
+                "operator_decision_checkpoint.json",
                 "profile_used.yaml",
                 "prompt_snapshot.json",
                 "prompt_snapshots",

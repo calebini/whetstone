@@ -14,7 +14,7 @@ from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, 
 from whetstone.config import ClientConfig, OrchestratorConfig
 from whetstone.contracts import validate_artifact
 from whetstone.contract_surface import read_contract_surface_report
-from whetstone.decisions import detect_decision_points
+from whetstone.decisions import detect_decision_points, operator_decision_checkpoint
 from whetstone.evaluation import accepted_draft
 from whetstone.hashing import draft_hash, rubric_content_hash, semantic_change_hash
 from whetstone.prompts import render_editor_prompt, render_reviewer_prompt
@@ -216,6 +216,14 @@ class LiveRoundRunner:
                 decision_packet,
                 schema_name="decision_points",
             )
+            self._write_operator_decision_checkpoint(
+                round_number=round_number,
+                profile=profile,
+                draft_hash_value=draft_before_hash,
+                reviewer_feedback=reviewer_feedback,
+                decision_packet=decision_packet,
+                unresolved=[],
+            )
             unresolved_packet = {
                 "round_number": round_number,
                 "draft_hash": draft_before_hash,
@@ -373,6 +381,14 @@ class LiveRoundRunner:
             "decision_points.json",
             decision_packet,
             schema_name="decision_points",
+        )
+        self._write_operator_decision_checkpoint(
+            round_number=round_number,
+            profile=profile,
+            draft_hash_value=draft_after_hash,
+            reviewer_feedback=reviewer_feedback,
+            decision_packet=decision_packet,
+            unresolved=unresolved,
         )
 
         unresolved_packet = {
@@ -684,6 +700,14 @@ class LiveRoundRunner:
             scope_contract=scope_contract.packet if scope_contract is not None else None,
         )
         self.store.write_round_json(round_number, "decision_points.json", decision_packet, schema_name="decision_points")
+        self._write_operator_decision_checkpoint(
+            round_number=round_number,
+            profile=profile,
+            draft_hash_value=draft_after_hash,
+            reviewer_feedback=reviewer_feedback,
+            decision_packet=decision_packet,
+            unresolved=unresolved,
+        )
         self.store.write_round_json(
             round_number,
             "unresolved_issues.json",
@@ -722,6 +746,32 @@ class LiveRoundRunner:
             accepted=accepted,
             reviewer_feedback_count=len(reviewer_feedback.get("feedback", [])),
             spec_mutated=spec_mutated,
+        )
+
+    def _write_operator_decision_checkpoint(
+        self,
+        *,
+        round_number: int,
+        profile: str,
+        draft_hash_value: str,
+        reviewer_feedback: dict[str, Any],
+        decision_packet: dict[str, Any],
+        unresolved: list[dict[str, Any]],
+    ) -> None:
+        unresolved_for_checkpoint = unresolved if self.config.decision_points.enabled else []
+        packet = operator_decision_checkpoint(
+            round_number=round_number,
+            profile=profile,
+            draft_hash_value=draft_hash_value,
+            reviewer_feedback=reviewer_feedback,
+            decision_points=decision_packet,
+            unresolved_issues=unresolved_for_checkpoint,
+        )
+        self.store.write_round_json(
+            round_number,
+            "operator_decision_checkpoint.json",
+            packet,
+            schema_name="operator_decision_checkpoint",
         )
 
     def _call_with_validation_retry(

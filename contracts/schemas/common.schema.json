@@ -68,6 +68,10 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "stringIntegerMap": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
     "issueSummary": {
       "type": "object",
       "additionalProperties": false,
@@ -286,6 +290,92 @@
           "type": "string",
           "enum": ["record_only", "present_at_end", "pause_for_input"]
         }
+      }
+    },
+    "checkpointCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cluster_key",
+        "cluster_label",
+        "checkpoint_count",
+        "checkpoint_ids",
+        "round_numbers",
+        "profiles",
+        "source_types",
+        "trigger_reasons",
+        "affected_sections",
+        "representative_questions"
+      ],
+      "properties": {
+        "cluster_key": { "$ref": "#/$defs/nonEmptyString" },
+        "cluster_label": { "$ref": "#/$defs/nonEmptyString" },
+        "checkpoint_count": { "type": "integer", "minimum": 0 },
+        "checkpoint_ids": { "$ref": "#/$defs/stringArray" },
+        "round_numbers": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "profiles": { "$ref": "#/$defs/stringArray" },
+        "source_types": { "$ref": "#/$defs/stringArray" },
+        "trigger_reasons": { "$ref": "#/$defs/stringArray" },
+        "affected_sections": { "$ref": "#/$defs/stringArray" },
+        "representative_questions": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "checkpointSummaryCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkpoint_id",
+        "round_number",
+        "profile",
+        "source_type",
+        "source_ids",
+        "severity",
+        "trigger_reason",
+        "affected_sections",
+        "question",
+        "recommended_option_id",
+        "risk_if_skipped"
+      ],
+      "properties": {
+        "checkpoint_id": {
+          "type": "string",
+          "pattern": "^chk_[a-f0-9]{16}$"
+        },
+        "round_number": { "type": "integer", "minimum": 1 },
+        "profile": { "$ref": "#/$defs/nonEmptyString" },
+        "source_type": {
+          "type": "string",
+          "enum": ["decision_point", "unresolved_issue"]
+        },
+        "source_ids": { "$ref": "#/$defs/stringArray" },
+        "severity": {
+          "anyOf": [
+            { "$ref": "#/$defs/severity" },
+            { "type": "null" }
+          ]
+        },
+        "trigger_reason": {
+          "type": "string",
+          "enum": [
+            "operator_policy_choice",
+            "deferable_scope_boundary",
+            "authority_boundary",
+            "validation_policy",
+            "failure_or_reporting_policy"
+          ]
+        },
+        "affected_sections": { "$ref": "#/$defs/stringArray" },
+        "question": { "$ref": "#/$defs/nonEmptyString" },
+        "recommended_option_id": {
+          "anyOf": [
+            { "$ref": "#/$defs/nonEmptyString" },
+            { "type": "null" }
+          ]
+        },
+        "risk_if_skipped": { "$ref": "#/$defs/nonEmptyString" }
       }
     }
   }

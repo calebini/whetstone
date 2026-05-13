@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.56 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.58 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.56` reports unchanged Editor output with unresolved blocker/major findings as technical verification debt instead of oscillation.
+Version `0.58` adds terminal operator decision checkpoint summaries that cluster per-round checkpoint cards into a compact operator review aid.
 
 ---
 
@@ -46,6 +46,7 @@ Version `0.56` reports unchanged Editor output with unresolved blocker/major fin
   - draft_after.md
   - unresolved_issues.json
   - decision_points.json
+  - operator_decision_checkpoint.json
   - rubric_gaps.json (Phase 2 only)
   - profile_used.yaml (JSON-compatible metadata despite `.yaml` suffix)
   - prompt_snapshot.json
@@ -70,6 +71,8 @@ Version `0.56` reports unchanged Editor output with unresolved blocker/major fin
 - /rounds/decision_summary.json (at terminal state)
 - /rounds/decision_summary.md (human-readable decision summary, at terminal state)
 - /rounds/decision_intervention_request.json (if decision intervention is required)
+- /rounds/operator_decision_checkpoint_summary.json (at terminal state)
+- /rounds/operator_decision_checkpoint_summary.md (human-readable checkpoint summary, at terminal state)
 - /rounds/intake/scope_contract.json (approved scope contract, when present)
 - /rounds/contract_surface_report.json (if expanding contract surface is detected)
 - /rounds/contract_surface_report.md (human-readable synthesis recommendation, if detected)
@@ -1307,6 +1310,89 @@ Decision point thresholds MUST be computable from persisted artifacts or determi
 - draft diff changes role, phase, adapter, or Orchestrator scope
 
 Decision point records MUST NOT replace reviewer feedback, editor summaries, conflict reports, or convergence declarations. They are an operator-facing release valve for consequential choices that would otherwise be hidden inside `accepted_feedback_ids` or `modified_feedback_ids`.
+
+`operator_decision_checkpoint.json` is a per-round, nonblocking artifact derived from decision points and unresolved blocker/major Reviewer findings. It frames likely owner-level policy, scope, authority, validation, failure-handling, or reporting choices as operator-readable multiple-choice checkpoint cards.
+
+This artifact is advisory in version `0.57`. It MUST NOT pause execution, alter scheduler state, mark a profile clean, resolve feedback, mutate the draft, or satisfy convergence by itself. Its runtime effect is explicitly `none`.
+
+`operator_decision_checkpoint.json` MUST contain:
+
+```yaml
+generated_at: string
+round_number: integer
+profile: string
+draft_hash: string
+mode: artifact_only
+runtime_effect: none
+default_action: continue_without_operator_input
+checkpoint_count: integer
+checkpoints:
+  - checkpoint_id: string
+    round_number: integer
+    profile: string
+    source_type: decision_point | unresolved_issue
+    source_ids: [string]
+    severity: blocker | major | minor | nit | null
+    trigger_reason: operator_policy_choice | deferable_scope_boundary | authority_boundary | validation_policy | failure_or_reporting_policy
+    affected_sections: [string]
+    question: string
+    options:
+      - option_id: string
+        label: string
+        description: string
+        recommended: boolean
+    recommended_option_id: string | null
+    evidence_lines: [string]
+    risk_if_skipped: string
+    status: candidate
+    runtime_effect: none
+```
+
+The Orchestrator SHOULD write `operator_decision_checkpoint.json` for every live round, even when `checkpoints = []`, so downstream operators can distinguish "no checkpoint candidates" from "artifact not produced."
+
+Checkpoint candidates derived from unresolved Reviewer findings SHOULD be limited to in-scope blocker/major issues whose text indicates an operator-level choice, including scope boundaries, authority precedence, validation policy, failure/reporting behavior, fallback behavior, or product policy. Routine local precision gaps SHOULD remain Editor-fixable and SHOULD NOT create checkpoint cards.
+
+Checkpoint candidates derived from `decision_points.json` SHOULD include decision points with `decision_status` in:
+
+- `operator_review_recommended`
+- `operator_required_decision`
+- `deferred_scope_decision`
+
+The `default_action = continue_without_operator_input` means the current runtime continues exactly as it would have without the checkpoint artifact. Future interactive or auto-guided modes MAY consume the same checkpoint shape and persist separate response artifacts, but version `0.57` MUST NOT imply such response handling exists.
+
+At terminal state, the Orchestrator MUST aggregate per-round checkpoint artifacts into:
+
+- `/rounds/operator_decision_checkpoint_summary.json`
+- `/rounds/operator_decision_checkpoint_summary.md`
+
+The checkpoint summary is a deterministic operator review aid. It MUST NOT pause execution, alter scheduler state, resolve feedback, mutate the draft, or satisfy convergence.
+
+`operator_decision_checkpoint_summary.json` MUST contain:
+
+```yaml
+generated_at: string
+terminal_state: string
+source_glob: rounds/round-*/operator_decision_checkpoint.json
+summary_method: mechanical_checkpoint_v1
+checkpoint_count: integer
+rounds_with_checkpoints: [integer]
+trigger_reason_counts: object
+source_type_counts: object
+clusters:
+  by_trigger_reason: [checkpoint_cluster]
+  by_section: [checkpoint_cluster]
+  by_source_type: [checkpoint_cluster]
+recommended_operator_review: [checkpoint_summary_card]
+```
+
+Checkpoint summary clusters MUST be mechanical:
+
+- `by_trigger_reason` groups by `trigger_reason`.
+- `by_section` groups by the first affected section on each checkpoint card.
+- `by_source_type` groups by `decision_point` vs `unresolved_issue`.
+- `recommended_operator_review` MUST contain at most five checkpoint cards sorted by deterministic priority: authority boundary, deferred scope boundary, failure/reporting policy, validation policy, then general operator policy choice; ties sort by severity, round number, then checkpoint ID.
+
+The human-readable Markdown summary MUST expose the same counts, recommended review cards, and clusters without adding semantic interpretation beyond persisted checkpoint fields.
 
 `decision_register.json` MUST contain:
 
