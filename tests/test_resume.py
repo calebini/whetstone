@@ -379,14 +379,14 @@ class ResumeTests(unittest.TestCase):
                 editor_client=UniqueAppliedDraftEditorClient(root),
             ).run()
             self.assertEqual(exhausted.terminal_state, "TARGET_NOT_REACHED")
-            self.assertEqual(exhausted.round_number, 3)
+            self.assertEqual(exhausted.round_number, 6)
             self.assertTrue(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
             round_1_before = root.joinpath("rounds/round-1/reviewer_feedback.json").read_text(encoding="utf-8")
 
             plan = plan_budget_extension_resume(root, config, extend_review_budget=1)
             self.assertTrue(plan.resumable)
             self.assertEqual(plan.failure_type, "budget_exhausted")
-            self.assertEqual(plan.next_round_number, 4)
+            self.assertEqual(plan.next_round_number, 7)
 
             resumed = resume_budget_exhausted_run(
                 root,
@@ -397,14 +397,14 @@ class ResumeTests(unittest.TestCase):
             )
 
             self.assertEqual(resumed.terminal_state, "PHASE_1_STABLE")
-            self.assertEqual(resumed.round_number, 6)
+            self.assertEqual(resumed.round_number, 9)
             self.assertEqual(root.joinpath("rounds/round-1/reviewer_feedback.json").read_text(encoding="utf-8"), round_1_before)
-            self.assertTrue(root.joinpath("rounds/round-4/reviewer_feedback.json").exists())
-            self.assertTrue(root.joinpath("rounds/round-6/reviewer_feedback.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-7/reviewer_feedback.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-9/reviewer_feedback.json").exists())
             state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
             self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
-            self.assertEqual(state["review_profile_budgets"]["structural_integrity"], 2)
-            self.assertEqual(state["effective_run_config"]["review_profile_budgets"]["determinism"], 2)
+            self.assertEqual(state["review_profile_budgets"]["structural_integrity"], 3)
+            self.assertEqual(state["effective_run_config"]["review_profile_budgets"]["determinism"], 3)
             self.assertEqual(len(state["budget_extensions"]), 1)
             self.assertEqual(state["budget_extensions"][0]["previous_terminal_state"], "TARGET_NOT_REACHED")
             self.assertEqual(state["budget_extensions"][0]["added_rounds_per_profile"], 1)
@@ -576,7 +576,7 @@ class ResumeTests(unittest.TestCase):
             self.assertTrue(packet["resumable"])
             self.assertEqual(packet["failure_type"], "budget_exhausted")
             self.assertEqual(packet["extend_review_budget"], 2)
-            self.assertEqual(packet["next_round_number"], 4)
+            self.assertEqual(packet["next_round_number"], 7)
 
 
 def _feedback_text_from_prompt(prompt: str, root: Path) -> str:

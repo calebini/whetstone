@@ -99,6 +99,81 @@ Future improvements:
 - Consider cluster-level intervention instead of line-level intervention, so one pause can cover a coherent group of related decisions.
 - Make approval briefs emphasize what happens if the owner accepts all editor choices unchanged.
 
+### Between-Round Operator Decision Checkpoints
+
+Add an optional decision checkpoint mode that can pause between rounds when Whetstone detects findings that are probably owner-level policy, scope, authority, or product choices rather than routine editor-fixable spec defects.
+
+This should remain a future feature until the runtime can enforce it cleanly. The current spec should not promise this behavior yet.
+
+Potential flow:
+
+1. Reviewer finds blocker or major issues.
+2. Orchestrator classifies each issue or issue cluster as one of:
+   - `editor_fixable`: missing detail, inconsistency, schema hole, or local contract gap the Editor can resolve without new owner intent.
+   - `operator_decision_required`: policy, scope, authority, destructive behavior, product behavior, or tradeoff that the Editor should not invent.
+   - `deferable_scope_boundary`: valuable hardening request that should remain outside the current scope contract unless the operator promotes it.
+3. Before the next Editor pass, Whetstone may pause and present a compact decision card.
+4. Operator selects an option or provides freeform `Other` text.
+5. Whetstone persists the response into the decision register.
+6. The next Editor prompt treats the operator response as authoritative context.
+
+Decision card shape:
+
+- decision question
+- affected sections
+- triggering feedback IDs
+- 2-4 concrete options
+- recommended option
+- impact/tradeoff of each option
+- freeform `Other`
+- default action if the operator skips the checkpoint
+
+Example:
+
+```text
+Decision: How strict is anchor confidence mode for MVP?
+
+A. Hard require context-anchor.yaml.
+   Missing, schema-invalid, or incomplete anchors fail before writing localization files.
+
+B. Allow partial anchor mode.
+   Use anchors where present and fall back to normal confidence for missing keys.
+
+C. Defer anchor mode.
+   Treat --confidence-mode anchor as unsupported until post-MVP.
+
+Recommended: A, because anchor mode only has value if its authority input is deterministic.
+```
+
+Possible config:
+
+```yaml
+decisions:
+  mode: end_of_cycle | between_rounds | off
+  checkpoint_on:
+    - blocker
+    - repeated_major
+    - scope_escalation
+    - authority_conflict
+  max_questions_per_checkpoint: 3
+  default_when_skipped: continue_without_operator_input | halt_for_operator
+```
+
+Possible artifacts:
+
+- `rounds/round-N/operator_decision_checkpoint.json`
+- `rounds/round-N/operator_decision_response.json`
+- `rounds/decision_register.json`
+- `rounds/decision_summary.md`
+
+Design constraints:
+
+- The checkpoint classifier should be conservative. It should not pause for routine precision hardening.
+- Multiple related issues should be clustered into one decision whenever possible.
+- The operator response must be persisted as a versioned, hashable artifact.
+- Editor prompts must distinguish operator decisions from reviewer suggestions.
+- The feature should have a noninteractive mode for automation, where checkpoints are recorded but not paused.
+
 ## Client Capability Notes
 
 Observed live behavior suggests a practical role split:

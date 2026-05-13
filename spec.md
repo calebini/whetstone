@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.54 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.56 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.54` adds explicit per-round kind metadata so operators can distinguish review-only, reviewer/editor, fixture, and consolidated vertical Editor rounds.
+Version `0.56` reports unchanged Editor output with unresolved blocker/major findings as technical verification debt instead of oscillation.
 
 ---
 
@@ -645,6 +645,17 @@ For each Phase 1 profile in `horizontal` mode:
 - if the Reviewer pass is clean but the Editor mutates the draft in the same round, that clean result applies only to the pre-edit draft and MUST NOT mark the post-edit draft clean; the same profile requires a later clean verification pass unless a computable skip rule applies
 - if the editor mutates any section whose canonical section ID matches the profile's resolved focus anchors, previous clean status for that profile is invalidated
 - if the editor mutates only sections outside the profile's resolved focus anchors, previous clean status for that profile remains valid
+
+If horizontal mode exhausts profile review budgets immediately after an accepted Editor mutation and there are no unresolved blocker or major issues, the Orchestrator MAY run one verification-only closeout pass over the profiles still marked unverified. The closeout pass MUST:
+- invoke only Reviewer clients
+- MUST NOT invoke the Editor
+- MUST NOT mutate `spec.md`
+- be persisted as normal review-only `round-N/` artifacts
+- mark Phase 1 stable only if every closeout profile review is clean for the current draft hash
+
+If the horizontal closeout pass finds any blocker or major issue, the Orchestrator MUST NOT run another automatic Editor revision. It MUST halt using the applicable Phase 1 budget-exhaustion terminal state and report the remaining verification debt.
+
+If a Phase 1 Editor returns an unchanged draft while one or more in-scope blocker or major Reviewer findings remain unresolved, the Orchestrator MUST NOT classify that event as oscillation solely because the draft hash repeats. It MUST produce a Phase 1 technical failure report with `terminal_state: TARGET_NOT_REACHED`, `current_draft_status: not_accepted`, and an exit reason indicating unchanged Editor output with unresolved serious findings. This represents Reviewer/Editor disagreement or no-op editing debt, not semantic draft churn.
 
 Phase 1 completes only when:
 - all non-skipped Phase 1 profiles have valid clean status, and

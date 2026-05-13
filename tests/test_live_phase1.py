@@ -101,6 +101,44 @@ class ContractSurfaceReviewerClient:
         }
 
 
+class AlwaysMajorReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": [
+                {
+                    "feedback_id": f"fb-always-{self.calls}",
+                    "issue_id": f"iss_{self.calls:016x}",
+                    "issue_fingerprint": f"{self.calls:x}" * 64,
+                    "issue_type": "undefined_behavior",
+                    "affected_sections": ["Spec"],
+                    "baseline_severity": "major",
+                    "authority_impact": None,
+                    "determinism_impact": None,
+                    "rubric_impact": None,
+                    "normalized_severity": "major",
+                    "invariant_violated": "fixture invariant",
+                    "claim": "Fixture major.",
+                    "evidence": "Fixture evidence.",
+                    "recommended_change": "Fix it.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": None,
+                }
+            ],
+        }
+
+
 class ResolvingEditorClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -358,11 +396,11 @@ class LivePhase1RunnerTests(unittest.TestCase):
 
     def test_max_rounds_emits_technical_failure_report(self) -> None:
         with TemporaryDirectory() as tmp:
-            root = _seed_root(Path(tmp), review_max_rounds=1)
+            root = _seed_root(Path(tmp), review_max_rounds=1, profile_budget=1)
             result = LivePhase1Runner(
                 root,
                 load_config(root / "orchestrator_config.yaml"),
-                reviewer_client=ScriptedReviewerClient(root, ["major"]),
+                reviewer_client=AlwaysMajorReviewerClient(root),
                 editor_client=BlockingEditorClient(root),
                 draft_after_provider=lambda round_number, profile, draft: draft + "\nChanged.\n",
             ).run()
@@ -398,11 +436,11 @@ class LivePhase1RunnerTests(unittest.TestCase):
 
     def test_soft_budget_exhaustion_completes_sweep_with_residuals(self) -> None:
         with TemporaryDirectory() as tmp:
-            root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=10)
+            root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=1)
             result = LivePhase1Runner(
                 root,
                 load_config(root / "orchestrator_config.yaml"),
-                reviewer_client=ScriptedReviewerClient(root, ["major", "major", "major"]),
+                reviewer_client=AlwaysMajorReviewerClient(root),
                 editor_client=BlockingEditorClient(root),
                 draft_after_provider=lambda round_number, profile, draft: draft + f"\nChanged {round_number}.\n",
             ).run()
@@ -414,14 +452,14 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertFalse(state["ready_for_phase_2"])
             report = _read_json(root / "rounds" / "technical_failure_report.json")
             self.assertEqual(report["terminal_state"], "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
-            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
+            self.assertEqual(report["current_draft_status"], "not_accepted")
             self.assertFalse(report["ready_for_phase_2"])
             self.assertEqual(
                 report["profile_status"]["exhausted_profiles"],
                 ["structural_integrity", "determinism", "operability"],
             )
 
-    def test_soft_budget_report_distinguishes_accepted_but_profile_unverified_draft(self) -> None:
+    def test_horizontal_closeout_stabilizes_accepted_but_unverified_draft(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=1)
             result = LivePhase1Runner(
@@ -432,12 +470,19 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 draft_after_provider=lambda round_number, profile, draft: draft + f"\nResolved {round_number}.\n",
             ).run()
 
-            self.assertEqual(result.terminal_state, "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
-            report = _read_json(root / "rounds" / "technical_failure_report.json")
-            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
-            self.assertFalse(report["ready_for_phase_2"])
-            self.assertEqual(report["last_accepted_draft_hash"], report["last_draft_hash"])
-            self.assertIn("structural_integrity", report["profile_status"]["unverified_profiles"])
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            self.assertTrue(result.ready_for_phase_2)
+            self.assertEqual(result.round_number, 6)
+            self.assertFalse((root / "rounds" / "technical_failure_report.json").exists())
+            profile_used = _read_json(root / "rounds" / "round-4" / "profile_used.yaml")
+            self.assertEqual(profile_used["profile"], "structural_integrity")
+            self.assertEqual(profile_used["round_kind"], "review_only")
+            final_profile_used = _read_json(root / "rounds" / "round-6" / "profile_used.yaml")
+            self.assertEqual(final_profile_used["profile"], "operability")
+            self.assertEqual(final_profile_used["round_kind"], "review_only")
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
+            self.assertTrue(state["ready_for_phase_2"])
 
     def test_clean_final_budget_round_is_not_reported_as_residual_for_version_only_mutation(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -458,7 +503,7 @@ class LivePhase1RunnerTests(unittest.TestCase):
             state = _read_json(root / "rounds" / "run_state.json")
             self.assertTrue(state["ready_for_phase_2"])
 
-    def test_soft_budget_oscillation_advances_profile_with_residual_status(self) -> None:
+    def test_soft_budget_no_op_serious_findings_reports_technical_failure(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_root(Path(tmp), budget_exhaustion_policy="soft", profile_budget=10)
             result = LivePhase1Runner(
@@ -468,16 +513,12 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 editor_client=BlockingEditorClient(root),
             ).run()
 
-            self.assertEqual(result.terminal_state, "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS")
-            self.assertTrue((root / "rounds" / "oscillation_report.json").exists())
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            self.assertFalse((root / "rounds" / "oscillation_report.json").exists())
             report = _read_json(root / "rounds" / "technical_failure_report.json")
-            statuses = {
-                item["profile"]: item["residual_status"]
-                for item in report["profile_status"]["profiles"]
-            }
-            self.assertEqual(statuses["structural_integrity"], "halted_oscillation")
+            self.assertIn("unchanged draft", report["exit_reason"])
 
-    def test_repeated_blocking_draft_hash_emits_oscillation_report(self) -> None:
+    def test_no_op_editor_with_blocking_findings_emits_technical_failure(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_root(Path(tmp))
             result = LivePhase1Runner(
@@ -487,9 +528,11 @@ class LivePhase1RunnerTests(unittest.TestCase):
                 editor_client=BlockingEditorClient(root),
             ).run()
 
-            self.assertEqual(result.terminal_state, "HALTED_OSCILLATION")
-            report = _read_json(root / "rounds" / "oscillation_report.json")
-            self.assertEqual(report["terminal_state"], "HALTED_OSCILLATION")
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            self.assertFalse((root / "rounds" / "oscillation_report.json").exists())
+            report = _read_json(root / "rounds" / "technical_failure_report.json")
+            self.assertEqual(report["terminal_state"], "TARGET_NOT_REACHED")
+            self.assertIn("unchanged draft", report["exit_reason"])
             self.assertTrue(root.joinpath("rounds/decision_register.json").exists())
 
     def test_artifact_validation_failure_stops_loop_without_mutation(self) -> None:

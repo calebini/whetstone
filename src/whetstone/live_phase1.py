@@ -265,6 +265,45 @@ class LivePhase1Runner:
             update_contract_surface_lifecycle(rounds_dir=self.config.rounds_dir)
 
             seen_hashes.append(result.draft_after_hash)
+            if _no_op_with_unresolved_serious_findings(result=result, unresolved=last_unresolved):
+                report_path = self.report_writer.write_technical_failure_report(
+                    round_number=round_number,
+                    final_draft_path="./spec.md",
+                    unresolved_blockers=[
+                        _issue_summary(issue)
+                        for issue in last_unresolved
+                        if issue["normalized_severity"] == "blocker"
+                    ],
+                    unresolved_major_issues=[
+                        _issue_summary(issue)
+                        for issue in last_unresolved
+                        if issue["normalized_severity"] == "major"
+                    ],
+                    unresolved_conflicts=[],
+                    unresolved_oscillation=None,
+                    last_accepted_draft_hash=last_accepted_draft_hash,
+                    exit_reason="Editor returned an unchanged draft while blocker or major Reviewer findings remained unresolved",
+                    recommendation="manual_review_required",
+                    profile_status=scheduler.status(),
+                    last_reviewer_findings=last_reviewer_findings,
+                    terminal_state="TARGET_NOT_REACHED",
+                )
+                self._write_state(
+                    current_round=round_number,
+                    active_profile=profile,
+                    current_draft_hash=result.draft_after_hash,
+                    last_accepted_draft_hash=last_accepted_draft_hash,
+                    seen_draft_hashes=seen_hashes,
+                    terminal_state="TARGET_NOT_REACHED",
+                    ready_for_phase_2=False,
+                )
+                write_decision_register(
+                    rounds_dir=self.config.rounds_dir,
+                    mode=self.config.decision_points.mode,
+                    terminal_state="TARGET_NOT_REACHED",
+                )
+                update_contract_surface_lifecycle(rounds_dir=self.config.rounds_dir, terminal=True)
+                return LivePhase1Result("TARGET_NOT_REACHED", round_number, result.draft_after_hash, last_accepted_draft_hash, False, report_path)
             if result.draft_after_hash in seen_hashes[:-1] and (reviewer_blocker_count > 0 or reviewer_major_count > 0):
                 report_path = self.report_writer.write_oscillation_report(
                     round_number=round_number,
@@ -337,10 +376,46 @@ class LivePhase1Runner:
                 )
 
         current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        profile_status = scheduler.status()
+        exhausted_round_number = max(1, min(total_round_budget, len(seen_hashes) - 1))
+        if _horizontal_closeout_eligible(
+            current_hash=current_hash,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            last_unresolved=last_unresolved,
+            profile_status=profile_status,
+        ):
+            closeout_result = self._run_horizontal_closeout_check(
+                start_round=exhausted_round_number + 1,
+                profile_status=profile_status,
+                seen_hashes=seen_hashes,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                overwrite=overwrite,
+            )
+            if closeout_result["terminal_state"] == "PHASE_1_STABLE":
+                return self._complete(
+                    round_number=closeout_result["round_number"],
+                    current_draft_hash=closeout_result["current_hash"],
+                    last_accepted_draft_hash=closeout_result["last_accepted_draft_hash"],
+                    seen_draft_hashes=seen_hashes,
+                )
+            if closeout_result["terminal_state"] is not None:
+                return LivePhase1Result(
+                    closeout_result["terminal_state"],
+                    closeout_result["round_number"],
+                    closeout_result["current_hash"],
+                    last_accepted_draft_hash,
+                    False,
+                    self.config.rounds_dir / "artifact_validation_error.json",
+                )
+            current_hash = closeout_result["current_hash"]
+            profile_status = closeout_result["profile_status"]
+            last_unresolved = closeout_result["last_unresolved"]
+            last_reviewer_findings = closeout_result["last_reviewer_findings"]
+            exhausted_round_number = closeout_result["round_number"]
         blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
         majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
         report_path = self.report_writer.write_technical_failure_report(
-            round_number=max(1, min(total_round_budget, len(seen_hashes) - 1)),
+            round_number=exhausted_round_number,
             final_draft_path="./spec.md",
             unresolved_blockers=blockers,
             unresolved_major_issues=majors,
@@ -349,13 +424,13 @@ class LivePhase1Runner:
             last_accepted_draft_hash=last_accepted_draft_hash,
             exit_reason="Phase 1 profile round budgets exhausted before reviewer-verified stable draft",
             recommendation="manual_review_required",
-            profile_status=scheduler.status(),
+            profile_status=profile_status,
             last_reviewer_findings=last_reviewer_findings,
             terminal_state="PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(self.config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED",
         )
         terminal_state = "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(self.config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED"
         self._write_state(
-            current_round=max(1, min(total_round_budget, len(seen_hashes) - 1)),
+            current_round=exhausted_round_number,
             active_profile=scheduler.next_profile(),
             current_draft_hash=current_hash,
             last_accepted_draft_hash=last_accepted_draft_hash,
@@ -368,7 +443,7 @@ class LivePhase1Runner:
             mode=self.config.decision_points.mode,
             terminal_state=terminal_state,
         )
-        return LivePhase1Result(terminal_state, len(seen_hashes) - 1, current_hash, last_accepted_draft_hash, False, report_path)
+        return LivePhase1Result(terminal_state, exhausted_round_number, current_hash, last_accepted_draft_hash, False, report_path)
 
     def _run_vertical(self, *, overwrite: bool = False) -> LivePhase1Result:
         if overwrite:
@@ -761,6 +836,115 @@ class LivePhase1Runner:
             "last_reviewer_findings": last_reviewer_findings,
         }
 
+    def _run_horizontal_closeout_check(
+        self,
+        *,
+        start_round: int,
+        profile_status: dict[str, Any],
+        seen_hashes: list[str],
+        last_accepted_draft_hash: str | None,
+        overwrite: bool,
+    ) -> dict[str, Any]:
+        round_number = start_round - 1
+        closeout_unresolved: list[dict[str, Any]] = []
+        last_reviewer_findings: dict[str, Any] | None = None
+        mutable_status = _copy_profile_status(profile_status)
+        for profile in list(profile_status.get("unverified_profiles", [])):
+            current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+            round_number += 1
+            self._write_state(
+                current_round=round_number,
+                active_profile=str(profile),
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                seen_draft_hashes=seen_hashes,
+                terminal_state=None,
+                ready_for_phase_2=False,
+            )
+            try:
+                review_result = LiveRoundRunner(
+                    self.root,
+                    self.config,
+                    reviewer_client=self.reviewer_client,
+                    editor_client=self.editor_client,
+                    timeout_seconds=self.timeout_seconds,
+                ).run_review_only_round(
+                    round_number=round_number,
+                    profile=str(profile),
+                    phase="phase_1",
+                    overwrite=overwrite,
+                )
+            except ValueError:
+                artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
+                if artifact_error.exists():
+                    error_packet = _read_json(artifact_error)
+                    terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                    current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                    self._write_state(
+                        current_round=round_number,
+                        active_profile=str(profile),
+                        current_draft_hash=current_hash,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        seen_draft_hashes=seen_hashes,
+                        terminal_state=terminal_state,
+                        ready_for_phase_2=False,
+                    )
+                    return {
+                        "terminal_state": terminal_state,
+                        "round_number": round_number,
+                        "current_hash": current_hash,
+                        "last_accepted_draft_hash": last_accepted_draft_hash,
+                        "profile_status": mutable_status,
+                        "last_unresolved": closeout_unresolved,
+                        "last_reviewer_findings": last_reviewer_findings,
+                    }
+                raise
+            reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
+            editor_summary = _read_json(review_result.round_dir / "editor_summary.json")
+            unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
+            closeout_unresolved.extend(unresolved)
+            blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            major_count = _reviewer_count(reviewer_feedback, "major")
+            _mark_profile_closeout_result(
+                mutable_status,
+                str(profile),
+                clean=blocker_count == 0 and major_count == 0,
+            )
+            last_reviewer_findings = _last_reviewer_findings(
+                round_number=round_number,
+                profile=str(profile),
+                reviewer_feedback=reviewer_feedback,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+            self._append_history(
+                round_number=round_number,
+                profile=str(profile),
+                before_hash=review_result.draft_before_hash,
+                after_hash=review_result.draft_after_hash,
+                accepted=blocker_count == 0 and major_count == 0,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
+        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        terminal_state = None
+        if (
+            last_accepted_draft_hash == current_hash
+            and not mutable_status["unverified_profiles"]
+            and not mutable_status["exhausted_profiles"]
+            and not _has_serious_issues(closeout_unresolved)
+        ):
+            terminal_state = "PHASE_1_STABLE"
+        return {
+            "terminal_state": terminal_state,
+            "round_number": round_number,
+            "current_hash": current_hash,
+            "last_accepted_draft_hash": last_accepted_draft_hash,
+            "profile_status": mutable_status,
+            "last_unresolved": closeout_unresolved,
+            "last_reviewer_findings": last_reviewer_findings,
+        }
+
     def _complete(
         self,
         *,
@@ -959,6 +1143,13 @@ def _mutation_requires_verification(*, round_dir: Path, editor_summary: dict[str
     )
 
 
+def _no_op_with_unresolved_serious_findings(*, result: Any, unresolved: list[dict[str, Any]]) -> bool:
+    return (
+        result.draft_after_hash == result.draft_before_hash
+        and any(issue.get("normalized_severity") in {"blocker", "major"} for issue in unresolved)
+    )
+
+
 def _is_version_only_change(before: str, after: str) -> bool:
     return _strip_version_labels(before) == _strip_version_labels(after)
 
@@ -1035,8 +1226,64 @@ def _vertical_closeout_eligible(
     )
 
 
+def _horizontal_closeout_eligible(
+    *,
+    current_hash: str,
+    last_accepted_draft_hash: str | None,
+    last_unresolved: list[dict[str, Any]],
+    profile_status: dict[str, Any],
+) -> bool:
+    return (
+        last_accepted_draft_hash == current_hash
+        and bool(profile_status.get("unverified_profiles"))
+        and not _has_serious_issues(last_unresolved)
+    )
+
+
 def _has_serious_issues(issues: list[dict[str, Any]]) -> bool:
     return any(issue.get("normalized_severity") in {"blocker", "major"} for issue in issues)
+
+
+def _copy_profile_status(profile_status: dict[str, Any]) -> dict[str, Any]:
+    profiles = [dict(item) for item in profile_status.get("profiles", [])]
+    return {
+        **profile_status,
+        "profiles": profiles,
+        "unverified_profiles": list(profile_status.get("unverified_profiles", [])),
+        "exhausted_profiles": list(profile_status.get("exhausted_profiles", [])),
+        "profiles_remaining": list(profile_status.get("profiles_remaining", [])),
+    }
+
+
+def _mark_profile_closeout_result(profile_status: dict[str, Any], profile: str, *, clean: bool) -> None:
+    for item in profile_status.get("profiles", []):
+        if item.get("profile") != profile:
+            continue
+        item["rounds_used"] = int(item.get("rounds_used", 0)) + 1
+        item["clean"] = clean
+        item["exhausted"] = not clean
+        item["residual_status"] = None if clean else "exhausted_with_residuals"
+        item["active"] = False
+        break
+    profile_status["unverified_profiles"] = [
+        str(item.get("profile"))
+        for item in profile_status.get("profiles", [])
+        if not bool(item.get("clean"))
+    ]
+    profile_status["exhausted_profiles"] = [
+        str(item.get("profile"))
+        for item in profile_status.get("profiles", [])
+        if bool(item.get("exhausted"))
+    ]
+    profile_status["profiles_remaining"] = [
+        str(item.get("profile"))
+        for item in profile_status.get("profiles", [])
+        if (
+            not bool(item.get("clean"))
+            and not bool(item.get("exhausted"))
+            and int(item.get("rounds_used", 0)) < int(item.get("round_budget", 0))
+        )
+    ]
 
 
 def _vertical_profile_status(
