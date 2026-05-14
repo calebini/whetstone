@@ -222,6 +222,11 @@ def main(argv: list[str] | None = None) -> int:
     live_phase2.add_argument("--workflow", choices=["exploratory", "mvp", "standard", "governance", "custom"], help="rubric workflow preset")
     live_phase2.add_argument("--rubric", help="built-in rubric profile or custom rubric path")
     live_phase2.add_argument("--rubric-label", help="required label when --rubric points to a custom path")
+    live_phase2.add_argument(
+        "--closeout-existing",
+        action="store_true",
+        help="run Reviewer-only Phase 2 closeout for an existing TARGET_NOT_REACHED Phase 2 run with no unresolved blockers/majors/rubric gaps",
+    )
 
     resume = subparsers.add_parser(
         "resume",
@@ -518,7 +523,10 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(root / args.config)
         config = _apply_run_profile_overrides(config, root=root, args=args)
         config = _apply_timeout_overrides(config, args=args)
-        result = LivePhase2Runner(root, config, timeout_seconds=args.timeout_seconds).run(overwrite=args.overwrite)
+        result = LivePhase2Runner(root, config, timeout_seconds=args.timeout_seconds).run(
+            overwrite=args.overwrite,
+            closeout_existing=args.closeout_existing,
+        )
         print(
             json.dumps(
                 {

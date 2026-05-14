@@ -301,6 +301,45 @@ class StatusTests(unittest.TestCase):
             self.assertIn("--extend-review-budget 3", status["resume"]["command"])
             self.assertIn("resume_command:", rendered)
 
+    def test_status_reports_phase2_closeout_command(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_2",
+                        "current_round": 13,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "resumable": False,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("convergence_failure_report.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "unresolved_blockers": [],
+                        "unresolved_major_issues": [],
+                        "unresolved_rubric_gaps": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertTrue(status["resumable"])
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertEqual(status["resume"]["failure_type"], "phase2_closeout_required")
+            self.assertIn("--closeout-existing", status["resume"]["command"])
+            self.assertIn("resume_command:", rendered)
+
     def test_render_status_text_includes_operator_fields(self) -> None:
         status = {
             "root": "/tmp/run",

@@ -521,6 +521,20 @@ class LiveRoundRunner:
         self.store.write_round_json(round_number, "editor_summary.json", editor_summary)
         self.store.write_round_json(
             round_number,
+            "closeout_summary.json",
+            {
+                "round_number": round_number,
+                "phase": phase,
+                "profile": profile,
+                "round_kind": "review_only",
+                "editor_invoked": False,
+                "draft_before_hash": draft_before_hash,
+                "draft_after_hash": draft_before_hash,
+                "note": "Reviewer-only closeout; editor_summary.json is a compatibility no-op and no Editor client was invoked.",
+            },
+        )
+        self.store.write_round_json(
+            round_number,
             "decision_points.json",
             detect_decision_points(
                 draft_before=draft_before,

@@ -361,6 +361,122 @@ class LivePhase2RunnerTests(unittest.TestCase):
             state = _read_json(root / "rounds" / "run_state.json")
             self.assertEqual(state["terminal_state"], "CONVERGED")
             self.assertEqual(state["current_round"], 9)
+            closeout_summary = _read_json(root / "rounds" / "round-9" / "closeout_summary.json")
+            self.assertFalse(closeout_summary["editor_invoked"])
+
+    def test_phase2_closeout_existing_resumes_prior_budget_stop(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_phase1_stable(
+                Path(tmp),
+                convergence_max_rounds=8,
+                review_profile_set="utility_mvp",
+            )
+            config = load_config(root / "orchestrator_config.yaml")
+            old_text = "# Whetstone 1.0\n\n## Rules\n\nOld draft.\n"
+            current_text = "# Whetstone 1.0\n\n## Rules\n\nCurrent draft.\n"
+            current_hash = draft_hash(current_text)
+            root.joinpath("spec.md").write_text(current_text, encoding="utf-8")
+            root.joinpath("convergence_declaration.md").write_text(
+                "\n".join(
+                    [
+                        "# Convergence Declaration",
+                        "",
+                        "- target_phase: final",
+                        "- target_mode: strict",
+                        "- workflow: mvp",
+                        "- rubric_profile: mvp-v1",
+                        "- rubric_source: builtin",
+                        "- rubric_label: null",
+                        "- rubric_manifest_path: rounds/rubric_manifest.json",
+                        f"- final_draft_hash: {current_hash}",
+                        f"- rubric_content_hash: {'0' * 64}",
+                        "- unresolved_blockers count: 0",
+                        "- unresolved_major_issues count: 0",
+                        "- unresolved_rubric_gaps count: 0",
+                        "- reviewer_final_status: not_run",
+                        "- declaration_status: rejected",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            _write_clean_phase2_round(root, 4, "scope_guard", old_text)
+            _write_clean_phase2_round(root, 5, "mvp_readiness_check", current_text)
+            root.joinpath("rounds/run_state.json").write_text(
+                json.dumps(
+                    {
+                        "current_round": 5,
+                        "phase": "phase_2",
+                        "phase_1_rounds_completed": 3,
+                        "active_profile": None,
+                        "current_draft_hash": current_hash,
+                        "last_accepted_draft_hash": current_hash,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "ready_for_phase_2": False,
+                        "resumable": False,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            root.joinpath("rounds/convergence_failure_report.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "generated_at": "2026-01-01T00:00:00+00:00",
+                        "round_number": 5,
+                        "draft_hash": current_hash,
+                        "final_draft_path": "rounds/round-5/draft_after.md",
+                        "final_declaration_path": "convergence_declaration.md",
+                        "target_phase": "final",
+                        "target_mode": "strict",
+                        "workflow": "mvp",
+                        "rubric_profile": "mvp-v1",
+                        "rubric_source": "builtin",
+                        "rubric_label": None,
+                        "rubric_manifest_path": "rounds/rubric_manifest.json",
+                        "unresolved_blockers": [],
+                        "unresolved_major_issues": [],
+                        "unresolved_rubric_gaps": [],
+                        "reviewer_final_status": "not_run",
+                        "last_accepted_draft_hash": current_hash,
+                        "last_draft_hash": current_hash,
+                        "exit_reason": "Phase 2 profile round budgets exhausted before convergence",
+                        "recommendation": "manual_review_required",
+                        "profile_status": {
+                            "profiles": [],
+                            "unverified_profiles": [],
+                            "exhausted_profiles": [],
+                            "profiles_remaining": [],
+                            "total_round_budget": 0,
+                        },
+                        "last_reviewer_findings": None,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            reviewer = CleanPhase2ReviewerClient(root)
+            result = LivePhase2Runner(
+                root,
+                config,
+                reviewer_client=reviewer,
+                editor_client=EchoEditorClient(root),
+            ).run(closeout_existing=True)
+
+            self.assertEqual(result.terminal_state, "CONVERGED")
+            self.assertEqual(result.round_number, 6)
+            self.assertEqual(reviewer.profiles, ["scope_guard"])
+            self.assertEqual(_read_json(root / "rounds" / "round-6" / "profile_used.yaml")["round_kind"], "review_only")
+            self.assertTrue(root.joinpath("rounds/round-6/closeout_summary.json").exists())
+            superseded = _read_json(root / "rounds" / "superseded_terminal_reports.json")
+            self.assertEqual(superseded["superseded_by_terminal_state"], "CONVERGED")
+            self.assertEqual(superseded["reports"][0]["path"], "convergence_failure_report.json")
 
     def test_phase2_runner_requires_stable_phase1_handoff(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -569,6 +685,33 @@ convergence:
             encoding="utf-8",
         )
     return root
+
+
+def _write_clean_phase2_round(root: Path, round_number: int, profile: str, draft_text: str) -> None:
+    round_dir = root / "rounds" / f"round-{round_number}"
+    round_dir.mkdir(parents=True, exist_ok=True)
+    draft_hash_value = draft_hash(draft_text)
+    round_dir.joinpath("draft_before.md").write_text(draft_text, encoding="utf-8")
+    round_dir.joinpath("draft_after.md").write_text(draft_text, encoding="utf-8")
+    round_dir.joinpath("profile_used.yaml").write_text(
+        json.dumps({"profile": profile, "round_kind": "review_editor"}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    round_dir.joinpath("reviewer_feedback.json").write_text(
+        json.dumps(
+            {
+                "round_number": round_number,
+                "profile": profile,
+                "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+                "draft_hash": draft_hash_value,
+                "feedback": [],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def _line_value(prompt: str, prefix: str) -> str:

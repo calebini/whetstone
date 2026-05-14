@@ -428,6 +428,28 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
             }
         )
         return packet
+    if terminal_state == "TARGET_NOT_REACHED" and run_state.get("phase") == "phase_2":
+        report = _read_json_object(rounds_dir / "convergence_failure_report.json")
+        if (
+            report is not None
+            and not report.get("unresolved_blockers")
+            and not report.get("unresolved_major_issues")
+            and not report.get("unresolved_rubric_gaps")
+        ):
+            command_root = shlex.quote(str(root))
+            packet.update(
+                {
+                    "eligible": True,
+                    "reason": "supported Phase 2 Reviewer-only closeout",
+                    "round_number": run_state.get("current_round"),
+                    "profile": run_state.get("active_profile"),
+                    "client_role": "reviewer",
+                    "failure_type": "phase2_closeout_required",
+                    "command": f"whetstone live-phase2 --root {command_root} --closeout-existing",
+                    "continue_command": f"whetstone live-phase2 --root {command_root} --closeout-existing",
+                }
+            )
+            return packet
     if terminal_state != "HALTED_CLIENT_TIMEOUT":
         return packet
     error = _read_json_object(rounds_dir / "artifact_validation_error.json")

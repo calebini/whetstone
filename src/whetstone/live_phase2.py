@@ -65,7 +65,10 @@ class LivePhase2Runner:
         self.rubric_manifest: RubricManifest | None = None
         self.phase_1_rounds_completed = 0
 
-    def run(self, *, overwrite: bool = False) -> LivePhase2Result:
+    def run(self, *, overwrite: bool = False, closeout_existing: bool = False) -> LivePhase2Result:
+        if closeout_existing:
+            return self.run_closeout_existing(overwrite=overwrite)
+
         state = _read_phase1_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("current_round", 0))
         self.rubric_manifest = write_rubric_manifest(self.config)
@@ -376,6 +379,12 @@ class LivePhase2Runner:
                     declaration_path=declaration_path,
                 )
                 self._write_decision_register(selected.terminal_state)
+                if selected.terminal_state == "CONVERGED":
+                    _write_superseded_terminal_report_index(
+                        self.config.rounds_dir,
+                        terminal_state=selected.terminal_state,
+                        round_number=round_number,
+                    )
                 return LivePhase2Result(
                     selected.terminal_state,
                     round_number,
@@ -459,6 +468,103 @@ class LivePhase2Runner:
             declaration_path,
             report_path,
         )
+
+    def run_closeout_existing(self, *, overwrite: bool = False) -> LivePhase2Result:
+        """Resume a Phase 2 budget stop with Reviewer-only closeout checks."""
+
+        state = _read_phase2_closeout_handoff(self.config.rounds_dir)
+        self.phase_1_rounds_completed = int(state.get("phase_1_rounds_completed", 0))
+        self.rubric_manifest = write_rubric_manifest(self.config)
+        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        state_hash = state.get("current_draft_hash")
+        if isinstance(state_hash, str) and state_hash != current_hash:
+            raise ValueError("Phase 2 closeout requires current spec hash to match run_state current_draft_hash")
+        last_accepted_draft_hash = state.get("last_accepted_draft_hash")
+        if not isinstance(last_accepted_draft_hash, str):
+            last_accepted_draft_hash = current_hash
+        start_round = int(state.get("current_round", 0)) + 1
+        scheduler = default_phase_2_scheduler(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
+        clean_profiles = _phase2_profiles_clean_on_hash(self.config.rounds_dir, current_hash)
+        closeout_profiles = self._phase2_closeout_profiles(scheduler=scheduler, clean_profiles=clean_profiles)
+        declaration_path = self.config.declaration_path if self.config.declaration_path.exists() else None
+        scheduler_status = _read_existing_profile_status(self.config.rounds_dir) or scheduler.status()
+
+        if closeout_profiles:
+            result = self._run_phase2_closeout(
+                profiles=closeout_profiles,
+                start_round=start_round,
+                clean_profiles=clean_profiles,
+                current_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                declaration_path=declaration_path,
+                scheduler_status=scheduler_status,
+                overwrite=overwrite,
+            )
+            if result.terminal_state == "CONVERGED":
+                _write_superseded_terminal_report_index(
+                    self.config.rounds_dir,
+                    terminal_state=result.terminal_state,
+                    round_number=result.round_number,
+                )
+            return result
+
+        if target_matrix_satisfied(
+            target_phase=self.config.convergence.target_phase,
+            target_mode=self.config.convergence.target_mode,
+            issues=[],
+            unresolved_rubric_gaps=[],
+            declaration_accepted=True,
+        ):
+            declaration_path = self._write_declaration(
+                draft_hash_value=current_hash,
+                reviewer_final_status="accepted",
+                declaration_status="accepted",
+                blocker_count=0,
+                major_count=0,
+                rubric_gap_count=0,
+            )
+            round_number = max(start_round - 1, 1)
+            self._append_history(
+                round_number=round_number,
+                profile=str(state.get("active_profile") or "phase_2_closeout"),
+                before_hash=current_hash,
+                after_hash=current_hash,
+                accepted=True,
+                blocker_count=0,
+                major_count=0,
+                terminal_state="CONVERGED",
+            )
+            self._write_state(
+                current_round=round_number,
+                active_profile=None,
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                terminal_state="CONVERGED",
+                declaration_path=declaration_path,
+            )
+            self._write_decision_register("CONVERGED")
+            _write_superseded_terminal_report_index(
+                self.config.rounds_dir,
+                terminal_state="CONVERGED",
+                round_number=round_number,
+            )
+            return LivePhase2Result("CONVERGED", round_number, current_hash, last_accepted_draft_hash, declaration_path, None)
+
+        report_path = self._write_failure_report(
+            round_number=max(start_round - 1, 1),
+            unresolved_issues=[],
+            unresolved_rubric_gaps=[],
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            declaration_path=declaration_path,
+            terminal_state="TARGET_NOT_REACHED",
+            exit_reason="Phase 2 closeout requested but target matrix was not satisfied",
+            profile_status=scheduler_status,
+            last_reviewer_findings=None,
+        )
+        return LivePhase2Result("TARGET_NOT_REACHED", max(start_round - 1, 1), current_hash, last_accepted_draft_hash, declaration_path, report_path)
 
     def _phase2_closeout_profiles(self, *, scheduler: Any, clean_profiles: set[str]) -> list[str]:
         missing: list[str] = []
@@ -622,6 +728,11 @@ class LivePhase2Runner:
                 declaration_path=declaration_path,
             )
             self._write_decision_register("CONVERGED")
+            _write_superseded_terminal_report_index(
+                self.config.rounds_dir,
+                terminal_state="CONVERGED",
+                round_number=round_number,
+            )
             return LivePhase2Result(
                 "CONVERGED",
                 round_number,
@@ -859,8 +970,101 @@ def _read_phase1_handoff(rounds_dir: Path) -> dict[str, Any]:
     return state
 
 
+def _read_phase2_closeout_handoff(rounds_dir: Path) -> dict[str, Any]:
+    state_path = rounds_dir / "run_state.json"
+    if not state_path.exists():
+        raise ValueError("Phase 2 closeout requires rounds/run_state.json")
+    state = _read_json(state_path)
+    if state.get("phase") != "phase_2":
+        raise ValueError("Phase 2 closeout requires a Phase 2 run_state")
+    if state.get("terminal_state") != "TARGET_NOT_REACHED":
+        raise ValueError("Phase 2 closeout requires terminal_state=TARGET_NOT_REACHED")
+    report_path = rounds_dir / "convergence_failure_report.json"
+    if not report_path.exists():
+        raise ValueError("Phase 2 closeout requires rounds/convergence_failure_report.json")
+    report = _read_json(report_path)
+    if report.get("terminal_state") != "TARGET_NOT_REACHED":
+        raise ValueError("Phase 2 closeout requires TARGET_NOT_REACHED convergence failure report")
+    if report.get("unresolved_blockers") or report.get("unresolved_major_issues") or report.get("unresolved_rubric_gaps"):
+        raise ValueError("Phase 2 closeout is only supported when the failure report has zero unresolved substantive issues")
+    return state
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _phase2_profiles_clean_on_hash(rounds_dir: Path, draft_hash_value: str) -> set[str]:
+    clean_profiles: set[str] = set()
+    for round_dir in sorted(rounds_dir.glob("round-*"), key=_round_dir_number):
+        profile_path = round_dir / "profile_used.yaml"
+        feedback_path = round_dir / "reviewer_feedback.json"
+        draft_path = round_dir / "draft_after.md"
+        if not profile_path.exists() or not feedback_path.exists() or not draft_path.exists():
+            continue
+        if draft_hash(draft_path.read_text(encoding="utf-8")) != draft_hash_value:
+            continue
+        profile = str(_read_json(profile_path).get("profile") or "")
+        if not profile:
+            continue
+        reviewer_feedback = _read_json(feedback_path)
+        if _reviewer_count(reviewer_feedback, "blocker") == 0 and _reviewer_count(reviewer_feedback, "major") == 0:
+            clean_profiles.add(profile)
+    return clean_profiles
+
+
+def _read_existing_profile_status(rounds_dir: Path) -> dict[str, Any] | None:
+    report_path = rounds_dir / "convergence_failure_report.json"
+    if not report_path.exists():
+        return None
+    profile_status = _read_json(report_path).get("profile_status")
+    return profile_status if isinstance(profile_status, dict) else None
+
+
+def _round_dir_number(path: Path) -> int:
+    suffix = path.name.removeprefix("round-")
+    return int(suffix) if suffix.isdigit() else -1
+
+
+def _write_superseded_terminal_report_index(rounds_dir: Path, *, terminal_state: str, round_number: int) -> None:
+    superseded: list[dict[str, Any]] = []
+    for filename in (
+        "convergence_failure_report.json",
+        "technical_failure_report.json",
+        "conflict_report.json",
+        "oscillation_report.json",
+        "artifact_validation_error.json",
+        "config_validation_error.json",
+    ):
+        path = rounds_dir / filename
+        if not path.exists():
+            continue
+        try:
+            packet = _read_json(path)
+        except json.JSONDecodeError:
+            continue
+        prior_terminal_state = packet.get("terminal_state")
+        if prior_terminal_state == terminal_state:
+            continue
+        superseded.append(
+            {
+                "path": filename,
+                "prior_terminal_state": prior_terminal_state,
+                "prior_round_number": packet.get("round_number"),
+            }
+        )
+    if not superseded:
+        return
+    output = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "superseded_by_terminal_state": terminal_state,
+        "superseded_by_round_number": round_number,
+        "reports": superseded,
+    }
+    (rounds_dir / "superseded_terminal_reports.json").write_text(
+        json.dumps(output, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _last_reviewer_findings_from_round(rounds_dir: Path, round_number: int) -> dict[str, Any] | None:

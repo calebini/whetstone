@@ -426,6 +426,17 @@ apply_back: available=true
 
 If a late Phase 2 edit makes an earlier clean profile stale, Whetstone may run a bounded reviewer-only closeout pass before converging. Closeout rounds are marked `round_kind: review_only`, do not call the Editor, and do not mutate `spec.md`; they exist only to verify the current draft hash across the remaining required Phase 2 profiles.
 
+If an older run already stopped in Phase 2 as `TARGET_NOT_REACHED` with zero unresolved blockers, majors, and rubric gaps, use the explicit closeout path instead of starting a fresh Phase 2 loop:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli live-phase2 \
+  --root "$RUN_ROOT" \
+  --workflow "$WORKFLOW" \
+  --closeout-existing
+```
+
+This appends reviewer-only closeout rounds in place, preserves earlier terminal reports, and writes `rounds/superseded_terminal_reports.json` when the closeout replaces an earlier failure state.
+
 ## Decision Summaries
 
 Decision artifacts are useful when you do not want to read every round file.
