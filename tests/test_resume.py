@@ -461,6 +461,48 @@ class ResumeTests(unittest.TestCase):
             self.assertEqual(len(state["budget_extensions"]), 1)
             self.assertEqual(state["budget_extensions"][0]["new_review_profile_budgets"]["operability"], 3)
 
+    def test_vertical_budget_extension_consolidated_editor_timeout_terminalizes_state(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            config = replace(
+                OrchestratorConfig.default(root),
+                review_mode="vertical",
+                review_profile_budgets={
+                    "structural_integrity": 1,
+                    "determinism": 1,
+                    "operability": 1,
+                },
+            )
+
+            exhausted = LivePhase1Runner(
+                root,
+                config,
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=UniqueAppliedDraftEditorClient(root),
+            ).run()
+            self.assertEqual(exhausted.terminal_state, "TARGET_NOT_REACHED")
+
+            resumed = resume_budget_exhausted_run(
+                root,
+                config,
+                extend_review_budget=1,
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=TimeoutEditorClient(),
+            )
+
+            self.assertEqual(resumed.terminal_state, "HALTED_CLIENT_TIMEOUT")
+            self.assertFalse(resumed.ready_for_phase_2)
+            state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(state["active_profile"], "vertical")
+            self.assertEqual(state["current_round"], 11)
+            technical = json.loads(root.joinpath("rounds/technical_failure_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(technical["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(len(technical["unresolved_major_issues"]), 3)
+            self.assertTrue(root.joinpath("rounds/operator_decision_checkpoint_summary.json").exists())
+
     def test_vertical_budget_extension_closeout_stabilizes_final_editor_mutation(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

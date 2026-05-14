@@ -11,6 +11,7 @@ from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
 from whetstone.live_phase1 import LivePhase1Runner
 from whetstone.scheduler import focused_phase_1_scheduler
+from tests.test_live import TimeoutEditorClient
 
 
 HASH_RE = re.compile(r"([a-f0-9]{64})")
@@ -312,6 +313,34 @@ class LivePhase1RunnerTests(unittest.TestCase):
             editor_profile = _read_json(root / "rounds" / "round-4" / "profile_used.yaml")
             self.assertEqual(review_profile["round_kind"], "review_only")
             self.assertEqual(editor_profile["round_kind"], "consolidated_editor")
+
+    def test_vertical_consolidated_editor_timeout_terminalizes_state_and_summaries(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), review_mode="vertical", profile_budget=1)
+            reviewer = ScriptedReviewerClient(root, ["major", "major", "major"])
+
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=TimeoutEditorClient(),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "HALTED_CLIENT_TIMEOUT")
+            self.assertFalse(result.ready_for_phase_2)
+            self.assertEqual(result.round_number, 4)
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(state["current_round"], 4)
+            self.assertEqual(state["active_profile"], "vertical")
+            self.assertEqual(state["current_draft_hash"], state["seen_draft_hashes"][-1])
+            technical = _read_json(root / "rounds" / "technical_failure_report.json")
+            self.assertEqual(technical["terminal_state"], "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(len(technical["unresolved_major_issues"]), 3)
+            self.assertTrue(root.joinpath("rounds/operator_decision_checkpoint_summary.json").exists())
+            error = _read_json(root / "rounds" / "artifact_validation_error.json")
+            self.assertEqual(error["profile"], "vertical")
+            self.assertEqual(error["client_role"], "editor")
 
     def test_vertical_closeout_check_refuses_when_reviewer_finds_major(self) -> None:
         with TemporaryDirectory() as tmp:

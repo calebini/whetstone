@@ -10,7 +10,7 @@ from typing import Any
 from whetstone.config import OrchestratorConfig
 from whetstone.contracts import validate_artifact
 from whetstone.hashing import rubric_content_hash
-from whetstone.scheduler import resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
+from whetstone.scheduler import default_phase_2_scheduler, resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
 
 
 RUBRICS_DIR = Path(__file__).resolve().parents[2] / "rubrics"
@@ -125,7 +125,7 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
     review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
     convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
     review_round_budget = sum(review_profile_budgets.values())
-    convergence_round_budget = sum(convergence_profile_budgets.values())
+    convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
     packet = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "workflow": workflow,
@@ -149,7 +149,7 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
             "convergence_profile_budgets": dict(sorted(convergence_profile_budgets.items())),
             "review_round_budget": review_round_budget,
             "convergence_round_budget": convergence_round_budget,
-            "total_absolute_round_budget": config.review_max_rounds + config.convergence.max_rounds,
+            "total_absolute_round_budget": review_round_budget + convergence_round_budget,
             "effective_total_absolute_round_budget": review_round_budget + convergence_round_budget,
         },
         "warnings": warnings,

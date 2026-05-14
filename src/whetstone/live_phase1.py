@@ -595,13 +595,55 @@ class LivePhase1Runner:
                     encoding="utf-8",
                 )
                 round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-                result = LiveRoundRunner(
-                    self.root,
-                    self.config,
-                    reviewer_client=self.reviewer_client,
-                    editor_client=self.editor_client,
-                    timeout_seconds=self.timeout_seconds,
-                ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+                try:
+                    result = LiveRoundRunner(
+                        self.root,
+                        self.config,
+                        reviewer_client=self.reviewer_client,
+                        editor_client=self.editor_client,
+                        timeout_seconds=self.timeout_seconds,
+                    ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+                except ValueError:
+                    artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
+                    if artifact_error.exists():
+                        error_packet = _read_json(artifact_error)
+                        terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                        report_path = self.report_writer.write_technical_failure_report(
+                            round_number=round_number,
+                            final_draft_path=str(error_packet.get("last_valid_draft_path", "./spec.md")),
+                            unresolved_blockers=[
+                                _issue_summary(issue) for issue in merged_feedback if issue["normalized_severity"] == "blocker"
+                            ],
+                            unresolved_major_issues=[
+                                _issue_summary(issue) for issue in merged_feedback if issue["normalized_severity"] == "major"
+                            ],
+                            unresolved_conflicts=[],
+                            unresolved_oscillation=None,
+                            last_accepted_draft_hash=last_accepted_draft_hash,
+                            exit_reason="Phase 1 vertical consolidated editor halted before producing a valid editor_summary.json",
+                            recommendation="manual_review_required",
+                            profile_status=_vertical_profile_status(profile_state, current_draft_hash=current_hash),
+                            last_reviewer_findings=last_reviewer_findings,
+                            terminal_state=terminal_state,
+                        )
+                        self._write_state(
+                            current_round=round_number,
+                            active_profile=editor_profile,
+                            current_draft_hash=current_hash,
+                            last_accepted_draft_hash=last_accepted_draft_hash,
+                            seen_draft_hashes=seen_hashes,
+                            terminal_state=terminal_state,
+                            ready_for_phase_2=False,
+                        )
+                        write_decision_register(
+                            rounds_dir=self.config.rounds_dir,
+                            mode=self.config.decision_points.mode,
+                            terminal_state=terminal_state,
+                        )
+                        update_contract_surface_lifecycle(rounds_dir=self.config.rounds_dir, terminal=True)
+                        return LivePhase1Result(terminal_state, round_number, current_hash, last_accepted_draft_hash, False, report_path)
+                    raise
                 editor_summary = _read_json(round_dir / "editor_summary.json")
                 last_unresolved = _unresolved_issues(synthetic_feedback, editor_summary)
                 if result.accepted:

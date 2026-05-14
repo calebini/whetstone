@@ -918,13 +918,56 @@ def _continue_vertical_phase1(
                 encoding="utf-8",
             )
             round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-            result = LiveRoundRunner(
-                root,
-                config,
-                reviewer_client=reviewer_client,
-                editor_client=editor_client,
-                timeout_seconds=timeout_seconds,
-            ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+            try:
+                result = LiveRoundRunner(
+                    root,
+                    config,
+                    reviewer_client=reviewer_client,
+                    editor_client=editor_client,
+                    timeout_seconds=timeout_seconds,
+                ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+            except ValueError:
+                artifact_error = config.rounds_dir / "artifact_validation_error.json"
+                if artifact_error.exists():
+                    packet = _read_json(artifact_error)
+                    terminal_state = str(packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                    current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
+                    ReportWriter(root).write_technical_failure_report(
+                        round_number=round_number,
+                        final_draft_path=str(packet.get("last_valid_draft_path", "./spec.md")),
+                        unresolved_blockers=[
+                            _issue_summary(issue) for issue in merged_feedback if issue["normalized_severity"] == "blocker"
+                        ],
+                        unresolved_major_issues=[
+                            _issue_summary(issue) for issue in merged_feedback if issue["normalized_severity"] == "major"
+                        ],
+                        unresolved_conflicts=[],
+                        unresolved_oscillation=None,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        exit_reason="Phase 1 vertical consolidated editor halted before producing a valid editor_summary.json during resume continuation",
+                        recommendation="manual_review_required",
+                        profile_status=_vertical_profile_status(profile_state, current_draft_hash=current_hash),
+                        last_reviewer_findings=last_reviewer_findings,
+                        terminal_state=terminal_state,
+                    )
+                    _write_phase1_state(
+                        config=config,
+                        current_round=round_number,
+                        active_profile=editor_profile,
+                        current_draft_hash=current_hash,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        seen_draft_hashes=seen_hashes,
+                        terminal_state=terminal_state,
+                        ready_for_phase_2=False,
+                    )
+                    write_decision_register(
+                        rounds_dir=config.rounds_dir,
+                        mode=config.decision_points.mode,
+                        terminal_state=terminal_state,
+                    )
+                    update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
+                    return ResumeResult(True, terminal_state, round_number, "phase_1", editor_profile, current_hash, last_accepted_draft_hash, False)
+                raise
             editor_summary = _read_json(round_dir / "editor_summary.json")
             last_unresolved = _unresolved_issues(synthetic_feedback, editor_summary)
             if result.accepted:

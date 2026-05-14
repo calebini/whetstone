@@ -9,7 +9,7 @@ import unittest
 from whetstone.config import ConvergenceConfig, OrchestratorConfig
 from whetstone.hashing import rubric_content_hash
 from whetstone.rubrics import build_rubric_manifest, read_rubric_text, write_rubric_manifest
-from whetstone.scheduler import resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
+from whetstone.scheduler import default_phase_2_scheduler, resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
 
 
 class RubricManifestTests(unittest.TestCase):
@@ -36,7 +36,7 @@ class RubricManifestTests(unittest.TestCase):
             self.assertEqual(
                 manifest.packet["configured_budgets"]["effective_total_absolute_round_budget"],
                 sum(resolved_phase_1_profile_budgets(config.review_profile_budgets).values())
-                + sum(resolved_phase_2_profile_budgets(config.convergence_profile_budgets).values()),
+                + default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget(),
             )
             self.assertEqual(manifest.packet["rubric_content_hash"], rubric_content_hash(read_rubric_text(config) or ""))
 
