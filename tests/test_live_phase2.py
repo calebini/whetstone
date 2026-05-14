@@ -325,6 +325,43 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 ],
             )
 
+    def test_phase2_runs_reviewer_only_closeout_for_profiles_stale_after_late_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_phase1_stable(
+                Path(tmp),
+                convergence_max_rounds=8,
+                review_profile_set="utility_mvp",
+            )
+            reviewer = ScriptedPhase2ReviewerClient(root, ["major", None, None, "major", None, None])
+
+            result = LivePhase2Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=ResolvingPhase2EditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "CONVERGED")
+            self.assertEqual(
+                reviewer.profiles,
+                [
+                    "mvp_readiness_check",
+                    "mvp_readiness_check",
+                    "scope_guard",
+                    "mvp_readiness_check",
+                    "mvp_readiness_check",
+                    "scope_guard",
+                ],
+            )
+            self.assertEqual(_read_json(root / "rounds" / "round-9" / "profile_used.yaml")["round_kind"], "review_only")
+            self.assertFalse(root.joinpath("rounds/convergence_failure_report.json").exists())
+            declaration = root.joinpath("convergence_declaration.md").read_text(encoding="utf-8")
+            self.assertIn("reviewer_final_status: accepted", declaration)
+            self.assertIn("declaration_status: accepted", declaration)
+            state = _read_json(root / "rounds" / "run_state.json")
+            self.assertEqual(state["terminal_state"], "CONVERGED")
+            self.assertEqual(state["current_round"], 9)
+
     def test_phase2_runner_requires_stable_phase1_handoff(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -399,7 +436,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                 editor_client=SourceOnlyResolvingEditorClient(root),
             ).run()
 
-            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            self.assertEqual(result.terminal_state, "CONVERGED")
             final_hash = draft_hash(root.joinpath("spec.md").read_text(encoding="utf-8"))
             declaration = root.joinpath("convergence_declaration.md").read_text(encoding="utf-8")
             self.assertIn(f"final_draft_hash: {final_hash}", declaration)
@@ -458,7 +495,12 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertIn(4, {point["round_number"] for point in register["decision_points"]})
 
 
-def _seed_phase1_stable(root: Path, *, convergence_max_rounds: int | None = None) -> Path:
+def _seed_phase1_stable(
+    root: Path,
+    *,
+    convergence_max_rounds: int | None = None,
+    review_profile_set: str = "stateful_system",
+) -> Path:
     spec = "# Whetstone 0.17\n\n## Rules\n\nDraft.\n"
     root.joinpath("spec.md").write_text(spec, encoding="utf-8")
     root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
@@ -483,7 +525,21 @@ def _seed_phase1_stable(root: Path, *, convergence_max_rounds: int | None = None
         + "\n",
         encoding="utf-8",
     )
-    if convergence_max_rounds is not None:
+    if convergence_max_rounds is not None or review_profile_set != "stateful_system":
+        convergence_max_rounds = convergence_max_rounds or 8
+        review_profile_set_config = ""
+        convergence_profile_budgets = ""
+        if review_profile_set != "stateful_system":
+            review_profile_set_config = f"""
+review:
+  profile_set: {review_profile_set}
+"""
+        if review_profile_set == "utility_mvp":
+            convergence_profile_budgets = """
+  profile_budgets:
+    mvp_readiness_check: 4
+    scope_guard: 3
+"""
         root.joinpath("orchestrator_config.yaml").write_text(
             f"""
 spec_path: spec.md
@@ -501,12 +557,14 @@ clients:
     command: fixture
     version: 0.0.0
     model: fixture
+{review_profile_set_config}
 convergence:
   enabled: true
   target_phase: final
   target_mode: strict
   rubric_path: convergence_rubric.md
   max_rounds: {convergence_max_rounds}
+{convergence_profile_budgets}
 """.lstrip(),
             encoding="utf-8",
         )

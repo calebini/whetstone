@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.59 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.60 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.59` adds canonical review profile sets, allowing operators to choose the amount and kind of sharpening pressure for stateful systems, MVPs, utility tools, and governance-grade runs without changing the underlying rubric.
+Version `0.60` adds Phase 2 reviewer-only closeout verification for profiles whose clean result became stale after a late accepted draft mutation.
 
 ---
 
@@ -777,6 +777,23 @@ Phase 2 completion is checked after each validated Phase 2 review cycle and any 
 As in Phase 1, Phase 2 profile cleanliness is based on Reviewer findings against `draft_before.md`, not on Editor resolution claims in the same round. A Phase 2 profile with any in-scope blocker or major finding is not clean even if the Editor resolves every finding in `draft_after.md`; a later Reviewer pass must verify the resulting draft. A clean Reviewer pass followed by an Editor mutation also requires later verification of the mutated draft.
 
 For `target_phase = final` and `target_mode = strict`, the Orchestrator MUST NOT declare clean convergence until every distinct Phase 2 profile name in the configured sequence has produced at least one clean result in Phase 2 for the current draft lineage.
+
+If Phase 2 reaches the end of its configured profile sequence with:
+- zero unresolved in-scope blockers,
+- zero unresolved in-scope major issues,
+- zero unresolved rubric gaps,
+- at least one required Phase 2 profile not yet verified clean on the current draft hash, and
+- no Phase 2 profile budget exhausted with residual findings,
+
+the Orchestrator MAY run a bounded reviewer-only Phase 2 closeout pass over the unverified distinct profile names. The closeout pass MUST:
+- invoke only Reviewer clients
+- MUST NOT invoke the Editor
+- MUST NOT mutate `spec.md`
+- be persisted as normal `review_only` `round-N/` artifacts
+- include `convergence_declaration.md` as file-backed context when the closeout profile is a convergence-acceptance profile
+- accept the convergence declaration and enter `CONVERGED` only if every closeout profile returns zero in-scope blocker and major findings and the target matrix remains satisfied
+
+If any closeout profile finds an in-scope blocker or major issue, the Orchestrator MUST halt with `TARGET_NOT_REACHED` and produce `convergence_failure_report.json` identifying the remaining verification debt. The closeout pass MUST NOT be used to override exhausted profile budgets with residual findings.
 
 `distinct Phase 2 profile` means unique by profile name, not sequence slot. In the default Phase 2 sequence, the two `convergence_strict_check` entries count as one distinct profile for this requirement, though both sequence positions may still run as scheduled.
 

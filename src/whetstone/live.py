@@ -436,11 +436,16 @@ class LiveRoundRunner:
         rubric_hash = rubric_content_hash(rubric) if rubric is not None else "0" * 64
         scope_contract = read_scope_contract(self.config.scope_contract.path)
         section_ids = [section.id for section in section_index(draft_before)] if phase == "phase_2" else []
+        declaration = (
+            _read_optional(self.config.declaration_path)
+            if phase == "phase_2" and profile in CONVERGENCE_ACCEPTANCE_PROFILES
+            else None
+        )
         reviewer_context_files = self._write_reviewer_context_files(
             round_number=round_number,
             draft_before=draft_before,
             rubric=rubric,
-            declaration=None,
+            declaration=declaration,
             scope_contract=scope_contract,
         )
         context_path_by_label = {item.label: item.path for item in reviewer_context_files}
@@ -451,6 +456,7 @@ class LiveRoundRunner:
             declaration=None,
             draft_path=context_path_by_label.get("draft_before"),
             rubric_path=context_path_by_label.get("rubric"),
+            declaration_path=context_path_by_label.get("declaration"),
             scope_contract_path=context_path_by_label.get("scope_contract"),
             reference_context_paths=_reference_context_prompt_paths(reviewer_context_files, self.config),
             phase=phase,

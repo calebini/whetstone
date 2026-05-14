@@ -80,3 +80,4 @@
 - Revised the spec to `0.57` with nonblocking per-round operator decision checkpoint artifacts that frame likely owner-level choices while leaving scheduler behavior unchanged.
 - Revised the spec to `0.58` with terminal operator decision checkpoint summaries that cluster checkpoint candidates by trigger reason, section, and source type.
 - Revised the spec to `0.59` with canonical review profile sets, allowing stateful, balanced MVP, utility MVP, and governance runs to select different profile stacks and default budgets without changing the active rubric.
+- Revised the spec to `0.60` with Phase 2 reviewer-only closeout verification for profiles whose clean result became stale after a late accepted draft mutation.

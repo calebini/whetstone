@@ -424,6 +424,8 @@ next_action: review_or_apply_back
 apply_back: available=true
 ```
 
+If a late Phase 2 edit makes an earlier clean profile stale, Whetstone may run a bounded reviewer-only closeout pass before converging. Closeout rounds are marked `round_kind: review_only`, do not call the Editor, and do not mutate `spec.md`; they exist only to verify the current draft hash across the remaining required Phase 2 profiles.
+
 ## Decision Summaries
 
 Decision artifacts are useful when you do not want to read every round file.

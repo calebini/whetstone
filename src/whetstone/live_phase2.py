@@ -404,6 +404,33 @@ class LivePhase2Runner:
                 declaration_path=declaration_path,
             )
 
+        scheduler_status = scheduler.status()
+        closeout_profiles = self._phase2_closeout_profiles(scheduler=scheduler, clean_profiles=clean_profiles)
+        if (
+            closeout_profiles
+            and not scheduler_status.get("exhausted_profiles")
+            and _count(last_unresolved, "blocker") == 0
+            and _count(last_unresolved, "major") == 0
+            and not last_rubric_gaps
+            and target_matrix_satisfied(
+                target_phase=self.config.convergence.target_phase,
+                target_mode=self.config.convergence.target_mode,
+                issues=last_unresolved,
+                unresolved_rubric_gaps=last_rubric_gaps,
+                declaration_accepted=True,
+            )
+        ):
+            return self._run_phase2_closeout(
+                profiles=closeout_profiles,
+                start_round=max(final_round_number, start_round - 1) + 1,
+                clean_profiles=clean_profiles,
+                current_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                declaration_path=declaration_path,
+                scheduler_status=scheduler_status,
+                overwrite=overwrite,
+            )
+
         report_path = self._write_failure_report(
             round_number=max(final_round_number, 1),
             unresolved_issues=last_unresolved,
@@ -427,6 +454,206 @@ class LivePhase2Runner:
         return LivePhase2Result(
             "TARGET_NOT_REACHED",
             max(final_round_number, 1),
+            current_hash,
+            last_accepted_draft_hash,
+            declaration_path,
+            report_path,
+        )
+
+    def _phase2_closeout_profiles(self, *, scheduler: Any, clean_profiles: set[str]) -> list[str]:
+        missing: list[str] = []
+        seen: set[str] = set()
+        for step in scheduler.steps:
+            if step.profile in clean_profiles or step.profile in seen:
+                continue
+            missing.append(step.profile)
+            seen.add(step.profile)
+        return missing
+
+    def _run_phase2_closeout(
+        self,
+        *,
+        profiles: list[str],
+        start_round: int,
+        clean_profiles: set[str],
+        current_hash: str,
+        last_accepted_draft_hash: str | None,
+        declaration_path: Path | None,
+        scheduler_status: dict[str, Any],
+        overwrite: bool,
+    ) -> LivePhase2Result:
+        """Run bounded Reviewer-only checks for profiles stale on the current Phase 2 draft."""
+
+        round_number = start_round - 1
+        last_unresolved: list[dict[str, Any]] = []
+        last_rubric_gaps: list[dict[str, Any]] = []
+        for profile in profiles:
+            round_number += 1
+            self._write_state(
+                current_round=round_number,
+                active_profile=profile,
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                terminal_state=None,
+                declaration_path=declaration_path,
+            )
+            try:
+                result = LiveRoundRunner(
+                    self.root,
+                    self.config,
+                    reviewer_client=self.reviewer_client,
+                    editor_client=self.editor_client,
+                    timeout_seconds=self.timeout_seconds,
+                ).run_review_only_round(
+                    round_number=round_number,
+                    profile=profile,
+                    phase="phase_2",
+                    overwrite=overwrite,
+                )
+            except ValueError:
+                artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
+                if artifact_error.exists():
+                    error_packet = _read_json(artifact_error)
+                    terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
+                    self._write_state(
+                        current_round=round_number,
+                        active_profile=profile,
+                        current_draft_hash=current_hash,
+                        last_accepted_draft_hash=last_accepted_draft_hash,
+                        terminal_state=terminal_state,
+                        declaration_path=declaration_path,
+                    )
+                    self._write_decision_register(terminal_state)
+                    return LivePhase2Result(
+                        terminal_state,
+                        round_number,
+                        current_hash,
+                        last_accepted_draft_hash,
+                        declaration_path,
+                        artifact_error,
+                    )
+                raise
+
+            round_dir = self.config.rounds_dir / f"round-{round_number}"
+            reviewer_feedback = _read_json(round_dir / "reviewer_feedback.json")
+            unresolved_packet = _read_json(round_dir / "unresolved_issues.json")
+            last_unresolved = list(unresolved_packet.get("unresolved_issues", []))
+            last_rubric_gaps = []
+            self._write_rubric_gaps(
+                round_number=round_number,
+                draft_hash_value=result.draft_after_hash,
+                rubric_gaps=last_rubric_gaps,
+            )
+            blocker_count = _reviewer_count(reviewer_feedback, "blocker")
+            major_count = _reviewer_count(reviewer_feedback, "major")
+            self._append_history(
+                round_number=round_number,
+                profile=profile,
+                before_hash=result.draft_before_hash,
+                after_hash=result.draft_after_hash,
+                accepted=result.accepted,
+                blocker_count=blocker_count,
+                major_count=major_count,
+                terminal_state=None,
+            )
+            if blocker_count or major_count:
+                report_path = self._write_failure_report(
+                    round_number=round_number,
+                    unresolved_issues=last_unresolved,
+                    unresolved_rubric_gaps=last_rubric_gaps,
+                    last_accepted_draft_hash=last_accepted_draft_hash,
+                    declaration_path=declaration_path,
+                    terminal_state="TARGET_NOT_REACHED",
+                    exit_reason=f"Phase 2 closeout profile {profile} found verification debt on the current draft",
+                    profile_status=scheduler_status,
+                    last_reviewer_findings=_last_reviewer_findings_from_round(self.config.rounds_dir, round_number),
+                )
+                self._write_state(
+                    current_round=round_number,
+                    active_profile=profile,
+                    current_draft_hash=result.draft_after_hash,
+                    last_accepted_draft_hash=last_accepted_draft_hash,
+                    terminal_state="TARGET_NOT_REACHED",
+                    declaration_path=declaration_path,
+                )
+                self._write_decision_register("TARGET_NOT_REACHED")
+                return LivePhase2Result(
+                    "TARGET_NOT_REACHED",
+                    round_number,
+                    result.draft_after_hash,
+                    last_accepted_draft_hash,
+                    declaration_path,
+                    report_path,
+                )
+            clean_profiles.add(profile)
+            current_hash = result.draft_after_hash
+
+        if target_matrix_satisfied(
+            target_phase=self.config.convergence.target_phase,
+            target_mode=self.config.convergence.target_mode,
+            issues=last_unresolved,
+            unresolved_rubric_gaps=last_rubric_gaps,
+            declaration_accepted=True,
+        ):
+            declaration_path = self._write_declaration(
+                draft_hash_value=current_hash,
+                reviewer_final_status="accepted",
+                declaration_status="accepted",
+                blocker_count=0,
+                major_count=0,
+                rubric_gap_count=0,
+            )
+            self._append_history(
+                round_number=round_number,
+                profile=profiles[-1],
+                before_hash=current_hash,
+                after_hash=current_hash,
+                accepted=True,
+                blocker_count=0,
+                major_count=0,
+                terminal_state="CONVERGED",
+            )
+            self._write_state(
+                current_round=round_number,
+                active_profile=profiles[-1],
+                current_draft_hash=current_hash,
+                last_accepted_draft_hash=last_accepted_draft_hash,
+                terminal_state="CONVERGED",
+                declaration_path=declaration_path,
+            )
+            self._write_decision_register("CONVERGED")
+            return LivePhase2Result(
+                "CONVERGED",
+                round_number,
+                current_hash,
+                last_accepted_draft_hash,
+                declaration_path,
+                None,
+            )
+
+        report_path = self._write_failure_report(
+            round_number=round_number,
+            unresolved_issues=last_unresolved,
+            unresolved_rubric_gaps=last_rubric_gaps,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            declaration_path=declaration_path,
+            terminal_state="TARGET_NOT_REACHED",
+            exit_reason="Phase 2 closeout completed but target matrix was not satisfied",
+            profile_status=scheduler_status,
+            last_reviewer_findings=_last_reviewer_findings_from_round(self.config.rounds_dir, round_number),
+        )
+        self._write_state(
+            current_round=round_number,
+            active_profile=profiles[-1],
+            current_draft_hash=current_hash,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            terminal_state="TARGET_NOT_REACHED",
+            declaration_path=declaration_path,
+        )
+        self._write_decision_register("TARGET_NOT_REACHED")
+        return LivePhase2Result(
+            "TARGET_NOT_REACHED",
+            round_number,
             current_hash,
             last_accepted_draft_hash,
             declaration_path,
