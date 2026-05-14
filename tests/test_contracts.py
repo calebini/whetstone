@@ -211,6 +211,7 @@ class ContractValidationTests(unittest.TestCase):
             },
             "configured_budgets": {
                 "review_max_rounds": 12,
+                "review_profile_set": "stateful_system",
                 "convergence_max_rounds": 8,
                 "review_profile_budgets": {"structural_integrity": 10},
                 "convergence_profile_budgets": {"convergence_strict_check": 10},

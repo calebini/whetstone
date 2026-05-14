@@ -184,7 +184,10 @@ def resume_budget_exhausted_run(
 
     root = Path(root)
     state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
-    original_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    original_budgets = resolved_phase_1_profile_budgets(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     current_round = int(state["current_round"])
     if config.review_mode == "vertical":
         vertical_state = _reconstruct_vertical_phase1_state(config, through_round=current_round)
@@ -802,7 +805,7 @@ def _continue_vertical_phase1(
     editor_client: EditorClient | None,
     timeout_seconds: int | None,
 ) -> ResumeResult:
-    profiles = ["structural_integrity", "determinism", "operability"]
+    profiles = list(profile_state.keys())
     round_number = start_round - 1
     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
     while any(int(profile_state[profile]["rounds_used"]) < int(profile_state[profile]["round_budget"]) for profile in profiles):
@@ -896,7 +899,7 @@ def _continue_vertical_phase1(
                 terminal_state="PHASE_1_STABLE",
             )
             update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
-            return ResumeResult(True, "PHASE_1_STABLE", round_number, "phase_1", "operability", current_hash, last_accepted_draft_hash, True)
+            return ResumeResult(True, "PHASE_1_STABLE", round_number, "phase_1", profiles[-1], current_hash, last_accepted_draft_hash, True)
 
         if merged_feedback:
             round_number += 1
@@ -1044,7 +1047,7 @@ def _continue_vertical_phase1(
                 "PHASE_1_STABLE",
                 closeout_result["round_number"],
                 "phase_1",
-                "operability",
+                list(profile_state.keys())[-1],
                 closeout_result["current_hash"],
                 last_accepted_draft_hash,
                 True,
@@ -1110,7 +1113,7 @@ def _run_vertical_closeout_check(
     editor_client: EditorClient | None,
     timeout_seconds: int | None,
 ) -> dict[str, Any]:
-    profiles = ["structural_integrity", "determinism", "operability"]
+    profiles = list(profile_state.keys())
     round_number = start_round - 1
     closeout_unresolved: list[dict[str, Any]] = []
     last_reviewer_findings: dict[str, Any] | None = None
@@ -1439,12 +1442,15 @@ def _empty_vertical_profile_state(budgets: dict[str, int]) -> dict[str, dict[str
             "active": False,
             "verified_draft_hash": None,
         }
-        for profile in ("structural_integrity", "determinism", "operability")
+        for profile in budgets
     }
 
 
 def _reconstruct_vertical_phase1_state(config: OrchestratorConfig, *, through_round: int) -> dict[str, Any]:
-    budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    budgets = resolved_phase_1_profile_budgets(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     profile_state = _empty_vertical_profile_state(budgets)
     seen_hashes: list[str] = []
     last_accepted_draft_hash: str | None = None
@@ -1560,7 +1566,7 @@ def _extend_phase1_scheduler_budgets(scheduler: Any, extended_budgets: dict[str,
 
 
 def _reconstruct_phase1_state(config: OrchestratorConfig, *, through_round: int) -> tuple[Any, str | None, list[str]]:
-    scheduler = default_phase_1_scheduler(config.review_profile_budgets)
+    scheduler = default_phase_1_scheduler(config.review_profile_budgets, profile_set=config.review_profile_set)
     seen_hashes: list[str] = []
     last_accepted_draft_hash: str | None = None
     if through_round < 1:
@@ -1628,12 +1634,24 @@ def _write_phase1_state(
     ready_for_phase_2: bool,
 ) -> None:
     config.rounds_dir.mkdir(parents=True, exist_ok=True)
-    review_round_budget = default_phase_1_scheduler(config.review_profile_budgets).total_round_budget()
-    convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
-    review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
+    review_round_budget = default_phase_1_scheduler(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    ).total_round_budget()
+    convergence_round_budget = default_phase_2_scheduler(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    ).total_round_budget()
+    review_profile_budgets = resolved_phase_1_profile_budgets(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     if config.review_mode == "vertical" and review_profile_budgets:
         review_round_budget += max(review_profile_budgets.values())
-    convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
+    convergence_profile_budgets = resolved_phase_2_profile_budgets(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     existing_state = _read_json_object(config.rounds_dir / "run_state.json")
     budget_extensions = []
     if existing_state and isinstance(existing_state.get("budget_extensions"), list):
@@ -1647,6 +1665,7 @@ def _write_phase1_state(
         "phase_2_rounds_completed": 0,
         "review_max_rounds": config.review_max_rounds,
         "review_mode": config.review_mode,
+        "review_profile_set": config.review_profile_set,
         "review_budget_exhaustion_policy": config.review_budget_exhaustion_policy,
         "configured_review_profile_budgets": config.review_profile_budgets,
         "review_profile_budgets": review_profile_budgets,
@@ -1851,7 +1870,7 @@ def _vertical_profile_status(
     *,
     current_draft_hash: str | None = None,
 ) -> dict[str, object]:
-    profiles = [profile_state[key] for key in ("structural_integrity", "determinism", "operability")]
+    profiles = list(profile_state.values())
     unverified_profiles = [
         item["profile"]
         for item in profiles

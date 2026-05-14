@@ -79,3 +79,4 @@
 - Revised the spec to `0.46` with Phase 1 vertical review mode, preserving independent profile review artifacts while merging profile feedback into one consolidated Editor revision per cycle.
 - Revised the spec to `0.57` with nonblocking per-round operator decision checkpoint artifacts that frame likely owner-level choices while leaving scheduler behavior unchanged.
 - Revised the spec to `0.58` with terminal operator decision checkpoint summaries that cluster checkpoint candidates by trigger reason, section, and source type.
+- Revised the spec to `0.59` with canonical review profile sets, allowing stateful, balanced MVP, utility MVP, and governance runs to select different profile stacks and default budgets without changing the active rubric.

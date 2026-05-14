@@ -21,6 +21,7 @@ from whetstone.reports import ReportWriter
 from whetstone.run_state import effective_run_config
 from whetstone.rubrics import RubricManifest, read_rubric_text, rubric_manifest_identity, write_rubric_manifest
 from whetstone.scheduler import (
+    CONVERGENCE_ACCEPTANCE_PROFILES,
     default_phase_1_scheduler,
     default_phase_2_scheduler,
     resolved_phase_1_profile_budgets,
@@ -76,7 +77,10 @@ class LivePhase2Runner:
         current_hash = promotion.after_hash
         last_accepted_draft_hash: str | None = current_hash
         start_round = int(state.get("current_round", 0)) + 1
-        scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
+        scheduler = default_phase_2_scheduler(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
         oscillation_tracker = OscillationTracker()
         conflict_tracker = ConflictTracker()
         if overwrite and self.config.declaration_path.exists():
@@ -86,7 +90,13 @@ class LivePhase2Runner:
         last_rubric_gaps: list[dict[str, Any]] = []
         final_round_number = start_round - 1
         clean_profiles: set[str] = set()
-        required_clean_profiles = {step.profile for step in default_phase_2_scheduler(self.config.convergence_profile_budgets).steps}
+        required_clean_profiles = {
+            step.profile
+            for step in default_phase_2_scheduler(
+                self.config.convergence_profile_budgets,
+                profile_set=self.config.review_profile_set,
+            ).steps
+        }
 
         oscillation_tracker.record_draft(
             round_number=start_round - 1,
@@ -312,7 +322,7 @@ class LivePhase2Runner:
 
             if (
                 had_declaration
-                and profile == "convergence_strict_check"
+                and profile in CONVERGENCE_ACCEPTANCE_PROFILES
                 and verified_current_draft_clean
                 and result.accepted
                 and required_clean_profiles.issubset(clean_profiles)
@@ -531,10 +541,22 @@ class LivePhase2Runner:
     ) -> None:
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
         phase_2_rounds_completed = max(0, current_round - self.phase_1_rounds_completed)
-        review_round_budget = default_phase_1_scheduler(self.config.review_profile_budgets).total_round_budget()
-        convergence_round_budget = default_phase_2_scheduler(self.config.convergence_profile_budgets).total_round_budget()
-        review_profile_budgets = resolved_phase_1_profile_budgets(self.config.review_profile_budgets)
-        convergence_profile_budgets = resolved_phase_2_profile_budgets(self.config.convergence_profile_budgets)
+        review_round_budget = default_phase_1_scheduler(
+            self.config.review_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        ).total_round_budget()
+        convergence_round_budget = default_phase_2_scheduler(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        ).total_round_budget()
+        review_profile_budgets = resolved_phase_1_profile_budgets(
+            self.config.review_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
+        convergence_profile_budgets = resolved_phase_2_profile_budgets(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
         packet = {
             "current_round": current_round,
             "current_absolute_round": current_round,
@@ -543,6 +565,7 @@ class LivePhase2Runner:
             "phase_1_rounds_completed": self.phase_1_rounds_completed,
             "phase_2_rounds_completed": phase_2_rounds_completed,
             "review_max_rounds": self.config.review_max_rounds,
+            "review_profile_set": self.config.review_profile_set,
             "review_budget_exhaustion_policy": self.config.review_budget_exhaustion_policy,
             "configured_review_profile_budgets": self.config.review_profile_budgets,
             "review_profile_budgets": review_profile_budgets,

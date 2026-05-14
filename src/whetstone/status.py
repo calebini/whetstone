@@ -41,7 +41,7 @@ TERMINAL_REPORTS = (
     "artifact_validation_error.json",
     "config_validation_error.json",
 )
-PHASE_2_PROFILES = {"convergence_strict_check", "adversarial"}
+PHASE_2_PROFILES = {"convergence_strict_check", "adversarial", "mvp_readiness_check", "scope_guard"}
 
 
 def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
@@ -60,10 +60,22 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     apply_back = _apply_back_status(root, rounds_dir, run_state)
     resume_status = _resume_status(root, rounds_dir, run_state)
     scope_status = _scope_status(root, config)
-    default_review_round_budget = default_phase_1_scheduler(config.review_profile_budgets).total_round_budget()
-    default_convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
-    default_review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
-    default_convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
+    default_review_round_budget = default_phase_1_scheduler(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    ).total_round_budget()
+    default_convergence_round_budget = default_phase_2_scheduler(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    ).total_round_budget()
+    default_review_profile_budgets = resolved_phase_1_profile_budgets(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
+    default_convergence_profile_budgets = resolved_phase_2_profile_budgets(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     packet = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "root": str(root),
@@ -80,6 +92,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         or inferred_rounds.get("phase_1_rounds_completed"),
         "phase_2_rounds_completed": (run_state.get("phase_2_rounds_completed") if run_state else None)
         or inferred_rounds.get("phase_2_rounds_completed"),
+        "review_profile_set": (run_state.get("review_profile_set") if run_state else None) or config.review_profile_set,
         "review_max_rounds": (run_state.get("review_max_rounds") if run_state else None) or config.review_max_rounds,
         "review_round_budget": (run_state.get("review_round_budget") if run_state else None)
         or default_review_round_budget,
@@ -137,6 +150,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"root: {status.get('root')}",
         f"phase: {_display(status.get('phase'))}",
         f"run_mode: {_display(status.get('run_mode'))}",
+        f"profile_set: {_display(status.get('review_profile_set'))}",
         f"current_round: {_display(status.get('current_round'))}",
         f"current_absolute_round: {_display(status.get('current_absolute_round'))}",
         f"current_phase_round: {_display(status.get('current_phase_round'))}",

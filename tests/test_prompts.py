@@ -14,6 +14,15 @@ class PromptTests(unittest.TestCase):
         self.assertIn("oscillation_key", prompt)
         self.assertIn("For Phase 1, set oscillation_key to null", prompt)
         self.assertIn("Whetstone computes issue_id, issue_fingerprint, and normalized_severity", prompt)
+        self.assertIn("Profile-specific review lens", prompt)
+        self.assertIn("replay, retries, idempotency", prompt)
+
+    def test_reviewer_prompt_includes_light_profile_guidance(self) -> None:
+        prompt = render_reviewer_prompt(profile="determinism_light", draft="# Spec\n")
+
+        self.assertIn("Review profile: determinism_light", prompt)
+        self.assertIn("observable MVP outcomes", prompt)
+        self.assertIn("Do not require exhaustive replay", prompt)
 
     def test_phase_2_reviewer_prompt_requires_oscillation_classification(self) -> None:
         prompt = render_reviewer_prompt(

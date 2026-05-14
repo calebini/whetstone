@@ -55,6 +55,7 @@
       "additionalProperties": false,
       "required": [
         "review_max_rounds",
+        "review_profile_set",
         "convergence_max_rounds",
         "review_profile_budgets",
         "convergence_profile_budgets",
@@ -65,6 +66,7 @@
       ],
       "properties": {
         "review_max_rounds": { "type": "integer", "minimum": 1 },
+        "review_profile_set": { "type": "string", "minLength": 1 },
         "convergence_max_rounds": { "type": "integer", "minimum": 1 },
         "review_profile_budgets": {
           "type": "object",

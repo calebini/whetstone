@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import unittest
 
-from whetstone.scheduler import PhaseScheduler, ProfileStep, default_phase_1_scheduler, resolve_focus_anchors
+from whetstone.scheduler import (
+    PhaseScheduler,
+    ProfileStep,
+    default_phase_1_scheduler,
+    default_phase_2_scheduler,
+    profile_prompt_guidance,
+    resolved_phase_1_profile_budgets,
+    resolve_focus_anchors,
+)
 
 
 class SchedulerTests(unittest.TestCase):
@@ -68,6 +76,34 @@ class SchedulerTests(unittest.TestCase):
         scheduler = default_phase_1_scheduler()
 
         self.assertEqual(scheduler.next_profile(), "structural_integrity")
+
+    def test_utility_mvp_profile_set_uses_lightweight_profiles(self) -> None:
+        scheduler = default_phase_1_scheduler(profile_set="utility_mvp")
+
+        self.assertEqual([step.profile for step in scheduler.steps], ["buildability", "consistency", "determinism_light", "operability_light"])
+        self.assertEqual(scheduler.total_round_budget(), 15)
+        self.assertEqual(
+            resolved_phase_1_profile_budgets(profile_set="utility_mvp"),
+            {"buildability": 4, "consistency": 4, "determinism_light": 4, "operability_light": 3},
+        )
+
+    def test_phase_1_profile_sets_preserve_final_profile_always_run_behavior(self) -> None:
+        scheduler = default_phase_1_scheduler(profile_set="utility_mvp")
+
+        self.assertTrue(scheduler.steps[0].skip_if_clean)
+        self.assertFalse(scheduler.steps[-1].skip_if_clean)
+
+    def test_utility_mvp_phase_2_omits_adversarial(self) -> None:
+        scheduler = default_phase_2_scheduler(profile_set="utility_mvp")
+
+        self.assertEqual([step.profile for step in scheduler.steps], ["mvp_readiness_check", "scope_guard", "mvp_readiness_check"])
+        self.assertEqual(scheduler.total_round_budget(), 11)
+
+    def test_profile_prompt_guidance_is_defined_for_light_profile(self) -> None:
+        guidance = profile_prompt_guidance("determinism_light")
+
+        self.assertIsNotNone(guidance)
+        self.assertIn("observable MVP outcomes", guidance or "")
 
     def test_default_focus_anchor_matches_versioned_section_id_suffix(self) -> None:
         scheduler = default_phase_1_scheduler()

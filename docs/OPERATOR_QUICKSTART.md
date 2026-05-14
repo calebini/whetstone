@@ -79,6 +79,7 @@ clients:
 review:
   max_rounds: 12
   mode: horizontal
+  profile_set: stateful_system
   budget_exhaustion_policy: hard
   profile_budgets:
     structural_integrity: 10
@@ -128,10 +129,20 @@ For MVP review, change:
 
 ```yaml
 workflow: mvp
+review:
+  profile_set: utility_mvp
+  profile_budgets:
+    buildability: 4
+    consistency: 4
+    determinism_light: 4
+    operability_light: 3
 convergence:
   target_phase: mid
   target_mode: strict
   rubric_profile: mvp-v1
+  profile_budgets:
+    mvp_readiness_check: 4
+    scope_guard: 3
 ```
 
 Then create and approve a scope contract before running Phase 1.
@@ -169,6 +180,24 @@ Round folders identify their shape in `profile_used.yaml` with `round_kind`. In 
 If a run ends immediately after an Editor mutation, Whetstone may report the draft as accepted but still unverified. That means the edit resolved the known blocker/major feedback, but the revised draft still needs another clean profile-review cycle before Phase 2.
 
 When this happens at the end of the budget, Whetstone can run a verification-only closeout pass. It calls Reviewers only, does not mutate the draft, and either marks Phase 1 stable or stops with the remaining blocker/major verification debt.
+
+## Profile Set
+
+Use `profile_set` to choose the review lenses and default per-profile budgets before changing individual budgets:
+
+```yaml
+review:
+  profile_set: stateful_system
+```
+
+Available profile sets:
+
+- `stateful_system`: default, high-assurance review for stateful/artifact/replay-heavy systems.
+- `balanced_mvp`: same review lenses as `stateful_system`, with lower budgets.
+- `utility_mvp`: lighter lenses for small CLIs, utilities, and MVP tools where Whetstone should avoid turning the spec into a metropolis.
+- `governance`: strongest pressure, including adversarial Phase 1 review.
+
+For Foreman-like specs, start with `stateful_system`. For Parley-like utility specs, start with `utility_mvp` plus a clear MVP scope contract.
 
 ## Budget Exhaustion Policy
 

@@ -48,7 +48,10 @@ class FixtureEngine:
 
     def run(self, steps: Iterable[FixtureScriptStep], *, overwrite_rounds: bool = False) -> EngineResult:
         phase = "phase_1"
-        scheduler: PhaseScheduler = default_phase_1_scheduler(self.config.review_profile_budgets)
+        scheduler: PhaseScheduler = default_phase_1_scheduler(
+            self.config.review_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
         last_accepted_draft_hash: str | None = None
         last_result: FixtureRoundResult | None = None
         last_rubric_gaps: list[dict[str, Any]] = []
@@ -57,7 +60,13 @@ class FixtureEngine:
         oscillation_tracker = OscillationTracker()
         declaration_path: Path | None = None
         phase2_clean_profiles: set[str] = set()
-        required_phase2_clean_profiles = {step.profile for step in default_phase_2_scheduler(self.config.convergence_profile_budgets).steps}
+        required_phase2_clean_profiles = {
+            step.profile
+            for step in default_phase_2_scheduler(
+                self.config.convergence_profile_budgets,
+                profile_set=self.config.review_profile_set,
+            ).steps
+        }
         oscillation_tracker.record_draft(
             round_number=0,
             draft_hash_value=draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
@@ -94,7 +103,10 @@ class FixtureEngine:
                         )
                     phase = "phase_2"
                     phase_rounds = 1
-                    scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
+                    scheduler = default_phase_2_scheduler(
+                        self.config.convergence_profile_budgets,
+                        profile_set=self.config.review_profile_set,
+                    )
                     expected_profile = scheduler.next_profile()
                 if expected_profile is None:
                     return EngineResult("TARGET_NOT_REACHED", round_number - 1, phase, last_accepted_draft_hash)
@@ -211,7 +223,10 @@ class FixtureEngine:
             if phase == "phase_1" and scheduler.phase_complete(accepted_draft=result.accepted):
                     phase = "phase_2"
                     phase_rounds = 0
-                    scheduler = default_phase_2_scheduler(self.config.convergence_profile_budgets)
+                    scheduler = default_phase_2_scheduler(
+                        self.config.convergence_profile_budgets,
+                        profile_set=self.config.review_profile_set,
+                    )
                     phase2_clean_profiles.clear()
                     continue
 

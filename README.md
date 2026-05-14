@@ -2,7 +2,7 @@
 
 Whetstone is an AI spec convergence orchestrator. It runs iterative Reviewer and Editor passes over a technical spec, persists every round artifact, and stops on explicit terminal states instead of relying on conversational memory.
 
-The source of truth is [spec.md](spec.md), currently version `0.37`.
+The source of truth is [spec.md](spec.md), currently version `0.59`.
 
 ## Start Here
 

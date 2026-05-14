@@ -50,6 +50,7 @@ clients:
 review:
   max_rounds: 3
   mode: vertical
+  profile_set: utility_mvp
   budget_exhaustion_policy: soft
   profile_budgets:
     structural_integrity: 4
@@ -101,6 +102,7 @@ reference_context:
             self.assertEqual(config.reviewer.model, "gpt-fixture")
             self.assertEqual(config.review_max_rounds, 3)
             self.assertEqual(config.review_mode, "vertical")
+            self.assertEqual(config.review_profile_set, "utility_mvp")
             self.assertEqual(config.review_budget_exhaustion_policy, "soft")
             self.assertEqual(config.review_profile_budgets["structural_integrity"], 4)
             self.assertEqual(config.review_profile_budgets["determinism"], 5)

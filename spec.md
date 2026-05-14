@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.58 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.59 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.58` adds terminal operator decision checkpoint summaries that cluster per-round checkpoint cards into a compact operator review aid.
+Version `0.59` adds canonical review profile sets, allowing operators to choose the amount and kind of sharpening pressure for stateful systems, MVPs, utility tools, and governance-grade runs without changing the underlying rubric.
 
 ---
 
@@ -105,6 +105,7 @@ clients:
 review:
   max_rounds: 12             # legacy/safety metadata; profile_budgets drive scheduling
   mode: horizontal            # horizontal | vertical
+  profile_set: stateful_system # stateful_system | balanced_mvp | utility_mvp | governance
   budget_exhaustion_policy: hard  # hard | soft
   profile_budgets:
     structural_integrity: 10
@@ -500,6 +501,15 @@ Rollback authority remains the round artifacts and hashes. Version labels are hu
 
 ## REVIEW PROFILES
 
+A review profile is a named review lens. It consists of:
+
+- `name`: stable identifier used in artifacts and scheduling
+- `focus`: controlled review concerns used in prompt construction and artifact metadata
+- `prompt_guidance`: profile-specific instructions that tell the Reviewer what to emphasize and what not to over-expand
+- optional `focus_anchors`: computable section anchors used to invalidate clean status when relevant sections mutate
+
+Profiles are not rubrics. A rubric defines the quality bar. A profile defines the perspective used for one review pass.
+
 ```yaml
 review_profiles:
   structural_integrity:
@@ -516,9 +526,101 @@ review_profiles:
 
   convergence_strict_check:
     focus: [rubric_alignment, declaration_validity, strictness_gaps]
+
+  buildability:
+    focus: [core_flow, required_inputs_outputs, acceptance_criteria]
+
+  consistency:
+    focus: [terminology_consistency, command_option_consistency, artifact_reference_consistency]
+
+  determinism_light:
+    focus: [path_resolution, stable_ids, exit_codes, report_presence]
+
+  operability_light:
+    focus: [obvious_failure_modes, user_visible_errors, safe_non_destructive_behavior]
+
+  mvp_readiness_check:
+    focus: [mvp_scope, core_flow_buildability, deferred_hardening]
+
+  scope_guard:
+    focus: [scope_contract_alignment, over_expansion, deferred_surface_preservation]
 ```
 
 Profile focus labels are review concerns, not section identifiers.
+
+## REVIEW PROFILE SETS
+
+A review profile set is a canonical bundle of Phase 1 profiles, Phase 2 profiles, and default per-profile round budgets. It answers: "Which lenses should Whetstone use for this kind of spec?"
+
+`review.profile_set` MUST be one of:
+
+- `stateful_system`: default high-assurance profile set for stateful, artifact-producing, replay-sensitive systems. This is the historical Whetstone behavior and is appropriate for Foreman-like specs.
+- `balanced_mvp`: reduced-budget version of the stateful profile stack for MVPs that still have meaningful state, artifacts, lifecycle, or replay concerns.
+- `utility_mvp`: lighter profile set for small CLIs/tools and utility workflows where buildability, consistency, visible determinism, and obvious failure behavior matter more than exhaustive replay/adversarial pressure.
+- `governance`: highest-pressure profile set; adds adversarial Phase 1 review and uses strict Phase 2 review pressure.
+
+Default profile-set schedules:
+
+```yaml
+profile_sets:
+  stateful_system:
+    phase_1:
+      - structural_integrity
+      - determinism
+      - operability
+    phase_2:
+      - convergence_strict_check
+      - adversarial
+      - convergence_strict_check
+    default_budgets:
+      phase_1: {structural_integrity: 10, determinism: 10, operability: 10}
+      phase_2: {convergence_strict_check: 10, adversarial: 10}
+
+  balanced_mvp:
+    phase_1:
+      - structural_integrity
+      - determinism
+      - operability
+    phase_2:
+      - convergence_strict_check
+      - adversarial
+      - convergence_strict_check
+    default_budgets:
+      phase_1: {structural_integrity: 7, determinism: 7, operability: 6}
+      phase_2: {convergence_strict_check: 6, adversarial: 4}
+
+  utility_mvp:
+    phase_1:
+      - buildability
+      - consistency
+      - determinism_light
+      - operability_light
+    phase_2:
+      - mvp_readiness_check
+      - scope_guard
+      - mvp_readiness_check
+    default_budgets:
+      phase_1: {buildability: 4, consistency: 4, determinism_light: 4, operability_light: 3}
+      phase_2: {mvp_readiness_check: 4, scope_guard: 3}
+
+  governance:
+    phase_1:
+      - structural_integrity
+      - determinism
+      - operability
+      - adversarial
+    phase_2:
+      - convergence_strict_check
+      - adversarial
+      - convergence_strict_check
+    default_budgets:
+      phase_1: {structural_integrity: 10, determinism: 10, operability: 10, adversarial: 8}
+      phase_2: {convergence_strict_check: 10, adversarial: 10}
+```
+
+Explicit `review.profile_budgets` and `convergence.profile_budgets` override only profiles present in the selected profile set. Unknown budget keys are ignored for scheduling and MAY be surfaced in operator diagnostics.
+
+`mvp_readiness_check` is a Phase 2 convergence-acceptance profile for `utility_mvp` in the same way that `convergence_strict_check` is the convergence-acceptance profile for stricter profile sets.
 
 For clean-status invalidation, each review profile MUST also have computable focus anchors. Focus anchors are canonical Markdown section IDs derived from the current draft using the section-index rule in this spec.
 
@@ -576,6 +678,8 @@ When the draft title includes a versioned root heading, the Orchestrator MUST re
 ---
 
 ## ROUND STRATEGY (ADAPTIVE)
+
+The following strategy is the default `stateful_system` profile-set strategy. Other profile sets replace the profile sequence and default budgets while preserving the same scheduler semantics.
 
 ```yaml
 round_strategy:

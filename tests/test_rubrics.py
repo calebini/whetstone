@@ -24,6 +24,7 @@ class RubricManifestTests(unittest.TestCase):
             self.assertEqual(manifest.packet["rubric_source"], "builtin")
             self.assertEqual(manifest.packet["resolved_defaults"]["convergence_max_rounds"], 8)
             self.assertEqual(manifest.packet["configured_budgets"]["review_max_rounds"], config.review_max_rounds)
+            self.assertEqual(manifest.packet["configured_budgets"]["review_profile_set"], config.review_profile_set)
             self.assertEqual(manifest.packet["configured_budgets"]["convergence_max_rounds"], config.convergence.max_rounds)
             self.assertEqual(
                 manifest.packet["configured_budgets"]["review_profile_budgets"],

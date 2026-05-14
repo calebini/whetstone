@@ -122,10 +122,19 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
     if invalid:
         raise ValueError("; ".join(invalid))
 
-    review_profile_budgets = resolved_phase_1_profile_budgets(config.review_profile_budgets)
-    convergence_profile_budgets = resolved_phase_2_profile_budgets(config.convergence_profile_budgets)
+    review_profile_budgets = resolved_phase_1_profile_budgets(
+        config.review_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
+    convergence_profile_budgets = resolved_phase_2_profile_budgets(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    )
     review_round_budget = sum(review_profile_budgets.values())
-    convergence_round_budget = default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget()
+    convergence_round_budget = default_phase_2_scheduler(
+        config.convergence_profile_budgets,
+        profile_set=config.review_profile_set,
+    ).total_round_budget()
     packet = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "workflow": workflow,
@@ -144,6 +153,7 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
         },
         "configured_budgets": {
             "review_max_rounds": config.review_max_rounds,
+            "review_profile_set": config.review_profile_set,
             "convergence_max_rounds": config.convergence.max_rounds,
             "review_profile_budgets": dict(sorted(review_profile_budgets.items())),
             "convergence_profile_budgets": dict(sorted(convergence_profile_budgets.items())),

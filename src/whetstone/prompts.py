@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from whetstone.scheduler import profile_prompt_guidance
+
 
 CONCERN_TYPES = {
     "clarity_gap": "section is ambiguous, undefined, or unclear",
@@ -85,6 +87,16 @@ def render_reviewer_prompt(
         "- severity_rationale",
         "- oscillation_key",
     ]
+    guidance = profile_prompt_guidance(profile)
+    if guidance:
+        lines.extend(
+            [
+                "",
+                "Profile-specific review lens:",
+                guidance,
+                "Apply baseline invariants for every review, but use this profile lens to decide what to emphasize.",
+            ]
+        )
     if phase == "phase_1":
         lines.append("For Phase 1, set oscillation_key to null.")
     if phase == "phase_2":

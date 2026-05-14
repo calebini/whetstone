@@ -78,7 +78,7 @@ class LivePhase1Runner:
         scheduler = (
             self.scheduler_factory(self.config.review_profile_budgets)
             if self.scheduler_factory is not None
-            else default_phase_1_scheduler(self.config.review_profile_budgets)
+            else default_phase_1_scheduler(self.config.review_profile_budgets, profile_set=self.config.review_profile_set)
         )
         seen_hashes: list[str] = [draft_hash(self.config.spec_path.read_text(encoding="utf-8"))]
         last_accepted_draft_hash: str | None = None
@@ -448,8 +448,12 @@ class LivePhase1Runner:
     def _run_vertical(self, *, overwrite: bool = False) -> LivePhase1Result:
         if overwrite:
             _clear_top_level_run_artifacts(self.config.rounds_dir)
-        profiles = ["structural_integrity", "determinism", "operability"]
-        budgets = resolved_phase_1_profile_budgets(self.config.review_profile_budgets)
+        scheduler = default_phase_1_scheduler(self.config.review_profile_budgets, profile_set=self.config.review_profile_set)
+        profiles = [step.profile for step in scheduler.steps]
+        budgets = resolved_phase_1_profile_budgets(
+            self.config.review_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
         max_cycles = max(budgets.values())
         profile_state = {
             profile: {
@@ -776,7 +780,7 @@ class LivePhase1Runner:
         last_accepted_draft_hash: str | None,
         overwrite: bool,
     ) -> dict[str, Any]:
-        profiles = ["structural_integrity", "determinism", "operability"]
+        profiles = list(profile_state.keys())
         round_number = start_round - 1
         closeout_unresolved: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
@@ -1082,16 +1086,25 @@ class LivePhase1Runner:
         ready_for_phase_2: bool,
     ) -> None:
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
-        convergence_round_budget = default_phase_2_scheduler(self.config.convergence_profile_budgets).total_round_budget()
+        convergence_round_budget = default_phase_2_scheduler(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        ).total_round_budget()
         review_profile_budgets = (
             self.state_review_profile_budgets
             if self.state_review_profile_budgets is not None
-            else resolved_phase_1_profile_budgets(self.config.review_profile_budgets)
+            else resolved_phase_1_profile_budgets(
+                self.config.review_profile_budgets,
+                profile_set=self.config.review_profile_set,
+            )
         )
         review_round_budget = sum(review_profile_budgets.values())
         if self.config.review_mode == "vertical" and review_profile_budgets:
             review_round_budget += max(review_profile_budgets.values())
-        convergence_profile_budgets = resolved_phase_2_profile_budgets(self.config.convergence_profile_budgets)
+        convergence_profile_budgets = resolved_phase_2_profile_budgets(
+            self.config.convergence_profile_budgets,
+            profile_set=self.config.review_profile_set,
+        )
         previous_state = _read_json_object(self.config.rounds_dir / "run_state.json")
         budget_extensions = []
         if previous_state and isinstance(previous_state.get("budget_extensions"), list):
@@ -1107,6 +1120,7 @@ class LivePhase1Runner:
             "phase_2_rounds_completed": 0,
             "review_max_rounds": self.config.review_max_rounds,
             "review_mode": self.config.review_mode,
+            "review_profile_set": self.config.review_profile_set,
             "review_budget_exhaustion_policy": self.config.review_budget_exhaustion_policy,
             "configured_review_profile_budgets": self.config.review_profile_budgets,
             "review_profile_budgets": review_profile_budgets,
@@ -1333,7 +1347,7 @@ def _vertical_profile_status(
     *,
     current_draft_hash: str | None = None,
 ) -> dict[str, object]:
-    profiles = [profile_state[key] for key in ("structural_integrity", "determinism", "operability")]
+    profiles = list(profile_state.values())
     unverified_profiles = [
         item["profile"]
         for item in profiles

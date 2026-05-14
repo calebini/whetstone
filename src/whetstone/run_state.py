@@ -21,10 +21,17 @@ def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
     """Return the effective run config that resume must preserve."""
 
     return {
-        "review_profile_budgets": resolved_phase_1_profile_budgets(config.review_profile_budgets),
+        "review_profile_set": config.review_profile_set,
+        "review_profile_budgets": resolved_phase_1_profile_budgets(
+            config.review_profile_budgets,
+            profile_set=config.review_profile_set,
+        ),
         "review_mode": config.review_mode,
         "review_budget_exhaustion_policy": config.review_budget_exhaustion_policy,
-        "convergence_profile_budgets": resolved_phase_2_profile_budgets(config.convergence_profile_budgets),
+        "convergence_profile_budgets": resolved_phase_2_profile_budgets(
+            config.convergence_profile_budgets,
+            profile_set=config.review_profile_set,
+        ),
         "decision_points": {
             "enabled": config.decision_points.enabled,
             "mode": config.decision_points.mode,
@@ -83,6 +90,7 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
         )
     )
     review_mode = str(effective.get("review_mode", getattr(config, "review_mode", "horizontal")))
+    review_profile_set = str(effective.get("review_profile_set", getattr(config, "review_profile_set", "stateful_system")))
     convergence_profile_budgets = _int_mapping(
         effective.get("convergence_profile_budgets", packet.get("convergence_profile_budgets"))
     )
@@ -111,6 +119,7 @@ def apply_effective_run_config(config: OrchestratorConfig, packet: dict[str, Any
         config,
         review_profile_budgets=review_profile_budgets or config.review_profile_budgets,
         review_mode=review_mode,
+        review_profile_set=review_profile_set,
         review_budget_exhaustion_policy=review_budget_exhaustion_policy,
         convergence_profile_budgets=convergence_profile_budgets or config.convergence_profile_budgets,
         decision_points=decision_points,

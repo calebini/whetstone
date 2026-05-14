@@ -442,6 +442,7 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 reviewer=type(config.reviewer)(config.reviewer.name, config.reviewer.command, "", config.reviewer.model),
                 review_max_rounds=config.review_max_rounds,
                 review_mode=config.review_mode,
+                review_profile_set=config.review_profile_set,
                 review_profile_budgets=config.review_profile_budgets,
                 review_budget_exhaustion_policy=config.review_budget_exhaustion_policy,
                 convergence=config.convergence,

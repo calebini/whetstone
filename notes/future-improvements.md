@@ -73,6 +73,39 @@ Per-round artifacts can be compacted or archived, but should remain recoverable 
 
 The first version should probably be named `whetstone compact` or `--archive-round-artifacts` rather than destructive cleanup, so the feature's default mental model is preserving the audit trail while reducing clutter.
 
+## Project Spec Tracking Matrix
+
+Multi-spec projects benefit from a compact status artifact that tracks which source docs have been sharpened, which Whetstone drafts are current, which outputs have been applied back, and which specs are stalled, converged, or ready for implementation review.
+
+This should be treated as an optional companion/reporting layer, not core Whetstone sharpening behavior. Whetstone's core job remains improving one spec through review/revision/convergence. A matrix command should help operators make sense of many Whetstone runs across a project without turning Whetstone into a full project-management system.
+
+Potential command:
+
+```text
+whetstone matrix refresh --project-root . --runs-dir ./whetstone_runs --docs-dir ./docs --output ./docs/SPEC_TRACKING_MATRIX.md
+```
+
+Potential contents:
+
+- source doc path
+- current run-root draft path
+- terminal state and phase/round/profile
+- source relation: `SOURCE_APPLIED`, `SOURCE_AHEAD_OF_RUN`, `CONVERGED_PENDING_APPLY_BACK`, `NO_RUN_TRACKED`, etc.
+- run lineage counted for cumulative accounting
+- cumulative tokens and Whetstone wall time
+- decision count and unresolved human decision count
+- operator confidence / implementation recommendation, for example `BUILD_TARGET`, `LEAN_REWRITE_RECOMMENDED`, `RISK_DISCOVERY_ONLY`, `NEEDS_SYNTHESIS`, or `DEPENDENCY_CONTEXT_ONLY`
+- apply-back safety, for example `SAFE_TO_APPLY`, `REVIEW_DECISIONS_FIRST`, `DO_NOT_APPLY_DIRECTLY`, or `SOURCE_ALREADY_AUTHORITY`
+- next action
+
+Design constraints:
+
+- The matrix should be mechanically derived where possible and mark any human-supplied recommendation as non-authoritative metadata.
+- It should preserve a sharp distinction between Whetstone terminal state and operator implementation judgment. A spec can be `CONVERGED` and still be `LEAN_REWRITE_RECOMMENDED` if the run over-expanded the intended MVP.
+- It should avoid mutating source specs or run artifacts unless explicitly asked.
+- It should tolerate lineage made of multiple run roots, focused passes, synthesis roots, and apply-back runs.
+- It should make decision pressure visible so large runs do not hide behind a green terminal state.
+
 ## Decision Summary And Intervention Refinement
 
 Decision capture is useful, but live intervention is likely too interrupt-heavy for normal Whetstone runs. Real runs can produce dozens of decision points, and pausing on each meaningful requirement, scope, or policy change would turn review into an expensive permission flow.

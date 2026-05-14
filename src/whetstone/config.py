@@ -78,6 +78,7 @@ class OrchestratorConfig:
     reviewer: ClientConfig
     review_max_rounds: int
     review_mode: str
+    review_profile_set: str
     review_profile_budgets: dict[str, int]
     review_budget_exhaustion_policy: str
     convergence: ConvergenceConfig
@@ -101,6 +102,7 @@ class OrchestratorConfig:
             reviewer=ClientConfig("fixture-reviewer", "fixture", "0.0.0", "fixture"),
             review_max_rounds=12,
             review_mode="horizontal",
+            review_profile_set="stateful_system",
             review_profile_budgets={},
             review_budget_exhaustion_policy="hard",
             convergence=ConvergenceConfig(
@@ -179,6 +181,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
         ),
         review_max_rounds=int(review.get("max_rounds", default.review_max_rounds)),
         review_mode=str(review.get("mode", default.review_mode)),
+        review_profile_set=str(review.get("profile_set", default.review_profile_set)),
         review_profile_budgets=_parse_int_mapping(review.get("profile_budgets", default.review_profile_budgets)),
         review_budget_exhaustion_policy=str(
             review.get("budget_exhaustion_policy", default.review_budget_exhaustion_policy)

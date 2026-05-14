@@ -21,6 +21,7 @@ from whetstone.prompts import render_editor_prompt, render_reviewer_prompt
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
 from whetstone.rubrics import read_rubric_text, write_rubric_manifest
+from whetstone.scheduler import CONVERGENCE_ACCEPTANCE_PROFILES, PROFILE_SETS
 from whetstone.sections import section_index
 from whetstone.scope import LoadedScopeContract, read_scope_contract, scope_contract_summary
 from whetstone.text_validation import validate_generated_text
@@ -103,7 +104,7 @@ class LiveRoundRunner:
         scope_contract = read_scope_contract(self.config.scope_contract.path)
         declaration = (
             _read_optional(self.config.declaration_path)
-            if phase == "phase_2" and profile == "convergence_strict_check"
+            if phase == "phase_2" and profile in CONVERGENCE_ACCEPTANCE_PROFILES
             else None
         )
         section_ids = [section.id for section in section_index(draft_before)] if phase == "phase_2" else []
@@ -1290,6 +1291,13 @@ def validate_live_config(config: OrchestratorConfig) -> list[dict[str, str]]:
         invalid.append({"path": "review.budget_exhaustion_policy", "reason": "must be hard or soft"})
     if config.review_mode not in {"horizontal", "vertical"}:
         invalid.append({"path": "review.mode", "reason": "must be horizontal or vertical"})
+    if config.review_profile_set not in PROFILE_SETS:
+        invalid.append(
+            {
+                "path": "review.profile_set",
+                "reason": "must be one of " + ", ".join(sorted(PROFILE_SETS)),
+            }
+        )
     scope_contract_path = config.scope_contract.path
     if scope_contract_path.exists():
         try:
