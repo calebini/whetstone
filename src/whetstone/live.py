@@ -1776,6 +1776,11 @@ def _reject_destructive_draft_after(*, draft_before_content: str | None, draft_a
         raise ValueError("editor_summary draft_after_content would replace a non-empty draft with empty content")
     if after_stripped.startswith("[Whetstone editor blocked]"):
         raise ValueError("editor_summary draft_after_content is an editor blocked/error placeholder, not a revised draft")
+    if "[...UNCHANGED" in draft_after_content or "[UNCHANGED" in draft_after_content:
+        raise ValueError(
+            "editor_summary draft_after_content contains abbreviated unchanged-section placeholders; "
+            "Whetstone requires the complete revised draft text"
+        )
     before_len = len(before_stripped)
     after_len = len(after_stripped)
     if before_len >= 1000 and after_len < 100 and after_len < int(before_len * 0.05):

@@ -322,3 +322,125 @@ Future direction:
 - Versioned scope contract revisions during a run, with decision-register entries when scope changes.
 
 The key invariant should remain: freeform operator intent may help generate the contract, but Whetstone should only enforce persisted, approved, schema-valid scope fields.
+
+## First-Contact Job Designer
+
+Whetstone should eventually have a first-contact job design capability that sits above scope intake. The operator supplies a fresh spec plus a small set of intent markers, and Whetstone produces a concrete job descriptor that downstream commands can execute without guesswork.
+
+This feature is broader than scope-contract generation, but it should produce or update a scope contract as one of its outputs. The scope contract remains the authoritative boundary artifact; the job descriptor explains how Whetstone should pressure the spec.
+
+Potential command shape:
+
+```text
+whetstone design-job --spec path/to/spec.md --template mvp --output whetstone_job.json
+whetstone run-job --job whetstone_job.json
+```
+
+The designer should inspect the spec and classify it along dimensions such as:
+
+- system type: utility tool, stateful workflow, adapter, protocol, data contract, governance process, exploratory concept
+- statefulness: none, light, heavy
+- artifact intensity: none, light, heavy
+- determinism need: low, medium, high
+- external effects: none, filesystem, network, user-visible, destructive
+- implementation risk: low, medium, high
+- over-sharpening risk: low, medium, high
+
+It should also collect a small operator intent payload:
+
+- target intent: exploratory, MVP, standard production readiness, governance
+- budget preference: cheap, balanced, thorough
+- scope posture: strict MVP, pragmatic, expansive
+- apply-back policy: manual only by default
+- whether diagnostics, exhaustive reports, retry/resume matrices, governance proof, and broad validation matrices are in scope
+- whether the operator wants a one-job run or a survey-then-sharpen strategy
+
+Potential `whetstone_job.json` contents:
+
+```json
+{
+  "schema_version": "1.0",
+  "source_spec_path": "docs/spec.md",
+  "job_goal": "mvp_readiness",
+  "spec_classification": {
+    "system_type": "utility_tool",
+    "risk_level": "medium",
+    "statefulness": "light",
+    "artifact_intensity": "medium",
+    "determinism_need": "medium",
+    "over_sharpening_risk": "high"
+  },
+  "operator_intent": {
+    "target": "mvp",
+    "budget_preference": "balanced",
+    "scope_posture": "strict_mvp",
+    "apply_back_policy": "manual_only"
+  },
+  "recommended_strategy": {
+    "strategy_kind": "survey_then_sharpen",
+    "workflow": "mvp",
+    "profile_set": "utility_mvp",
+    "review_mode": "vertical",
+    "budget_exhaustion_policy": "soft"
+  },
+  "scope_contract_path": "rounds/intake/scope_contract.json",
+  "operator_review_required": true
+}
+```
+
+The job descriptor should be explicit enough that a later Whetstone command can execute from it, but it should remain reviewable before live client calls begin.
+
+### Survey Then Sharpen Strategy
+
+A promising default for fresh, medium-or-larger specs is a two-job strategy: **Survey -> Sharpen**.
+
+Job 1: Vertical Survey
+
+- Purpose: get full-stack signal efficiently without pretending the first pass should settle everything.
+- Use `review.mode: vertical`.
+- Use the designer-selected profile set, commonly `utility_mvp`, `balanced_mvp`, or `stateful_system`.
+- Use semi-generous per-profile budgets, for example 10.
+- Use `budget_exhaustion_policy: soft`.
+- Use decision mode `end_of_cycle`.
+- Never apply back automatically.
+
+The vertical survey should answer:
+
+- which review profiles bite hardest
+- whether the selected profile set fits the spec
+- whether scope is expanding
+- which decision clusters recur
+- whether the spec is being overcooked
+- whether a synthesis pass or scope-contract revision is needed before sharpening
+
+After Job 1, an operator or agent should review:
+
+- `decision_summary.md`
+- `operator_decision_checkpoint_summary.md`
+- `technical_failure_report.json` or `convergence_failure_report.json` if present
+- `contract_surface_report.md`
+- final draft diff
+- token/wall-time totals
+
+This review gate may revise the scope contract or job descriptor before Job 2. The key point is that the first job reveals Whetstone's pressure points before the operator commits to a closing strategy.
+
+Job 2: Horizontal Sharpen
+
+- Purpose: close the spec deliberately, profile by profile.
+- Use `review.mode: horizontal`.
+- Use the same or adjusted profile set.
+- Use harder budgets and stricter profile closure.
+- Consider lower budgets than Job 1 because the surface is now known.
+- Use round-by-round decision promotion only for high-impact owner decisions, scope promotions, authority changes, destructive behavior, or product policy.
+- Keep apply-back manual.
+- Enter Phase 2 only after Phase 1 genuinely stabilizes.
+
+This pattern should help Whetstone stay practical: the first run discovers the shape of the problem, and the second run sharpens only the surfaces the operator agrees should be sharpened.
+
+Open design questions:
+
+- Should `survey_then_sharpen` be the default for unknown first-contact specs, or only for specs above a size/risk threshold?
+- Should the designer recommend `utility_mvp` automatically when over-sharpening risk is high?
+- Should Job 1 produce a revised scope-contract proposal automatically, or only a recommendation?
+- Should `run-job` create separate run roots for survey and sharpen, or encode lineage inside one higher-level job directory?
+- Should a vertical survey ever proceed directly to Phase 2 if it reaches Phase 1 stable, or should first-contact jobs always stop for operator review before Phase 2?

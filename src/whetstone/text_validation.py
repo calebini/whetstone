@@ -36,6 +36,19 @@ def validate_generated_text(text: str, *, context: str = "generated text") -> No
     """Reject control/replacement characters that indicate text corruption."""
 
     issues: list[TextValidationIssue] = []
+    real_newline_count = text.count("\n")
+    escaped_newline_count = text.count("\\n")
+    if real_newline_count <= 1 and escaped_newline_count >= 10:
+        first_index = text.find("\\n")
+        issues.append(
+            TextValidationIssue(
+                code="ESCAPED_NEWLINE_DRAFT",
+                line=1,
+                column=first_index + 1 if first_index >= 0 else 1,
+                code_point="\\n",
+                character_name="literal escaped newline sequence",
+            )
+        )
     line = 1
     column = 0
     for character in text:

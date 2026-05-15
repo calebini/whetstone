@@ -716,6 +716,48 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertEqual(error["client_role"], "editor")
             self.assertIn("FORBIDDEN_CONTROL_CHARACTER", error["attempts"][0]["validation_errors"][0])
 
+    def test_editor_draft_with_escaped_newline_body_rejects_before_spec_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec\n\n## Hashing\n\nBefore.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            escaped = before.replace("\n", "\\n") * 4
+
+            with self.assertRaisesRegex(ValueError, "editor_summary.json validation failed after retry"):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient(escaped),
+                ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), before)
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["client_role"], "editor")
+            self.assertIn("ESCAPED_NEWLINE_DRAFT", error["attempts"][0]["validation_errors"][0])
+
+    def test_editor_draft_with_unchanged_placeholders_rejects_before_spec_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec\n\n## Hashing\n\nBefore.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            placeholder_draft = "# Spec\n\n## Hashing\n\nAfter.\n\n[...UNCHANGED remainder of draft...]\n"
+
+            with self.assertRaisesRegex(ValueError, "editor_summary.json validation failed after retry"):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient(placeholder_draft),
+                ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), before)
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["client_role"], "editor")
+            self.assertIn("unchanged-section placeholders", error["attempts"][0]["validation_errors"][0])
+
     def test_editor_validation_retry_can_recover_after_valid_review(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
