@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.60 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.61 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.60` adds Phase 2 reviewer-only closeout verification for profiles whose clean result became stale after a late accepted draft mutation.
+Version `0.61` specifies the generic spec decomposition workflow for splitting overloaded specs into governed target specs without losing provenance or normative coverage.
 
 ---
 
@@ -77,6 +77,12 @@ Version `0.60` adds Phase 2 reviewer-only closeout verification for profiles who
 - /rounds/contract_surface_report.json (if expanding contract surface is detected)
 - /rounds/contract_surface_report.md (human-readable synthesis recommendation, if detected)
 - /rounds/rubric_manifest.json (required before Phase 2 review begins)
+- /decomposition/decomposition_plan.json (if spec decomposition planning is run)
+- /decomposition/decomposition_plan.md (human-readable decomposition plan)
+- /decomposition/decomposition_manifest.json (if extraction is run)
+- /decomposition/coverage_matrix.md (if extraction or audit is run)
+- /decomposition/unmapped_requirements.md (if required source content is not assigned)
+- /decomposition/duplicated_authority_report.md (if duplicated authority is detected)
 
 ---
 
@@ -496,6 +502,150 @@ Each version stamp is an Orchestrator-owned mutation. It MUST be persisted to `s
 - draft hash after stamping
 
 Rollback authority remains the round artifacts and hashes. Version labels are human navigation aids and MUST NOT replace hash validation for replay, audit, or rollback correctness.
+
+---
+
+## SPEC DECOMPOSITION WORKFLOW
+
+Spec decomposition splits an overloaded source spec into a governed spec family while preserving normative content, source provenance, and authority boundaries.
+
+Decomposition MUST NOT assume the source spec is already an HLD. The source spec may be an architecture spec, workflow spec, protocol spec, artifact/schema spec, rubric spec, implementation spec, or any other document that has accumulated multiple separable authority surfaces.
+
+Definitions:
+
+- `source_spec`: the original spec being considered for decomposition.
+- `target_spec`: any spec produced by an approved decomposition.
+- `coordinating_spec`: an optional target spec that owns orientation, cross-spec relationships, shared terminology, and authority routing for a decomposed family.
+- `leaf_spec`: a target spec that owns detailed requirements for one bounded subsystem, workflow, artifact family, protocol, rubric, or other authority surface.
+- `peer_spec`: a target spec in a peer-family split where no coordinating target spec is produced.
+- `decomposition_manifest`: the authoritative artifact recording source-to-target provenance, hashes, authority topology, and coverage status.
+
+Authority topology MUST be one of:
+
+- `coordinated_family`: one coordinating spec plus one or more leaf specs.
+- `peer_family`: two or more peer specs with no coordinating spec; authority routing is owned by the decomposition manifest or an existing external index.
+- `parent_child`: one parent spec remains authoritative for shared flow/intent while child specs own bounded details.
+- `appendix_extraction`: one or more detailed appendices, schemas, rubrics, or artifact contracts are extracted while the source spec remains primary for the surrounding behavior.
+- `no_split`: the plan determines the source spec should remain a single authority.
+
+Decomposition phases:
+
+1. `plan`
+   - Inventory headings, section IDs, source line ranges, normative statements, artifacts, schemas, roles, states, and cross-references.
+   - Propose target specs, authority topology, source section assignments, and known duplicated/shared concepts.
+   - MUST NOT mutate the source spec or write target specs.
+
+2. `approve`
+   - Operator reviews and approves a specific decomposition plan.
+   - Approval MUST bind the source spec hash, plan hash, target paths, authority topology, and extraction mode.
+   - Extraction MUST NOT run without an approved plan.
+
+3. `extract`
+   - Create target specs by copy-first extraction from the source spec.
+   - Extraction MAY add minimal provenance headers, target titles, and backreference placeholders.
+   - Extraction MUST NOT paraphrase, summarize, reorder normative content, or silently remove requirements.
+
+4. `audit`
+   - Verify every source section and normative statement is assigned to at least one target spec, intentionally duplicated, or explicitly retired with rationale.
+   - Verify target specs preserve source hashes/ranges in provenance metadata.
+   - Verify authority surfaces are not duplicated without an explicit shared-authority or supersession rule.
+
+5. `promote`
+   - Mark the decomposed spec family as authoritative only after the audit succeeds and the operator accepts the decomposition manifest.
+   - Before promotion, the source spec remains authoritative.
+
+Decomposition plan inputs:
+
+- `source_spec_path`
+- `source_spec_hash`
+- optional operator-supplied decomposition map
+- optional target spec path map
+- optional authority topology preference
+- optional extraction mode
+- optional explicit retired-section list
+
+Decomposition plan outputs MUST include:
+
+```yaml
+schema_version: string
+source_spec_path: string
+source_spec_hash: string
+planning_mode: inventory_only | proposed_split | approved_split
+authority_topology: coordinated_family | peer_family | parent_child | appendix_extraction | no_split
+target_specs:
+  - target_spec_id: string
+    target_spec_path: string
+    target_spec_role: coordinating_spec | leaf_spec | peer_spec | appendix_spec
+    owned_authority_surfaces: [string]
+    source_section_ids: [string]
+    source_line_ranges:
+      - start_line: integer
+        end_line: integer
+    normative_statement_count: integer
+coverage:
+  source_section_count: integer
+  assigned_source_section_count: integer
+  unassigned_source_section_ids: [string]
+  retired_source_section_ids: [string]
+  duplicated_source_section_ids: [string]
+operator_approval:
+  approved: boolean
+  approved_by: string | null
+  approved_at: string | null
+  approved_plan_hash: string | null
+```
+
+`decomposition_manifest.json` MUST include:
+
+```yaml
+schema_version: string
+source_spec_path: string
+source_spec_hash: string
+approved_plan_hash: string
+authority_topology: string
+target_specs:
+  - target_spec_id: string
+    target_spec_path: string
+    target_spec_hash: string
+    target_spec_role: string
+    source_section_ids: [string]
+    source_line_ranges:
+      - start_line: integer
+        end_line: integer
+    provenance_header_present: boolean
+coverage_status: complete | incomplete
+unmapped_requirements_path: string | null
+duplicated_authority_report_path: string | null
+promoted: boolean
+promoted_at: string | null
+```
+
+Lossless extraction rules:
+
+- The source spec hash MUST match the approved plan hash guard before extraction.
+- Target paths MUST be inside the configured project or run root and MUST NOT overwrite existing files unless `overwrite_targets = true` is explicitly approved.
+- Every copied section MUST preserve its original prose except for heading-level normalization and provenance headers.
+- Any summarization, paraphrase, deduplication, terminology normalization, or authority rewrite MUST be deferred to later Whetstone review of the extracted target specs.
+- Extraction MUST preserve code blocks, tables, enum values, examples, MUST/SHOULD/MAY language, artifact paths, schema snippets, and rationale notes.
+- If a section spans multiple target specs, the plan MUST mark it as duplicated or split by explicit source line ranges.
+
+Coverage invariants:
+
+- Every source section MUST have one of: assigned, duplicated, retired, or unassigned.
+- Every normative statement MUST have one of: assigned, duplicated, retired, or unmapped.
+- Decomposition audit MUST fail when any normative statement remains unmapped.
+- Retired normative content MUST include an operator-approved rationale.
+- Duplicated authority MUST include a precedence, shared-authority, or future-reconciliation rule.
+
+Failure handling:
+
+- Planning failure MUST NOT mutate the source spec or target specs.
+- Extraction MUST halt if the source hash no longer matches the approved plan.
+- Extraction MUST halt if target paths are invalid or would overwrite unapproved files.
+- Audit MUST fail if coverage is incomplete, target hashes are missing, provenance headers are missing, or duplicated authority lacks a rule.
+- Promotion MUST fail unless the audit is complete and operator approval is present.
+
+The decomposition workflow is separate from normal review convergence. A decomposed target spec MAY later enter Whetstone review as a normal source spec. Decomposition artifacts are provenance artifacts; they do not by themselves imply that any target spec has converged.
 
 ---
 
