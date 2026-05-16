@@ -11,6 +11,7 @@ from whetstone.apply_back import apply_back
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
 from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
+from whetstone.decomposition import build_decomposition_plan
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
@@ -308,6 +309,36 @@ def main(argv: list[str] | None = None) -> int:
     decision_summary.add_argument(
         "--output-dir",
         help="directory for summary artifacts; defaults to the register directory",
+    )
+
+    decompose = subparsers.add_parser(
+        "decompose",
+        help="plan, approve, extract, audit, or promote spec decomposition",
+        description="Run explicit lifecycle steps for lossless spec decomposition.",
+        formatter_class=FORMATTER,
+    )
+    decompose_subparsers = decompose.add_subparsers(dest="decompose_command", required=True)
+    decompose_plan = decompose_subparsers.add_parser(
+        "plan",
+        help="write a decomposition plan without extracting target specs",
+        description=(
+            "Inventory a source spec and write decomposition_plan.json plus decomposition_plan.md. "
+            "This command does not mutate the source spec or write target specs."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  whetstone decompose plan --source spec.md --output-dir decomposition\n"
+            "  whetstone decompose plan --source spec.md --map decomposition-map.json --output-dir decomposition"
+        ),
+        formatter_class=FORMATTER,
+    )
+    decompose_plan.add_argument("--source", required=True, help="source spec path to inventory")
+    decompose_plan.add_argument("--output-dir", required=True, help="directory for decomposition plan artifacts")
+    decompose_plan.add_argument("--map", dest="map_path", help="optional decomposition map JSON")
+    decompose_plan.add_argument(
+        "--authority-topology",
+        choices=["coordinated_family", "peer_family", "parent_child", "appendix_extraction", "no_split"],
+        help="optional authority topology override",
     )
 
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
@@ -716,6 +747,17 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "decompose":
+        if args.decompose_command == "plan":
+            result = build_decomposition_plan(
+                source_spec_path=Path(args.source),
+                output_dir=Path(args.output_dir),
+                map_path=Path(args.map_path) if args.map_path else None,
+                authority_topology=args.authority_topology,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        return 1
     if args.command == "promote-phase2":
         root = Path(args.root)
         config = load_config(root / args.config)

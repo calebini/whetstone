@@ -84,6 +84,150 @@ class CliTests(unittest.TestCase):
             self.assertEqual(packet["readiness_target"], "mvp")
             self.assertEqual(json.loads(contract_stdout.getvalue())["status"], "approved")
 
+    def test_decompose_plan_inventory_writes_no_split_artifacts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "\n".join(
+                    [
+                        "# Spec",
+                        "",
+                        "## Purpose",
+                        "The tool MUST keep source text.",
+                        "",
+                        "## Schema",
+                        "The schema SHOULD be explicit.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            stdout = io.StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main(["decompose", "plan", "--source", str(spec), "--output-dir", str(output_dir)])
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(stdout.getvalue())
+            self.assertEqual(result["planning_mode"], "inventory_only")
+            self.assertEqual(result["authority_topology"], "no_split")
+            self.assertEqual(result["target_spec_count"], 1)
+            self.assertEqual(result["unassigned_source_section_count"], 0)
+            plan = json.loads(output_dir.joinpath("decomposition_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(plan["coverage"]["source_section_count"], 2)
+            self.assertEqual(plan["target_specs"][0]["target_spec_id"], "source_spec")
+            self.assertEqual(plan["target_specs"][0]["normative_statement_count"], 2)
+            self.assertTrue(output_dir.joinpath("decomposition_plan.md").exists())
+            self.assertFalse(output_dir.joinpath("docs").exists())
+
+    def test_decompose_plan_with_map_writes_proposed_split(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "\n".join(
+                    [
+                        "# Spec",
+                        "",
+                        "## Purpose",
+                        "The tool MUST keep source text.",
+                        "",
+                        "## Schema",
+                        "The schema MUST be explicit.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            purpose_id = "spec-purpose"
+            schema_id = "spec-schema"
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "coordinated_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "coordinator",
+                                "target_spec_path": "docs/COORDINATING_SPEC.md",
+                                "target_spec_role": "coordinating_spec",
+                                "owned_authority_surfaces": ["orientation"],
+                                "source_section_ids": [purpose_id],
+                            },
+                            {
+                                "target_spec_id": "schema",
+                                "target_spec_path": "docs/SCHEMA_SPEC.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["schema"],
+                                "source_section_ids": [schema_id],
+                            },
+                        ],
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            stdout = io.StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "decompose",
+                        "plan",
+                        "--source",
+                        str(spec),
+                        "--map",
+                        str(map_path),
+                        "--output-dir",
+                        str(output_dir),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(stdout.getvalue())
+            self.assertEqual(result["source_spec_hash"], source_hash)
+            self.assertEqual(result["planning_mode"], "proposed_split")
+            self.assertEqual(result["authority_topology"], "coordinated_family")
+            plan = json.loads(output_dir.joinpath("decomposition_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(plan["target_specs"]), 2)
+            self.assertEqual(plan["coverage"]["unassigned_source_section_ids"], [])
+            self.assertEqual(plan["target_specs"][1]["source_line_ranges"][0]["section_id"], schema_id)
+
+    def test_decompose_plan_rejects_map_source_hash_mismatch(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": "0" * 64,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "purpose",
+                                "target_spec_path": "docs/PURPOSE.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["purpose"],
+                                "source_section_ids": ["spec-purpose"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "source_spec_hash does not match"):
+                main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(root / "out")])
+
     def test_mvp_live_phase1_requires_approved_scope_contract(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

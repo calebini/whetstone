@@ -183,6 +183,8 @@ Compatibility shortcuts may be added later, but the subcommand shape keeps the l
 
 Goal: deterministic planning artifact with no target writes.
 
+Status: implemented.
+
 Scope:
 
 - add `whetstone decompose plan`
@@ -282,4 +284,3 @@ Scope:
 - Should target specs inherit the source version label, start at `0.01`, or use a decomposition-specific version?
 - Should promotion write backreferences into a coordinating spec, or should that remain a separate explicit command?
 - How should Whetstone represent shared terminology that belongs to multiple target specs but should not be duplicated normatively?
-
