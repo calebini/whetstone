@@ -83,3 +83,5 @@
 - Revised the spec to `0.60` with Phase 2 reviewer-only closeout verification for profiles whose clean result became stale after a late accepted draft mutation.
 - Revised the spec to `0.61` with a generic spec decomposition workflow for overloaded source specs, including authority topology, lossless extraction phases, decomposition artifacts, coverage invariants, and promotion rules.
 - Revised the spec to `0.62` with extractable-unit decomposition semantics, treating leaf sections and meaningful parent intro blocks as assignable units while rejecting direct container-section assignment.
+- Revised the spec to `0.63` with hash-bound operator approval for decomposition plans, source-hash verification before extraction, and decomposition section IDs that remain stable across source spec title/version changes.
+- Revised the spec to `0.64` with decomposition trigger-threshold rationale, framing configurable defaults as conservative seed values that must be documented and refined from observed runs.

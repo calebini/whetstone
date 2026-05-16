@@ -11,7 +11,7 @@ from whetstone.apply_back import apply_back
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
 from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
-from whetstone.decomposition import build_decomposition_plan
+from whetstone.decomposition import approve_decomposition_plan, build_decomposition_plan
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
@@ -340,6 +340,27 @@ def main(argv: list[str] | None = None) -> int:
         choices=["coordinated_family", "peer_family", "parent_child", "appendix_extraction", "no_split"],
         help="optional authority topology override",
     )
+    decompose_approve = decompose_subparsers.add_parser(
+        "approve",
+        help="approve a decomposition plan after source-hash verification",
+        description=(
+            "Bind operator approval to an exact decomposition plan and source spec hash. "
+            "This command updates decomposition_plan.json and its companion markdown when present, "
+            "but does not extract target specs."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  whetstone decompose approve --plan decomposition/decomposition_plan.json --source spec.md\n"
+            "  whetstone decompose approve --plan decomposition/decomposition_plan.json --approved-by caleb"
+        ),
+        formatter_class=FORMATTER,
+    )
+    decompose_approve.add_argument("--plan", required=True, help="decomposition_plan.json path")
+    decompose_approve.add_argument(
+        "--source",
+        help="optional source spec path override; defaults to source_spec_path recorded in the plan",
+    )
+    decompose_approve.add_argument("--approved-by", help="operator identity to persist in approval metadata")
 
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
     promote_phase2.add_argument("--root", default=".", help="repository root")
@@ -754,6 +775,14 @@ def main(argv: list[str] | None = None) -> int:
                 output_dir=Path(args.output_dir),
                 map_path=Path(args.map_path) if args.map_path else None,
                 authority_topology=args.authority_topology,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.decompose_command == "approve":
+            result = approve_decomposition_plan(
+                plan_path=Path(args.plan),
+                source_spec_path=Path(args.source) if args.source else None,
+                approved_by=args.approved_by,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0

@@ -116,6 +116,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(result["target_spec_count"], 1)
             self.assertEqual(result["unassigned_source_section_count"], 0)
             plan = json.loads(output_dir.joinpath("decomposition_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(plan["extraction_mode"], "copy_first")
             self.assertEqual(plan["coverage"]["source_section_count"], 2)
             self.assertEqual(plan["coverage"]["extractable_unit_count"], 2)
             self.assertEqual(plan["target_specs"][0]["target_spec_id"], "source_spec")
@@ -144,8 +145,8 @@ class CliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             source_hash = draft_hash(spec.read_text(encoding="utf-8"))
-            purpose_id = "spec-purpose"
-            schema_id = "spec-schema"
+            purpose_id = "purpose"
+            schema_id = "schema"
             map_path = root / "map.json"
             map_path.write_text(
                 json.dumps(
@@ -201,6 +202,87 @@ class CliTests(unittest.TestCase):
             self.assertEqual(plan["coverage"]["unassigned_source_section_ids"], [])
             self.assertEqual(plan["target_specs"][1]["source_line_ranges"][0]["section_id"], schema_id)
 
+    def test_decompose_approve_binds_source_hash_and_updates_artifacts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "# Spec\n\n## Purpose\nThe tool MUST keep source text.\n\n## Schema\nThe schema MUST be explicit.\n",
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "coordinated_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "coordinator",
+                                "target_spec_path": "docs/COORDINATING_SPEC.md",
+                                "target_spec_role": "coordinating_spec",
+                                "owned_authority_surfaces": ["orientation"],
+                                "source_section_ids": ["purpose"],
+                            },
+                            {
+                                "target_spec_id": "schema",
+                                "target_spec_path": "docs/SCHEMA_SPEC.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["schema"],
+                                "source_section_ids": ["schema"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]),
+                    0,
+                )
+
+            approve_stdout = io.StringIO()
+            with redirect_stdout(approve_stdout):
+                exit_code = main(
+                    [
+                        "decompose",
+                        "approve",
+                        "--plan",
+                        str(output_dir / "decomposition_plan.json"),
+                        "--source",
+                        str(spec),
+                        "--approved-by",
+                        "caleb",
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(approve_stdout.getvalue())
+            approved = json.loads(output_dir.joinpath("decomposition_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["approved_plan_hash"], approved["operator_approval"]["approved_plan_hash"])
+            self.assertEqual(approved["planning_mode"], "approved_split")
+            self.assertTrue(approved["operator_approval"]["approved"])
+            self.assertEqual(approved["operator_approval"]["approved_by"], "caleb")
+            self.assertEqual(approved["source_spec_hash"], source_hash)
+            self.assertIn("- Approved: true", output_dir.joinpath("decomposition_plan.md").read_text(encoding="utf-8"))
+
+    def test_decompose_approve_rejects_source_hash_drift(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            output_dir = root / "decomposition"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--output-dir", str(output_dir)]), 0)
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep changed text.\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "source_spec_hash does not match current source spec"):
+                main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)])
+
     def test_decompose_plan_rejects_map_source_hash_mismatch(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -219,7 +301,7 @@ class CliTests(unittest.TestCase):
                                 "target_spec_path": "docs/PURPOSE.md",
                                 "target_spec_role": "peer_spec",
                                 "owned_authority_surfaces": ["purpose"],
-                                "source_section_ids": ["spec-purpose"],
+                                "source_section_ids": ["purpose"],
                             }
                         ],
                     }
@@ -251,14 +333,14 @@ class CliTests(unittest.TestCase):
                                 "target_spec_path": "docs/PARENT.md",
                                 "target_spec_role": "peer_spec",
                                 "owned_authority_surfaces": ["parent"],
-                                "source_section_ids": ["spec-parent"],
+                                "source_section_ids": ["parent"],
                             },
                             {
                                 "target_spec_id": "child",
                                 "target_spec_path": "docs/CHILD.md",
                                 "target_spec_role": "peer_spec",
                                 "owned_authority_surfaces": ["child"],
-                                "source_section_ids": ["spec-parent-child"],
+                                "source_section_ids": ["parent-child"],
                             },
                         ],
                     }
@@ -290,14 +372,14 @@ class CliTests(unittest.TestCase):
                                 "target_spec_path": "docs/PARENT.md",
                                 "target_spec_role": "leaf_spec",
                                 "owned_authority_surfaces": ["parent_intro"],
-                                "source_units": [{"section_id": "spec-parent", "scope": "intro"}],
+                                "source_units": [{"section_id": "parent", "scope": "intro"}],
                             },
                             {
                                 "target_spec_id": "child",
                                 "target_spec_path": "docs/CHILD.md",
                                 "target_spec_role": "leaf_spec",
                                 "owned_authority_surfaces": ["child"],
-                                "source_units": [{"section_id": "spec-parent-child", "scope": "section"}],
+                                "source_units": [{"section_id": "parent-child", "scope": "section"}],
                             },
                         ],
                     }
@@ -311,7 +393,7 @@ class CliTests(unittest.TestCase):
             plan = json.loads(root.joinpath("out/decomposition_plan.json").read_text(encoding="utf-8"))
             self.assertEqual(plan["coverage"]["duplicated_extractable_unit_ids"], [])
             self.assertEqual(plan["coverage"]["unassigned_extractable_unit_ids"], [])
-            self.assertEqual(plan["target_specs"][0]["source_units"][0]["unit_id"], "spec-parent::__intro__")
+            self.assertEqual(plan["target_specs"][0]["source_units"][0]["unit_id"], "parent::__intro__")
 
     def test_mvp_live_phase1_requires_approved_scope_contract(self) -> None:
         with TemporaryDirectory() as tmp:

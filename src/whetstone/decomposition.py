@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 import json
 import re
 from pathlib import Path
@@ -15,6 +16,7 @@ from whetstone.sections import slug_section_path
 AUTHORITY_TOPOLOGIES = {"coordinated_family", "peer_family", "parent_child", "appendix_extraction", "no_split"}
 TARGET_SPEC_ROLES = {"coordinating_spec", "leaf_spec", "peer_spec", "appendix_spec"}
 PLANNING_MODES = {"inventory_only", "proposed_split", "approved_split"}
+EXTRACTION_MODES = {"copy_first"}
 NORMATIVE_PATTERN = re.compile(r"\b(MUST NOT|SHOULD NOT|MUST|SHOULD|MAY|REQUIRED|OPTIONAL)\b")
 INTRO_TOKEN_THRESHOLD = 12
 
@@ -78,6 +80,48 @@ def build_decomposition_plan(
     }
 
 
+def approve_decomposition_plan(
+    *,
+    plan_path: Path,
+    source_spec_path: Path | None = None,
+    approved_by: str | None = None,
+    approved_at: str | None = None,
+) -> dict:
+    """Approve an existing decomposition plan after verifying source hash stability."""
+
+    packet = _read_map(plan_path)
+    source_path = source_spec_path or Path(packet["source_spec_path"])
+    source_hash = draft_hash(source_path.read_text(encoding="utf-8"))
+    if source_hash != packet.get("source_spec_hash"):
+        raise ValueError("decomposition plan source_spec_hash does not match current source spec")
+    packet["planning_mode"] = "approved_split"
+    approved_hash = _approved_plan_hash(packet)
+    existing_approval = _operator_approval(packet)
+    existing_hash = existing_approval.get("approved_plan_hash")
+    if existing_approval["approved"] and existing_hash not in {None, approved_hash}:
+        raise ValueError("decomposition plan approval hash does not match current plan content")
+    packet["operator_approval"] = {
+        "approved": True,
+        "approved_by": approved_by or existing_approval.get("approved_by"),
+        "approved_at": approved_at or existing_approval.get("approved_at") or _utc_now_iso(),
+        "approved_plan_hash": approved_hash,
+    }
+    plan_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    markdown_path = plan_path.with_name("decomposition_plan.md")
+    if markdown_path.exists():
+        markdown_path.write_text(render_decomposition_plan_markdown(packet), encoding="utf-8")
+    return {
+        "decomposition_plan": str(plan_path),
+        "source_spec_path": str(source_path),
+        "source_spec_hash": source_hash,
+        "planning_mode": packet["planning_mode"],
+        "approved": True,
+        "approved_plan_hash": approved_hash,
+        "approved_by": packet["operator_approval"]["approved_by"],
+        "approved_at": packet["operator_approval"]["approved_at"],
+    }
+
+
 def section_inventory(markdown: str) -> list[SourceSection]:
     lines = markdown.splitlines()
     raw: list[tuple[int, int, str, tuple[str, ...], str]] = []
@@ -91,7 +135,8 @@ def section_inventory(markdown: str) -> list[SourceSection]:
         heading = match.group(2).strip()
         path = path[: level - 1]
         path.append(heading)
-        base_id = slug_section_path(path)
+        id_path = path[1:] if len(path) > 1 else path
+        base_id = slug_section_path(id_path)
         counters[base_id] = counters.get(base_id, 0) + 1
         section_id = base_id if counters[base_id] == 1 else f"{base_id}#{counters[base_id]}"
         raw.append((line_number, level, heading, tuple(path), section_id))
@@ -176,6 +221,7 @@ def render_decomposition_plan_markdown(packet: dict) -> str:
         f"- Source hash: `{packet['source_spec_hash']}`",
         f"- Planning mode: `{packet['planning_mode']}`",
         f"- Authority topology: `{packet['authority_topology']}`",
+        f"- Extraction mode: `{packet['extraction_mode']}`",
         f"- Target specs: {len(packet['target_specs'])}",
         "",
         "## Coverage",
@@ -244,6 +290,9 @@ def _plan_packet(
     planning_mode = (plan_map or {}).get("planning_mode") or ("proposed_split" if plan_map else "inventory_only")
     if planning_mode not in PLANNING_MODES:
         raise ValueError(f"invalid planning_mode: {planning_mode}")
+    extraction_mode = (plan_map or {}).get("extraction_mode") or "copy_first"
+    if extraction_mode not in EXTRACTION_MODES:
+        raise ValueError(f"invalid extraction_mode: {extraction_mode}")
     source_lines = source.splitlines()
     if plan_map and plan_map.get("source_spec_hash") not in {None, draft_hash(source)}:
         raise ValueError("decomposition map source_spec_hash does not match source spec")
@@ -259,6 +308,7 @@ def _plan_packet(
         "source_spec_hash": draft_hash(source),
         "planning_mode": planning_mode,
         "authority_topology": topology,
+        "extraction_mode": extraction_mode,
         "extractable_units": [_unit_packet(unit) for unit in units],
         "target_specs": targets,
         "coverage": {
@@ -276,9 +326,7 @@ def _plan_packet(
         "operator_approval": _operator_approval(plan_map),
     }
     if packet["operator_approval"]["approved"] and packet["operator_approval"]["approved_plan_hash"] is None:
-        packet["operator_approval"]["approved_plan_hash"] = sha256_text(
-            json.dumps({**packet, "operator_approval": {**packet["operator_approval"], "approved_plan_hash": None}}, sort_keys=True)
-        )
+        packet["operator_approval"]["approved_plan_hash"] = _approved_plan_hash(packet)
     return packet
 
 
@@ -395,6 +443,16 @@ def _operator_approval(plan_map: dict | None) -> dict[str, Any]:
         "approved_at": approval.get("approved_at"),
         "approved_plan_hash": approval.get("approved_plan_hash"),
     }
+
+
+def _approved_plan_hash(packet: dict) -> str:
+    payload = {key: value for key, value in packet.items() if key != "operator_approval"}
+    payload["planning_mode"] = "approved_split"
+    return sha256_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _children_by_parent(sections: list[SourceSection]) -> dict[str, list[SourceSection]]:

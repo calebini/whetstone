@@ -1,12 +1,12 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.62 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.64 - STRICT CANDIDATE)
 
 ## Purpose
 
 Automate iterative technical review between AI clients (e.g., Claude Code, Codex) to drive a spec from v0.1 -> converged (mid/final, permissive/strict), with controlled multi-perspective review per round, deterministic convergence behavior, explicit failure handling, and fully specified primitives.
 
-Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
+Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.62` tightens spec decomposition planning around extractable-unit ownership: leaf sections plus meaningful parent intro units, with container-section assignment rejected.
+Version `0.64` clarifies decomposition trigger-threshold rationale so configurable defaults are treated as calibration seeds rather than unexplained constants.
 
 ---
 
@@ -511,6 +511,8 @@ Spec decomposition splits an overloaded source spec into a governed spec family 
 
 Decomposition MUST NOT assume the source spec is already an HLD. The source spec may be an architecture spec, workflow spec, protocol spec, artifact/schema spec, rubric spec, implementation spec, or any other document that has accumulated multiple separable authority surfaces.
 
+Decomposition trigger thresholds are advisory calibration seeds, not empirical guarantees or convergence requirements. Default thresholds SHOULD be conservative under-triggering starting points: high enough that ordinary medium-sized specs are not decomposed unexpectedly, but low enough to flag documents whose size, section count, cross-reference density, or authority-surface count makes lossless ownership review difficult. If an implementation ships numeric defaults such as section-count, line-count, or cross-reference-density thresholds, the defaults MUST be documented as seed values expected to be refined from observed Whetstone runs, and operator overrides SHOULD be persisted with the resulting decomposition plan or run artifacts.
+
 Definitions:
 
 - `source_spec`: the original spec being considered for decomposition.
@@ -526,6 +528,7 @@ Extractable units:
 - A leaf section is an extractable unit.
 - A non-leaf section is a container by default and MUST NOT be assigned directly.
 - A non-leaf section MAY produce a synthetic `intro` extractable unit for direct body content before its first child heading.
+- Extractable-unit `section_id` values MUST be stable across source spec title/version changes; the decomposition planner MUST NOT include the document H1 title in generated child section IDs.
 - An `intro` unit exists only when the direct body content is meaningful. Meaningful direct body content contains at least one normative token, a code block, a table, a list, or more than a trivial implementation-defined token threshold.
 - Meaningless connective prose such as "This section defines the following" SHOULD remain container scaffolding and SHOULD NOT create an extractable unit.
 - Meaningful direct body content after a non-leaf section's child sections is invalid for decomposition planning. The planner MUST reject it rather than create an `outro` unit in the MVP implementation.
@@ -548,6 +551,11 @@ Decomposition phases:
 2. `approve`
    - Operator reviews and approves a specific decomposition plan.
    - Approval MUST bind the source spec hash, plan hash, target paths, authority topology, and extraction mode.
+   - Approval MUST re-read the current source spec and reject approval if its current hash differs from the plan's `source_spec_hash`.
+   - Approval MUST persist `operator_approval.approved = true`, `approved_by`, `approved_at`, and `approved_plan_hash`.
+   - Approval MUST set `planning_mode = approved_split`.
+   - `approved_plan_hash` MUST be computed from the approval-bound plan content excluding `operator_approval` metadata, with `planning_mode` normalized to `approved_split`.
+   - Re-running approval for the same unchanged plan SHOULD be idempotent.
    - Extraction MUST NOT run without an approved plan.
 
 3. `extract`
@@ -582,6 +590,7 @@ source_spec_path: string
 source_spec_hash: string
 planning_mode: inventory_only | proposed_split | approved_split
 authority_topology: coordinated_family | peer_family | parent_child | appendix_extraction | no_split
+extraction_mode: copy_first
 target_specs:
   - target_spec_id: string
     target_spec_path: string

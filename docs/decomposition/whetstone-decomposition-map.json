@@ -1,7 +1,8 @@
 {
   "planning_mode": "proposed_split",
   "authority_topology": "coordinated_family",
-  "source_spec_hash": "270e3395114a54ed3f7fe3ae909a26c229ee8d004b13f8c187b6c624e2f68e44",
+  "extraction_mode": "copy_first",
+  "source_spec_hash": "3f10cda0a25da43bd31672ff5cfd3de58a00c8f583afe7eae03dde2d313f5eca",
   "target_specs": [
     {
       "target_spec_id": "whetstone_coordinating_spec",
@@ -16,13 +17,13 @@
         "multi_reviewer_future_note"
       ],
       "source_section_ids": [
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-purpose",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-core-roles",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-primary-inputs",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-primary-outputs",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-configuration",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-multi-reviewer-non-normative-future-note",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-design-principle"
+        "purpose",
+        "core-roles",
+        "primary-inputs",
+        "primary-outputs",
+        "configuration",
+        "multi-reviewer-non-normative-future-note",
+        "design-principle"
       ]
     },
     {
@@ -40,47 +41,47 @@
       ],
       "source_units": [
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows",
+          "section_id": "canonical-rubrics-and-workflows",
           "scope": "intro"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-canonical-rubric-profiles",
+          "section_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-workflow-presets",
+          "section_id": "canonical-rubrics-and-workflows-workflow-presets",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-rubric-manifest",
+          "section_id": "canonical-rubrics-and-workflows-rubric-manifest",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-review-profiles",
+          "section_id": "review-profiles",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-review-profile-sets",
+          "section_id": "review-profile-sets",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-severity-normalization-function",
+          "section_id": "severity-normalization-function",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-baseline-review-invariants",
+          "section_id": "baseline-review-invariants",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification",
+          "section_id": "phase-gated-feedback-classification",
           "scope": "intro"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification-oscillation-key-canonicalization",
+          "section_id": "phase-gated-feedback-classification-oscillation-key-canonicalization",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+          "section_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
           "scope": "section"
         }
       ]
@@ -97,10 +98,10 @@
         "spec_decomposition"
       ],
       "source_section_ids": [
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-scope-contract",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-spec-decomposition-workflow",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-expanding-contract-surface",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-decision-summary"
+        "canonical-rubrics-and-workflows-scope-contract",
+        "spec-decomposition-workflow",
+        "expanding-contract-surface",
+        "decision-summary"
       ]
     },
     {
@@ -119,59 +120,59 @@
       ],
       "source_units": [
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-halting-conditions-ordered-precedence",
+          "section_id": "halting-conditions-ordered-precedence",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-halt-artifact-matrix",
+          "section_id": "halt-artifact-matrix",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-accepted-draft-definition",
+          "section_id": "accepted-draft-definition",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-spec-version-lifecycle",
+          "section_id": "spec-version-lifecycle",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-strategy-adaptive",
+          "section_id": "round-strategy-adaptive",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-scheduling-algorithm",
+          "section_id": "round-scheduling-algorithm",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-definition-clean-profile",
+          "section_id": "definition-clean-profile",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-budget-handling",
+          "section_id": "round-budget-handling",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy",
+          "section_id": "resume-policy",
           "scope": "intro"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy-editor-timeout-resume",
+          "section_id": "resume-policy-editor-timeout-resume",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy-budget-extension-resume",
+          "section_id": "resume-policy-budget-extension-resume",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-focused-phase-1-profile-runs",
+          "section_id": "focused-phase-1-profile-runs",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-1-failure-handling",
+          "section_id": "phase-1-failure-handling",
           "scope": "section"
         },
         {
-          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-state-machine-full-transitions",
+          "section_id": "state-machine-full-transitions",
           "scope": "section"
         }
       ]
@@ -188,10 +189,10 @@
         "hashing"
       ],
       "source_section_ids": [
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-artifact-schemas-minimum-required-fields",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-artifact-validation-policy",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-client-telemetry",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-content-normalization-and-hashing"
+        "artifact-schemas-minimum-required-fields",
+        "artifact-validation-policy",
+        "client-telemetry",
+        "content-normalization-and-hashing"
       ]
     },
     {
@@ -207,11 +208,11 @@
         "conflict_escalation"
       ],
       "source_section_ids": [
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-issue-and-conflict-identity",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-oscillation-detection-full-definition",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-conflict-model",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-editor-decline-taxonomy",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-conflict-escalation"
+        "issue-and-conflict-identity",
+        "oscillation-detection-full-definition",
+        "conflict-model",
+        "editor-decline-taxonomy",
+        "conflict-escalation"
       ]
     },
     {
@@ -225,10 +226,10 @@
         "reproducibility"
       ],
       "source_section_ids": [
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-2-failure-handling",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-target-matrix-precedence",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-convergence-declaration",
-        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-reproducibility"
+        "phase-2-failure-handling",
+        "target-matrix-precedence",
+        "convergence-declaration",
+        "reproducibility"
       ]
     }
   ]

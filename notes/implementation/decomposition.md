@@ -190,6 +190,7 @@ Scope:
 - add `whetstone decompose plan`
 - source section inventory
 - stable section IDs
+- section IDs exclude the document H1 so source title/version changes do not invalidate decomposition maps
 - source line ranges
 - simple normative statement inventory
 - extractable unit inventory using leaf sections plus meaningful parent intro units
@@ -212,6 +213,8 @@ Acceptance criteria:
 
 Goal: bind operator approval to an exact plan and source hash.
 
+Status: implemented.
+
 Scope:
 
 - add `whetstone decompose approve`
@@ -219,6 +222,14 @@ Scope:
 - reject hash drift
 - persist approval metadata
 - test approval and hash mismatch
+
+Acceptance criteria:
+
+- approval re-reads the current source spec and rejects source hash drift
+- approval stamps `operator_approval` metadata and `approved_plan_hash`
+- approval transitions `planning_mode` to `approved_split`
+- approval updates both JSON and Markdown plan artifacts
+- approval does not extract target specs or mutate the source spec
 
 ### Slice 3: Extract
 
