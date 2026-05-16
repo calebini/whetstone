@@ -85,3 +85,4 @@
 - Revised the spec to `0.62` with extractable-unit decomposition semantics, treating leaf sections and meaningful parent intro blocks as assignable units while rejecting direct container-section assignment.
 - Revised the spec to `0.63` with hash-bound operator approval for decomposition plans, source-hash verification before extraction, and decomposition section IDs that remain stable across source spec title/version changes.
 - Revised the spec to `0.64` with decomposition trigger-threshold rationale, framing configurable defaults as conservative seed values that must be documented and refined from observed runs.
+- Revised the spec to `0.65` with lossless copy-first decomposition extraction, target provenance headers, target-path containment checks, overwrite guards, and manifest persistence.

@@ -2,7 +2,7 @@
   "planning_mode": "proposed_split",
   "authority_topology": "coordinated_family",
   "extraction_mode": "copy_first",
-  "source_spec_hash": "3f10cda0a25da43bd31672ff5cfd3de58a00c8f583afe7eae03dde2d313f5eca",
+  "source_spec_hash": "925995b925356c6bba62573a3a7a09fb6ab4734b1b0a670aef9c862375f545d7",
   "target_specs": [
     {
       "target_spec_id": "whetstone_coordinating_spec",

@@ -235,6 +235,8 @@ Acceptance criteria:
 
 Goal: create target specs through lossless copy-first extraction.
 
+Status: implemented.
+
 Scope:
 
 - add `whetstone decompose extract`
@@ -244,6 +246,15 @@ Scope:
 - copy source ranges
 - write manifest
 - test no paraphrase and overwrite guards
+
+Acceptance criteria:
+
+- extraction requires `approved_split` plan state and matching approval hash
+- extraction re-checks source hash before writing targets
+- extraction writes target specs under an extraction root and rejects path escape
+- extraction refuses to overwrite targets or manifest unless `--overwrite-targets` is explicit
+- target specs include provenance headers and copied source ranges
+- `decomposition_manifest.json` records target hashes, source units, line ranges, and promotion status
 
 ### Slice 4: Audit
 

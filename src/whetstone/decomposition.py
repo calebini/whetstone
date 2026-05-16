@@ -122,6 +122,88 @@ def approve_decomposition_plan(
     }
 
 
+def extract_decomposition_plan(
+    *,
+    plan_path: Path,
+    output_dir: Path | None = None,
+    source_spec_path: Path | None = None,
+    overwrite_targets: bool = False,
+) -> dict:
+    """Create target specs from an approved decomposition plan."""
+
+    packet = _read_map(plan_path)
+    _validate_approved_plan(packet)
+    source_path = source_spec_path or Path(packet["source_spec_path"])
+    source = source_path.read_text(encoding="utf-8")
+    source_hash = draft_hash(source)
+    if source_hash != packet.get("source_spec_hash"):
+        raise ValueError("decomposition plan source_spec_hash does not match current source spec")
+    if packet.get("extraction_mode") != "copy_first":
+        raise ValueError(f"unsupported extraction_mode: {packet.get('extraction_mode')}")
+    if packet.get("coverage", {}).get("unassigned_extractable_unit_ids"):
+        raise ValueError("cannot extract decomposition plan with unassigned extractable units")
+    if packet.get("coverage", {}).get("duplicated_extractable_unit_ids"):
+        raise ValueError("cannot extract decomposition plan with duplicated extractable units")
+
+    root = (output_dir or plan_path.parent).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    source_lines = source.splitlines()
+    manifest_targets = []
+    written_targets = []
+    for target in packet["target_specs"]:
+        target_path = _resolve_target_path(root, target["target_spec_path"])
+        if target_path.exists() and not overwrite_targets:
+            raise ValueError(f"target path already exists: {target_path}")
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        content = _render_extracted_target(
+            target=target,
+            packet=packet,
+            source_path=source_path,
+            source_lines=source_lines,
+        )
+        target_path.write_text(content, encoding="utf-8")
+        target_hash = draft_hash(content)
+        written_targets.append(str(target_path))
+        manifest_targets.append(
+            {
+                "target_spec_id": target["target_spec_id"],
+                "target_spec_path": str(target_path),
+                "target_spec_hash": target_hash,
+                "target_spec_role": target["target_spec_role"],
+                "source_units": target["source_units"],
+                "source_section_ids": target["source_section_ids"],
+                "source_line_ranges": target["source_line_ranges"],
+                "provenance_header_present": True,
+            }
+        )
+    manifest = {
+        "schema_version": "1.0",
+        "source_spec_path": str(source_path),
+        "source_spec_hash": source_hash,
+        "approved_plan_hash": packet["operator_approval"]["approved_plan_hash"],
+        "authority_topology": packet["authority_topology"],
+        "extraction_mode": packet["extraction_mode"],
+        "target_specs": manifest_targets,
+        "coverage_status": "complete",
+        "unmapped_requirements_path": None,
+        "duplicated_authority_report_path": None,
+        "promoted": False,
+        "promoted_at": None,
+    }
+    manifest_path = root / "decomposition_manifest.json"
+    if manifest_path.exists() and not overwrite_targets:
+        raise ValueError(f"manifest path already exists: {manifest_path}")
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "decomposition_manifest": str(manifest_path),
+        "source_spec_path": str(source_path),
+        "source_spec_hash": source_hash,
+        "approved_plan_hash": manifest["approved_plan_hash"],
+        "target_spec_count": len(manifest_targets),
+        "target_spec_paths": written_targets,
+    }
+
+
 def section_inventory(markdown: str) -> list[SourceSection]:
     lines = markdown.splitlines()
     raw: list[tuple[int, int, str, tuple[str, ...], str]] = []
@@ -445,6 +527,15 @@ def _operator_approval(plan_map: dict | None) -> dict[str, Any]:
     }
 
 
+def _validate_approved_plan(packet: dict) -> None:
+    approval = _operator_approval(packet)
+    if packet.get("planning_mode") != "approved_split" or not approval["approved"]:
+        raise ValueError("decomposition extraction requires an approved_split plan")
+    expected_hash = _approved_plan_hash(packet)
+    if approval.get("approved_plan_hash") != expected_hash:
+        raise ValueError("decomposition plan approval hash does not match current plan content")
+
+
 def _approved_plan_hash(packet: dict) -> str:
     payload = {key: value for key, value in packet.items() if key != "operator_approval"}
     payload["planning_mode"] = "approved_split"
@@ -487,6 +578,51 @@ def _source_unit_refs(target: dict) -> list[dict]:
             normalized.append({"section_id": ref["section_id"], "scope": scope})
         return normalized
     return [{"section_id": section_id, "scope": "section"} for section_id in target.get("source_section_ids", [])]
+
+
+def _resolve_target_path(root: Path, target_spec_path: str) -> Path:
+    target_path = Path(target_spec_path)
+    candidate = target_path if target_path.is_absolute() else root / target_path
+    resolved_root = root.resolve()
+    resolved_candidate = candidate.resolve()
+    try:
+        resolved_candidate.relative_to(resolved_root)
+    except ValueError as exc:
+        raise ValueError(f"target path escapes extraction root: {target_spec_path}") from exc
+    return resolved_candidate
+
+
+def _render_extracted_target(
+    *,
+    target: dict,
+    packet: dict,
+    source_path: Path,
+    source_lines: list[str],
+) -> str:
+    title = _title_from_target_id(target["target_spec_id"])
+    header = [
+        f"# {title}",
+        "",
+        "<!--",
+        "Whetstone decomposition provenance:",
+        f"source_spec_path: {source_path}",
+        f"source_spec_hash: {packet['source_spec_hash']}",
+        f"approved_plan_hash: {packet['operator_approval']['approved_plan_hash']}",
+        f"target_spec_id: {target['target_spec_id']}",
+        f"target_spec_role: {target['target_spec_role']}",
+        "-->",
+        "",
+    ]
+    body_blocks = [
+        "\n".join(source_lines[line_range["start_line"] - 1 : line_range["end_line"]])
+        for line_range in sorted(target["source_line_ranges"], key=lambda item: item["start_line"])
+    ]
+    body = "\n\n".join(block.rstrip("\n") for block in body_blocks if block.strip())
+    return "\n".join(header) + "\n" + body.rstrip() + "\n"
+
+
+def _title_from_target_id(target_spec_id: str) -> str:
+    return " ".join(part.upper() if part.lower() in {"ai", "api", "cli"} else part.capitalize() for part in target_spec_id.split("_"))
 
 
 def _unit_ref(unit: ExtractableUnit) -> dict:

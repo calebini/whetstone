@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.64 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.65 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.64` clarifies decomposition trigger-threshold rationale so configurable defaults are treated as calibration seeds rather than unexplained constants.
+Version `0.65` adds lossless copy-first decomposition extraction with target provenance headers and a decomposition manifest.
 
 ---
 
@@ -562,6 +562,9 @@ Decomposition phases:
    - Create target specs by copy-first extraction from the source spec.
    - Extraction MAY add minimal provenance headers, target titles, and backreference placeholders.
    - Extraction MUST NOT paraphrase, summarize, reorder normative content, or silently remove requirements.
+   - Extraction MUST require an approved plan whose `operator_approval.approved_plan_hash` still matches the current plan content.
+   - Extraction MUST re-read the source spec and reject extraction if its current hash differs from the approved plan's `source_spec_hash`.
+   - Extraction MUST write `decomposition_manifest.json`.
 
 4. `audit`
    - Verify every extractable unit and its normative statements are assigned to at least one target spec, intentionally duplicated, or explicitly retired with rationale.
@@ -656,6 +659,7 @@ source_spec_path: string
 source_spec_hash: string
 approved_plan_hash: string
 authority_topology: string
+extraction_mode: copy_first
 target_specs:
   - target_spec_id: string
     target_spec_path: string
@@ -684,6 +688,7 @@ Lossless extraction rules:
 
 - The source spec hash MUST match the approved plan hash guard before extraction.
 - Target paths MUST be inside the configured project or run root and MUST NOT overwrite existing files unless `overwrite_targets = true` is explicitly approved.
+- Target paths MUST be resolved against an explicit extraction root or the plan directory and MUST NOT escape that root.
 - Every copied section MUST preserve its original prose except for heading-level normalization and provenance headers.
 - Any summarization, paraphrase, deduplication, terminology normalization, or authority rewrite MUST be deferred to later Whetstone review of the extracted target specs.
 - Extraction MUST preserve code blocks, tables, enum values, examples, MUST/SHOULD/MAY language, artifact paths, schema snippets, and rationale notes.

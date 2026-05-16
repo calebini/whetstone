@@ -283,6 +283,209 @@ class CliTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "source_spec_hash does not match current source spec"):
                 main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)])
 
+    def test_decompose_extract_writes_targets_and_manifest_losslessly(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            schema_prose = "\n".join(
+                [
+                    "## Schema",
+                    "The schema MUST be explicit.",
+                    "",
+                    "```json",
+                    '{"kind": "example"}',
+                    "```",
+                    "",
+                ]
+            )
+            spec.write_text(
+                "# Spec\n\n## Purpose\nThe tool MUST keep source text.\n\n" + schema_prose,
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "coordinated_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "coordinator",
+                                "target_spec_path": "docs/COORDINATING_SPEC.md",
+                                "target_spec_role": "coordinating_spec",
+                                "owned_authority_surfaces": ["orientation"],
+                                "source_section_ids": ["purpose"],
+                            },
+                            {
+                                "target_spec_id": "schema",
+                                "target_spec_path": "docs/SCHEMA_SPEC.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["schema"],
+                                "source_section_ids": ["schema"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(
+                    main(
+                        [
+                            "decompose",
+                            "approve",
+                            "--plan",
+                            str(output_dir / "decomposition_plan.json"),
+                            "--source",
+                            str(spec),
+                            "--approved-by",
+                            "caleb",
+                        ]
+                    ),
+                    0,
+                )
+
+            extract_stdout = io.StringIO()
+            extract_root = root / "extracted"
+            with redirect_stdout(extract_stdout):
+                exit_code = main(
+                    [
+                        "decompose",
+                        "extract",
+                        "--plan",
+                        str(output_dir / "decomposition_plan.json"),
+                        "--source",
+                        str(spec),
+                        "--output-dir",
+                        str(extract_root),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(extract_stdout.getvalue())
+            schema_target = extract_root / "docs/SCHEMA_SPEC.md"
+            self.assertTrue(schema_target.exists())
+            schema_content = schema_target.read_text(encoding="utf-8")
+            self.assertIn("Whetstone decomposition provenance:", schema_content)
+            self.assertIn(schema_prose.rstrip(), schema_content)
+            self.assertIn('"kind": "example"', schema_content)
+            manifest = json.loads((extract_root / "decomposition_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["decomposition_manifest"], str((extract_root / "decomposition_manifest.json").resolve()))
+            self.assertEqual(manifest["coverage_status"], "complete")
+            self.assertEqual(manifest["approved_plan_hash"], result["approved_plan_hash"])
+            self.assertEqual(len(manifest["target_specs"]), 2)
+            self.assertTrue(manifest["target_specs"][1]["provenance_header_present"])
+
+    def test_decompose_extract_requires_approved_plan(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            output_dir = root / "decomposition"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--output-dir", str(output_dir)]), 0)
+
+            with self.assertRaisesRegex(ValueError, "requires an approved_split plan"):
+                main(["decompose", "extract", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)])
+
+    def test_decompose_extract_rejects_existing_target_without_overwrite(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "purpose",
+                                "target_spec_path": "docs/PURPOSE.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["purpose"],
+                                "source_section_ids": ["purpose"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            extract_root = root / "extracted"
+            existing = extract_root / "docs/PURPOSE.md"
+            existing.parent.mkdir(parents=True)
+            existing.write_text("existing\n", encoding="utf-8")
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+
+            with self.assertRaisesRegex(ValueError, "target path already exists"):
+                main(
+                    [
+                        "decompose",
+                        "extract",
+                        "--plan",
+                        str(output_dir / "decomposition_plan.json"),
+                        "--source",
+                        str(spec),
+                        "--output-dir",
+                        str(extract_root),
+                    ]
+                )
+
+    def test_decompose_extract_rejects_target_path_escape(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "purpose",
+                                "target_spec_path": "../PURPOSE.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["purpose"],
+                                "source_section_ids": ["purpose"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+
+            with self.assertRaisesRegex(ValueError, "target path escapes extraction root"):
+                main(
+                    [
+                        "decompose",
+                        "extract",
+                        "--plan",
+                        str(output_dir / "decomposition_plan.json"),
+                        "--source",
+                        str(spec),
+                        "--output-dir",
+                        str(root / "extracted"),
+                    ]
+                )
+
     def test_decompose_plan_rejects_map_source_hash_mismatch(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

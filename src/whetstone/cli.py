@@ -11,7 +11,7 @@ from whetstone.apply_back import apply_back
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
 from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
-from whetstone.decomposition import approve_decomposition_plan, build_decomposition_plan
+from whetstone.decomposition import approve_decomposition_plan, build_decomposition_plan, extract_decomposition_plan
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
@@ -361,6 +361,34 @@ def main(argv: list[str] | None = None) -> int:
         help="optional source spec path override; defaults to source_spec_path recorded in the plan",
     )
     decompose_approve.add_argument("--approved-by", help="operator identity to persist in approval metadata")
+    decompose_extract = decompose_subparsers.add_parser(
+        "extract",
+        help="create target specs from an approved decomposition plan",
+        description=(
+            "Create target specs through copy-first extraction. This command requires an approved_split plan, "
+            "verifies source and approval hashes, writes target specs, and writes decomposition_manifest.json."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  whetstone decompose extract --plan decomposition/decomposition_plan.json --output-dir decomposition/out\n"
+            "  whetstone decompose extract --plan decomposition/decomposition_plan.json --overwrite-targets"
+        ),
+        formatter_class=FORMATTER,
+    )
+    decompose_extract.add_argument("--plan", required=True, help="approved decomposition_plan.json path")
+    decompose_extract.add_argument(
+        "--source",
+        help="optional source spec path override; defaults to source_spec_path recorded in the plan",
+    )
+    decompose_extract.add_argument(
+        "--output-dir",
+        help="extraction root for relative target paths; defaults to the plan directory",
+    )
+    decompose_extract.add_argument(
+        "--overwrite-targets",
+        action="store_true",
+        help="allow overwriting existing target specs and manifest",
+    )
 
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
     promote_phase2.add_argument("--root", default=".", help="repository root")
@@ -783,6 +811,15 @@ def main(argv: list[str] | None = None) -> int:
                 plan_path=Path(args.plan),
                 source_spec_path=Path(args.source) if args.source else None,
                 approved_by=args.approved_by,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.decompose_command == "extract":
+            result = extract_decomposition_plan(
+                plan_path=Path(args.plan),
+                output_dir=Path(args.output_dir) if args.output_dir else None,
+                source_spec_path=Path(args.source) if args.source else None,
+                overwrite_targets=args.overwrite_targets,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
