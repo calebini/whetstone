@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.66 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.67 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.66` adds decomposition audit for coverage, target hash/provenance verification, unmapped requirements, and duplicated authority reports.
+Version `0.67` adds decomposition promotion, stamping audited complete manifests as authoritative only after operator acceptance.
 
 ---
 
@@ -579,6 +579,10 @@ Decomposition phases:
 5. `promote`
    - Mark the decomposed spec family as authoritative only after the audit succeeds and the operator accepts the decomposition manifest.
    - Before promotion, the source spec remains authoritative.
+   - Promotion MUST require `coverage_status = complete`.
+   - Promotion MUST require an `audit` object with no issues, a matching source hash, and passing target existence, target hash, and provenance checks.
+   - Promotion MUST persist `promoted = true`, `promoted_at`, `promoted_by`, and `promotion_manifest_hash`.
+   - Promotion MUST NOT mutate the source spec or extracted target specs.
 
 Decomposition plan inputs:
 
@@ -688,6 +692,8 @@ duplicated_authority_report_path: string | null
 audit: object | null
 promoted: boolean
 promoted_at: string | null
+promoted_by: string | null
+promotion_manifest_hash: string | null
 ```
 
 Lossless extraction rules:

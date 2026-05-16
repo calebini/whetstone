@@ -555,6 +555,104 @@ class CliTests(unittest.TestCase):
             self.assertEqual(manifest["coverage_status"], "complete")
             self.assertEqual(manifest["audit"]["issues"], [])
 
+    def test_decompose_promote_marks_audited_manifest_promoted(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "# Spec\n\n## Purpose\nThe tool MUST keep source text.\n\n## Schema\nThe schema MUST be explicit.\n",
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "coordinated_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "coordinator",
+                                "target_spec_path": "docs/COORDINATING_SPEC.md",
+                                "target_spec_role": "coordinating_spec",
+                                "owned_authority_surfaces": ["orientation"],
+                                "source_section_ids": ["purpose"],
+                            },
+                            {
+                                "target_spec_id": "schema",
+                                "target_spec_path": "docs/SCHEMA_SPEC.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["schema"],
+                                "source_section_ids": ["schema"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            extract_root = root / "extracted"
+            manifest_path = extract_root / "decomposition_manifest.json"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+                self.assertEqual(
+                    main(
+                        [
+                            "decompose",
+                            "extract",
+                            "--plan",
+                            str(output_dir / "decomposition_plan.json"),
+                            "--source",
+                            str(spec),
+                            "--output-dir",
+                            str(extract_root),
+                        ]
+                    ),
+                    0,
+                )
+                self.assertEqual(main(["decompose", "audit", "--manifest", str(manifest_path), "--source", str(spec)]), 0)
+
+            promote_stdout = io.StringIO()
+            with redirect_stdout(promote_stdout):
+                exit_code = main(["decompose", "promote", "--manifest", str(manifest_path), "--accepted-by", "caleb"])
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(promote_stdout.getvalue())
+            self.assertTrue(result["promoted"])
+            self.assertEqual(result["promoted_by"], "caleb")
+            self.assertIsNotNone(result["promoted_at"])
+            self.assertIsNotNone(result["promotion_manifest_hash"])
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertTrue(manifest["promoted"])
+            self.assertEqual(manifest["promoted_by"], "caleb")
+            self.assertEqual(manifest["promotion_manifest_hash"], result["promotion_manifest_hash"])
+
+    def test_decompose_promote_requires_successful_audit(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest_path = root / "decomposition_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "source_spec_hash": "abc",
+                        "approved_plan_hash": "approved",
+                        "target_specs": [],
+                        "coverage_status": "complete",
+                        "promoted": False,
+                        "promoted_at": None,
+                        "promoted_by": None,
+                        "promotion_manifest_hash": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "requires successful audit"):
+                main(["decompose", "promote", "--manifest", str(manifest_path)])
+
     def test_decompose_audit_fails_when_target_hash_drifts(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

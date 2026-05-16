@@ -87,3 +87,4 @@
 - Revised the spec to `0.64` with decomposition trigger-threshold rationale, framing configurable defaults as conservative seed values that must be documented and refined from observed runs.
 - Revised the spec to `0.65` with lossless copy-first decomposition extraction, target provenance headers, target-path containment checks, overwrite guards, and manifest persistence.
 - Revised the spec to `0.66` with decomposition audit, including coverage matrices, unmapped requirement reporting, duplicated authority reporting, target hash/provenance checks, and manifest coverage status updates.
+- Revised the spec to `0.67` with decomposition promotion, requiring complete successful audit metadata and operator acceptance before a decomposed family is marked authoritative.

@@ -189,6 +189,8 @@ def extract_decomposition_plan(
         "duplicated_authority_report_path": None,
         "promoted": False,
         "promoted_at": None,
+        "promoted_by": None,
+        "promotion_manifest_hash": None,
     }
     manifest_path = root / "decomposition_manifest.json"
     if manifest_path.exists() and not overwrite_targets:
@@ -314,6 +316,36 @@ def audit_decomposition_manifest(
         "unmapped_requirements_path": manifest["unmapped_requirements_path"],
         "duplicated_authority_report_path": manifest["duplicated_authority_report_path"],
         "target_spec_count": len(target_results),
+    }
+
+
+def promote_decomposition_manifest(
+    *,
+    manifest_path: Path,
+    accepted_by: str | None = None,
+    accepted_at: str | None = None,
+) -> dict:
+    """Promote an audited decomposition manifest as the authoritative spec family."""
+
+    manifest = _read_map(manifest_path)
+    _validate_promotable_manifest(manifest)
+    promotion_hash = _promotion_manifest_hash(manifest)
+    if manifest.get("promoted"):
+        existing_hash = manifest.get("promotion_manifest_hash")
+        if existing_hash not in {None, promotion_hash}:
+            raise ValueError("decomposition manifest promotion hash does not match current audited manifest")
+    manifest["promoted"] = True
+    manifest["promoted_at"] = manifest.get("promoted_at") or accepted_at or _utc_now_iso()
+    manifest["promoted_by"] = manifest.get("promoted_by") or accepted_by
+    manifest["promotion_manifest_hash"] = promotion_hash
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "decomposition_manifest": str(manifest_path),
+        "promoted": True,
+        "promoted_at": manifest["promoted_at"],
+        "promoted_by": manifest["promoted_by"],
+        "promotion_manifest_hash": promotion_hash,
+        "target_spec_count": len(manifest.get("target_specs", [])),
     }
 
 
@@ -652,6 +684,39 @@ def _validate_approved_plan(packet: dict) -> None:
 def _approved_plan_hash(packet: dict) -> str:
     payload = {key: value for key, value in packet.items() if key != "operator_approval"}
     payload["planning_mode"] = "approved_split"
+    return sha256_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _validate_promotable_manifest(manifest: dict) -> None:
+    if not manifest.get("approved_plan_hash"):
+        raise ValueError("decomposition promotion requires an approved plan hash")
+    if manifest.get("coverage_status") != "complete":
+        raise ValueError("decomposition promotion requires complete audit coverage")
+    audit = manifest.get("audit")
+    if not isinstance(audit, dict):
+        raise ValueError("decomposition promotion requires successful audit metadata")
+    if audit.get("issues"):
+        raise ValueError("decomposition promotion requires an audit with no issues")
+    if audit.get("source_hash_matches") is not True:
+        raise ValueError("decomposition promotion requires source hash match")
+    target_results = audit.get("target_results")
+    if not isinstance(target_results, list) or len(target_results) != len(manifest.get("target_specs", [])):
+        raise ValueError("decomposition promotion requires audit target results for every target")
+    for target in target_results:
+        if target.get("target_exists") is not True:
+            raise ValueError("decomposition promotion requires all targets to exist")
+        if target.get("target_hash_matches") is not True:
+            raise ValueError("decomposition promotion requires all target hashes to match")
+        if target.get("provenance_header_present") is not True:
+            raise ValueError("decomposition promotion requires all provenance headers to be present")
+
+
+def _promotion_manifest_hash(manifest: dict) -> str:
+    payload = {
+        key: value
+        for key, value in manifest.items()
+        if key not in {"promoted", "promoted_at", "promoted_by", "promotion_manifest_hash"}
+    }
     return sha256_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
 
 

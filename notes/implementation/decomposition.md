@@ -284,6 +284,8 @@ Acceptance criteria:
 
 Goal: mark decomposed family authoritative after audit and operator acceptance.
 
+Status: implemented.
+
 Scope:
 
 - add `whetstone decompose promote`
@@ -291,6 +293,14 @@ Scope:
 - require operator confirmation
 - update manifest promotion fields
 - optionally write coordinating-spec backreferences
+
+Acceptance criteria:
+
+- promotion requires `coverage_status = complete`
+- promotion requires successful audit metadata with no issues
+- promotion verifies audit target checks before stamping authority
+- promotion persists `promoted`, `promoted_at`, `promoted_by`, and `promotion_manifest_hash`
+- promotion does not mutate the source spec or extracted target specs
 
 ## Non-Goals
 

@@ -16,6 +16,7 @@ from whetstone.decomposition import (
     audit_decomposition_manifest,
     build_decomposition_plan,
     extract_decomposition_plan,
+    promote_decomposition_manifest,
 )
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
@@ -413,6 +414,23 @@ def main(argv: list[str] | None = None) -> int:
         "--source",
         help="optional source spec path override; defaults to source_spec_path recorded in the manifest",
     )
+    decompose_promote = decompose_subparsers.add_parser(
+        "promote",
+        help="mark an audited decomposition manifest as authoritative",
+        description=(
+            "Promote an extracted spec family only after a complete successful audit and explicit operator "
+            "acceptance. This command stamps decomposition_manifest.json; it does not mutate the source spec "
+            "or extracted target specs."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  whetstone decompose promote --manifest decomposition/decomposition_manifest.json\n"
+            "  whetstone decompose promote --manifest decomposition/decomposition_manifest.json --accepted-by caleb"
+        ),
+        formatter_class=FORMATTER,
+    )
+    decompose_promote.add_argument("--manifest", required=True, help="audited decomposition_manifest.json path")
+    decompose_promote.add_argument("--accepted-by", help="operator identity to persist in promotion metadata")
 
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
     promote_phase2.add_argument("--root", default=".", help="repository root")
@@ -851,6 +869,13 @@ def main(argv: list[str] | None = None) -> int:
             result = audit_decomposition_manifest(
                 manifest_path=Path(args.manifest),
                 source_spec_path=Path(args.source) if args.source else None,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.decompose_command == "promote":
+            result = promote_decomposition_manifest(
+                manifest_path=Path(args.manifest),
+                accepted_by=args.accepted_by,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
