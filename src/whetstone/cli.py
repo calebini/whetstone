@@ -11,7 +11,12 @@ from whetstone.apply_back import apply_back
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
 from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
-from whetstone.decomposition import approve_decomposition_plan, build_decomposition_plan, extract_decomposition_plan
+from whetstone.decomposition import (
+    approve_decomposition_plan,
+    audit_decomposition_manifest,
+    build_decomposition_plan,
+    extract_decomposition_plan,
+)
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
@@ -388,6 +393,25 @@ def main(argv: list[str] | None = None) -> int:
         "--overwrite-targets",
         action="store_true",
         help="allow overwriting existing target specs and manifest",
+    )
+    decompose_audit = decompose_subparsers.add_parser(
+        "audit",
+        help="audit extracted target specs and update decomposition manifest coverage",
+        description=(
+            "Verify decomposition coverage, target hashes, provenance headers, and duplicated unit ownership. "
+            "Writes coverage_matrix.md and updates decomposition_manifest.json."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  whetstone decompose audit --manifest decomposition/decomposition_manifest.json\n"
+            "  whetstone decompose audit --manifest decomposition/decomposition_manifest.json --source spec.md"
+        ),
+        formatter_class=FORMATTER,
+    )
+    decompose_audit.add_argument("--manifest", required=True, help="decomposition_manifest.json path")
+    decompose_audit.add_argument(
+        "--source",
+        help="optional source spec path override; defaults to source_spec_path recorded in the manifest",
     )
 
     promote_phase2 = subparsers.add_parser("promote-phase2", help="promote an accepted Phase 1 spec version for Phase 2")
@@ -820,6 +844,13 @@ def main(argv: list[str] | None = None) -> int:
                 output_dir=Path(args.output_dir) if args.output_dir else None,
                 source_spec_path=Path(args.source) if args.source else None,
                 overwrite_targets=args.overwrite_targets,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.decompose_command == "audit":
+            result = audit_decomposition_manifest(
+                manifest_path=Path(args.manifest),
+                source_spec_path=Path(args.source) if args.source else None,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0

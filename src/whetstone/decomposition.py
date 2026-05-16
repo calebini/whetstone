@@ -204,6 +204,119 @@ def extract_decomposition_plan(
     }
 
 
+def audit_decomposition_manifest(
+    *,
+    manifest_path: Path,
+    source_spec_path: Path | None = None,
+) -> dict:
+    """Audit extracted decomposition targets and update manifest coverage status."""
+
+    manifest = _read_map(manifest_path)
+    source_path = source_spec_path or Path(manifest["source_spec_path"])
+    source = source_path.read_text(encoding="utf-8")
+    source_hash = draft_hash(source)
+    issues: list[str] = []
+    if source_hash != manifest.get("source_spec_hash"):
+        issues.append("source_hash_mismatch")
+
+    source_units = extractable_units(source, section_inventory(source))
+    source_unit_ids = {unit.id for unit in source_units}
+    normative_unit_ids = {unit.id for unit in source_units if unit.normative_statement_count > 0}
+    assigned_unit_ids = _manifest_assigned_unit_ids(manifest)
+    assigned_set = set(assigned_unit_ids)
+    unmapped_unit_ids = sorted(source_unit_ids - assigned_set)
+    unmapped_normative_unit_ids = sorted(normative_unit_ids - assigned_set)
+    duplicated_unit_ids = sorted(unit_id for unit_id in source_unit_ids if assigned_unit_ids.count(unit_id) > 1)
+    if unmapped_unit_ids:
+        issues.append("unmapped_extractable_units")
+    if unmapped_normative_unit_ids:
+        issues.append("unmapped_normative_units")
+    if duplicated_unit_ids:
+        issues.append("duplicated_extractable_units")
+
+    target_results = []
+    for target in manifest.get("target_specs", []):
+        target_path = Path(target["target_spec_path"])
+        target_exists = target_path.exists()
+        target_hash_matches = False
+        provenance_header_present = False
+        if target_exists:
+            content = target_path.read_text(encoding="utf-8")
+            target_hash_matches = draft_hash(content) == target.get("target_spec_hash")
+            provenance_header_present = _target_has_provenance_header(content, manifest, target)
+        if not target_exists:
+            issues.append("target_missing")
+        if target_exists and not target_hash_matches:
+            issues.append("target_hash_mismatch")
+        if not provenance_header_present:
+            issues.append("provenance_header_missing")
+        target_results.append(
+            {
+                "target_spec_id": target.get("target_spec_id"),
+                "target_spec_path": target.get("target_spec_path"),
+                "target_exists": target_exists,
+                "target_hash_matches": target_hash_matches,
+                "provenance_header_present": provenance_header_present,
+                "source_unit_count": len(target.get("source_units", [])),
+            }
+        )
+
+    audit_dir = manifest_path.parent
+    coverage_matrix_path = audit_dir / "coverage_matrix.md"
+    unmapped_requirements_path = audit_dir / "unmapped_requirements.md"
+    duplicated_authority_report_path = audit_dir / "duplicated_authority_report.md"
+    coverage_status = "complete" if not issues else "incomplete"
+    coverage_matrix_path.write_text(
+        _render_coverage_matrix(
+            source_units=source_units,
+            assigned_unit_ids=assigned_unit_ids,
+            target_results=target_results,
+            coverage_status=coverage_status,
+        ),
+        encoding="utf-8",
+    )
+    if unmapped_unit_ids or unmapped_normative_unit_ids:
+        unmapped_requirements_path.write_text(
+            _render_unmapped_requirements(source_units, unmapped_unit_ids, unmapped_normative_unit_ids),
+            encoding="utf-8",
+        )
+        manifest["unmapped_requirements_path"] = str(unmapped_requirements_path)
+    else:
+        manifest["unmapped_requirements_path"] = None
+    if duplicated_unit_ids:
+        duplicated_authority_report_path.write_text(
+            _render_duplicated_authority_report(duplicated_unit_ids, manifest),
+            encoding="utf-8",
+        )
+        manifest["duplicated_authority_report_path"] = str(duplicated_authority_report_path)
+    else:
+        manifest["duplicated_authority_report_path"] = None
+    manifest["coverage_status"] = coverage_status
+    manifest["audit"] = {
+        "audited_at": _utc_now_iso(),
+        "source_hash_matches": source_hash == manifest.get("source_spec_hash"),
+        "extractable_unit_count": len(source_units),
+        "assigned_extractable_unit_count": len(assigned_set & source_unit_ids),
+        "unmapped_extractable_unit_ids": unmapped_unit_ids,
+        "unmapped_normative_unit_ids": unmapped_normative_unit_ids,
+        "duplicated_extractable_unit_ids": duplicated_unit_ids,
+        "issues": sorted(set(issues)),
+        "target_results": target_results,
+        "coverage_matrix_path": str(coverage_matrix_path),
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if coverage_status != "complete":
+        raise ValueError(f"decomposition audit failed: {', '.join(sorted(set(issues)))}")
+    return {
+        "decomposition_manifest": str(manifest_path),
+        "coverage_status": coverage_status,
+        "coverage_matrix": str(coverage_matrix_path),
+        "unmapped_requirements_path": manifest["unmapped_requirements_path"],
+        "duplicated_authority_report_path": manifest["duplicated_authority_report_path"],
+        "target_spec_count": len(target_results),
+    }
+
+
 def section_inventory(markdown: str) -> list[SourceSection]:
     lines = markdown.splitlines()
     raw: list[tuple[int, int, str, tuple[str, ...], str]] = []
@@ -623,6 +736,95 @@ def _render_extracted_target(
 
 def _title_from_target_id(target_spec_id: str) -> str:
     return " ".join(part.upper() if part.lower() in {"ai", "api", "cli"} else part.capitalize() for part in target_spec_id.split("_"))
+
+
+def _manifest_assigned_unit_ids(manifest: dict) -> list[str]:
+    assigned: list[str] = []
+    for target in manifest.get("target_specs", []):
+        assigned.extend(unit["unit_id"] for unit in target.get("source_units", []))
+    return assigned
+
+
+def _target_has_provenance_header(content: str, manifest: dict, target: dict) -> bool:
+    required_fragments = [
+        "Whetstone decomposition provenance:",
+        f"source_spec_hash: {manifest.get('source_spec_hash')}",
+        f"approved_plan_hash: {manifest.get('approved_plan_hash')}",
+        f"target_spec_id: {target.get('target_spec_id')}",
+        f"target_spec_role: {target.get('target_spec_role')}",
+    ]
+    return all(fragment in content for fragment in required_fragments)
+
+
+def _render_coverage_matrix(
+    *,
+    source_units: list[ExtractableUnit],
+    assigned_unit_ids: list[str],
+    target_results: list[dict],
+    coverage_status: str,
+) -> str:
+    assigned_set = set(assigned_unit_ids)
+    lines = [
+        "# Decomposition Coverage Matrix",
+        "",
+        f"- Coverage status: `{coverage_status}`",
+        f"- Extractable units: {len(source_units)}",
+        f"- Assigned extractable units: {len(assigned_set)}",
+        "",
+        "## Source Units",
+        "",
+        "| Unit | Scope | Lines | Normative Count | Status |",
+        "| --- | --- | --- | ---: | --- |",
+    ]
+    for unit in source_units:
+        status = "assigned" if unit.id in assigned_set else "unmapped"
+        lines.append(f"| `{unit.id}` | `{unit.scope}` | {unit.start_line}-{unit.end_line} | {unit.normative_statement_count} | `{status}` |")
+    lines.extend(["", "## Target Files", "", "| Target | Exists | Hash Matches | Provenance | Units |", "| --- | --- | --- | --- | ---: |"])
+    for target in target_results:
+        lines.append(
+            "| `{target}` | `{exists}` | `{hash_matches}` | `{provenance}` | {units} |".format(
+                target=target["target_spec_id"],
+                exists=str(target["target_exists"]).lower(),
+                hash_matches=str(target["target_hash_matches"]).lower(),
+                provenance=str(target["provenance_header_present"]).lower(),
+                units=target["source_unit_count"],
+            )
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _render_unmapped_requirements(
+    source_units: list[ExtractableUnit],
+    unmapped_unit_ids: list[str],
+    unmapped_normative_unit_ids: list[str],
+) -> str:
+    units_by_id = {unit.id: unit for unit in source_units}
+    lines = [
+        "# Unmapped Requirements",
+        "",
+        f"- Unmapped extractable units: {len(unmapped_unit_ids)}",
+        f"- Unmapped normative units: {len(unmapped_normative_unit_ids)}",
+        "",
+    ]
+    for unit_id in unmapped_unit_ids:
+        unit = units_by_id[unit_id]
+        lines.append(
+            f"- `{unit.id}` lines {unit.start_line}-{unit.end_line}, normative statements: {unit.normative_statement_count}"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _render_duplicated_authority_report(duplicated_unit_ids: list[str], manifest: dict) -> str:
+    targets_by_unit: dict[str, list[str]] = {unit_id: [] for unit_id in duplicated_unit_ids}
+    for target in manifest.get("target_specs", []):
+        for unit in target.get("source_units", []):
+            unit_id = unit["unit_id"]
+            if unit_id in targets_by_unit:
+                targets_by_unit[unit_id].append(target["target_spec_id"])
+    lines = ["# Duplicated Authority Report", ""]
+    for unit_id in duplicated_unit_ids:
+        lines.append(f"- `{unit_id}` appears in: {', '.join(sorted(targets_by_unit[unit_id]))}")
+    return "\n".join(lines) + "\n"
 
 
 def _unit_ref(unit: ExtractableUnit) -> dict:

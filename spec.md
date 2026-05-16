@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.65 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.66 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.65` adds lossless copy-first decomposition extraction with target provenance headers and a decomposition manifest.
+Version `0.66` adds decomposition audit for coverage, target hash/provenance verification, unmapped requirements, and duplicated authority reports.
 
 ---
 
@@ -570,6 +570,11 @@ Decomposition phases:
    - Verify every extractable unit and its normative statements are assigned to at least one target spec, intentionally duplicated, or explicitly retired with rationale.
    - Verify target specs preserve source hashes/ranges in provenance metadata.
    - Verify authority surfaces are not duplicated without an explicit shared-authority or supersession rule.
+   - Audit MUST write `coverage_matrix.md`.
+   - Audit MUST write `unmapped_requirements.md` when extractable units or normative units are unmapped.
+   - Audit MUST write `duplicated_authority_report.md` when the same extractable unit appears in more than one target spec without an explicit duplication authority model.
+   - Audit MUST update `decomposition_manifest.json.coverage_status`.
+   - Audit MUST fail when target files are missing, target hashes drift, provenance headers are missing, source hash drifts, normative units are unmapped, or extractable units are duplicated.
 
 5. `promote`
    - Mark the decomposed spec family as authoritative only after the audit succeeds and the operator accepts the decomposition manifest.
@@ -680,6 +685,7 @@ target_specs:
 coverage_status: complete | incomplete
 unmapped_requirements_path: string | null
 duplicated_authority_report_path: string | null
+audit: object | null
 promoted: boolean
 promoted_at: string | null
 ```

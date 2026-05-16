@@ -486,6 +486,198 @@ class CliTests(unittest.TestCase):
                     ]
                 )
 
+    def test_decompose_audit_passes_clean_extraction_and_writes_coverage_matrix(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "# Spec\n\n## Purpose\nThe tool MUST keep source text.\n\n## Schema\nThe schema MUST be explicit.\n",
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "coordinated_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "coordinator",
+                                "target_spec_path": "docs/COORDINATING_SPEC.md",
+                                "target_spec_role": "coordinating_spec",
+                                "owned_authority_surfaces": ["orientation"],
+                                "source_section_ids": ["purpose"],
+                            },
+                            {
+                                "target_spec_id": "schema",
+                                "target_spec_path": "docs/SCHEMA_SPEC.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["schema"],
+                                "source_section_ids": ["schema"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            extract_root = root / "extracted"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+                self.assertEqual(
+                    main(
+                        [
+                            "decompose",
+                            "extract",
+                            "--plan",
+                            str(output_dir / "decomposition_plan.json"),
+                            "--source",
+                            str(spec),
+                            "--output-dir",
+                            str(extract_root),
+                        ]
+                    ),
+                    0,
+                )
+
+            audit_stdout = io.StringIO()
+            with redirect_stdout(audit_stdout):
+                exit_code = main(["decompose", "audit", "--manifest", str(extract_root / "decomposition_manifest.json"), "--source", str(spec)])
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(audit_stdout.getvalue())
+            self.assertEqual(result["coverage_status"], "complete")
+            self.assertTrue((extract_root / "coverage_matrix.md").exists())
+            manifest = json.loads((extract_root / "decomposition_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["coverage_status"], "complete")
+            self.assertEqual(manifest["audit"]["issues"], [])
+
+    def test_decompose_audit_fails_when_target_hash_drifts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "purpose",
+                                "target_spec_path": "docs/PURPOSE.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["purpose"],
+                                "source_section_ids": ["purpose"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            extract_root = root / "extracted"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+                self.assertEqual(
+                    main(["decompose", "extract", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec), "--output-dir", str(extract_root)]),
+                    0,
+                )
+            extract_root.joinpath("docs/PURPOSE.md").write_text("changed\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "target_hash_mismatch"):
+                main(["decompose", "audit", "--manifest", str(extract_root / "decomposition_manifest.json"), "--source", str(spec)])
+
+            manifest = json.loads((extract_root / "decomposition_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["coverage_status"], "incomplete")
+            self.assertIn("target_hash_mismatch", manifest["audit"]["issues"])
+
+    def test_decompose_audit_reports_duplicated_authority(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text("# Spec\n\n## Purpose\nThe tool MUST keep source text.\n", encoding="utf-8")
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            target_one = root / "one.md"
+            target_two = root / "two.md"
+            content = "\n".join(
+                [
+                    "# Target",
+                    "",
+                    "<!--",
+                    "Whetstone decomposition provenance:",
+                    f"source_spec_path: {spec}",
+                    f"source_spec_hash: {source_hash}",
+                    "approved_plan_hash: approved",
+                    "target_spec_id: one",
+                    "target_spec_role: peer_spec",
+                    "-->",
+                    "",
+                    "## Purpose",
+                    "The tool MUST keep source text.",
+                    "",
+                ]
+            )
+            target_one.write_text(content, encoding="utf-8")
+            target_two.write_text(content.replace("target_spec_id: one", "target_spec_id: two"), encoding="utf-8")
+            manifest_path = root / "decomposition_manifest.json"
+            unit = {"unit_id": "purpose", "section_id": "purpose", "scope": "section"}
+            line_range = {"unit_id": "purpose", "section_id": "purpose", "scope": "section", "start_line": 3, "end_line": 4}
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "source_spec_path": str(spec),
+                        "source_spec_hash": source_hash,
+                        "approved_plan_hash": "approved",
+                        "authority_topology": "peer_family",
+                        "extraction_mode": "copy_first",
+                        "target_specs": [
+                            {
+                                "target_spec_id": "one",
+                                "target_spec_path": str(target_one),
+                                "target_spec_hash": draft_hash(target_one.read_text(encoding="utf-8")),
+                                "target_spec_role": "peer_spec",
+                                "source_units": [unit],
+                                "source_section_ids": ["purpose"],
+                                "source_line_ranges": [line_range],
+                                "provenance_header_present": True,
+                            },
+                            {
+                                "target_spec_id": "two",
+                                "target_spec_path": str(target_two),
+                                "target_spec_hash": draft_hash(target_two.read_text(encoding="utf-8")),
+                                "target_spec_role": "peer_spec",
+                                "source_units": [unit],
+                                "source_section_ids": ["purpose"],
+                                "source_line_ranges": [line_range],
+                                "provenance_header_present": True,
+                            },
+                        ],
+                        "coverage_status": "complete",
+                        "unmapped_requirements_path": None,
+                        "duplicated_authority_report_path": None,
+                        "promoted": False,
+                        "promoted_at": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "duplicated_extractable_units"):
+                main(["decompose", "audit", "--manifest", str(manifest_path), "--source", str(spec)])
+
+            self.assertTrue((root / "duplicated_authority_report.md").exists())
+            report = (root / "duplicated_authority_report.md").read_text(encoding="utf-8")
+            self.assertIn("`purpose` appears in: one, two", report)
+
     def test_decompose_plan_rejects_map_source_hash_mismatch(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

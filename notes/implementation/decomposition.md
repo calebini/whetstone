@@ -260,6 +260,8 @@ Acceptance criteria:
 
 Goal: prove coverage and surface authority risks.
 
+Status: implemented.
+
 Scope:
 
 - add `whetstone decompose audit`
@@ -268,6 +270,15 @@ Scope:
 - detect duplicated authority lacking a rule
 - update manifest coverage status
 - test failing and passing audits
+
+Acceptance criteria:
+
+- audit re-derives extractable units from the source spec and compares them to manifest assignments
+- audit writes `coverage_matrix.md`
+- audit writes `unmapped_requirements.md` when source units or normative units are unmapped
+- audit writes `duplicated_authority_report.md` when a source unit appears in multiple targets
+- audit verifies target file existence, target hashes, and provenance headers
+- audit updates `decomposition_manifest.json.coverage_status` and audit details
 
 ### Slice 5: Promote
 
