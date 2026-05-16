@@ -19,6 +19,48 @@ Version `0.68` tightens decomposition extraction readability by restoring parent
 
 ---
 
+## Spec Family Map
+
+This coordinating spec is the front door for the Whetstone spec family. It orients readers to the functional areas and routes them to the leaf specs that own normative detail. When a leaf spec and this overview disagree, the leaf spec is authoritative for its owned surface unless the decomposition manifest says otherwise.
+
+### Rubrics, Profiles, And Feedback
+
+See [Rubrics Profiles And Feedback Spec](RUBRICS_PROFILES_AND_FEEDBACK_SPEC.md).
+
+Owns rubric profiles, workflow presets, review profiles, profile sets, severity normalization, baseline review invariants, and Phase 2 feedback classification. Use this leaf when changing how Whetstone judges quality, assigns review pressure, classifies issues, or constrains reviewer feedback shape.
+
+### Scope Intake, Decisions, And Decomposition
+
+See [Scope Intake And Decisions Spec](SCOPE_INTAKE_AND_DECISIONS_SPEC.md).
+
+Owns scope contracts, first-contact intake, decision summaries, decision intervention/checkpoint artifacts, expanding contract surface detection, and the spec decomposition workflow. The decomposition material lives here under `SPEC DECOMPOSITION WORKFLOW`.
+
+### Scheduler, State, Resume, And Budgets
+
+See [Scheduler State And Resume Spec](SCHEDULER_STATE_AND_RESUME_SPEC.md).
+
+Owns halting precedence, halt artifacts, accepted-draft semantics, version lifecycle, round scheduling, profile budgets, focused profile runs, Phase 1 failure handling, resume behavior, and the state machine. Use this leaf for changes that affect when Whetstone advances, stops, resumes, or declares Phase 1 stable.
+
+### Artifacts, Validation, Hashing, And Telemetry
+
+See [Artifacts Validation And Telemetry Spec](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md).
+
+Owns minimum artifact schemas, artifact validation policy, client telemetry, content normalization, hashing, and control-character hygiene. Use this leaf when changing persisted artifact contracts, validation retry behavior, or deterministic identity inputs.
+
+### Identity, Oscillation, And Conflicts
+
+See [Identity Oscillation And Conflicts Spec](IDENTITY_OSCILLATION_AND_CONFLICTS_SPEC.md).
+
+Owns issue identity, conflict identity, oscillation detection, conflict modeling, Editor decline taxonomy, and conflict escalation. Use this leaf for recurring-feedback behavior, fingerprint semantics, opposition keys, and escalation rules.
+
+### Phase 2, Convergence, And Declaration
+
+See [Phase2 Convergence And Declaration Spec](PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md).
+
+Owns Phase 2 failure handling, target matrix precedence, convergence declaration content, declaration acceptance, and reproducibility requirements. Use this leaf for changes to final convergence, strictness interpretation, declaration evidence, or convergence failure reports.
+
+---
+
 ## CORE ROLES
 
 - Editor:

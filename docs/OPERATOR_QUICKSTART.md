@@ -199,6 +199,63 @@ Available profile sets:
 
 For Foreman-like specs, start with `stateful_system`. For Parley-like utility specs, start with `utility_mvp` plus a clear MVP scope contract.
 
+## Spec Decomposition
+
+Use decomposition when a source spec has become too large or owns several separable authority surfaces. Decomposition is not a review run and does not rewrite requirements. It is a copy-first provenance workflow for splitting one source spec into a governed spec family.
+
+Good decomposition candidates include:
+
+- a source spec with several independent subsystems, workflows, artifact families, or protocol surfaces
+- a spec where operators keep asking, "which part owns this?"
+- a spec that is hard to review because unrelated decisions are packed into one document
+- a monolith that should become a coordinating spec plus leaf specs
+
+The lifecycle is:
+
+1. `plan`: inventory the source and propose or validate target ownership.
+2. `approve`: bind operator approval to the exact source hash and plan hash.
+3. `extract`: write target specs by lossless copy-first extraction.
+4. `audit`: verify coverage, target hashes, provenance headers, unmapped units, and duplicated authority.
+5. `promote`: mark the audited decomposed family authoritative.
+
+For a mapped decomposition:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli decompose plan \
+  --source spec.md \
+  --map docs/decomposition/whetstone-decomposition-map.json \
+  --output-dir docs/decomposition
+
+PYTHONPATH=src python3 -m whetstone.cli decompose approve \
+  --plan docs/decomposition/decomposition_plan.json \
+  --source spec.md \
+  --approved-by "$USER"
+
+PYTHONPATH=src python3 -m whetstone.cli decompose extract \
+  --plan docs/decomposition/decomposition_plan.json \
+  --source spec.md \
+  --output-dir .
+
+PYTHONPATH=src python3 -m whetstone.cli decompose audit \
+  --manifest docs/decomposition/decomposition_manifest.json \
+  --source spec.md
+
+PYTHONPATH=src python3 -m whetstone.cli decompose promote \
+  --manifest docs/decomposition/decomposition_manifest.json \
+  --accepted-by "$USER"
+```
+
+After extraction, inspect:
+
+- `docs/decomposition/decomposition_plan.md`
+- `docs/decomposition/coverage_matrix.md`
+- `docs/decomposition/decomposition_manifest.json`
+- generated target specs
+
+Promotion means the decomposed family is authoritative for future spec work. It does not mean the target specs have converged, and it does not delete or rewrite the original source spec.
+
+After promotion, use the coordinating spec as the entry point and make future changes in the relevant leaf spec. Keep the decomposition manifest as the provenance record.
+
 ## Budget Exhaustion Policy
 
 Use the default `hard` policy when you want Phase 1 to stop as soon as a required profile cannot reach clean verification within its budget:
