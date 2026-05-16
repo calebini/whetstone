@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.61 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.62 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines six interacting subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. The state machine and halting conditions sections describe how these subsystems compose into deterministic execution.
 
-Version `0.61` specifies the generic spec decomposition workflow for splitting overloaded specs into governed target specs without losing provenance or normative coverage.
+Version `0.62` tightens spec decomposition planning around extractable-unit ownership: leaf sections plus meaningful parent intro units, with container-section assignment rejected.
 
 ---
 
@@ -519,6 +519,16 @@ Definitions:
 - `leaf_spec`: a target spec that owns detailed requirements for one bounded subsystem, workflow, artifact family, protocol, rubric, or other authority surface.
 - `peer_spec`: a target spec in a peer-family split where no coordinating target spec is produced.
 - `decomposition_manifest`: the authoritative artifact recording source-to-target provenance, hashes, authority topology, and coverage status.
+- `extractable_unit`: the smallest source unit the decomposition plan may assign to a target spec.
+
+Extractable units:
+
+- A leaf section is an extractable unit.
+- A non-leaf section is a container by default and MUST NOT be assigned directly.
+- A non-leaf section MAY produce a synthetic `intro` extractable unit for direct body content before its first child heading.
+- An `intro` unit exists only when the direct body content is meaningful. Meaningful direct body content contains at least one normative token, a code block, a table, a list, or more than a trivial implementation-defined token threshold.
+- Meaningless connective prose such as "This section defines the following" SHOULD remain container scaffolding and SHOULD NOT create an extractable unit.
+- Meaningful direct body content after a non-leaf section's child sections is invalid for decomposition planning. The planner MUST reject it rather than create an `outro` unit in the MVP implementation.
 
 Authority topology MUST be one of:
 
@@ -531,8 +541,8 @@ Authority topology MUST be one of:
 Decomposition phases:
 
 1. `plan`
-   - Inventory headings, section IDs, source line ranges, normative statements, artifacts, schemas, roles, states, and cross-references.
-   - Propose target specs, authority topology, source section assignments, and known duplicated/shared concepts.
+   - Inventory headings, section IDs, extractable units, source line ranges, normative statements, artifacts, schemas, roles, states, and cross-references.
+   - Propose target specs, authority topology, extractable-unit assignments, and known duplicated/shared concepts.
    - MUST NOT mutate the source spec or write target specs.
 
 2. `approve`
@@ -546,7 +556,7 @@ Decomposition phases:
    - Extraction MUST NOT paraphrase, summarize, reorder normative content, or silently remove requirements.
 
 4. `audit`
-   - Verify every source section and normative statement is assigned to at least one target spec, intentionally duplicated, or explicitly retired with rationale.
+   - Verify every extractable unit and its normative statements are assigned to at least one target spec, intentionally duplicated, or explicitly retired with rationale.
    - Verify target specs preserve source hashes/ranges in provenance metadata.
    - Verify authority surfaces are not duplicated without an explicit shared-authority or supersession rule.
 
@@ -562,7 +572,7 @@ Decomposition plan inputs:
 - optional target spec path map
 - optional authority topology preference
 - optional extraction mode
-- optional explicit retired-section list
+- optional explicit retired-extractable-unit list
 
 Decomposition plan outputs MUST include:
 
@@ -577,23 +587,57 @@ target_specs:
     target_spec_path: string
     target_spec_role: coordinating_spec | leaf_spec | peer_spec | appendix_spec
     owned_authority_surfaces: [string]
-    source_section_ids: [string]
+    source_units:
+      - section_id: string
+        scope: section | intro
+        unit_id: string
+    source_section_ids: [string] # derived compatibility field listing sections represented by source_units
     source_line_ranges:
-      - start_line: integer
+      - unit_id: string
+        section_id: string
+        scope: section | intro
+        start_line: integer
         end_line: integer
+    normative_statement_count: integer
+extractable_units:
+  - unit_id: string
+    section_id: string
+    scope: section | intro
+    start_line: integer
+    end_line: integer
     normative_statement_count: integer
 coverage:
   source_section_count: integer
+  extractable_unit_count: integer
+  assigned_extractable_unit_count: integer
+  unassigned_extractable_unit_ids: [string]
+  retired_extractable_unit_ids: [string]
+  duplicated_extractable_unit_ids: [string]
   assigned_source_section_count: integer
-  unassigned_source_section_ids: [string]
-  retired_source_section_ids: [string]
-  duplicated_source_section_ids: [string]
+  unassigned_source_section_ids: [string] # compatibility alias for unassigned_extractable_unit_ids
+  retired_source_section_ids: [string] # compatibility alias for retired_extractable_unit_ids
+  duplicated_source_section_ids: [string] # compatibility alias for duplicated_extractable_unit_ids
 operator_approval:
   approved: boolean
   approved_by: string | null
   approved_at: string | null
   approved_plan_hash: string | null
 ```
+
+Decomposition map inputs SHOULD use structured `source_units`:
+
+```yaml
+target_specs:
+  - target_spec_id: string
+    target_spec_path: string
+    target_spec_role: coordinating_spec | leaf_spec | peer_spec | appendix_spec
+    owned_authority_surfaces: [string]
+    source_units:
+      - section_id: string
+        scope: section | intro
+```
+
+For backward compatibility, a map MAY supply `source_section_ids`, but each listed section MUST be a leaf section. If a map assigns a non-leaf container section through `source_section_ids`, the planner MUST reject the map with a helpful error. Assigning only a parent intro MUST use structured `source_units` with `scope: intro`.
 
 `decomposition_manifest.json` MUST include:
 
@@ -608,9 +652,16 @@ target_specs:
     target_spec_path: string
     target_spec_hash: string
     target_spec_role: string
+    source_units:
+      - unit_id: string
+        section_id: string
+        scope: section | intro
     source_section_ids: [string]
     source_line_ranges:
-      - start_line: integer
+      - unit_id: string
+        section_id: string
+        scope: section | intro
+        start_line: integer
         end_line: integer
     provenance_header_present: boolean
 coverage_status: complete | incomplete
@@ -627,12 +678,14 @@ Lossless extraction rules:
 - Every copied section MUST preserve its original prose except for heading-level normalization and provenance headers.
 - Any summarization, paraphrase, deduplication, terminology normalization, or authority rewrite MUST be deferred to later Whetstone review of the extracted target specs.
 - Extraction MUST preserve code blocks, tables, enum values, examples, MUST/SHOULD/MAY language, artifact paths, schema snippets, and rationale notes.
-- If a section spans multiple target specs, the plan MUST mark it as duplicated or split by explicit source line ranges.
+- If a non-leaf section contains meaningful direct intro content, that content MUST be assigned through its synthetic `intro` unit or explicitly retired.
+- If a non-leaf section contains meaningful direct trailing content after child sections, planning MUST fail until the source is restructured.
+- Extractable units MUST form an exact partition across target specs unless duplication is explicitly introduced by a future non-MVP authority model.
 
 Coverage invariants:
 
-- Every source section MUST have one of: assigned, duplicated, retired, or unassigned.
-- Every normative statement MUST have one of: assigned, duplicated, retired, or unmapped.
+- Every extractable unit MUST have one of: assigned, duplicated, retired, or unassigned.
+- Every normative statement inside an extractable unit MUST have one of: assigned, duplicated, retired, or unmapped.
 - Decomposition audit MUST fail when any normative statement remains unmapped.
 - Retired normative content MUST include an operator-approved rationale.
 - Duplicated authority MUST include a precedence, shared-authority, or future-reconciliation rule.

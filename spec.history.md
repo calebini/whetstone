@@ -82,3 +82,4 @@
 - Revised the spec to `0.59` with canonical review profile sets, allowing stateful, balanced MVP, utility MVP, and governance runs to select different profile stacks and default budgets without changing the active rubric.
 - Revised the spec to `0.60` with Phase 2 reviewer-only closeout verification for profiles whose clean result became stale after a late accepted draft mutation.
 - Revised the spec to `0.61` with a generic spec decomposition workflow for overloaded source specs, including authority topology, lossless extraction phases, decomposition artifacts, coverage invariants, and promotion rules.
+- Revised the spec to `0.62` with extractable-unit decomposition semantics, treating leaf sections and meaningful parent intro blocks as assignable units while rejecting direct container-section assignment.

@@ -1,0 +1,235 @@
+{
+  "planning_mode": "proposed_split",
+  "authority_topology": "coordinated_family",
+  "source_spec_hash": "270e3395114a54ed3f7fe3ae909a26c229ee8d004b13f8c187b6c624e2f68e44",
+  "target_specs": [
+    {
+      "target_spec_id": "whetstone_coordinating_spec",
+      "target_spec_path": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+      "target_spec_role": "coordinating_spec",
+      "owned_authority_surfaces": [
+        "purpose",
+        "roles",
+        "primary_inputs_outputs",
+        "configuration_overview",
+        "design_principle",
+        "multi_reviewer_future_note"
+      ],
+      "source_section_ids": [
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-purpose",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-core-roles",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-primary-inputs",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-primary-outputs",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-configuration",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-multi-reviewer-non-normative-future-note",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-design-principle"
+      ]
+    },
+    {
+      "target_spec_id": "rubrics_profiles_and_feedback_spec",
+      "target_spec_path": "docs/specs/RUBRICS_PROFILES_AND_FEEDBACK_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "canonical_rubrics",
+        "workflow_presets",
+        "review_profiles",
+        "profile_sets",
+        "severity_normalization",
+        "baseline_invariants",
+        "feedback_classification"
+      ],
+      "source_units": [
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows",
+          "scope": "intro"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-canonical-rubric-profiles",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-workflow-presets",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-rubric-manifest",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-review-profiles",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-review-profile-sets",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-severity-normalization-function",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-baseline-review-invariants",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification",
+          "scope": "intro"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification-oscillation-key-canonicalization",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+          "scope": "section"
+        }
+      ]
+    },
+    {
+      "target_spec_id": "scope_intake_and_decisions_spec",
+      "target_spec_path": "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "scope_contract",
+        "contract_surface",
+        "decision_register",
+        "decision_summary",
+        "spec_decomposition"
+      ],
+      "source_section_ids": [
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-canonical-rubrics-and-workflows-scope-contract",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-spec-decomposition-workflow",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-expanding-contract-surface",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-decision-summary"
+      ]
+    },
+    {
+      "target_spec_id": "scheduler_state_and_resume_spec",
+      "target_spec_path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "halting",
+        "accepted_draft",
+        "version_lifecycle",
+        "round_scheduling",
+        "budget_handling",
+        "phase1_failure",
+        "resume",
+        "state_machine"
+      ],
+      "source_units": [
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-halting-conditions-ordered-precedence",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-halt-artifact-matrix",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-accepted-draft-definition",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-spec-version-lifecycle",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-strategy-adaptive",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-scheduling-algorithm",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-definition-clean-profile",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-round-budget-handling",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy",
+          "scope": "intro"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy-editor-timeout-resume",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-resume-policy-budget-extension-resume",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-focused-phase-1-profile-runs",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-1-failure-handling",
+          "scope": "section"
+        },
+        {
+          "section_id": "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-state-machine-full-transitions",
+          "scope": "section"
+        }
+      ]
+    },
+    {
+      "target_spec_id": "artifacts_validation_and_telemetry_spec",
+      "target_spec_path": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "artifact_schemas",
+        "artifact_validation",
+        "client_telemetry",
+        "content_normalization",
+        "hashing"
+      ],
+      "source_section_ids": [
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-artifact-schemas-minimum-required-fields",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-artifact-validation-policy",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-client-telemetry",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-content-normalization-and-hashing"
+      ]
+    },
+    {
+      "target_spec_id": "identity_oscillation_and_conflicts_spec",
+      "target_spec_path": "docs/specs/IDENTITY_OSCILLATION_AND_CONFLICTS_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "issue_identity",
+        "conflict_identity",
+        "oscillation_detection",
+        "conflict_model",
+        "editor_decline",
+        "conflict_escalation"
+      ],
+      "source_section_ids": [
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-issue-and-conflict-identity",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-oscillation-detection-full-definition",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-conflict-model",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-editor-decline-taxonomy",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-conflict-escalation"
+      ]
+    },
+    {
+      "target_spec_id": "phase2_convergence_and_declaration_spec",
+      "target_spec_path": "docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+      "target_spec_role": "leaf_spec",
+      "owned_authority_surfaces": [
+        "phase2_failure",
+        "target_matrix",
+        "convergence_declaration",
+        "reproducibility"
+      ],
+      "source_section_ids": [
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-phase-2-failure-handling",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-target-matrix-precedence",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-convergence-declaration",
+        "whetstone-ai-spec-convergence-orchestrator-0-61-strict-candidate-reproducibility"
+      ]
+    }
+  ]
+}

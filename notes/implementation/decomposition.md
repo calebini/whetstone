@@ -183,7 +183,7 @@ Compatibility shortcuts may be added later, but the subcommand shape keeps the l
 
 Goal: deterministic planning artifact with no target writes.
 
-Status: implemented.
+Status: implemented with extractable-unit semantics.
 
 Scope:
 
@@ -192,6 +192,7 @@ Scope:
 - stable section IDs
 - source line ranges
 - simple normative statement inventory
+- extractable unit inventory using leaf sections plus meaningful parent intro units
 - optional operator map input
 - generic target spec model
 - write JSON and Markdown plan artifacts
@@ -203,7 +204,8 @@ Acceptance criteria:
 - running against `spec.md` writes valid plan artifacts
 - plan includes source hash and line ranges
 - plan can represent `coordinated_family`, `peer_family`, `parent_child`, `appendix_extraction`, and `no_split`
-- unassigned source sections are explicit
+- unassigned extractable units are explicit
+- direct assignment of non-leaf container sections is rejected
 - tests cover plan generation and no target writes
 
 ### Slice 2: Approval

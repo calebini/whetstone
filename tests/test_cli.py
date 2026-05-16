@@ -117,8 +117,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(result["unassigned_source_section_count"], 0)
             plan = json.loads(output_dir.joinpath("decomposition_plan.json").read_text(encoding="utf-8"))
             self.assertEqual(plan["coverage"]["source_section_count"], 2)
+            self.assertEqual(plan["coverage"]["extractable_unit_count"], 2)
             self.assertEqual(plan["target_specs"][0]["target_spec_id"], "source_spec")
             self.assertEqual(plan["target_specs"][0]["normative_statement_count"], 2)
+            self.assertEqual(len(plan["target_specs"][0]["source_units"]), 2)
             self.assertTrue(output_dir.joinpath("decomposition_plan.md").exists())
             self.assertFalse(output_dir.joinpath("docs").exists())
 
@@ -227,6 +229,89 @@ class CliTests(unittest.TestCase):
 
             with self.assertRaisesRegex(ValueError, "source_spec_hash does not match"):
                 main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(root / "out")])
+
+    def test_decompose_plan_rejects_container_section_assignment(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "# Spec\n\n## Parent\nParent MUST exist.\n\n### Child\nChild MUST exist.\n",
+                encoding="utf-8",
+            )
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": draft_hash(spec.read_text(encoding="utf-8")),
+                        "target_specs": [
+                            {
+                                "target_spec_id": "parent",
+                                "target_spec_path": "docs/PARENT.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["parent"],
+                                "source_section_ids": ["spec-parent"],
+                            },
+                            {
+                                "target_spec_id": "child",
+                                "target_spec_path": "docs/CHILD.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["child"],
+                                "source_section_ids": ["spec-parent-child"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "has child sections"):
+                main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(root / "out")])
+
+    def test_decompose_plan_allows_meaningful_intro_unit_assignment(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "# Spec\n\n## Parent\nParent intro MUST exist.\n\n### Child\nChild MUST exist.\n",
+                encoding="utf-8",
+            )
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "parent_child",
+                        "source_spec_hash": draft_hash(spec.read_text(encoding="utf-8")),
+                        "target_specs": [
+                            {
+                                "target_spec_id": "parent_intro",
+                                "target_spec_path": "docs/PARENT.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["parent_intro"],
+                                "source_units": [{"section_id": "spec-parent", "scope": "intro"}],
+                            },
+                            {
+                                "target_spec_id": "child",
+                                "target_spec_path": "docs/CHILD.md",
+                                "target_spec_role": "leaf_spec",
+                                "owned_authority_surfaces": ["child"],
+                                "source_units": [{"section_id": "spec-parent-child", "scope": "section"}],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            exit_code = main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(root / "out")])
+
+            self.assertEqual(exit_code, 0)
+            plan = json.loads(root.joinpath("out/decomposition_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(plan["coverage"]["duplicated_extractable_unit_ids"], [])
+            self.assertEqual(plan["coverage"]["unassigned_extractable_unit_ids"], [])
+            self.assertEqual(plan["target_specs"][0]["source_units"][0]["unit_id"], "spec-parent::__intro__")
 
     def test_mvp_live_phase1_requires_approved_scope_contract(self) -> None:
         with TemporaryDirectory() as tmp:
