@@ -758,6 +758,27 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertEqual(error["client_role"], "editor")
             self.assertIn("unchanged-section placeholders", error["attempts"][0]["validation_errors"][0])
 
+    def test_editor_draft_with_large_truncation_rejects_before_spec_mutation(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec\n\n" + "\n".join(f"Line {index}" for index in range(300)) + "\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            truncated = "# Spec\n\n" + "\n".join(f"Line {index}" for index in range(20)) + "\n"
+
+            with self.assertRaisesRegex(ValueError, "editor_summary.json validation failed after retry"):
+                LiveRoundRunner(
+                    root,
+                    OrchestratorConfig.default(root),
+                    reviewer_client=GoodIssueReviewerClient(root),
+                    editor_client=AppliedDraftEditorClient(truncated),
+                ).run_round(round_number=1, profile="determinism", apply=True)
+
+            self.assertEqual(root.joinpath("spec.md").read_text(encoding="utf-8"), before)
+            error = json.loads(root.joinpath("rounds/artifact_validation_error.json").read_text(encoding="utf-8"))
+            self.assertEqual(error["terminal_state"], "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(error["client_role"], "editor")
+            self.assertIn("large draft truncation", error["attempts"][0]["validation_errors"][0])
+
     def test_editor_validation_retry_can_recover_after_valid_review(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -1783,6 +1783,18 @@ def _reject_destructive_draft_after(*, draft_before_content: str | None, draft_a
         )
     before_len = len(before_stripped)
     after_len = len(after_stripped)
+    before_line_count = len(before_stripped.splitlines())
+    after_line_count = len(after_stripped.splitlines())
+    if before_len >= 10000 and after_len < int(before_len * 0.25):
+        raise ValueError(
+            "editor_summary draft_after_content is destructively smaller than the non-empty draft; "
+            "refusing large draft truncation"
+        )
+    if before_line_count >= 200 and after_line_count < int(before_line_count * 0.25):
+        raise ValueError(
+            "editor_summary draft_after_content has far fewer lines than the non-empty draft; "
+            "refusing large draft truncation"
+        )
     if before_len >= 1000 and after_len < 100 and after_len < int(before_len * 0.05):
         raise ValueError(
             "editor_summary draft_after_content is destructively smaller than the non-empty draft; "
