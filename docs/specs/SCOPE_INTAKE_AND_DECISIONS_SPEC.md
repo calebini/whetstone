@@ -109,6 +109,8 @@ Decomposition phases:
 1. `plan`
    - Inventory headings, section IDs, extractable units, source line ranges, normative statements, artifacts, schemas, roles, states, and cross-references.
    - Propose target specs, authority topology, extractable-unit assignments, and known duplicated/shared concepts.
+   - When run without an operator-supplied map, planning MUST write `decomposition_map_template.json` beside the plan artifacts.
+   - The map template MUST include the current `source_spec_hash`, legal enum values, every extractable unit, and a blank target-spec shape suitable for agent-assisted map drafting.
    - MUST NOT mutate the source spec or write target specs.
 
 2. `approve`
@@ -210,6 +212,36 @@ operator_approval:
   approved_at: string | null
   approved_plan_hash: string | null
 ```
+
+Inventory-only planning MUST also write `decomposition_map_template.json`.
+
+The map template is not an approved plan and is not an executable extraction recipe. It is an agent/operator drafting aid. It SHOULD include:
+
+```yaml
+schema_version: string
+template_kind: decomposition_map_template
+source_spec_path: string
+source_spec_hash: string
+planning_mode: proposed_split
+authority_topology: string
+authority_topology_options: [string]
+extraction_mode: copy_first
+extraction_mode_options: [string]
+target_spec_role_options: [string]
+source_unit_scope_options: [section, intro]
+extractable_units:
+  - unit_id: string
+    section_id: string
+    scope: section | intro
+    start_line: integer
+    end_line: integer
+    normative_statement_count: integer
+target_specs: []
+target_spec_template: object
+retired_extractable_unit_ids: [string]
+```
+
+Agents and operators SHOULD draft decomposition maps by assigning only `extractable_units` from the current template. The mapped plan command remains the validator; a map template does not bypass source-hash, section-id, container-assignment, duplication, or coverage checks.
 
 Decomposition map inputs SHOULD use structured `source_units`:
 

@@ -213,9 +213,15 @@ Create a decomposition plan:
 ```bash
 PYTHONPATH=src python3 -m whetstone.cli decompose plan \
   --source spec.md \
+  --output-dir docs/decomposition/inventory
+
+PYTHONPATH=src python3 -m whetstone.cli decompose plan \
+  --source spec.md \
   --map docs/decomposition/whetstone-decomposition-map.json \
   --output-dir docs/decomposition
 ```
+
+The inventory-only form writes `decomposition_map_template.json`, which gives agents the exact source hash, legal enum values, and extractable units needed to draft a valid map.
 
 Audit and promote an extracted spec family:
 

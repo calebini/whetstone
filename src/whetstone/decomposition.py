@@ -69,7 +69,14 @@ def build_decomposition_plan(
     md_path = output_dir / "decomposition_plan.md"
     json_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     md_path.write_text(render_decomposition_plan_markdown(packet), encoding="utf-8")
-    return {
+    map_template_path = None
+    if map_path is None:
+        map_template_path = output_dir / "decomposition_map_template.json"
+        map_template_path.write_text(
+            json.dumps(_decomposition_map_template(packet), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    result = {
         "decomposition_plan": str(json_path),
         "decomposition_plan_markdown": str(md_path),
         "source_spec_hash": packet["source_spec_hash"],
@@ -78,6 +85,9 @@ def build_decomposition_plan(
         "target_spec_count": len(packet["target_specs"]),
         "unassigned_source_section_count": len(packet["coverage"]["unassigned_source_section_ids"]),
     }
+    if map_template_path is not None:
+        result["decomposition_map_template"] = str(map_template_path)
+    return result
 
 
 def approve_decomposition_plan(
@@ -555,6 +565,46 @@ def _plan_packet(
     if packet["operator_approval"]["approved"] and packet["operator_approval"]["approved_plan_hash"] is None:
         packet["operator_approval"]["approved_plan_hash"] = _approved_plan_hash(packet)
     return packet
+
+
+def _decomposition_map_template(packet: dict) -> dict:
+    return {
+        "schema_version": "1.0",
+        "template_kind": "decomposition_map_template",
+        "instructions": [
+            "Copy this file to a decomposition map path before editing.",
+            "Keep source_spec_hash unchanged unless the source spec changes and inventory is regenerated.",
+            "Choose one authority_topology value.",
+            "Populate target_specs using only extractable_units listed in this template.",
+            "Assign each extractable unit at most once unless a future duplication authority model is explicit.",
+            "Do not assign non-leaf container sections directly; use scope=intro only when the listed unit scope is intro.",
+            "Remove template_kind, instructions, *_options, target_spec_template, and extractable_units before treating the file as an operator map if desired; Whetstone ignores unknown fields.",
+        ],
+        "source_spec_path": packet["source_spec_path"],
+        "source_spec_hash": packet["source_spec_hash"],
+        "planning_mode": "proposed_split",
+        "authority_topology": "coordinated_family",
+        "authority_topology_options": sorted(AUTHORITY_TOPOLOGIES),
+        "extraction_mode": "copy_first",
+        "extraction_mode_options": sorted(EXTRACTION_MODES),
+        "target_spec_role_options": sorted(TARGET_SPEC_ROLES),
+        "source_unit_scope_options": ["section", "intro"],
+        "extractable_units": packet["extractable_units"],
+        "retired_extractable_unit_ids": [],
+        "target_specs": [],
+        "target_spec_template": {
+            "target_spec_id": "example_leaf_spec",
+            "target_spec_path": "docs/specs/EXAMPLE_LEAF_SPEC.md",
+            "target_spec_role": "leaf_spec",
+            "owned_authority_surfaces": ["example_surface"],
+            "source_units": [
+                {
+                    "section_id": "copy-from-extractable-units",
+                    "scope": "section",
+                }
+            ],
+        },
+    }
 
 
 def _inventory_target(source_spec_path: Path, units: list[ExtractableUnit], source_lines: list[str]) -> dict:

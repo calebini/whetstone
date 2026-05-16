@@ -218,6 +218,16 @@ The lifecycle is:
 4. `audit`: verify coverage, target hashes, provenance headers, unmapped units, and duplicated authority.
 5. `promote`: mark the audited decomposed family authoritative.
 
+If you do not already have a decomposition map, start with inventory mode:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli decompose plan \
+  --source spec.md \
+  --output-dir docs/decomposition/inventory
+```
+
+This writes `decomposition_map_template.json` with the current source hash, valid enum values, and the exact extractable units an agent or operator can assign. Copy that template to a map path, fill `target_specs`, then run a mapped plan to validate it.
+
 For a mapped decomposition:
 
 ```bash
