@@ -28,6 +28,13 @@ class OscillationCanonicalizationTests(unittest.TestCase):
         with self.assertRaises(OscillationKeyError):
             canonicalize_phase2_feedback(_artifact("made-up-section"), ["spec-hashing"])
 
+    def test_canonicalize_phase_2_feedback_rejects_unknown_controlled_terms(self) -> None:
+        artifact = _artifact("spec-hashing")
+        artifact["feedback"][0]["oscillation_key"]["concern_type"] = "interesting_problem"
+
+        with self.assertRaisesRegex(OscillationKeyError, "unknown concern_type"):
+            canonicalize_phase2_feedback(artifact, ["spec-hashing"])
+
     def test_tracker_detects_draft_cycle_after_real_change(self) -> None:
         tracker = OscillationTracker()
         first = "# Spec\n\nA.\n"

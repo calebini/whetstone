@@ -18,6 +18,7 @@ from whetstone.contracts import SCHEMA_DIR, validate_artifact
 from whetstone.hashing import draft_hash
 from whetstone.identity import issue_fingerprint, issue_id, normalize_severity
 from whetstone.oscillation import canonicalize_phase2_feedback
+from whetstone.vocabulary import SEVERITY_ALIASES, SEVERITY_VALUES
 
 SEVERITY_FIELDS = (
     "baseline_severity",
@@ -26,32 +27,6 @@ SEVERITY_FIELDS = (
     "rubric_impact",
     "normalized_severity",
 )
-SEVERITY_ALIASES = {
-    "critical": "blocker",
-    "severe": "blocker",
-    "high": "major",
-    "medium": "minor",
-    "moderate": "minor",
-    "low": "nit",
-    "none": None,
-    "null": None,
-    "na": None,
-    "n/a": None,
-    "not applicable": None,
-    "not_applicable": None,
-    "not-applicable": None,
-    "no impact": None,
-    "no_impact": None,
-    "no-impact": None,
-    "not impacted": None,
-    "no authority impact": None,
-    "no determinism impact": None,
-    "no rubric impact": None,
-    "not applicable to authority": None,
-    "not applicable to determinism": None,
-    "not applicable to rubric": None,
-}
-SEVERITY_VALUES = {"blocker", "major", "minor", "nit"}
 
 
 @dataclass(frozen=True)

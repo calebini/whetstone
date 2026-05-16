@@ -63,6 +63,10 @@ rubric_source: builtin | custom
 rubric_label: string | null
 rubric_path: string
 rubric_content_hash: string
+controlled_vocabulary:
+  schema_version: controlled-vocabulary-v1
+  vocabulary_version: string
+  vocabulary_hash: string
 target_phase: mid | final
 target_mode: permissive | strict
 resolved_defaults:
@@ -118,6 +122,84 @@ A review profile is a named review lens. It consists of:
 - optional `focus_anchors`: computable section anchors used to invalidate clean status when relevant sections mutate
 
 Profiles are not rubrics. A rubric defines the quality bar. A profile defines the perspective used for one review pass.
+
+## CONTROLLED VOCABULARY AND INVARIANT TAXONOMY
+
+Whetstone MUST maintain a single controlled vocabulary for shared review language used by prompts, schemas, scheduler profile definitions, decision reports, terminal reports, and rubric/convergence manifests.
+
+The controlled vocabulary is not a rubric. It is the stable language layer that keeps independently produced artifacts comparable across rounds, clients, workflows, and projects.
+
+The vocabulary MUST include:
+
+- severity values and ordering
+- severity aliases accepted during reviewer-input canonicalization
+- baseline invariant identifiers
+- review profile identifiers, focus concerns, prompt guidance, and focus anchors
+- review profile set identifiers and default phase/profile budgets
+- Phase 2 oscillation `concern_type`, `direction`, and `scope` enums
+- Phase 2 direction opposition pairs
+- convergence-acceptance profile identifiers
+
+The Orchestrator MUST expose the active vocabulary as a deterministic JSON packet:
+
+```yaml
+schema_version: controlled-vocabulary-v1
+vocabulary_version: string
+severity_order: [nit, minor, major, blocker]
+severity_aliases: object
+review_invariants: object
+oscillation:
+  concern_types: object
+  directions: object
+  scopes: object
+  opposition_pairs: [[add, remove], [constrain, relax]]
+review_profiles: object
+profile_sets: object
+convergence_acceptance_profiles: [string]
+```
+
+The CLI SHOULD provide an operator command that prints or writes this packet, for example `whetstone vocabulary --output controlled_vocabulary.json`.
+
+The packet hash MUST be computed over canonical JSON with sorted keys. Before Phase 2 review, the Orchestrator SHOULD persist the full packet at `/rounds/controlled_vocabulary.json`.
+
+Phase 2 `rubric_manifest.json` MUST include:
+
+```yaml
+controlled_vocabulary:
+  schema_version: controlled-vocabulary-v1
+  vocabulary_version: string
+  vocabulary_hash: string
+```
+
+This binds a convergence run not only to the active rubric, but also to the review language used to interpret that rubric.
+
+Built-in vocabulary versions MUST be stable. A material change to vocabulary semantics, such as adding a new baseline invariant ID, changing profile focus guidance, changing an oscillation enum, or changing profile-set defaults, SHOULD increment `vocabulary_version`.
+
+### Baseline Invariant Identifiers
+
+Reviewer prompts MUST instruct reviewers to use one of these invariant IDs in `invariant_violated` when a specific invariant is implicated, or `null` when no invariant applies:
+
+```yaml
+review_invariants:
+  authority_boundary: ownership, precedence, and mutation authority are explicit where behavior can diverge
+  deterministic_behavior: required behavior has deterministic inputs, ordering, decisions, and outputs
+  state_legality: stateful behavior defines legal states, transitions, terminal states, and invalid-transition handling
+  artifact_integrity: required artifacts have producer, consumer, identity, validation, mutation, and persistence semantics
+  failure_handling: required failure paths define reject, retry, halt, continue, preserve, report, or escalate behavior
+  replay_idempotency: replay, retry, deduplication, and idempotency behavior are explicit where required
+  scope_control: review pressure stays inside the configured workflow, rubric, profile, and approved scope contract
+  acceptance_testability: completion criteria are observable enough to test implementation readiness
+  rubric_alignment: the draft satisfies the active rubric profile and target phase/mode without hidden gaps
+  version_lineage: source, draft, dependency, and apply-back identity are hashable and auditable
+```
+
+For compatibility, persisted reviewer feedback MAY still contain legacy freeform `invariant_violated` strings. The Orchestrator SHOULD prefer controlled IDs in prompts and new generated artifacts, but MUST NOT reject older artifacts solely because this field is freeform unless a future schema version explicitly tightens it.
+
+### Vocabulary Authority
+
+The implementation source of truth for built-in vocabulary terms MUST be a single runtime module or generated artifact, not duplicated prompt-local constants. Prompts, scheduler defaults, severity normalization, Phase 2 oscillation validation, and manifest generation MUST consume the same vocabulary source.
+
+JSON Schemas MAY duplicate enum values for standalone artifact validation, but schema enum lists MUST be kept in sync with the controlled vocabulary. A future validation command SHOULD compare runtime vocabulary against schema enum values and fail if they drift.
 
 ```yaml
 review_profiles:

@@ -11,6 +11,12 @@ from whetstone.config import OrchestratorConfig
 from whetstone.contracts import validate_artifact
 from whetstone.hashing import rubric_content_hash
 from whetstone.scheduler import default_phase_2_scheduler, resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
+from whetstone.vocabulary import (
+    VOCABULARY_SCHEMA_VERSION,
+    VOCABULARY_VERSION,
+    controlled_vocabulary_hash,
+    write_controlled_vocabulary,
+)
 
 
 RUBRICS_DIR = Path(__file__).resolve().parents[2] / "rubrics"
@@ -143,6 +149,11 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
         "rubric_label": rubric_label,
         "rubric_path": str(rubric_path),
         "rubric_content_hash": rubric_content_hash(rubric_content),
+        "controlled_vocabulary": {
+            "schema_version": VOCABULARY_SCHEMA_VERSION,
+            "vocabulary_version": VOCABULARY_VERSION,
+            "vocabulary_hash": controlled_vocabulary_hash(),
+        },
         "target_phase": convergence.target_phase,
         "target_mode": convergence.target_mode,
         "resolved_defaults": {
@@ -173,6 +184,7 @@ def write_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
 
     manifest = build_rubric_manifest(config)
     manifest.path.parent.mkdir(parents=True, exist_ok=True)
+    write_controlled_vocabulary(manifest.path.parent / "controlled_vocabulary.json")
     from json import dumps
 
     manifest.path.write_text(dumps(manifest.packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -200,6 +212,7 @@ def rubric_manifest_identity(manifest: RubricManifest | dict[str, Any]) -> dict[
         "rubric_source": packet["rubric_source"],
         "rubric_label": packet.get("rubric_label"),
         "rubric_content_hash": packet["rubric_content_hash"],
+        "controlled_vocabulary": packet.get("controlled_vocabulary"),
         "target_phase": packet["target_phase"],
         "target_mode": packet["target_mode"],
         "rubric_manifest_path": "rounds/rubric_manifest.json",

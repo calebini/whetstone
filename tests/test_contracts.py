@@ -4,6 +4,7 @@ import unittest
 
 from whetstone.contracts import SchemaValidationError, validate_artifact
 from whetstone.identity import oscillation_fingerprint, oscillation_opposition_key
+from whetstone.vocabulary import VOCABULARY_SCHEMA_VERSION, VOCABULARY_VERSION, controlled_vocabulary_hash
 
 
 HASH = "a" * 64
@@ -201,6 +202,11 @@ class ContractValidationTests(unittest.TestCase):
             "rubric_label": None,
             "rubric_path": "/tmp/whetstone/rubrics/governance-v6.md",
             "rubric_content_hash": HASH,
+            "controlled_vocabulary": {
+                "schema_version": VOCABULARY_SCHEMA_VERSION,
+                "vocabulary_version": VOCABULARY_VERSION,
+                "vocabulary_hash": controlled_vocabulary_hash(),
+            },
             "target_phase": "final",
             "target_mode": "strict",
             "resolved_defaults": {

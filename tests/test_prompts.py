@@ -14,6 +14,8 @@ class PromptTests(unittest.TestCase):
         self.assertIn("oscillation_key", prompt)
         self.assertIn("For Phase 1, set oscillation_key to null", prompt)
         self.assertIn("Whetstone computes issue_id, issue_fingerprint, and normalized_severity", prompt)
+        self.assertIn("Controlled baseline invariant vocabulary", prompt)
+        self.assertIn("authority_boundary", prompt)
         self.assertIn("Profile-specific review lens", prompt)
         self.assertIn("replay, retries, idempotency", prompt)
 

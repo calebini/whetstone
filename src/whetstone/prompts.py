@@ -3,32 +3,7 @@
 from __future__ import annotations
 
 from whetstone.scheduler import profile_prompt_guidance
-
-
-CONCERN_TYPES = {
-    "clarity_gap": "section is ambiguous, undefined, or unclear",
-    "completeness_gap": "section is missing required content, rule, definition, or edge case",
-    "consistency_violation": "section contradicts another section or prior decision",
-    "determinism_violation": "section permits non-deterministic behavior",
-    "authority_violation": "section violates a defined role, boundary, or authority rule",
-    "scope_violation": "section addresses something out of scope or omits something in scope",
-    "redundancy": "section duplicates content elsewhere",
-    "precision_gap": "section is correct but under-specified",
-}
-
-DIRECTIONS = {
-    "add": "add missing content or behavior",
-    "remove": "remove content or behavior",
-    "modify": "change content when no more specific direction applies",
-    "clarify": "clarify ambiguous content without materially changing scope or strictness",
-    "constrain": "make behavior stricter, narrower, or more bounded",
-    "relax": "make behavior looser, broader, or less restrictive",
-}
-
-SCOPES = {
-    "local": "specific rule, sentence, definition, field, or invariant",
-    "structural": "section organization, responsibility boundary, lifecycle shape, or cross-section architecture",
-}
+from whetstone.vocabulary import CONCERN_TYPES, DIRECTIONS, REVIEW_INVARIANTS, SCOPES
 
 
 def render_reviewer_prompt(
@@ -68,6 +43,7 @@ def render_reviewer_prompt(
         "issue_fingerprint placeholders SHOULD be exactly 64 lowercase hex characters.",
         "draft_hash MUST exactly equal the draft_hash value supplied above.",
         "Severity fields MUST use only blocker, major, minor, nit, or null. Do not use high, medium, low, none, n/a, or similar aliases.",
+        "When naming an invariant_violated, prefer one controlled invariant_id from the baseline invariant vocabulary below. Use null when no invariant applies.",
         "Each feedback item MUST include exactly these base fields:",
         "- feedback_id",
         "- issue_id",
@@ -97,6 +73,8 @@ def render_reviewer_prompt(
                 "Apply baseline invariants for every review, but use this profile lens to decide what to emphasize.",
             ]
         )
+    lines.extend(["", "Controlled baseline invariant vocabulary:"])
+    lines.extend(f"- {name}: {description}" for name, description in REVIEW_INVARIANTS.items())
     if phase == "phase_1":
         lines.append("For Phase 1, set oscillation_key to null.")
     if phase == "phase_2":

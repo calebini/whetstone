@@ -2,6 +2,25 @@
 
 This note captures useful ideas that are not required for the next narrow build step, but should not be lost.
 
+## Current Priority Read
+
+This is a living priority read, not a binding implementation plan. It captures the current judgment from recent Whetstone usage across Foreman, Parley, and Whetstone's own decomposed specs.
+
+1. **Controlled invariant / profile vocabulary.**
+   This is the strongest foundation item. Profiles, invariants, issue classifications, rubric gaps, decision points, and terminal reports currently share concepts but not a single controlled language. Hardening this early should improve reviewer consistency, artifact validation, decision summaries, profile design, and future project tracking.
+
+2. **First-contact job designer / scope intake.**
+   This is the biggest usability lever. Whetstone is powerful, but a fresh operator should not need to know the right workflow, profile set, review mode, budget posture, or scope boundary before the first run. A job designer should inspect a spec, collect a small operator intent payload, produce or update `scope_contract.json`, and emit an executable job descriptor.
+
+3. **Project spec tracking matrix.**
+   This started as a possible sidecar, but multi-spec projects have made it feel Whetstone-native. The matrix should not control convergence, but it should track run lineage, source/apply-back state, dependency context, stale sibling specs, decisions, and recommended next actions across a spec ecosystem.
+
+4. **Decision summary standardization.**
+   Useful, but less urgent. Agents can already read `decision_register.json` and produce helpful briefs. Baking this in would improve consistency, clustering, and operator handoff, but it is standardization rather than a current bottleneck.
+
+5. **Deeper intervention and conflict machinery.**
+   Important eventually, especially for owner-level policy decisions and repeated conflict loops. But broad live intervention can become interrupt-heavy, so it should follow the vocabulary and checkpoint foundations rather than lead them.
+
 ## Rollback And Restore Safety
 
 Current round artifacts preserve rollback material through `draft_before.md` and `draft_after.md`, but Whetstone does not yet provide ergonomic rollback.
@@ -79,6 +98,17 @@ Multi-spec projects benefit from a compact status artifact that tracks which sou
 
 This should be treated as an optional companion/reporting layer, not core Whetstone sharpening behavior. Whetstone's core job remains improving one spec through review/revision/convergence. A matrix command should help operators make sense of many Whetstone runs across a project without turning Whetstone into a full project-management system.
 
+The important boundary is that project tracking should observe and contextualize execution, not decide convergence. It may summarize lineage, surface stale dependencies, recommend next actions, and warn when a run used outdated context. It must not silently alter scheduler behavior, profile cleanliness, accepted-draft status, or convergence declarations.
+
+This still belongs inside Whetstone rather than as a totally separate project-management utility because the matrix is tightly coupled to Whetstone-specific concepts: run roots, draft hashes, apply-back state, scope contracts, profile sets, terminal states, decisions, and spec lineage. The right shape is a Whetstone companion capability with a clear read-only default and explicit write actions.
+
+Suggested phased shape:
+
+1. **Read-only project matrix.** Scan docs and run roots, then generate a status table and lineage summary. No execution-time coupling.
+2. **Dependency-aware context report.** Track which HLDs, indexes, sibling specs, scope contracts, and source hashes were used by each run. Warn when a spec was sharpened against stale or missing project context.
+3. **Operator next-action planner.** Recommend apply-back, phase 2, focused pass, synthesis, re-run with dependency context, or lean rewrite. Recommendations remain non-authoritative.
+4. **Execution context integration.** Let future runs consume an approved project context artifact so reviewers know which sibling specs are authoritative, which dependencies are informational, and which cross-spec references are out of scope.
+
 Potential command:
 
 ```text
@@ -97,6 +127,10 @@ Potential contents:
 - operator confidence / implementation recommendation, for example `BUILD_TARGET`, `LEAN_REWRITE_RECOMMENDED`, `RISK_DISCOVERY_ONLY`, `NEEDS_SYNTHESIS`, or `DEPENDENCY_CONTEXT_ONLY`
 - apply-back safety, for example `SAFE_TO_APPLY`, `REVIEW_DECISIONS_FIRST`, `DO_NOT_APPLY_DIRECTLY`, or `SOURCE_ALREADY_AUTHORITY`
 - next action
+- dependency context used by the run, including HLD/index/sibling spec paths and hashes where available
+- dependency freshness: `CURRENT`, `STALE`, `MISSING`, `UNKNOWN`, or `NOT_APPLICABLE`
+- cross-spec reference status: unresolved references, referenced specs without runs, and runs that should be rechecked after an upstream spec changed
+- lineage notes linking focused runs, synthesis roots, vertical surveys, horizontal closeout runs, Phase 2 runs, and apply-back/strop artifacts
 
 Design constraints:
 
@@ -105,6 +139,23 @@ Design constraints:
 - It should avoid mutating source specs or run artifacts unless explicitly asked.
 - It should tolerate lineage made of multiple run roots, focused passes, synthesis roots, and apply-back runs.
 - It should make decision pressure visible so large runs do not hide behind a green terminal state.
+- It should distinguish project-level visibility from run-level authority. A dependency warning may recommend a recheck, but the original run remains historically valid for the context it actually used.
+- It should preserve exact source and dependency hashes so operators can reason about whether a sibling spec changed materially or only cosmetically.
+
+Potential UX:
+
+- `whetstone matrix refresh`: regenerate the project matrix from current docs and run roots.
+- `whetstone matrix inspect <spec-or-run>`: explain one spec's lineage, current source relation, dependencies, decisions, and recommended next step.
+- `whetstone matrix stale`: list specs whose dependency context changed after their latest run.
+- `whetstone matrix context --spec <path>`: produce an approved context bundle for a future Whetstone run.
+
+Open design questions:
+
+- Should the matrix live in project docs, under `whetstone_runs`, or both?
+- How should Whetstone infer lineage when operators create fresh isolated roots from prior drafts?
+- Should dependency context be declared manually, inferred from links, or generated by first-contact job design?
+- Should the matrix eventually support cross-spec impact analysis when a leaf spec changes a shared contract?
+- How much of this should be general-purpose JSON first versus human-readable Markdown first?
 
 ## Decision Summary And Intervention Refinement
 

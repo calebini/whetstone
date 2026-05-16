@@ -6,10 +6,7 @@ import re
 from typing import Iterable
 
 from whetstone.hashing import sha256_text
-
-
-SEVERITY_ORDER = ("nit", "minor", "major", "blocker")
-SEVERITY_RANK = {severity: index for index, severity in enumerate(SEVERITY_ORDER)}
+from whetstone.vocabulary import SEVERITY_ORDER, SEVERITY_RANK
 
 
 def normalize_severity(*components: str | None) -> str:

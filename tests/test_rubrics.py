@@ -10,6 +10,7 @@ from whetstone.config import ConvergenceConfig, OrchestratorConfig
 from whetstone.hashing import rubric_content_hash
 from whetstone.rubrics import build_rubric_manifest, read_rubric_text, write_rubric_manifest
 from whetstone.scheduler import default_phase_2_scheduler, resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
+from whetstone.vocabulary import VOCABULARY_VERSION, controlled_vocabulary_hash
 
 
 class RubricManifestTests(unittest.TestCase):
@@ -40,6 +41,8 @@ class RubricManifestTests(unittest.TestCase):
                 + default_phase_2_scheduler(config.convergence_profile_budgets).total_round_budget(),
             )
             self.assertEqual(manifest.packet["rubric_content_hash"], rubric_content_hash(read_rubric_text(config) or ""))
+            self.assertEqual(manifest.packet["controlled_vocabulary"]["vocabulary_version"], VOCABULARY_VERSION)
+            self.assertEqual(manifest.packet["controlled_vocabulary"]["vocabulary_hash"], controlled_vocabulary_hash())
 
     def test_workflow_rubric_mismatch_is_visible_warning(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -102,9 +105,12 @@ class RubricManifestTests(unittest.TestCase):
 
             manifest = write_rubric_manifest(config)
             packet = json.loads(manifest.path.read_text(encoding="utf-8"))
+            vocabulary = json.loads(root.joinpath("rounds/controlled_vocabulary.json").read_text(encoding="utf-8"))
 
             self.assertEqual(packet["rubric_source"], "custom")
             self.assertEqual(packet["rubric_label"], "approval-soft-observation")
+            self.assertEqual(packet["controlled_vocabulary"]["vocabulary_hash"], controlled_vocabulary_hash())
+            self.assertEqual(vocabulary["schema_version"], "controlled-vocabulary-v1")
             self.assertTrue(packet["warnings"])
 
 

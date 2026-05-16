@@ -8,18 +8,11 @@ from collections.abc import Iterable, Mapping
 
 from whetstone.hashing import SemanticChange
 from whetstone.identity import oscillation_fingerprint, oscillation_opposition_key
+from whetstone.vocabulary import OPPOSING_DIRECTIONS, validate_oscillation_terms
 
 
 class OscillationKeyError(ValueError):
     """Raised when reviewer-proposed oscillation identity cannot be canonicalized."""
-
-
-OPPOSING_DIRECTIONS = {
-    "add": "remove",
-    "remove": "add",
-    "constrain": "relax",
-    "relax": "constrain",
-}
 
 
 @dataclass(frozen=True)
@@ -235,6 +228,10 @@ def canonicalize_phase2_feedback(artifact: Mapping[str, object], allowed_section
         concern_type = _required_string(key, "concern_type", index)
         direction = _required_string(key, "direction", index)
         scope = _required_string(key, "scope", index)
+        try:
+            validate_oscillation_terms(concern_type=concern_type, direction=direction, scope=scope)
+        except ValueError as exc:
+            raise OscillationKeyError(f"feedback[{index}].oscillation_key: {exc}") from exc
         if section_id not in allowed:
             raise OscillationKeyError(
                 f"feedback[{index}].oscillation_key.section_id {section_id!r} is not in the canonical section index"

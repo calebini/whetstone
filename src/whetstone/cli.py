@@ -37,6 +37,7 @@ from whetstone.scheduler import focused_phase_1_scheduler
 from whetstone.sections import section_index
 from whetstone.scope import render_mvp_scope_notes_template, scope_contract_from_notes, write_scope_contract
 from whetstone.status import read_status, render_status_text
+from whetstone.vocabulary import controlled_vocabulary_hash, controlled_vocabulary_packet, write_controlled_vocabulary
 from whetstone.versioning import promote_spec_file_for_phase2
 
 
@@ -316,6 +317,13 @@ def main(argv: list[str] | None = None) -> int:
         "--output-dir",
         help="directory for summary artifacts; defaults to the register directory",
     )
+
+    vocabulary = subparsers.add_parser(
+        "vocabulary",
+        help="print or write the active controlled vocabulary",
+        description="Export the controlled vocabulary used by prompts, profile sets, severity normalization, and Phase 2 oscillation classification.",
+    )
+    vocabulary.add_argument("--output", help="optional output path for controlled_vocabulary.json")
 
     decompose = subparsers.add_parser(
         "decompose",
@@ -838,6 +846,24 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "vocabulary":
+        packet = controlled_vocabulary_packet()
+        if args.output:
+            output = Path(args.output)
+            write_controlled_vocabulary(output)
+            print(
+                json.dumps(
+                    {
+                        "output": str(output),
+                        "schema_version": packet["schema_version"],
+                        "vocabulary_version": packet["vocabulary_version"],
+                        "vocabulary_hash": controlled_vocabulary_hash(),
+                    }
+                )
+            )
+        else:
+            print(json.dumps(packet, indent=2, sort_keys=True))
+        return 0
     if args.command == "decompose":
         if args.decompose_command == "plan":
             result = build_decomposition_plan(
@@ -1002,6 +1028,7 @@ def _manifest_summary(config: object) -> dict:
         "rubric_source": manifest["rubric_source"],
         "rubric_label": manifest["rubric_label"],
         "rubric_content_hash": manifest["rubric_content_hash"],
+        "controlled_vocabulary": manifest["controlled_vocabulary"],
         "warnings": manifest["warnings"],
     }
 

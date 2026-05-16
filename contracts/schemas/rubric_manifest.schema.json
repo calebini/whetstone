@@ -12,6 +12,7 @@
     "rubric_label",
     "rubric_path",
     "rubric_content_hash",
+    "controlled_vocabulary",
     "target_phase",
     "target_mode",
     "resolved_defaults",
@@ -37,6 +38,16 @@
     },
     "rubric_path": { "$ref": "common.schema.json#/$defs/path" },
     "rubric_content_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "controlled_vocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "vocabulary_version", "vocabulary_hash"],
+      "properties": {
+        "schema_version": { "type": "string", "const": "controlled-vocabulary-v1" },
+        "vocabulary_version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "vocabulary_hash": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
     "target_phase": { "$ref": "common.schema.json#/$defs/targetPhase" },
     "target_mode": { "$ref": "common.schema.json#/$defs/targetMode" },
     "resolved_defaults": {

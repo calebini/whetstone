@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/controlled_vocabulary.schema.json",
+  "title": "Whetstone Controlled Vocabulary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "vocabulary_version",
+    "severity_order",
+    "severity_aliases",
+    "review_invariants",
+    "oscillation",
+    "review_profiles",
+    "profile_sets",
+    "convergence_acceptance_profiles"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "controlled-vocabulary-v1" },
+    "vocabulary_version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "severity_order": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/severity" }
+    },
+    "severity_aliases": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          { "$ref": "common.schema.json#/$defs/severity" },
+          { "type": "null" }
+        ]
+      }
+    },
+    "review_invariants": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/term" }
+    },
+    "oscillation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["concern_types", "directions", "scopes", "opposition_pairs"],
+      "properties": {
+        "concern_types": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/term" }
+        },
+        "directions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/term" }
+        },
+        "scopes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/term" }
+        },
+        "opposition_pairs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+          }
+        }
+      }
+    },
+    "review_profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["focus", "prompt_guidance", "focus_anchors"],
+        "properties": {
+          "focus": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "prompt_guidance": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "focus_anchors": { "$ref": "common.schema.json#/$defs/stringArray" }
+        }
+      }
+    },
+    "profile_sets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase_1_profiles",
+          "phase_2_profiles",
+          "phase_1_default_budgets",
+          "phase_2_default_budgets"
+        ],
+        "properties": {
+          "phase_1_profiles": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "phase_2_profiles": { "$ref": "common.schema.json#/$defs/stringArray" },
+          "phase_1_default_budgets": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 1 }
+          },
+          "phase_2_default_budgets": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "convergence_acceptance_profiles": { "$ref": "common.schema.json#/$defs/stringArray" }
+  },
+  "$defs": {
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description"],
+      "properties": {
+        "description": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}
