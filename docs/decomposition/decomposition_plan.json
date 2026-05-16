@@ -1,0 +1,1296 @@
+{
+  "authority_topology": "coordinated_family",
+  "coverage": {
+    "assigned_extractable_unit_count": 49,
+    "assigned_source_section_count": 49,
+    "duplicated_extractable_unit_ids": [],
+    "duplicated_source_section_ids": [],
+    "extractable_unit_count": 49,
+    "retired_extractable_unit_ids": [],
+    "retired_source_section_ids": [],
+    "source_section_count": 49,
+    "unassigned_extractable_unit_ids": [],
+    "unassigned_source_section_ids": []
+  },
+  "extractable_units": [
+    {
+      "end_line": 12,
+      "heading": "Purpose",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "purpose",
+      "start_line": 3,
+      "unit_id": "purpose"
+    },
+    {
+      "end_line": 25,
+      "heading": "CORE ROLES",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "core-roles",
+      "start_line": 13,
+      "unit_id": "core-roles"
+    },
+    {
+      "end_line": 35,
+      "heading": "PRIMARY INPUTS",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "primary-inputs",
+      "start_line": 26,
+      "unit_id": "primary-inputs"
+    },
+    {
+      "end_line": 88,
+      "heading": "PRIMARY OUTPUTS",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "primary-outputs",
+      "start_line": 36,
+      "unit_id": "primary-outputs"
+    },
+    {
+      "end_line": 185,
+      "heading": "CONFIGURATION",
+      "normative_statement_count": 13,
+      "scope": "section",
+      "section_id": "configuration",
+      "start_line": 89,
+      "unit_id": "configuration"
+    },
+    {
+      "end_line": 195,
+      "heading": "CANONICAL RUBRICS AND WORKFLOWS intro",
+      "normative_statement_count": 3,
+      "scope": "intro",
+      "section_id": "canonical-rubrics-and-workflows",
+      "start_line": 187,
+      "unit_id": "canonical-rubrics-and-workflows::__intro__"
+    },
+    {
+      "end_line": 214,
+      "heading": "Canonical Rubric Profiles",
+      "normative_statement_count": 5,
+      "scope": "section",
+      "section_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles",
+      "start_line": 196,
+      "unit_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles"
+    },
+    {
+      "end_line": 226,
+      "heading": "Workflow Presets",
+      "normative_statement_count": 4,
+      "scope": "section",
+      "section_id": "canonical-rubrics-and-workflows-workflow-presets",
+      "start_line": 215,
+      "unit_id": "canonical-rubrics-and-workflows-workflow-presets"
+    },
+    {
+      "end_line": 285,
+      "heading": "Scope Contract",
+      "normative_statement_count": 10,
+      "scope": "section",
+      "section_id": "canonical-rubrics-and-workflows-scope-contract",
+      "start_line": 227,
+      "unit_id": "canonical-rubrics-and-workflows-scope-contract"
+    },
+    {
+      "end_line": 343,
+      "heading": "Rubric Manifest",
+      "normative_statement_count": 13,
+      "scope": "section",
+      "section_id": "canonical-rubrics-and-workflows-rubric-manifest",
+      "start_line": 286,
+      "unit_id": "canonical-rubrics-and-workflows-rubric-manifest"
+    },
+    {
+      "end_line": 356,
+      "heading": "HALTING CONDITIONS (ORDERED PRECEDENCE)",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "halting-conditions-ordered-precedence",
+      "start_line": 344,
+      "unit_id": "halting-conditions-ordered-precedence"
+    },
+    {
+      "end_line": 439,
+      "heading": "HALT ARTIFACT MATRIX",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "halt-artifact-matrix",
+      "start_line": 357,
+      "unit_id": "halt-artifact-matrix"
+    },
+    {
+      "end_line": 455,
+      "heading": "ACCEPTED DRAFT DEFINITION",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "accepted-draft-definition",
+      "start_line": 440,
+      "unit_id": "accepted-draft-definition"
+    },
+    {
+      "end_line": 507,
+      "heading": "SPEC VERSION LIFECYCLE",
+      "normative_statement_count": 10,
+      "scope": "section",
+      "section_id": "spec-version-lifecycle",
+      "start_line": 456,
+      "unit_id": "spec-version-lifecycle"
+    },
+    {
+      "end_line": 733,
+      "heading": "SPEC DECOMPOSITION WORKFLOW",
+      "normative_statement_count": 69,
+      "scope": "section",
+      "section_id": "spec-decomposition-workflow",
+      "start_line": 508,
+      "unit_id": "spec-decomposition-workflow"
+    },
+    {
+      "end_line": 782,
+      "heading": "REVIEW PROFILES",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "review-profiles",
+      "start_line": 734,
+      "unit_id": "review-profiles"
+    },
+    {
+      "end_line": 911,
+      "heading": "REVIEW PROFILE SETS",
+      "normative_statement_count": 5,
+      "scope": "section",
+      "section_id": "review-profile-sets",
+      "start_line": 783,
+      "unit_id": "review-profile-sets"
+    },
+    {
+      "end_line": 943,
+      "heading": "ROUND STRATEGY (ADAPTIVE)",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "round-strategy-adaptive",
+      "start_line": 912,
+      "unit_id": "round-strategy-adaptive"
+    },
+    {
+      "end_line": 1113,
+      "heading": "ROUND SCHEDULING ALGORITHM",
+      "normative_statement_count": 54,
+      "scope": "section",
+      "section_id": "round-scheduling-algorithm",
+      "start_line": 944,
+      "unit_id": "round-scheduling-algorithm"
+    },
+    {
+      "end_line": 1176,
+      "heading": "EXPANDING CONTRACT SURFACE",
+      "normative_statement_count": 14,
+      "scope": "section",
+      "section_id": "expanding-contract-surface",
+      "start_line": 1114,
+      "unit_id": "expanding-contract-surface"
+    },
+    {
+      "end_line": 1188,
+      "heading": "DEFINITION: CLEAN PROFILE",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "definition-clean-profile",
+      "start_line": 1177,
+      "unit_id": "definition-clean-profile"
+    },
+    {
+      "end_line": 1208,
+      "heading": "ROUND BUDGET HANDLING",
+      "normative_statement_count": 6,
+      "scope": "section",
+      "section_id": "round-budget-handling",
+      "start_line": 1189,
+      "unit_id": "round-budget-handling"
+    },
+    {
+      "end_line": 1243,
+      "heading": "SEVERITY NORMALIZATION FUNCTION",
+      "normative_statement_count": 2,
+      "scope": "section",
+      "section_id": "severity-normalization-function",
+      "start_line": 1209,
+      "unit_id": "severity-normalization-function"
+    },
+    {
+      "end_line": 1257,
+      "heading": "BASELINE REVIEW INVARIANTS",
+      "normative_statement_count": 1,
+      "scope": "section",
+      "section_id": "baseline-review-invariants",
+      "start_line": 1244,
+      "unit_id": "baseline-review-invariants"
+    },
+    {
+      "end_line": 1323,
+      "heading": "ISSUE AND CONFLICT IDENTITY",
+      "normative_statement_count": 6,
+      "scope": "section",
+      "section_id": "issue-and-conflict-identity",
+      "start_line": 1258,
+      "unit_id": "issue-and-conflict-identity"
+    },
+    {
+      "end_line": 1354,
+      "heading": "PHASE-GATED FEEDBACK CLASSIFICATION intro",
+      "normative_statement_count": 10,
+      "scope": "intro",
+      "section_id": "phase-gated-feedback-classification",
+      "start_line": 1325,
+      "unit_id": "phase-gated-feedback-classification::__intro__"
+    },
+    {
+      "end_line": 1472,
+      "heading": "Oscillation Key Canonicalization",
+      "normative_statement_count": 11,
+      "scope": "section",
+      "section_id": "phase-gated-feedback-classification-oscillation-key-canonicalization",
+      "start_line": 1355,
+      "unit_id": "phase-gated-feedback-classification-oscillation-key-canonicalization"
+    },
+    {
+      "end_line": 1490,
+      "heading": "Phase 2 Reviewer Prompt Requirements",
+      "normative_statement_count": 3,
+      "scope": "section",
+      "section_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+      "start_line": 1473,
+      "unit_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements"
+    },
+    {
+      "end_line": 1760,
+      "heading": "ARTIFACT SCHEMAS (MINIMUM REQUIRED FIELDS)",
+      "normative_statement_count": 68,
+      "scope": "section",
+      "section_id": "artifact-schemas-minimum-required-fields",
+      "start_line": 1491,
+      "unit_id": "artifact-schemas-minimum-required-fields"
+    },
+    {
+      "end_line": 2003,
+      "heading": "DECISION SUMMARY",
+      "normative_statement_count": 43,
+      "scope": "section",
+      "section_id": "decision-summary",
+      "start_line": 1761,
+      "unit_id": "decision-summary"
+    },
+    {
+      "end_line": 2042,
+      "heading": "ARTIFACT VALIDATION POLICY",
+      "normative_statement_count": 18,
+      "scope": "section",
+      "section_id": "artifact-validation-policy",
+      "start_line": 2004,
+      "unit_id": "artifact-validation-policy"
+    },
+    {
+      "end_line": 2049,
+      "heading": "RESUME POLICY intro",
+      "normative_statement_count": 1,
+      "scope": "intro",
+      "section_id": "resume-policy",
+      "start_line": 2044,
+      "unit_id": "resume-policy::__intro__"
+    },
+    {
+      "end_line": 2104,
+      "heading": "Editor Timeout Resume",
+      "normative_statement_count": 17,
+      "scope": "section",
+      "section_id": "resume-policy-editor-timeout-resume",
+      "start_line": 2050,
+      "unit_id": "resume-policy-editor-timeout-resume"
+    },
+    {
+      "end_line": 2163,
+      "heading": "Budget-Extension Resume",
+      "normative_statement_count": 17,
+      "scope": "section",
+      "section_id": "resume-policy-budget-extension-resume",
+      "start_line": 2105,
+      "unit_id": "resume-policy-budget-extension-resume"
+    },
+    {
+      "end_line": 2183,
+      "heading": "FOCUSED PHASE 1 PROFILE RUNS",
+      "normative_statement_count": 10,
+      "scope": "section",
+      "section_id": "focused-phase-1-profile-runs",
+      "start_line": 2164,
+      "unit_id": "focused-phase-1-profile-runs"
+    },
+    {
+      "end_line": 2262,
+      "heading": "CLIENT TELEMETRY",
+      "normative_statement_count": 16,
+      "scope": "section",
+      "section_id": "client-telemetry",
+      "start_line": 2184,
+      "unit_id": "client-telemetry"
+    },
+    {
+      "end_line": 2310,
+      "heading": "CONTENT NORMALIZATION AND HASHING",
+      "normative_statement_count": 1,
+      "scope": "section",
+      "section_id": "content-normalization-and-hashing",
+      "start_line": 2263,
+      "unit_id": "content-normalization-and-hashing"
+    },
+    {
+      "end_line": 2412,
+      "heading": "OSCILLATION DETECTION (FULL DEFINITION)",
+      "normative_statement_count": 3,
+      "scope": "section",
+      "section_id": "oscillation-detection-full-definition",
+      "start_line": 2311,
+      "unit_id": "oscillation-detection-full-definition"
+    },
+    {
+      "end_line": 2444,
+      "heading": "CONFLICT MODEL",
+      "normative_statement_count": 5,
+      "scope": "section",
+      "section_id": "conflict-model",
+      "start_line": 2413,
+      "unit_id": "conflict-model"
+    },
+    {
+      "end_line": 2472,
+      "heading": "EDITOR DECLINE TAXONOMY",
+      "normative_statement_count": 2,
+      "scope": "section",
+      "section_id": "editor-decline-taxonomy",
+      "start_line": 2445,
+      "unit_id": "editor-decline-taxonomy"
+    },
+    {
+      "end_line": 2487,
+      "heading": "CONFLICT ESCALATION",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "conflict-escalation",
+      "start_line": 2473,
+      "unit_id": "conflict-escalation"
+    },
+    {
+      "end_line": 2548,
+      "heading": "PHASE 2 FAILURE HANDLING",
+      "normative_statement_count": 7,
+      "scope": "section",
+      "section_id": "phase-2-failure-handling",
+      "start_line": 2488,
+      "unit_id": "phase-2-failure-handling"
+    },
+    {
+      "end_line": 2595,
+      "heading": "PHASE 1 FAILURE HANDLING",
+      "normative_statement_count": 6,
+      "scope": "section",
+      "section_id": "phase-1-failure-handling",
+      "start_line": 2549,
+      "unit_id": "phase-1-failure-handling"
+    },
+    {
+      "end_line": 2627,
+      "heading": "TARGET MATRIX PRECEDENCE",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "target-matrix-precedence",
+      "start_line": 2596,
+      "unit_id": "target-matrix-precedence"
+    },
+    {
+      "end_line": 2660,
+      "heading": "STATE MACHINE (FULL TRANSITIONS)",
+      "normative_statement_count": 0,
+      "scope": "section",
+      "section_id": "state-machine-full-transitions",
+      "start_line": 2628,
+      "unit_id": "state-machine-full-transitions"
+    },
+    {
+      "end_line": 2711,
+      "heading": "CONVERGENCE DECLARATION",
+      "normative_statement_count": 3,
+      "scope": "section",
+      "section_id": "convergence-declaration",
+      "start_line": 2661,
+      "unit_id": "convergence-declaration"
+    },
+    {
+      "end_line": 2779,
+      "heading": "REPRODUCIBILITY",
+      "normative_statement_count": 26,
+      "scope": "section",
+      "section_id": "reproducibility",
+      "start_line": 2712,
+      "unit_id": "reproducibility"
+    },
+    {
+      "end_line": 2806,
+      "heading": "MULTI-REVIEWER (NON-NORMATIVE FUTURE NOTE)",
+      "normative_statement_count": 2,
+      "scope": "section",
+      "section_id": "multi-reviewer-non-normative-future-note",
+      "start_line": 2780,
+      "unit_id": "multi-reviewer-non-normative-future-note"
+    },
+    {
+      "end_line": 2816,
+      "heading": "DESIGN PRINCIPLE",
+      "normative_statement_count": 1,
+      "scope": "section",
+      "section_id": "design-principle",
+      "start_line": 2807,
+      "unit_id": "design-principle"
+    }
+  ],
+  "extraction_mode": "copy_first",
+  "operator_approval": {
+    "approved": true,
+    "approved_at": "2026-05-16T20:07:43Z",
+    "approved_by": "codex-dogfood-migration",
+    "approved_plan_hash": "49b36fc47c1ac95d1dbe4c83fccc5bb8034a5fd8894748a6aceef4a3a405c601"
+  },
+  "planning_mode": "approved_split",
+  "schema_version": "1.0",
+  "source_spec_hash": "adaa8b719bac1a093f474ad01250cb6da3a56652b7159aed6cc06b033b383d12",
+  "source_spec_path": "spec.md",
+  "target_specs": [
+    {
+      "normative_statement_count": 16,
+      "owned_authority_surfaces": [
+        "purpose",
+        "roles",
+        "primary_inputs_outputs",
+        "configuration_overview",
+        "design_principle",
+        "multi_reviewer_future_note"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 12,
+          "heading": "Purpose",
+          "scope": "section",
+          "section_id": "purpose",
+          "start_line": 3,
+          "unit_id": "purpose"
+        },
+        {
+          "end_line": 25,
+          "heading": "CORE ROLES",
+          "scope": "section",
+          "section_id": "core-roles",
+          "start_line": 13,
+          "unit_id": "core-roles"
+        },
+        {
+          "end_line": 35,
+          "heading": "PRIMARY INPUTS",
+          "scope": "section",
+          "section_id": "primary-inputs",
+          "start_line": 26,
+          "unit_id": "primary-inputs"
+        },
+        {
+          "end_line": 88,
+          "heading": "PRIMARY OUTPUTS",
+          "scope": "section",
+          "section_id": "primary-outputs",
+          "start_line": 36,
+          "unit_id": "primary-outputs"
+        },
+        {
+          "end_line": 185,
+          "heading": "CONFIGURATION",
+          "scope": "section",
+          "section_id": "configuration",
+          "start_line": 89,
+          "unit_id": "configuration"
+        },
+        {
+          "end_line": 2806,
+          "heading": "MULTI-REVIEWER (NON-NORMATIVE FUTURE NOTE)",
+          "scope": "section",
+          "section_id": "multi-reviewer-non-normative-future-note",
+          "start_line": 2780,
+          "unit_id": "multi-reviewer-non-normative-future-note"
+        },
+        {
+          "end_line": 2816,
+          "heading": "DESIGN PRINCIPLE",
+          "scope": "section",
+          "section_id": "design-principle",
+          "start_line": 2807,
+          "unit_id": "design-principle"
+        }
+      ],
+      "source_section_ids": [
+        "configuration",
+        "core-roles",
+        "design-principle",
+        "multi-reviewer-non-normative-future-note",
+        "primary-inputs",
+        "primary-outputs",
+        "purpose"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "purpose",
+          "unit_id": "purpose"
+        },
+        {
+          "scope": "section",
+          "section_id": "core-roles",
+          "unit_id": "core-roles"
+        },
+        {
+          "scope": "section",
+          "section_id": "primary-inputs",
+          "unit_id": "primary-inputs"
+        },
+        {
+          "scope": "section",
+          "section_id": "primary-outputs",
+          "unit_id": "primary-outputs"
+        },
+        {
+          "scope": "section",
+          "section_id": "configuration",
+          "unit_id": "configuration"
+        },
+        {
+          "scope": "section",
+          "section_id": "multi-reviewer-non-normative-future-note",
+          "unit_id": "multi-reviewer-non-normative-future-note"
+        },
+        {
+          "scope": "section",
+          "section_id": "design-principle",
+          "unit_id": "design-principle"
+        }
+      ],
+      "target_spec_id": "whetstone_coordinating_spec",
+      "target_spec_path": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+      "target_spec_role": "coordinating_spec"
+    },
+    {
+      "normative_statement_count": 57,
+      "owned_authority_surfaces": [
+        "canonical_rubrics",
+        "workflow_presets",
+        "review_profiles",
+        "profile_sets",
+        "severity_normalization",
+        "baseline_invariants",
+        "feedback_classification"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 195,
+          "heading": "CANONICAL RUBRICS AND WORKFLOWS intro",
+          "scope": "intro",
+          "section_id": "canonical-rubrics-and-workflows",
+          "start_line": 187,
+          "unit_id": "canonical-rubrics-and-workflows::__intro__"
+        },
+        {
+          "end_line": 214,
+          "heading": "Canonical Rubric Profiles",
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles",
+          "start_line": 196,
+          "unit_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles"
+        },
+        {
+          "end_line": 226,
+          "heading": "Workflow Presets",
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-workflow-presets",
+          "start_line": 215,
+          "unit_id": "canonical-rubrics-and-workflows-workflow-presets"
+        },
+        {
+          "end_line": 343,
+          "heading": "Rubric Manifest",
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-rubric-manifest",
+          "start_line": 286,
+          "unit_id": "canonical-rubrics-and-workflows-rubric-manifest"
+        },
+        {
+          "end_line": 782,
+          "heading": "REVIEW PROFILES",
+          "scope": "section",
+          "section_id": "review-profiles",
+          "start_line": 734,
+          "unit_id": "review-profiles"
+        },
+        {
+          "end_line": 911,
+          "heading": "REVIEW PROFILE SETS",
+          "scope": "section",
+          "section_id": "review-profile-sets",
+          "start_line": 783,
+          "unit_id": "review-profile-sets"
+        },
+        {
+          "end_line": 1243,
+          "heading": "SEVERITY NORMALIZATION FUNCTION",
+          "scope": "section",
+          "section_id": "severity-normalization-function",
+          "start_line": 1209,
+          "unit_id": "severity-normalization-function"
+        },
+        {
+          "end_line": 1257,
+          "heading": "BASELINE REVIEW INVARIANTS",
+          "scope": "section",
+          "section_id": "baseline-review-invariants",
+          "start_line": 1244,
+          "unit_id": "baseline-review-invariants"
+        },
+        {
+          "end_line": 1354,
+          "heading": "PHASE-GATED FEEDBACK CLASSIFICATION intro",
+          "scope": "intro",
+          "section_id": "phase-gated-feedback-classification",
+          "start_line": 1325,
+          "unit_id": "phase-gated-feedback-classification::__intro__"
+        },
+        {
+          "end_line": 1472,
+          "heading": "Oscillation Key Canonicalization",
+          "scope": "section",
+          "section_id": "phase-gated-feedback-classification-oscillation-key-canonicalization",
+          "start_line": 1355,
+          "unit_id": "phase-gated-feedback-classification-oscillation-key-canonicalization"
+        },
+        {
+          "end_line": 1490,
+          "heading": "Phase 2 Reviewer Prompt Requirements",
+          "scope": "section",
+          "section_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+          "start_line": 1473,
+          "unit_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements"
+        }
+      ],
+      "source_section_ids": [
+        "baseline-review-invariants",
+        "canonical-rubrics-and-workflows",
+        "canonical-rubrics-and-workflows-canonical-rubric-profiles",
+        "canonical-rubrics-and-workflows-rubric-manifest",
+        "canonical-rubrics-and-workflows-workflow-presets",
+        "phase-gated-feedback-classification",
+        "phase-gated-feedback-classification-oscillation-key-canonicalization",
+        "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+        "review-profile-sets",
+        "review-profiles",
+        "severity-normalization-function"
+      ],
+      "source_units": [
+        {
+          "scope": "intro",
+          "section_id": "canonical-rubrics-and-workflows",
+          "unit_id": "canonical-rubrics-and-workflows::__intro__"
+        },
+        {
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles",
+          "unit_id": "canonical-rubrics-and-workflows-canonical-rubric-profiles"
+        },
+        {
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-workflow-presets",
+          "unit_id": "canonical-rubrics-and-workflows-workflow-presets"
+        },
+        {
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-rubric-manifest",
+          "unit_id": "canonical-rubrics-and-workflows-rubric-manifest"
+        },
+        {
+          "scope": "section",
+          "section_id": "review-profiles",
+          "unit_id": "review-profiles"
+        },
+        {
+          "scope": "section",
+          "section_id": "review-profile-sets",
+          "unit_id": "review-profile-sets"
+        },
+        {
+          "scope": "section",
+          "section_id": "severity-normalization-function",
+          "unit_id": "severity-normalization-function"
+        },
+        {
+          "scope": "section",
+          "section_id": "baseline-review-invariants",
+          "unit_id": "baseline-review-invariants"
+        },
+        {
+          "scope": "intro",
+          "section_id": "phase-gated-feedback-classification",
+          "unit_id": "phase-gated-feedback-classification::__intro__"
+        },
+        {
+          "scope": "section",
+          "section_id": "phase-gated-feedback-classification-oscillation-key-canonicalization",
+          "unit_id": "phase-gated-feedback-classification-oscillation-key-canonicalization"
+        },
+        {
+          "scope": "section",
+          "section_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements",
+          "unit_id": "phase-gated-feedback-classification-phase-2-reviewer-prompt-requirements"
+        }
+      ],
+      "target_spec_id": "rubrics_profiles_and_feedback_spec",
+      "target_spec_path": "docs/specs/RUBRICS_PROFILES_AND_FEEDBACK_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    },
+    {
+      "normative_statement_count": 136,
+      "owned_authority_surfaces": [
+        "scope_contract",
+        "contract_surface",
+        "decision_register",
+        "decision_summary",
+        "spec_decomposition"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 285,
+          "heading": "Scope Contract",
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-scope-contract",
+          "start_line": 227,
+          "unit_id": "canonical-rubrics-and-workflows-scope-contract"
+        },
+        {
+          "end_line": 733,
+          "heading": "SPEC DECOMPOSITION WORKFLOW",
+          "scope": "section",
+          "section_id": "spec-decomposition-workflow",
+          "start_line": 508,
+          "unit_id": "spec-decomposition-workflow"
+        },
+        {
+          "end_line": 1176,
+          "heading": "EXPANDING CONTRACT SURFACE",
+          "scope": "section",
+          "section_id": "expanding-contract-surface",
+          "start_line": 1114,
+          "unit_id": "expanding-contract-surface"
+        },
+        {
+          "end_line": 2003,
+          "heading": "DECISION SUMMARY",
+          "scope": "section",
+          "section_id": "decision-summary",
+          "start_line": 1761,
+          "unit_id": "decision-summary"
+        }
+      ],
+      "source_section_ids": [
+        "canonical-rubrics-and-workflows-scope-contract",
+        "decision-summary",
+        "expanding-contract-surface",
+        "spec-decomposition-workflow"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "canonical-rubrics-and-workflows-scope-contract",
+          "unit_id": "canonical-rubrics-and-workflows-scope-contract"
+        },
+        {
+          "scope": "section",
+          "section_id": "spec-decomposition-workflow",
+          "unit_id": "spec-decomposition-workflow"
+        },
+        {
+          "scope": "section",
+          "section_id": "expanding-contract-surface",
+          "unit_id": "expanding-contract-surface"
+        },
+        {
+          "scope": "section",
+          "section_id": "decision-summary",
+          "unit_id": "decision-summary"
+        }
+      ],
+      "target_spec_id": "scope_intake_and_decisions_spec",
+      "target_spec_path": "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    },
+    {
+      "normative_statement_count": 121,
+      "owned_authority_surfaces": [
+        "halting",
+        "accepted_draft",
+        "version_lifecycle",
+        "round_scheduling",
+        "budget_handling",
+        "phase1_failure",
+        "resume",
+        "state_machine"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 356,
+          "heading": "HALTING CONDITIONS (ORDERED PRECEDENCE)",
+          "scope": "section",
+          "section_id": "halting-conditions-ordered-precedence",
+          "start_line": 344,
+          "unit_id": "halting-conditions-ordered-precedence"
+        },
+        {
+          "end_line": 439,
+          "heading": "HALT ARTIFACT MATRIX",
+          "scope": "section",
+          "section_id": "halt-artifact-matrix",
+          "start_line": 357,
+          "unit_id": "halt-artifact-matrix"
+        },
+        {
+          "end_line": 455,
+          "heading": "ACCEPTED DRAFT DEFINITION",
+          "scope": "section",
+          "section_id": "accepted-draft-definition",
+          "start_line": 440,
+          "unit_id": "accepted-draft-definition"
+        },
+        {
+          "end_line": 507,
+          "heading": "SPEC VERSION LIFECYCLE",
+          "scope": "section",
+          "section_id": "spec-version-lifecycle",
+          "start_line": 456,
+          "unit_id": "spec-version-lifecycle"
+        },
+        {
+          "end_line": 943,
+          "heading": "ROUND STRATEGY (ADAPTIVE)",
+          "scope": "section",
+          "section_id": "round-strategy-adaptive",
+          "start_line": 912,
+          "unit_id": "round-strategy-adaptive"
+        },
+        {
+          "end_line": 1113,
+          "heading": "ROUND SCHEDULING ALGORITHM",
+          "scope": "section",
+          "section_id": "round-scheduling-algorithm",
+          "start_line": 944,
+          "unit_id": "round-scheduling-algorithm"
+        },
+        {
+          "end_line": 1188,
+          "heading": "DEFINITION: CLEAN PROFILE",
+          "scope": "section",
+          "section_id": "definition-clean-profile",
+          "start_line": 1177,
+          "unit_id": "definition-clean-profile"
+        },
+        {
+          "end_line": 1208,
+          "heading": "ROUND BUDGET HANDLING",
+          "scope": "section",
+          "section_id": "round-budget-handling",
+          "start_line": 1189,
+          "unit_id": "round-budget-handling"
+        },
+        {
+          "end_line": 2049,
+          "heading": "RESUME POLICY intro",
+          "scope": "intro",
+          "section_id": "resume-policy",
+          "start_line": 2044,
+          "unit_id": "resume-policy::__intro__"
+        },
+        {
+          "end_line": 2104,
+          "heading": "Editor Timeout Resume",
+          "scope": "section",
+          "section_id": "resume-policy-editor-timeout-resume",
+          "start_line": 2050,
+          "unit_id": "resume-policy-editor-timeout-resume"
+        },
+        {
+          "end_line": 2163,
+          "heading": "Budget-Extension Resume",
+          "scope": "section",
+          "section_id": "resume-policy-budget-extension-resume",
+          "start_line": 2105,
+          "unit_id": "resume-policy-budget-extension-resume"
+        },
+        {
+          "end_line": 2183,
+          "heading": "FOCUSED PHASE 1 PROFILE RUNS",
+          "scope": "section",
+          "section_id": "focused-phase-1-profile-runs",
+          "start_line": 2164,
+          "unit_id": "focused-phase-1-profile-runs"
+        },
+        {
+          "end_line": 2595,
+          "heading": "PHASE 1 FAILURE HANDLING",
+          "scope": "section",
+          "section_id": "phase-1-failure-handling",
+          "start_line": 2549,
+          "unit_id": "phase-1-failure-handling"
+        },
+        {
+          "end_line": 2660,
+          "heading": "STATE MACHINE (FULL TRANSITIONS)",
+          "scope": "section",
+          "section_id": "state-machine-full-transitions",
+          "start_line": 2628,
+          "unit_id": "state-machine-full-transitions"
+        }
+      ],
+      "source_section_ids": [
+        "accepted-draft-definition",
+        "definition-clean-profile",
+        "focused-phase-1-profile-runs",
+        "halt-artifact-matrix",
+        "halting-conditions-ordered-precedence",
+        "phase-1-failure-handling",
+        "resume-policy",
+        "resume-policy-budget-extension-resume",
+        "resume-policy-editor-timeout-resume",
+        "round-budget-handling",
+        "round-scheduling-algorithm",
+        "round-strategy-adaptive",
+        "spec-version-lifecycle",
+        "state-machine-full-transitions"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "halting-conditions-ordered-precedence",
+          "unit_id": "halting-conditions-ordered-precedence"
+        },
+        {
+          "scope": "section",
+          "section_id": "halt-artifact-matrix",
+          "unit_id": "halt-artifact-matrix"
+        },
+        {
+          "scope": "section",
+          "section_id": "accepted-draft-definition",
+          "unit_id": "accepted-draft-definition"
+        },
+        {
+          "scope": "section",
+          "section_id": "spec-version-lifecycle",
+          "unit_id": "spec-version-lifecycle"
+        },
+        {
+          "scope": "section",
+          "section_id": "round-strategy-adaptive",
+          "unit_id": "round-strategy-adaptive"
+        },
+        {
+          "scope": "section",
+          "section_id": "round-scheduling-algorithm",
+          "unit_id": "round-scheduling-algorithm"
+        },
+        {
+          "scope": "section",
+          "section_id": "definition-clean-profile",
+          "unit_id": "definition-clean-profile"
+        },
+        {
+          "scope": "section",
+          "section_id": "round-budget-handling",
+          "unit_id": "round-budget-handling"
+        },
+        {
+          "scope": "intro",
+          "section_id": "resume-policy",
+          "unit_id": "resume-policy::__intro__"
+        },
+        {
+          "scope": "section",
+          "section_id": "resume-policy-editor-timeout-resume",
+          "unit_id": "resume-policy-editor-timeout-resume"
+        },
+        {
+          "scope": "section",
+          "section_id": "resume-policy-budget-extension-resume",
+          "unit_id": "resume-policy-budget-extension-resume"
+        },
+        {
+          "scope": "section",
+          "section_id": "focused-phase-1-profile-runs",
+          "unit_id": "focused-phase-1-profile-runs"
+        },
+        {
+          "scope": "section",
+          "section_id": "phase-1-failure-handling",
+          "unit_id": "phase-1-failure-handling"
+        },
+        {
+          "scope": "section",
+          "section_id": "state-machine-full-transitions",
+          "unit_id": "state-machine-full-transitions"
+        }
+      ],
+      "target_spec_id": "scheduler_state_and_resume_spec",
+      "target_spec_path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    },
+    {
+      "normative_statement_count": 103,
+      "owned_authority_surfaces": [
+        "artifact_schemas",
+        "artifact_validation",
+        "client_telemetry",
+        "content_normalization",
+        "hashing"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 1760,
+          "heading": "ARTIFACT SCHEMAS (MINIMUM REQUIRED FIELDS)",
+          "scope": "section",
+          "section_id": "artifact-schemas-minimum-required-fields",
+          "start_line": 1491,
+          "unit_id": "artifact-schemas-minimum-required-fields"
+        },
+        {
+          "end_line": 2042,
+          "heading": "ARTIFACT VALIDATION POLICY",
+          "scope": "section",
+          "section_id": "artifact-validation-policy",
+          "start_line": 2004,
+          "unit_id": "artifact-validation-policy"
+        },
+        {
+          "end_line": 2262,
+          "heading": "CLIENT TELEMETRY",
+          "scope": "section",
+          "section_id": "client-telemetry",
+          "start_line": 2184,
+          "unit_id": "client-telemetry"
+        },
+        {
+          "end_line": 2310,
+          "heading": "CONTENT NORMALIZATION AND HASHING",
+          "scope": "section",
+          "section_id": "content-normalization-and-hashing",
+          "start_line": 2263,
+          "unit_id": "content-normalization-and-hashing"
+        }
+      ],
+      "source_section_ids": [
+        "artifact-schemas-minimum-required-fields",
+        "artifact-validation-policy",
+        "client-telemetry",
+        "content-normalization-and-hashing"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "artifact-schemas-minimum-required-fields",
+          "unit_id": "artifact-schemas-minimum-required-fields"
+        },
+        {
+          "scope": "section",
+          "section_id": "artifact-validation-policy",
+          "unit_id": "artifact-validation-policy"
+        },
+        {
+          "scope": "section",
+          "section_id": "client-telemetry",
+          "unit_id": "client-telemetry"
+        },
+        {
+          "scope": "section",
+          "section_id": "content-normalization-and-hashing",
+          "unit_id": "content-normalization-and-hashing"
+        }
+      ],
+      "target_spec_id": "artifacts_validation_and_telemetry_spec",
+      "target_spec_path": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    },
+    {
+      "normative_statement_count": 16,
+      "owned_authority_surfaces": [
+        "issue_identity",
+        "conflict_identity",
+        "oscillation_detection",
+        "conflict_model",
+        "editor_decline",
+        "conflict_escalation"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 1323,
+          "heading": "ISSUE AND CONFLICT IDENTITY",
+          "scope": "section",
+          "section_id": "issue-and-conflict-identity",
+          "start_line": 1258,
+          "unit_id": "issue-and-conflict-identity"
+        },
+        {
+          "end_line": 2412,
+          "heading": "OSCILLATION DETECTION (FULL DEFINITION)",
+          "scope": "section",
+          "section_id": "oscillation-detection-full-definition",
+          "start_line": 2311,
+          "unit_id": "oscillation-detection-full-definition"
+        },
+        {
+          "end_line": 2444,
+          "heading": "CONFLICT MODEL",
+          "scope": "section",
+          "section_id": "conflict-model",
+          "start_line": 2413,
+          "unit_id": "conflict-model"
+        },
+        {
+          "end_line": 2472,
+          "heading": "EDITOR DECLINE TAXONOMY",
+          "scope": "section",
+          "section_id": "editor-decline-taxonomy",
+          "start_line": 2445,
+          "unit_id": "editor-decline-taxonomy"
+        },
+        {
+          "end_line": 2487,
+          "heading": "CONFLICT ESCALATION",
+          "scope": "section",
+          "section_id": "conflict-escalation",
+          "start_line": 2473,
+          "unit_id": "conflict-escalation"
+        }
+      ],
+      "source_section_ids": [
+        "conflict-escalation",
+        "conflict-model",
+        "editor-decline-taxonomy",
+        "issue-and-conflict-identity",
+        "oscillation-detection-full-definition"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "issue-and-conflict-identity",
+          "unit_id": "issue-and-conflict-identity"
+        },
+        {
+          "scope": "section",
+          "section_id": "oscillation-detection-full-definition",
+          "unit_id": "oscillation-detection-full-definition"
+        },
+        {
+          "scope": "section",
+          "section_id": "conflict-model",
+          "unit_id": "conflict-model"
+        },
+        {
+          "scope": "section",
+          "section_id": "editor-decline-taxonomy",
+          "unit_id": "editor-decline-taxonomy"
+        },
+        {
+          "scope": "section",
+          "section_id": "conflict-escalation",
+          "unit_id": "conflict-escalation"
+        }
+      ],
+      "target_spec_id": "identity_oscillation_and_conflicts_spec",
+      "target_spec_path": "docs/specs/IDENTITY_OSCILLATION_AND_CONFLICTS_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    },
+    {
+      "normative_statement_count": 36,
+      "owned_authority_surfaces": [
+        "phase2_failure",
+        "target_matrix",
+        "convergence_declaration",
+        "reproducibility"
+      ],
+      "source_line_ranges": [
+        {
+          "end_line": 2548,
+          "heading": "PHASE 2 FAILURE HANDLING",
+          "scope": "section",
+          "section_id": "phase-2-failure-handling",
+          "start_line": 2488,
+          "unit_id": "phase-2-failure-handling"
+        },
+        {
+          "end_line": 2627,
+          "heading": "TARGET MATRIX PRECEDENCE",
+          "scope": "section",
+          "section_id": "target-matrix-precedence",
+          "start_line": 2596,
+          "unit_id": "target-matrix-precedence"
+        },
+        {
+          "end_line": 2711,
+          "heading": "CONVERGENCE DECLARATION",
+          "scope": "section",
+          "section_id": "convergence-declaration",
+          "start_line": 2661,
+          "unit_id": "convergence-declaration"
+        },
+        {
+          "end_line": 2779,
+          "heading": "REPRODUCIBILITY",
+          "scope": "section",
+          "section_id": "reproducibility",
+          "start_line": 2712,
+          "unit_id": "reproducibility"
+        }
+      ],
+      "source_section_ids": [
+        "convergence-declaration",
+        "phase-2-failure-handling",
+        "reproducibility",
+        "target-matrix-precedence"
+      ],
+      "source_units": [
+        {
+          "scope": "section",
+          "section_id": "phase-2-failure-handling",
+          "unit_id": "phase-2-failure-handling"
+        },
+        {
+          "scope": "section",
+          "section_id": "target-matrix-precedence",
+          "unit_id": "target-matrix-precedence"
+        },
+        {
+          "scope": "section",
+          "section_id": "convergence-declaration",
+          "unit_id": "convergence-declaration"
+        },
+        {
+          "scope": "section",
+          "section_id": "reproducibility",
+          "unit_id": "reproducibility"
+        }
+      ],
+      "target_spec_id": "phase2_convergence_and_declaration_spec",
+      "target_spec_path": "docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+      "target_spec_role": "leaf_spec"
+    }
+  ]
+}

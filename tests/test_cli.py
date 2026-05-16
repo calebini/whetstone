@@ -392,6 +392,93 @@ class CliTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "requires an approved_split plan"):
                 main(["decompose", "extract", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)])
 
+    def test_decompose_extract_restores_intro_heading_and_normalizes_child_headings(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            spec.write_text(
+                "\n".join(
+                    [
+                        "# Spec",
+                        "",
+                        "## Parent",
+                        "",
+                        "Parent intro MUST remain understandable.",
+                        "",
+                        "### Child",
+                        "",
+                        "Child MUST remain under parent context.",
+                        "",
+                        "## Other Parent",
+                        "",
+                        "### Other Child",
+                        "",
+                        "Other child MUST become a top-level copied section in its target.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            source_hash = draft_hash(spec.read_text(encoding="utf-8"))
+            map_path = root / "map.json"
+            map_path.write_text(
+                json.dumps(
+                    {
+                        "planning_mode": "proposed_split",
+                        "authority_topology": "peer_family",
+                        "source_spec_hash": source_hash,
+                        "target_specs": [
+                            {
+                                "target_spec_id": "parent",
+                                "target_spec_path": "docs/PARENT.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["parent"],
+                                "source_units": [
+                                    {"section_id": "parent", "scope": "intro"},
+                                    {"section_id": "parent-child", "scope": "section"},
+                                ],
+                            },
+                            {
+                                "target_spec_id": "other",
+                                "target_spec_path": "docs/OTHER.md",
+                                "target_spec_role": "peer_spec",
+                                "owned_authority_surfaces": ["other"],
+                                "source_units": [
+                                    {"section_id": "other-parent-other-child", "scope": "section"},
+                                ],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "decomposition"
+            extract_root = root / "extracted"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["decompose", "plan", "--source", str(spec), "--map", str(map_path), "--output-dir", str(output_dir)]), 0)
+                self.assertEqual(main(["decompose", "approve", "--plan", str(output_dir / "decomposition_plan.json"), "--source", str(spec)]), 0)
+                self.assertEqual(
+                    main(
+                        [
+                            "decompose",
+                            "extract",
+                            "--plan",
+                            str(output_dir / "decomposition_plan.json"),
+                            "--source",
+                            str(spec),
+                            "--output-dir",
+                            str(extract_root),
+                        ]
+                    ),
+                    0,
+                )
+
+            parent_content = (extract_root / "docs/PARENT.md").read_text(encoding="utf-8")
+            other_content = (extract_root / "docs/OTHER.md").read_text(encoding="utf-8")
+            self.assertIn("## Parent\n\nParent intro MUST remain understandable.", parent_content)
+            self.assertIn("### Child\n\nChild MUST remain under parent context.", parent_content)
+            self.assertIn("## Other Child\n\nOther child MUST become a top-level copied section", other_content)
+
     def test_decompose_extract_rejects_existing_target_without_overwrite(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

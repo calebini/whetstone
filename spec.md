@@ -1,4 +1,4 @@
-# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.67 - STRICT CANDIDATE)
+# WHETSTONE - AI SPEC CONVERGENCE ORCHESTRATOR (0.68 - STRICT CANDIDATE)
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.67` adds decomposition promotion, stamping audited complete manifests as authoritative only after operator acceptance.
+Version `0.68` tightens decomposition extraction readability by restoring parent heading context for intro units and normalizing standalone child headings under generated target titles.
 
 ---
 
@@ -562,6 +562,9 @@ Decomposition phases:
    - Create target specs by copy-first extraction from the source spec.
    - Extraction MAY add minimal provenance headers, target titles, and backreference placeholders.
    - Extraction MUST NOT paraphrase, summarize, reorder normative content, or silently remove requirements.
+   - Extraction MUST preserve readable heading hierarchy under each generated target title.
+   - If an extracted `intro` unit is included, extraction MUST include the source parent heading as structural context before the intro body.
+   - If a standalone child section is extracted without its parent section, extraction MUST normalize copied heading levels so the first copied heading is a top-level target section below the generated target title.
    - Extraction MUST require an approved plan whose `operator_approval.approved_plan_hash` still matches the current plan content.
    - Extraction MUST re-read the source spec and reject extraction if its current hash differs from the approved plan's `source_spec_hash`.
    - Extraction MUST write `decomposition_manifest.json`.

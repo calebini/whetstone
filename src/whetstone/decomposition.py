@@ -791,12 +791,65 @@ def _render_extracted_target(
         "-->",
         "",
     ]
-    body_blocks = [
-        "\n".join(source_lines[line_range["start_line"] - 1 : line_range["end_line"]])
-        for line_range in sorted(target["source_line_ranges"], key=lambda item: item["start_line"])
-    ]
+    body_blocks = _target_body_blocks(target=target, source_lines=source_lines)
     body = "\n\n".join(block.rstrip("\n") for block in body_blocks if block.strip())
     return "\n".join(header) + "\n" + body.rstrip() + "\n"
+
+
+def _target_body_blocks(*, target: dict, source_lines: list[str]) -> list[str]:
+    line_ranges = sorted(target["source_line_ranges"], key=lambda item: item["start_line"])
+    grouped_blocks = []
+    index = 0
+    while index < len(line_ranges):
+        line_range = line_ranges[index]
+        block = _source_block_for_line_range(line_range, source_lines)
+        if line_range.get("scope") != "intro":
+            grouped_blocks.append(block)
+            index += 1
+            continue
+
+        parent_id = line_range["section_id"]
+        group = [block]
+        index += 1
+        while index < len(line_ranges) and line_ranges[index]["section_id"].startswith(f"{parent_id}-"):
+            group.append(_source_block_for_line_range(line_ranges[index], source_lines))
+            index += 1
+        grouped_blocks.append("\n\n".join(item.rstrip("\n") for item in group if item.strip()))
+    return [_normalize_body_heading_levels(block) for block in grouped_blocks]
+
+
+def _source_block_for_line_range(line_range: dict, source_lines: list[str]) -> str:
+    start_line = line_range["start_line"]
+    end_line = line_range["end_line"]
+    block_lines = list(source_lines[start_line - 1 : end_line])
+    if line_range.get("scope") == "intro" and start_line > 1:
+        parent_heading = source_lines[start_line - 2]
+        if re.match(r"^#{1,6}\s+", parent_heading):
+            block_lines = [parent_heading] + block_lines
+    return "\n".join(block_lines)
+
+
+def _normalize_body_heading_levels(block: str) -> str:
+    heading_levels = [
+        len(match.group(1))
+        for line in block.splitlines()
+        if (match := re.match(r"^(#{1,6})(\s+.+)$", line))
+    ]
+    if not heading_levels:
+        return block
+    shift = max(0, min(heading_levels) - 2)
+    if shift == 0:
+        return block
+
+    normalized_lines = []
+    for line in block.splitlines():
+        match = re.match(r"^(#{1,6})(\s+.+)$", line)
+        if match:
+            level = max(2, len(match.group(1)) - shift)
+            normalized_lines.append("#" * level + match.group(2))
+        else:
+            normalized_lines.append(line)
+    return "\n".join(normalized_lines)
 
 
 def _title_from_target_id(target_spec_id: str) -> str:
