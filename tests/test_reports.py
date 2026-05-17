@@ -100,7 +100,7 @@ class ReportWriterTests(unittest.TestCase):
                 unresolved_conflicts=[CONFLICT],
                 unresolved_oscillation=None,
                 last_accepted_draft_hash=None,
-                exit_reason="max rounds",
+                exit_reason="profile budget exhausted",
                 recommendation="manual_review_required",
             )
             convergence = writer.write_convergence_failure_report(

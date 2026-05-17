@@ -53,11 +53,10 @@
     "resolved_defaults": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["target_phase", "target_mode", "convergence_max_rounds", "required_artifacts"],
+      "required": ["target_phase", "target_mode", "required_artifacts"],
       "properties": {
         "target_phase": { "$ref": "common.schema.json#/$defs/targetPhase" },
         "target_mode": { "$ref": "common.schema.json#/$defs/targetMode" },
-        "convergence_max_rounds": { "type": "integer", "minimum": 1 },
         "required_artifacts": { "$ref": "common.schema.json#/$defs/stringArray" }
       }
     },
@@ -65,9 +64,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "review_max_rounds",
         "review_profile_set",
-        "convergence_max_rounds",
         "review_profile_budgets",
         "convergence_profile_budgets",
         "review_round_budget",
@@ -76,9 +73,7 @@
         "effective_total_absolute_round_budget"
       ],
       "properties": {
-        "review_max_rounds": { "type": "integer", "minimum": 1 },
         "review_profile_set": { "type": "string", "minLength": 1 },
-        "convergence_max_rounds": { "type": "integer", "minimum": 1 },
         "review_profile_budgets": {
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 1 }

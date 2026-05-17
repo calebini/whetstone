@@ -902,12 +902,10 @@ class LivePhase2Runner:
             "phase": "phase_2",
             "phase_1_rounds_completed": self.phase_1_rounds_completed,
             "phase_2_rounds_completed": phase_2_rounds_completed,
-            "review_max_rounds": self.config.review_max_rounds,
             "review_profile_set": self.config.review_profile_set,
             "review_budget_exhaustion_policy": self.config.review_budget_exhaustion_policy,
             "configured_review_profile_budgets": self.config.review_profile_budgets,
             "review_profile_budgets": review_profile_budgets,
-            "convergence_max_rounds": self.config.convergence.max_rounds,
             "configured_convergence_profile_budgets": self.config.convergence_profile_budgets,
             "convergence_profile_budgets": convergence_profile_budgets,
             "timeouts": {

@@ -48,7 +48,6 @@ clients:
     version: "4.5.6"
     model: gpt-fixture
 review:
-  max_rounds: 3
   mode: vertical
   profile_set: utility_mvp
   budget_exhaustion_policy: soft
@@ -62,7 +61,6 @@ convergence:
   rubric_profile: governance-v6
   rubric_source: builtin
   rubric_path: ./rubric.md
-  max_rounds: 2
   profile_budgets:
     convergence_strict_check: 6
     adversarial: 2
@@ -100,7 +98,6 @@ reference_context:
             self.assertEqual(config.spec_path, Path(tmp) / "custom-spec.md")
             self.assertEqual(config.editor.version, "1.2.3")
             self.assertEqual(config.reviewer.model, "gpt-fixture")
-            self.assertEqual(config.review_max_rounds, 3)
             self.assertEqual(config.review_mode, "vertical")
             self.assertEqual(config.review_profile_set, "utility_mvp")
             self.assertEqual(config.review_budget_exhaustion_policy, "soft")

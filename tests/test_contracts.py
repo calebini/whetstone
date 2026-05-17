@@ -212,13 +212,10 @@ class ContractValidationTests(unittest.TestCase):
             "resolved_defaults": {
                 "target_phase": "final",
                 "target_mode": "strict",
-                "convergence_max_rounds": 8,
                 "required_artifacts": ["spec.md", "convergence_declaration.md"],
             },
             "configured_budgets": {
-                "review_max_rounds": 12,
                 "review_profile_set": "stateful_system",
-                "convergence_max_rounds": 8,
                 "review_profile_budgets": {"structural_integrity": 10},
                 "convergence_profile_budgets": {"convergence_strict_check": 10},
                 "review_round_budget": 10,

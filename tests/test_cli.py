@@ -1330,7 +1330,6 @@ convergence:
   target_phase: final
   target_mode: strict
   rubric_path: ./convergence_rubric.md
-  max_rounds: 8
 """,
                 encoding="utf-8",
             )
@@ -1482,7 +1481,6 @@ convergence:
   target_phase: final
   target_mode: strict
   rubric_path: ./convergence_rubric.md
-  max_rounds: 8
 """,
                 encoding="utf-8",
             )
@@ -1963,7 +1961,6 @@ convergence:
   enabled: true
   target_phase: final
   target_mode: strict
-  max_rounds: 8
 """,
         encoding="utf-8",
     )

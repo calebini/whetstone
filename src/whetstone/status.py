@@ -93,13 +93,10 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "phase_2_rounds_completed": (run_state.get("phase_2_rounds_completed") if run_state else None)
         or inferred_rounds.get("phase_2_rounds_completed"),
         "review_profile_set": (run_state.get("review_profile_set") if run_state else None) or config.review_profile_set,
-        "review_max_rounds": (run_state.get("review_max_rounds") if run_state else None) or config.review_max_rounds,
         "review_round_budget": (run_state.get("review_round_budget") if run_state else None)
         or default_review_round_budget,
         "review_profile_budgets": (run_state.get("review_profile_budgets") if run_state else None)
         or default_review_profile_budgets,
-        "convergence_max_rounds": (run_state.get("convergence_max_rounds") if run_state else None)
-        or config.convergence.max_rounds,
         "convergence_round_budget": (run_state.get("convergence_round_budget") if run_state else None)
         or default_convergence_round_budget,
         "convergence_profile_budgets": (run_state.get("convergence_profile_budgets") if run_state else None)

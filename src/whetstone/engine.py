@@ -75,9 +75,9 @@ class FixtureEngine:
 
         for round_number, step in enumerate(steps, start=1):
             phase_rounds += 1
-            max_rounds = scheduler.total_round_budget()
-            if phase_rounds > max_rounds:
-                return self._max_rounds_result(
+            round_budget = scheduler.total_round_budget()
+            if phase_rounds > round_budget:
+                return self._budget_exhausted_result(
                     phase=phase,
                     round_number=round_number - 1,
                     last_result=last_result,
@@ -92,7 +92,7 @@ class FixtureEngine:
                 if phase == "phase_1":
                     accepted_current_draft = bool(last_result and last_result.accepted)
                     if not scheduler.phase_complete(accepted_draft=accepted_current_draft):
-                        return self._max_rounds_result(
+                        return self._budget_exhausted_result(
                             phase=phase,
                             round_number=round_number - 1,
                             last_result=last_result,
@@ -317,7 +317,7 @@ class FixtureEngine:
                 )
 
         round_number = last_result.round_number if last_result else 0
-        return self._max_rounds_result(
+        return self._budget_exhausted_result(
             phase=phase,
             round_number=round_number,
             last_result=last_result,
@@ -327,7 +327,7 @@ class FixtureEngine:
             profile_status=scheduler.status(),
         )
 
-    def _max_rounds_result(
+    def _budget_exhausted_result(
         self,
         *,
         phase: str,

@@ -77,7 +77,6 @@ clients:
     model: gpt-5.2
 
 review:
-  max_rounds: 12
   mode: horizontal
   profile_set: stateful_system
   budget_exhaustion_policy: hard
@@ -92,7 +91,6 @@ convergence:
   target_mode: strict
   rubric_profile: standard-v1
   rubric_source: builtin
-  max_rounds: 8
   profile_budgets:
     convergence_strict_check: 10
     adversarial: 10

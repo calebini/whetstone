@@ -1024,7 +1024,6 @@ class LiveRoundRunner:
             "validation_errors": validation_errors,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "config_snapshot": {
-                "review_max_rounds": self.config.review_max_rounds,
                 "target_phase": self.config.convergence.target_phase,
                 "target_mode": self.config.convergence.target_mode,
                 "workflow": self.config.workflow,
@@ -1220,7 +1219,6 @@ class LiveRoundRunner:
             "model": self.config.reviewer.model,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "config_snapshot": {
-                "review_max_rounds": self.config.review_max_rounds,
                 "target_phase": self.config.convergence.target_phase,
                 "target_mode": self.config.convergence.target_mode,
                 "workflow": self.config.workflow,

@@ -304,7 +304,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
 
     def test_phase2_editor_resolution_requires_clean_reviewer_pass_before_convergence(self) -> None:
         with TemporaryDirectory() as tmp:
-            root = _seed_phase1_stable(Path(tmp), convergence_max_rounds=6)
+            root = _seed_phase1_stable(Path(tmp))
             reviewer = ScriptedPhase2ReviewerClient(root, ["major", None, None, None])
 
             result = LivePhase2Runner(
@@ -329,7 +329,6 @@ class LivePhase2RunnerTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = _seed_phase1_stable(
                 Path(tmp),
-                convergence_max_rounds=8,
                 review_profile_set="utility_mvp",
             )
             reviewer = ScriptedPhase2ReviewerClient(root, ["major", None, None, "major", None, None])
@@ -368,7 +367,6 @@ class LivePhase2RunnerTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = _seed_phase1_stable(
                 Path(tmp),
-                convergence_max_rounds=8,
                 review_profile_set="utility_mvp",
             )
             config = load_config(root / "orchestrator_config.yaml")
@@ -492,7 +490,7 @@ class LivePhase2RunnerTests(unittest.TestCase):
                     editor_client=EchoEditorClient(root),
                 ).run()
 
-    def test_phase2_max_rounds_writes_convergence_failure_with_candidate_declaration(self) -> None:
+    def test_phase2_budget_exhaustion_writes_convergence_failure_with_candidate_declaration(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _seed_phase1_stable(Path(tmp))
 
@@ -614,7 +612,6 @@ class LivePhase2RunnerTests(unittest.TestCase):
 def _seed_phase1_stable(
     root: Path,
     *,
-    convergence_max_rounds: int | None = None,
     review_profile_set: str = "stateful_system",
 ) -> Path:
     spec = "# Whetstone 0.17\n\n## Rules\n\nDraft.\n"
@@ -641,8 +638,7 @@ def _seed_phase1_stable(
         + "\n",
         encoding="utf-8",
     )
-    if convergence_max_rounds is not None or review_profile_set != "stateful_system":
-        convergence_max_rounds = convergence_max_rounds or 8
+    if review_profile_set != "stateful_system":
         review_profile_set_config = ""
         convergence_profile_budgets = ""
         if review_profile_set != "stateful_system":
@@ -679,7 +675,6 @@ convergence:
   target_phase: final
   target_mode: strict
   rubric_path: convergence_rubric.md
-  max_rounds: {convergence_max_rounds}
 {convergence_profile_budgets}
 """.lstrip(),
             encoding="utf-8",

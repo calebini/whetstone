@@ -160,7 +160,6 @@ clients:
     model: ""     # MUST be a concrete model identifier
 
 review:
-  max_rounds: 12             # legacy/safety metadata; profile_budgets drive scheduling
   mode: horizontal            # horizontal | vertical
   profile_set: stateful_system # stateful_system | balanced_mvp | utility_mvp | governance
   budget_exhaustion_policy: hard  # hard | soft
@@ -177,7 +176,6 @@ convergence:
   rubric_source: builtin      # builtin | custom
   rubric_label: ""            # REQUIRED when rubric_source = custom
   rubric_path: ./convergence_rubric.md
-  max_rounds: 8              # legacy/safety metadata; profile_budgets drive scheduling
   profile_budgets:
     convergence_strict_check: 10
     adversarial: 10

@@ -423,9 +423,9 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
             self.assertEqual(reviewer.profiles, ["structural_integrity", "structural_integrity", "determinism", "operability"])
 
-    def test_max_rounds_emits_technical_failure_report(self) -> None:
+    def test_profile_budget_exhaustion_emits_technical_failure_report(self) -> None:
         with TemporaryDirectory() as tmp:
-            root = _seed_root(Path(tmp), review_max_rounds=1, profile_budget=1)
+            root = _seed_root(Path(tmp), profile_budget=1)
             result = LivePhase1Runner(
                 root,
                 load_config(root / "orchestrator_config.yaml"),
@@ -710,7 +710,6 @@ class VersionOnlyOnCleanEditorClient:
 def _seed_root(
     root: Path,
     *,
-    review_max_rounds: int | None = None,
     budget_exhaustion_policy: str | None = None,
     profile_budget: int | None = None,
     review_mode: str | None = None,
@@ -720,8 +719,7 @@ def _seed_root(
     root.joinpath("spec.md").write_text(spec, encoding="utf-8")
     root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
     if (
-        review_max_rounds is not None
-        or budget_exhaustion_policy is not None
+        budget_exhaustion_policy is not None
         or profile_budget is not None
         or review_mode is not None
         or decision_mode is not None
@@ -744,7 +742,6 @@ clients:
     version: 0.0.0
     model: fixture
 review:
-  max_rounds: {review_max_rounds or 12}
   mode: {review_mode or "horizontal"}
   budget_exhaustion_policy: {budget_exhaustion_policy or "hard"}
   profile_budgets:

@@ -33,22 +33,19 @@ WORKFLOW_DEFAULTS = {
         "rubric_profile": "exploratory-v1",
         "target_phase": "mid",
         "target_mode": "permissive",
-        "convergence_max_rounds": 4,
     },
-    "mvp": {"rubric_profile": "mvp-v1", "target_phase": "mid", "target_mode": "strict", "convergence_max_rounds": 5},
+    "mvp": {"rubric_profile": "mvp-v1", "target_phase": "mid", "target_mode": "strict"},
     "standard": {
         "rubric_profile": "standard-v1",
         "target_phase": "final",
         "target_mode": "strict",
-        "convergence_max_rounds": 8,
     },
     "governance": {
         "rubric_profile": "governance-v6",
         "target_phase": "final",
         "target_mode": "strict",
-        "convergence_max_rounds": 8,
     },
-    "custom": {"rubric_profile": "custom", "target_phase": "final", "target_mode": "strict", "convergence_max_rounds": 8},
+    "custom": {"rubric_profile": "custom", "target_phase": "final", "target_mode": "strict"},
 }
 
 
@@ -159,13 +156,10 @@ def build_rubric_manifest(config: OrchestratorConfig) -> RubricManifest:
         "resolved_defaults": {
             "target_phase": str(workflow_defaults["target_phase"]),
             "target_mode": str(workflow_defaults["target_mode"]),
-            "convergence_max_rounds": int(workflow_defaults["convergence_max_rounds"]),
             "required_artifacts": _required_artifacts_for_workflow(workflow),
         },
         "configured_budgets": {
-            "review_max_rounds": config.review_max_rounds,
             "review_profile_set": config.review_profile_set,
-            "convergence_max_rounds": config.convergence.max_rounds,
             "review_profile_budgets": dict(sorted(review_profile_budgets.items())),
             "convergence_profile_budgets": dict(sorted(convergence_profile_budgets.items())),
             "review_round_budget": review_round_budget,

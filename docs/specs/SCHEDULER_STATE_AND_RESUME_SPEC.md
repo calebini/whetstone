@@ -11,12 +11,17 @@ target_spec_role: leaf_spec
 
 ## HALTING CONDITIONS (ORDERED PRECEDENCE)
 
-1. Clean convergence achieved
-2. Blocker-level conflict escalation triggered
-3. Oscillation stop triggered
-4. Artifact validation failure exhausted
-5. Decision intervention required
-6. profile budgets or max_rounds reached
+Preflight validation runs before runtime halt precedence. If preflight configuration validation fails, the Orchestrator MUST halt with `CONFIG_INVALID` before invoking any Reviewer or Editor and MUST NOT evaluate runtime halt conditions.
+
+Runtime halt precedence:
+
+1. Client invocation timeout
+2. Clean convergence achieved
+3. Blocker-level conflict escalation triggered
+4. Oscillation stop triggered
+5. Artifact validation failure exhausted
+6. Decision intervention required
+7. Profile-level round budget exhausted
 
 The first condition satisfied halts execution.
 
@@ -49,7 +54,7 @@ oscillation stop:
 - if in Phase 2, also produce:
   - convergence_failure_report.json
 
-max_rounds reached:
+profile-level round budget exhausted:
 - terminal_state: TARGET_NOT_REACHED
 - required artifacts:
   - latest draft_after.md
@@ -393,7 +398,7 @@ Round budgets are controlled at the profile-step level.
 
 Each configured profile step MUST define `round_budget`, an integer greater than or equal to 1. The budget counts Reviewer passes for that profile step. Editor retries caused by invalid artifacts do not consume profile budget unless a validated Reviewer pass is accepted for the round.
 
-`review.max_rounds` and `convergence.max_rounds` MAY be retained as legacy/safety metadata for operator display and backward compatibility, but they MUST NOT be the primary scheduler stop condition when profile-level budgets are configured.
+Unknown or obsolete round-limit keys in older configuration files MAY be ignored for backward compatibility; they MUST NOT affect scheduling, status reporting, manifests, or prompt snapshots.
 
 Unused profile budget is not carried over to later profiles or phases.
 
@@ -597,6 +602,8 @@ If `terminal_state = PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, the report means Ph
 
 ## STATE MACHINE (FULL TRANSITIONS)
 
+State names describe conceptual Orchestrator phases. Persisted `terminal_state` values describe externally observable run outcomes. `TECHNICAL_STABLE` is the conceptual state reached when Phase 1 is complete; `PHASE_1_STABLE` is the persisted terminal/run-state value for a Phase 1-only run that stops at that boundary with `ready_for_phase_2 = true`.
+
 INITIALIZED -> TECHNICAL_REVIEW
 
 INITIALIZED -> CONFIG_INVALID (on preflight configuration validation failure)
@@ -604,7 +611,7 @@ INITIALIZED -> CONFIG_INVALID (on preflight configuration validation failure)
 TECHNICAL_REVIEW -> TECHNICAL_REVISION
 TECHNICAL_REVISION -> TECHNICAL_REVIEW
 
-TECHNICAL_REVIEW -> TECHNICAL_STABLE (if accepted draft and all non-skipped Phase 1 profiles have valid clean status)
+TECHNICAL_REVIEW -> TECHNICAL_STABLE / PHASE_1_STABLE (if accepted draft and all non-skipped Phase 1 profiles have valid clean status; persist `terminal_state = PHASE_1_STABLE` when the run stops before entering Phase 2)
 
 TECHNICAL_STABLE -> CONVERGENCE_REVIEW (after Phase 2 entry version promotion)
 
@@ -614,7 +621,7 @@ CONVERGENCE_REVIEW -> DECLARATION_REVISION (if all in-scope unresolved feedback 
 CONVERGENCE_REVISION -> CONVERGENCE_REVIEW
 DECLARATION_REVISION -> CONVERGENCE_REVIEW
 
-CONVERGENCE_REVIEW -> CONVERGED (if declaration accepted)
+CONVERGENCE_REVIEW -> CONVERGED (if clean convergence is achieved: declaration accepted, target matrix satisfied, zero blocking issues or gaps, and every required distinct Phase 2 profile clean on the current unmodified draft lineage)
 
 ANY STATE -> HALTED_CONFLICT (on blocker-level conflict escalation)
 ANY STATE -> HALTED_OSCILLATION (on oscillation stop)
@@ -622,7 +629,7 @@ ANY STATE -> HALTED_ARTIFACT_INVALID (on exhausted artifact validation retry)
 ANY STATE -> HALTED_CLIENT_TIMEOUT (on client invocation timeout)
 ANY STATE -> PAUSED_DECISION (on decision intervention required)
 TECHNICAL_REVIEW -> PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS (when soft Phase 1 profile sweep completes with residual blocker/major or oscillation status)
-ANY STATE -> TARGET_NOT_REACHED (on max_rounds)
+ANY STATE -> TARGET_NOT_REACHED (on profile-level budget exhaustion before the required clean/stable condition is verified)
 
 If both `CONVERGENCE_REVISION` and `DECLARATION_REVISION` guards are true for the same review, `CONVERGENCE_REVISION` takes precedence because source-spec changes may invalidate declaration artifacts.
 

@@ -23,10 +23,7 @@ class RubricManifestTests(unittest.TestCase):
             self.assertEqual(manifest.packet["workflow"], "standard")
             self.assertEqual(manifest.packet["rubric_profile"], "standard-v1")
             self.assertEqual(manifest.packet["rubric_source"], "builtin")
-            self.assertEqual(manifest.packet["resolved_defaults"]["convergence_max_rounds"], 8)
-            self.assertEqual(manifest.packet["configured_budgets"]["review_max_rounds"], config.review_max_rounds)
             self.assertEqual(manifest.packet["configured_budgets"]["review_profile_set"], config.review_profile_set)
-            self.assertEqual(manifest.packet["configured_budgets"]["convergence_max_rounds"], config.convergence.max_rounds)
             self.assertEqual(
                 manifest.packet["configured_budgets"]["review_profile_budgets"],
                 resolved_phase_1_profile_budgets(config.review_profile_budgets),
@@ -76,7 +73,6 @@ class RubricManifestTests(unittest.TestCase):
                     rubric_source="custom",
                     rubric_label=None,
                     rubric_path=rubric_path,
-                    max_rounds=8,
                 ),
             )
 
@@ -99,7 +95,6 @@ class RubricManifestTests(unittest.TestCase):
                     rubric_source="custom",
                     rubric_label="approval-soft-observation",
                     rubric_path=rubric_path,
-                    max_rounds=8,
                 ),
             )
 

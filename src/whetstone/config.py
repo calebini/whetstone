@@ -24,7 +24,6 @@ class ConvergenceConfig:
     rubric_source: str
     rubric_label: str | None
     rubric_path: Path
-    max_rounds: int
 
 
 @dataclass(frozen=True)
@@ -76,7 +75,6 @@ class OrchestratorConfig:
     workflow: str
     editor: ClientConfig
     reviewer: ClientConfig
-    review_max_rounds: int
     review_mode: str
     review_profile_set: str
     review_profile_budgets: dict[str, int]
@@ -100,7 +98,6 @@ class OrchestratorConfig:
             workflow="standard",
             editor=ClientConfig("fixture-editor", "fixture", "0.0.0", "fixture"),
             reviewer=ClientConfig("fixture-reviewer", "fixture", "0.0.0", "fixture"),
-            review_max_rounds=12,
             review_mode="horizontal",
             review_profile_set="stateful_system",
             review_profile_budgets={},
@@ -113,7 +110,6 @@ class OrchestratorConfig:
                 rubric_source="builtin",
                 rubric_label=None,
                 rubric_path=base / "convergence_rubric.md",
-                max_rounds=8,
             ),
             convergence_profile_budgets={},
             decision_points=DecisionPointConfig(
@@ -179,7 +175,6 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             str(reviewer.get("version", default.reviewer.version)),
             str(reviewer.get("model", default.reviewer.model)),
         ),
-        review_max_rounds=int(review.get("max_rounds", default.review_max_rounds)),
         review_mode=str(review.get("mode", default.review_mode)),
         review_profile_set=str(review.get("profile_set", default.review_profile_set)),
         review_profile_budgets=_parse_int_mapping(review.get("profile_budgets", default.review_profile_budgets)),
@@ -194,7 +189,6 @@ def load_config(path: Path | str) -> OrchestratorConfig:
             rubric_source=str(convergence.get("rubric_source", default.convergence.rubric_source)),
             rubric_label=_optional_string(convergence.get("rubric_label", default.convergence.rubric_label)),
             rubric_path=root / str(convergence.get("rubric_path", default.convergence.rubric_path.name)),
-            max_rounds=int(convergence.get("max_rounds", default.convergence.max_rounds)),
         ),
         convergence_profile_budgets=_parse_int_mapping(
             convergence.get("profile_budgets", default.convergence_profile_budgets)

@@ -72,11 +72,9 @@ target_mode: permissive | strict
 resolved_defaults:
   target_phase: mid | final
   target_mode: permissive | strict
-  max_rounds: integer
   required_artifacts: [string]
 configured_budgets:
-  review_max_rounds: integer
-  convergence_max_rounds: integer
+  review_profile_set: string
   review_profile_budgets: object
   convergence_profile_budgets: object
   review_round_budget: integer
@@ -88,7 +86,7 @@ warnings: [string]
 
 Phase 2 MUST NOT start unless rubric identity is explicit and manifest validation passes.
 
-Rubric manifest budget fields MUST distinguish legacy global round fields from effective profile-level budgets. Operators MUST be able to see the actual scheduler budget used for profile-based review, even when legacy `review_max_rounds` or `convergence.max_rounds` remain present for compatibility.
+Rubric manifest budget fields MUST expose the effective profile-level budgets used by the scheduler. Legacy global round-limit fields are not part of the canonical runtime budget model.
 
 For built-in rubrics:
 
