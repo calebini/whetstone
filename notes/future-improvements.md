@@ -178,6 +178,30 @@ Future improvements:
   - The brief should distinguish "routine precision hardening" from "owner-level policy choice" so large runs do not bury the handful of real decisions inside dozens of small MUST/SHOULD edits.
   - The brief should call out when a `could` or deferred scope-contract surface appears to have become required behavior.
   - The brief should include a confidence / review-needed marker per cluster, not just a polished narrative.
+
+## Implementation Topology Profile Lens
+
+Logic Lens implementation feedback was a strong positive signal for Whetstone: the sharpened specs made the first vertical slice feel like instantiating a contract rather than inventing an app. The remaining friction was not product fog; it was normal implementation design ambiguity around package/module ownership and boundary placement.
+
+This suggests a future optional profile lens, not more general strictness. A lightweight `implementation_topology` lens could review specs for:
+
+- package/module ownership
+- generic primitive versus domain-specific fixture boundaries
+- dependency direction between packages
+- ownership of orchestration helpers
+- public versus internal contract surfaces
+- package-level test ownership
+- duplicated concepts across sibling specs and which spec is authoritative
+
+For Logic Lens, this lens would have surfaced questions such as:
+
+- Should generic adapter primitives live in `@logic-lens/expressions` while sorting-specific adapters live in `@logic-lens/sorting` or a future `@logic-lens/sorting-expressions` package?
+- Which package owns `adaptCurrentStep` or equivalent orchestration helpers?
+- Is it acceptable for `@logic-lens/expressions` to import sorting types for MVP fixtures, or should that dependency be inverted?
+- When both Trace Engine and Expression Adapter discuss adapter orchestration, which spec owns the concrete runtime function?
+- Should the UI use core playback state directly, or is local `stepIndex` acceptable for the first slice?
+
+This should not become an always-on architectural ceremony profile. The right shape is probably a new profile set such as `modular_app_mvp`: `utility_mvp` plus `implementation_topology`. The lens should make first-slice package topology explicit enough to avoid accidental dependency drift while still allowing pragmatic MVP placement.
 - Distinguish routine spec hardening from true owner-level choices.
 - Consider intervention only for high-risk classes such as authority boundary changes, destructive or irreversible behavior, cross-system scope expansion, security/privacy-impacting decisions, or changes that override an explicit human constraint.
 - Consider cluster-level intervention instead of line-level intervention, so one pause can cover a coherent group of related decisions.
@@ -258,6 +282,26 @@ Design constraints:
 - Editor prompts must distinguish operator decisions from reviewer suggestions.
 - The feature should have a noninteractive mode for automation, where checkpoints are recorded but not paused.
 - Auto mode should consume the same checkpoint artifact shape as human mode and persist the same response artifact shape, with the selected option marked as LLM-guided rather than operator-selected.
+
+## Vertical Review Pressure Relief
+
+Vertical review is useful because each profile reviews the same draft before any edits are made, which gives operators a cleaner cross-profile read than a long horizontal sequence. The current implementation can still overload the Editor when the merged feedback packet is large or spans unrelated surfaces.
+
+Future work should address this structurally before inventing fuzzy pressure scoring. Two candidate strategies are worth preserving:
+
+1. **Interleaved vertical cadence.** Run each profile independently, then allow an intermediate Editor pass before the next profile or profile cycle. This reduces Editor load but moves closer to horizontal behavior.
+2. **Vertical review with sliced editing.** Run the full vertical review stack against one draft, then split the consolidated Editor work into profile-led slices. Each finding has exactly one primary slice owner, optional related-slice awareness, and an auditable deferred status when not handled in the active slice.
+
+The second option is the stronger default candidate because it preserves vertical's main benefit: every Reviewer profile evaluates the same pre-edit draft. The Editor then receives bounded work orders instead of one giant merged packet.
+
+Design constraints:
+
+- Slices are profile-led, not profile-exclusive. The Editor may update adjacent or coupled sections when needed for coherence.
+- Every feedback item must have exactly one primary owner in the slice plan so findings cannot disappear between slices.
+- Cross-slice edits must be recorded in the Editor summary.
+- No profile is considered clean until a later Reviewer pass verifies the post-slice draft for that profile.
+- The final authority remains a full vertical re-review on the edited draft.
+- This should remain a future scheduler feature until the current scheduler/resume/closeout behavior has had more soak time.
 
 ## Client Capability Notes
 

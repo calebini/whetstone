@@ -55,6 +55,12 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     checkpoint_summary = _checkpoint_summary(rounds_dir, root)
     terminal_report_path = _terminal_report_path(rounds_dir, run_state)
     terminal_report = _read_json_object(terminal_report_path) if terminal_report_path else None
+    historical_terminal_reports = _historical_terminal_reports(
+        rounds_dir,
+        root,
+        run_state,
+        active_terminal_report_path=terminal_report_path,
+    )
     current_draft_status = _current_draft_status(run_state, terminal_report)
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
     apply_back = _apply_back_status(root, rounds_dir, run_state)
@@ -120,6 +126,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "apply_back": apply_back,
         "telemetry_totals": telemetry_totals,
         "next_action": _next_action(run_state, terminal_report_path=terminal_report_path),
+        "historical_terminal_reports": historical_terminal_reports,
     }
     return packet
 
@@ -164,6 +171,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"latest_round: {latest_round_text}",
         f"next_action: {_display(status.get('next_action'))}",
         f"terminal_report: {_display(status.get('terminal_report_path'))}",
+        f"historical_terminal_reports: {_display(status.get('historical_terminal_reports'))}",
         (
             "decisions: "
             f"{_display(decision_summary.get('decision_count', decision_register.get('decision_count')))}, "
@@ -299,6 +307,41 @@ def _terminal_report_path(rounds_dir: Path, run_state: dict[str, Any] | None = N
         if path.exists():
             return path
     return None
+
+
+def _historical_terminal_reports(
+    rounds_dir: Path,
+    root: Path,
+    run_state: dict[str, Any] | None,
+    *,
+    active_terminal_report_path: Path | None,
+) -> list[dict[str, Any]]:
+    current_terminal_state = (run_state or {}).get("terminal_state")
+    current_round = (run_state or {}).get("current_round")
+    historical: list[dict[str, Any]] = []
+    for name in TERMINAL_REPORTS:
+        path = rounds_dir / name
+        if not path.exists() or path == active_terminal_report_path:
+            continue
+        packet = _read_json_object(path) or {}
+        report_round = packet.get("round_number")
+        superseded = current_terminal_state in {"CONVERGED", "PHASE_1_STABLE", "FOCUSED_PROFILE_STABLE"} or (
+            isinstance(current_round, int)
+            and isinstance(report_round, int)
+            and report_round < current_round
+            and packet.get("terminal_state") != current_terminal_state
+        )
+        historical.append(
+            {
+                "path": _path_or_none(path, root),
+                "report_terminal_state": packet.get("terminal_state"),
+                "report_round_number": report_round,
+                "lifecycle_status": "historical_superseded" if superseded else "historical_non_active",
+                "superseded_by_terminal_state": current_terminal_state if superseded else None,
+                "superseded_by_round_number": current_round if superseded else None,
+            }
+        )
+    return historical
 
 
 def _current_draft_status(run_state: dict[str, Any] | None, terminal_report: dict[str, Any] | None) -> str | None:

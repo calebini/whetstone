@@ -123,6 +123,18 @@ reference_context:
 YAML
 ```
 
+## Running Whetstone From An Agent
+
+Live Whetstone runs often spawn a second CLI process, such as `codex exec`, from inside the agent that is driving the job. That is a nested-client run. The outer agent sandbox can block the inner Codex CLI from reading its own session files under `~/.codex/sessions`, even when the inner Codex invocation is configured with its own read-only sandbox.
+
+For live runs that invoke Codex or Claude Code clients, tell the driving agent to request the necessary execution approval before running `live-phase1`, `live-phase2`, `live-focused-phase1`, `reviewer-smoke`, or `editor-smoke`. Do not make a first sandboxed attempt "just to see." A sandbox-denied nested client commonly halts as `HALTED_ARTIFACT_INVALID`, is often non-resumable, and wastes a run root without producing semantic signal.
+
+Copy/paste operator instruction:
+
+```text
+This Whetstone job invokes nested live clients. Run the Whetstone live command with the approval/escalation needed for Codex/Claude CLI session access. Keep the Whetstone run root isolated, keep client sandbox settings as configured, and do not first attempt a sandboxed live run that is expected to fail on ~/.codex/sessions access. If the only failure is nested CLI session access, treat it as infrastructure setup, not spec feedback or a resumable Whetstone result.
+```
+
 For MVP review, change:
 
 ```yaml
@@ -634,6 +646,8 @@ When something halts, read in this order:
 ## Troubleshooting
 
 If status says the latest round is partial, read `missing_round_artifacts` and the terminal report.
+
+If a run halts because the nested Codex CLI cannot access `~/.codex/sessions`, do not diagnose the spec and do not burn time probing generic resume. That failure happened before the model could perform a valid review/edit. Rerun from a clean isolated root, or overwrite only when you are certain no semantic round artifacts from the failed attempt should be preserved, using the required execution approval for nested client access.
 
 If a client times out, use `status --format text`, then `resume --dry-run --continue`. Increase `--editor-timeout-seconds` if the Editor timed out while producing a large draft.
 

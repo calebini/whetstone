@@ -301,6 +301,10 @@ class LivePhase2RunnerTests(unittest.TestCase):
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
             self.assertEqual(state["telemetry_totals"]["attempt_count"], 3)
             self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 3)
+            conflict_state = _read_json(root / "rounds" / "conflict_state.json")
+            self.assertEqual(conflict_state["schema_version"], "conflict_state_v1")
+            self.assertEqual(conflict_state["round_number"], 6)
+            self.assertEqual(conflict_state["conflicts"], [])
 
     def test_phase2_editor_resolution_requires_clean_reviewer_pass_before_convergence(self) -> None:
         with TemporaryDirectory() as tmp:

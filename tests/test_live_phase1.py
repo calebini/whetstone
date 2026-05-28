@@ -102,6 +102,48 @@ class ContractSurfaceReviewerClient:
         }
 
 
+class DuplicateFeedbackIdReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        feedback = []
+        if self.calls == 1:
+            feedback = [
+                {
+                    "feedback_id": "fb-same",
+                    "issue_id": f"iss_{index:016x}",
+                    "issue_fingerprint": f"{index:x}" * 64,
+                    "issue_type": "undefined_behavior",
+                    "affected_sections": ["Spec"],
+                    "baseline_severity": "major",
+                    "authority_impact": None,
+                    "determinism_impact": None,
+                    "rubric_impact": None,
+                    "normalized_severity": "major",
+                    "invariant_violated": "fixture invariant",
+                    "claim": f"Fixture major {index}.",
+                    "evidence": "Fixture evidence.",
+                    "recommended_change": "Fix it.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": None,
+                }
+                for index in (1, 2)
+            ]
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash((self.root / "spec.md").read_text(encoding="utf-8")),
+            "feedback": feedback,
+        }
+
+
 class AlwaysMajorReviewerClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -313,6 +355,25 @@ class LivePhase1RunnerTests(unittest.TestCase):
             editor_profile = _read_json(root / "rounds" / "round-4" / "profile_used.yaml")
             self.assertEqual(review_profile["round_kind"], "review_only")
             self.assertEqual(editor_profile["round_kind"], "consolidated_editor")
+
+    def test_vertical_merge_disambiguates_duplicate_profile_feedback_ids(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _seed_root(Path(tmp), review_mode="vertical", profile_budget=2)
+            reviewer = DuplicateFeedbackIdReviewerClient(root)
+
+            result = LivePhase1Runner(
+                root,
+                load_config(root / "orchestrator_config.yaml"),
+                reviewer_client=reviewer,
+                editor_client=ResolvingMutatingEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "PHASE_1_STABLE")
+            merged_feedback = _read_json(root / "rounds" / "round-4" / "reviewer_feedback.json")
+            self.assertEqual(
+                [item["feedback_id"] for item in merged_feedback["feedback"]],
+                ["structural_integrity:fb-same", "structural_integrity:fb-same:2"],
+            )
 
     def test_vertical_consolidated_editor_timeout_terminalizes_state_and_summaries(self) -> None:
         with TemporaryDirectory() as tmp:

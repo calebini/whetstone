@@ -25,8 +25,8 @@ def issue_fingerprint(
     payload = "\n".join(
         [
             _normalize_scalar(issue_type),
-            _normalize_array(affected_sections, sort=False),
-            _normalize_scalar(invariant_violated or ""),
+            _normalize_array(affected_sections, sort=True),
+            _normalize_scalar(invariant_violated),
             _normalize_scalar(claim),
         ]
     )
@@ -94,7 +94,9 @@ def oscillation_opposition_key(section_id: str, concern_type: str, scope: str) -
     return sha256_text(payload)
 
 
-def _normalize_scalar(value: str) -> str:
+def _normalize_scalar(value: str | None) -> str:
+    if value is None:
+        return "<null>"
     return re.sub(r"\s+", " ", value.strip()).lower()
 
 

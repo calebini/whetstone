@@ -150,6 +150,65 @@ class StatusTests(unittest.TestCase):
             self.assertTrue(status["ready_for_phase_2"])
             self.assertEqual(status["current_draft_status"], "phase_1_stable")
             self.assertEqual(status["next_action"], "run_live_phase2")
+            self.assertIsNone(status["terminal_report_path"])
+            self.assertEqual(len(status["historical_terminal_reports"]), 1)
+            self.assertEqual(
+                status["historical_terminal_reports"][0]["lifecycle_status"],
+                "historical_superseded",
+            )
+
+    def test_status_marks_prior_failure_report_historical_after_convergence(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_2",
+                        "current_round": 26,
+                        "active_profile": "convergence_strict_check",
+                        "terminal_state": "CONVERGED",
+                        "current_draft_hash": "a" * 64,
+                        "last_accepted_draft_hash": "a" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("technical_failure_report.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "round_number": 21,
+                        "current_draft_status": "accepted_unverified_profiles",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertEqual(status["terminal_state"], "CONVERGED")
+            self.assertEqual(status["current_draft_status"], "converged")
+            self.assertIsNone(status["terminal_report_path"])
+            self.assertEqual(status["next_action"], "review_or_apply_back")
+            self.assertEqual(
+                status["historical_terminal_reports"],
+                [
+                    {
+                        "path": "rounds/technical_failure_report.json",
+                        "report_terminal_state": "TARGET_NOT_REACHED",
+                        "report_round_number": 21,
+                        "lifecycle_status": "historical_superseded",
+                        "superseded_by_terminal_state": "CONVERGED",
+                        "superseded_by_round_number": 26,
+                    }
+                ],
+            )
+            self.assertIn("historical_terminal_reports:", rendered)
 
     def test_status_prefers_round_telemetry_over_stale_run_state(self) -> None:
         with TemporaryDirectory() as tmp:

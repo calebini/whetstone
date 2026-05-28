@@ -10,7 +10,7 @@ from typing import Any, Callable
 
 from whetstone.artifacts import ArtifactStore
 from whetstone.config import OrchestratorConfig
-from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection
+from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection, read_conflict_state
 from whetstone.declaration import render_convergence_declaration, validate_convergence_declaration, write_convergence_declaration
 from whetstone.decisions import write_decision_register
 from whetstone.evaluation import target_matrix_satisfied
@@ -85,7 +85,7 @@ class LivePhase2Runner:
             profile_set=self.config.review_profile_set,
         )
         oscillation_tracker = OscillationTracker()
-        conflict_tracker = ConflictTracker()
+        conflict_tracker = read_conflict_state(self.config.rounds_dir / "conflict_state.json") or ConflictTracker()
         if overwrite and self.config.declaration_path.exists():
             self.config.declaration_path.unlink()
         declaration_path: Path | None = None
@@ -259,6 +259,7 @@ class LivePhase2Runner:
                 if draft_detection.recommendation == "stop_iteration":
                     terminal_candidates.append(TerminationCandidate("HALTED_OSCILLATION", round_number, "phase_2", report_path))
 
+            tracked_conflicts: list[dict[str, Any]] = []
             feedback_detection = oscillation_tracker.record_phase2_feedback(
                 round_number=round_number,
                 reviewer_feedback=reviewer_feedback,
@@ -278,6 +279,7 @@ class LivePhase2Runner:
                     terminal_candidates.append(TerminationCandidate("HALTED_OSCILLATION", round_number, "phase_2", report_path))
                 if feedback_detection.recommendation == "escalate_conflict":
                     conflict = conflict_from_oscillation_detection(feedback_detection)
+                    tracked_conflicts.append(conflict)
                     conflict_report = self.report_writer.write_conflict_report(
                         round_number=round_number,
                         conflicts=[conflict],
@@ -289,9 +291,10 @@ class LivePhase2Runner:
 
             conflict_escalation = conflict_tracker.record_round(
                 round_number=round_number,
-                conflicts=[],
+                conflicts=tracked_conflicts,
                 issues=last_unresolved,
             )
+            conflict_tracker.write_snapshot(self.config.rounds_dir / "conflict_state.json", round_number=round_number)
             if conflict_escalation is not None:
                 report_path = self.report_writer.write_conflict_report(
                     round_number=round_number,

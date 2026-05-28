@@ -154,6 +154,8 @@ Run Phase 1:
 PYTHONPATH=src python3 -m whetstone.cli live-phase1 --root "$RUN_ROOT"
 ```
 
+When an agent is driving a live run that invokes Codex or Claude Code, have it request the needed execution approval up front. A nested Codex CLI can otherwise fail before review because the outer sandbox blocks access to `~/.codex/sessions`; that is infrastructure noise, not spec feedback.
+
 Check status:
 
 ```bash

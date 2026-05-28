@@ -12,7 +12,7 @@ from typing import Any
 
 from whetstone.config import DecisionPointConfig
 from whetstone.contracts import validate_artifact
-from whetstone.hashing import draft_hash, sha256_text
+from whetstone.hashing import canonical_json_hash, draft_hash, sha256_text
 
 
 NORMATIVE_WORDS = ("MUST NOT", "MUST", "SHOULD NOT", "SHOULD", "MAY")
@@ -647,16 +647,15 @@ def _checkpoint_card(
     recommended_option_id: str | None,
     risk_if_skipped: str,
 ) -> dict[str, Any]:
-    fingerprint = sha256_text(
-        "\n".join(
-            [
-                source_type,
-                "|".join(sorted(source_ids)),
-                trigger_reason,
-                "|".join(affected_sections),
-                _normalize(question),
-            ]
-        )
+    fingerprint = canonical_json_hash(
+        {
+            "round_number": round_number,
+            "profile": profile,
+            "source_type": source_type,
+            "source_ids": sorted(source_ids),
+            "trigger_reason": trigger_reason,
+            "question": _normalize(question),
+        }
     )
     return {
         "checkpoint_id": f"chk_{fingerprint[:16]}",

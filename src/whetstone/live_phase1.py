@@ -485,6 +485,7 @@ class LivePhase1Runner:
 
         for _cycle in range(1, max_cycles + 1):
             merged_feedback: list[dict[str, Any]] = []
+            merged_feedback_id_counts: dict[str, int] = {}
             reviewer_packets: list[dict[str, Any]] = []
             cycle_clean = True
             draft_hash_at_cycle_start = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
@@ -558,7 +559,12 @@ class LivePhase1Runner:
                     major_count=major_count,
                 )
                 for issue in reviewer_feedback.get("feedback", []):
-                    merged_feedback.append({**issue, "feedback_id": f"{profile}:{issue.get('feedback_id')}"})
+                    feedback_id = _vertical_merged_feedback_id(
+                        profile,
+                        str(issue.get("feedback_id", "")),
+                        merged_feedback_id_counts,
+                    )
+                    merged_feedback.append({**issue, "feedback_id": feedback_id})
                 self._append_history(
                     round_number=round_number,
                     profile=profile,
@@ -1372,6 +1378,14 @@ def _vertical_profile_status(
         ],
         "total_round_budget": sum(int(item["round_budget"]) for item in profiles),
     }
+
+
+def _vertical_merged_feedback_id(profile: str, feedback_id: str, counts: dict[str, int]) -> str:
+    base = f"{profile}:{feedback_id}"
+    counts[base] = counts.get(base, 0) + 1
+    if counts[base] == 1:
+        return base
+    return f"{base}:{counts[base]}"
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:

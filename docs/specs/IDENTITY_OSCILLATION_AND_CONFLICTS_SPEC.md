@@ -55,13 +55,13 @@ The same issue or conflict across rounds is determined by matching fingerprint.
 
 Reviewer-generated input MUST provide the semantic fields needed to compute issue identity: `issue_type`, `affected_sections`, `invariant_violated`, and `claim`. Reviewer-generated `issue_id`, `issue_fingerprint`, and `normalized_severity` are treated as input placeholders. The Orchestrator MUST recompute and inject canonical values before persisted artifact validation.
 
-Normalization for fingerprint fields:
-- trim leading/trailing whitespace
-- collapse internal whitespace to a single space
-- lowercase enum-like values
-- sort arrays only when their order is semantically irrelevant
-- preserve `affected_sections` order when the order is part of the claim
-- sort `participating_issue_fingerprints` lexicographically before conflict fingerprint hashing
+Normalization for fingerprint fields MUST use the canonical scalar and array normalization rules from the artifact/content normalization spec.
+
+Field-specific ordering rules:
+- `affected_sections` MUST contain canonical section IDs and MUST be sorted lexicographically before issue fingerprint hashing.
+- If the order of affected sections is part of the claim, that order MUST be stated in `claim`; the fingerprint still uses sorted `affected_sections`.
+- `participating_issue_fingerprints` MUST be sorted lexicographically before conflict fingerprint hashing.
+- Null semantic fields MUST serialize using the canonical null scalar representation before hashing.
 
 Canonical array serialization for fingerprint inputs:
 - normalize each array element using the string normalization rules above
@@ -203,7 +203,30 @@ Conflict creation authority:
 - the Orchestrator MUST validate each requested conflict against the conflict identity rules before tracking it
 - invalid or under-specified Editor-requested conflicts MUST be ignored for escalation and recorded as a validation warning unless they also make `editor_summary.json` schema-invalid
 
-The Orchestrator MUST persist tracked conflict state across rounds in `conflict_report.json` when escalation is reached, and MAY persist non-escalated conflict tracking state in implementation-specific round metadata. Non-escalated tracking state is not a halt artifact.
+The Orchestrator MUST persist tracked conflict state across rounds in `/rounds/conflict_state.json` after every round that detects, updates, or clears a conflict. `conflict_report.json` remains the halt/escalation artifact and MUST be produced when escalation is reached.
+
+`conflict_state.json` MUST contain:
+
+```yaml
+schema_version: conflict_state_v1
+generated_at: string
+round_number: integer
+conflicts:
+  - conflict_id: string
+    conflict_fingerprint: string
+    conflict_type: string
+    conflict_severity: blocker | major | minor | nit
+    state: present | absent | resolved
+    first_seen_round: integer
+    last_seen_round: integer
+    consecutive_present_rounds: integer
+    total_present_rounds: integer
+    participating_issue_fingerprints: [string]
+    latest_issue_ids: [string]
+    latest_conflict_claim: string
+```
+
+A newly detected conflict counts as `present` in its creation round. If the same `conflict_fingerprint` is not detected in a later round, `consecutive_present_rounds` resets to zero while `total_present_rounds`, `first_seen_round`, and prior identity remain preserved. Resume MUST reconstruct conflict escalation state from `conflict_state.json` when present, or deterministically from prior round artifacts when the state artifact is absent.
 
 The Editor's conflict-resolution authority is limited to recommending resolution through accepted, modified, or declined feedback decisions. The Orchestrator owns conflict threshold counting, escalation, terminal-state selection, and halt artifact production.
 

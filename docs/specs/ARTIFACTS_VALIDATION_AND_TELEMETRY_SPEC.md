@@ -43,6 +43,21 @@ feedback:
 
 `in_scope = true` means the feedback concerns the current draft, configured target, active review profile, baseline review invariants, or required artifacts. `in_scope = false` means the reviewer detected an issue outside those boundaries. Out-of-scope feedback MAY be persisted for auditability, but it MUST NOT block profile cleanliness, draft acceptance, convergence, or halt decisions unless the Editor or Orchestrator converts it into an in-scope issue with an explicit rationale.
 
+Issue identifiers are Orchestrator-owned deterministic aliases:
+
+```text
+issue_fingerprint = SHA256(
+  normalized(issue_type) + "\n" +
+  normalized(sorted(affected_sections)) + "\n" +
+  normalized(invariant_violated) + "\n" +
+  normalized(claim)
+)
+
+issue_id = "iss_" + first_16_hex_chars(issue_fingerprint)
+```
+
+`affected_sections` MUST contain canonical section IDs and MUST be sorted lexicographically for issue identity. Null `invariant_violated` uses the canonical null scalar representation. Reviewer-provided `issue_id` and `issue_fingerprint` are placeholders until the Orchestrator recomputes them.
+
 `severity_rationale` MUST be non-null when `baseline_severity = null`; otherwise it MAY be null.
 
 `oscillation_key` MAY be null in Phase 1.
@@ -222,6 +237,19 @@ checkpoints:
     runtime_effect: none
 ```
 
+`checkpoint_id` MUST be deterministic:
+
+```text
+checkpoint_id = "chk_" + first_16_hex_chars(SHA256(canonical_json({
+  "round_number": round_number,
+  "profile": profile,
+  "source_type": source_type,
+  "source_ids": sorted(source_ids),
+  "trigger_reason": trigger_reason,
+  "question": normalized(question)
+})))
+```
+
 The Orchestrator SHOULD write `operator_decision_checkpoint.json` for every live round, even when `checkpoints = []`, so downstream operators can distinguish "no checkpoint candidates" from "artifact not produced."
 
 Checkpoint candidates derived from unresolved Reviewer findings SHOULD be limited to in-scope blocker/major issues whose text indicates an operator-level choice, including scope boundaries, authority precedence, validation policy, failure/reporting behavior, fallback behavior, or product policy. Routine local precision gaps SHOULD remain Editor-fixable and SHOULD NOT create checkpoint cards.
@@ -259,12 +287,30 @@ clusters:
 recommended_operator_review: [checkpoint_summary_card]
 ```
 
+`checkpoint_cluster` MUST contain:
+
+```yaml
+cluster_key: string
+checkpoint_count: integer
+checkpoint_ids: [string]
+highest_severity: blocker | major | minor | nit | null
+round_numbers: [integer]
+affected_sections: [string]
+```
+
+`checkpoint_summary_card` MUST contain the complete checkpoint card fields from `operator_decision_checkpoint.json` plus:
+
+```yaml
+cluster_key: string
+selection_reason: string
+```
+
 Checkpoint summary clusters MUST be mechanical:
 
 - `by_trigger_reason` groups by `trigger_reason`.
 - `by_section` groups by the first affected section on each checkpoint card.
 - `by_source_type` groups by `decision_point` vs `unresolved_issue`.
-- `recommended_operator_review` MUST contain at most five checkpoint cards sorted by deterministic priority: authority boundary, deferred scope boundary, failure/reporting policy, validation policy, then general operator policy choice; ties sort by severity, round number, then checkpoint ID.
+- `recommended_operator_review` MUST contain at most five checkpoint cards sorted by deterministic priority: authority boundary, deferred scope boundary, failure/reporting policy, validation policy, then general operator policy choice; ties sort by severity, round number, then checkpoint ID. Severity sort order is `blocker`, `major`, `minor`, `nit`, `null`.
 
 The human-readable Markdown summary MUST expose the same counts, recommended review cards, and clusters without adding semantic interpretation beyond persisted checkpoint fields.
 
@@ -287,9 +333,11 @@ Validation order:
 1. parse the client response as a single JSON object
 2. validate contextual fields such as `round_number`, `profile`, `draft_hash`, `draft_before_hash`, and `draft_after_hash`
 3. reject reviewer self-reported process/context-loading failure artifacts before semantic scheduling
-4. validate the object against the phase-appropriate artifact schema
-5. apply Orchestrator-owned canonicalization steps such as Phase 2 `oscillation_key` fingerprint and opposition-key computation
+4. validate the object against the phase-appropriate client-input schema, which MAY allow placeholders or nulls only for Orchestrator-owned derived fields
+5. apply Orchestrator-owned canonicalization steps such as issue IDs, issue fingerprints, normalized severity, Phase 2 `oscillation_key` fingerprint, and opposition-key computation
 6. validate the canonicalized artifact against the persisted artifact schema
+
+Client-input schemas and persisted artifact schemas are distinct validation stages. A field that is Orchestrator-owned in the persisted artifact MUST NOT make the client-input artifact invalid solely because the client provided null, a placeholder, or a noncanonical value, unless the field is required as semantic input to compute the canonical value.
 
 Reviewer feedback that declares the review could not be performed because context files were not read, context was unavailable, or another client-process prerequisite failed MUST be treated as an invalid reviewer artifact, not semantic feedback. The Orchestrator MUST retry it under the artifact validation policy. If the retry also returns process/context-loading failure feedback, the run MUST halt with `HALTED_ARTIFACT_INVALID`. Such process failure artifacts MUST NOT dirty profile cleanliness, create issue/conflict/oscillation identity, consume a successful review result, or be sent to the Editor as feedback to apply or decline.
 
@@ -398,6 +446,48 @@ Prompt text MUST NOT be duplicated into telemetry artifacts unless the prompt sn
 ---
 
 ## CONTENT NORMALIZATION AND HASHING
+
+All SHA256 values in Whetstone artifacts MUST be lowercase hexadecimal SHA-256 digests of UTF-8 bytes.
+
+Canonical text normalization:
+- decode input as UTF-8
+- normalize line endings to LF
+- remove trailing spaces and tabs from each line
+- preserve all non-whitespace content
+- preserve markdown heading text and order
+- preserve frontmatter if present
+- ensure exactly one trailing newline
+
+The normalized text hash input is the UTF-8 byte sequence of that canonical text.
+
+Canonical JSON serialization:
+- use JSON object syntax with keys sorted lexicographically
+- emit no insignificant whitespace
+- preserve array order unless a field-specific rule explicitly requires sorting
+- serialize strings with standard JSON escaping
+- serialize null as JSON `null`
+- reject non-finite numbers
+
+Canonical JSON hashes are SHA256 of the UTF-8 bytes of that canonical JSON string. Timestamp fields such as `generated_at` record write time and MUST NOT be used as identity inputs unless a specific artifact contract explicitly says otherwise.
+
+Persisted timestamp strings MUST use RFC 3339 UTC with trailing `Z` and second precision, for example `2026-05-17T00:00:00Z`. Timestamp fields may differ across replayed executions and MUST NOT participate in deterministic identity unless an artifact contract explicitly marks them as identity inputs.
+
+Canonical scalar normalization for semantic fingerprints:
+- strings: trim leading/trailing whitespace, collapse internal whitespace to a single space, and lowercase enum-like values
+- null: serialize as the literal string `<null>`
+- booleans: serialize as `true` or `false`
+- arrays: normalize each element and preserve or sort according to the field-specific ordering rule
+
+Canonical Markdown section IDs:
+- Build a section tree from ATX headings (`#` through `######`) in document order.
+- Exclude the first H1 from descendant section IDs when it appears before any other heading and at least one later heading exists. Do not exclude any other heading automatically.
+- A section ID is the hyphen-joined slug path of the remaining heading path.
+- Slug each heading component by lowercasing, replacing each contiguous run of non-ASCII alphanumeric characters with `-`, and trimming leading/trailing `-`.
+- If slugging produces an empty component, use `section`.
+- If the same full section ID occurs more than once in one draft, append `#N` to the second and later occurrences using the one-based occurrence count for that full ID.
+- Frontmatter and content before the first heading belong to the synthetic section ID `__frontmatter__`.
+
+The canonical section index produced by this rule is the authority for profile focus anchors, oscillation keys, semantic change records, checkpoint section grouping, and clean-status invalidation.
 
 Draft hash normalization:
 - normalize line endings to LF

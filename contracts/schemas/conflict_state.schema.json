@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/conflict_state.schema.json",
+  "title": "Whetstone Conflict State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "round_number",
+    "conflicts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "conflict_state_v1" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "round_number": { "type": "integer", "minimum": 1 },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "conflict_id",
+          "conflict_fingerprint",
+          "conflict_type",
+          "conflict_severity",
+          "state",
+          "first_seen_round",
+          "last_seen_round",
+          "consecutive_present_rounds",
+          "total_present_rounds",
+          "participating_issue_fingerprints",
+          "latest_issue_ids",
+          "latest_conflict_claim"
+        ],
+        "properties": {
+          "conflict_id": { "$ref": "common.schema.json#/$defs/conflictId" },
+          "conflict_fingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+          "conflict_type": {
+            "type": "string",
+            "enum": [
+              "architectural_conflict",
+              "prior_decision_conflict",
+              "profile_conflict",
+              "rubric_conflict",
+              "ambiguous_feedback",
+              "out_of_scope_feedback"
+            ]
+          },
+          "conflict_severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "state": { "type": "string", "enum": ["present", "absent", "resolved"] },
+          "first_seen_round": { "type": "integer", "minimum": 1 },
+          "last_seen_round": { "type": "integer", "minimum": 1 },
+          "consecutive_present_rounds": { "type": "integer", "minimum": 0 },
+          "total_present_rounds": { "type": "integer", "minimum": 0 },
+          "participating_issue_fingerprints": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/sha256" }
+          },
+          "latest_issue_ids": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/issueId" }
+          },
+          "latest_conflict_claim": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    }
+  }
+}

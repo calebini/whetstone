@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import json
 import re
+from typing import Any
 
 
 ORDER_INSENSITIVE_OPEN = "[ORDER_INSENSITIVE_LIST]"
@@ -39,6 +41,16 @@ class SemanticChange:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def canonical_json_dumps(value: Any) -> str:
+    """Serialize JSON-compatible values with Whetstone canonical JSON rules."""
+
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+
+
+def canonical_json_hash(value: Any) -> str:
+    return sha256_text(canonical_json_dumps(value))
 
 
 def normalize_draft(text: str) -> str:

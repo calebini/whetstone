@@ -12,7 +12,7 @@ from typing import Any
 from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
-from whetstone.hashing import draft_hash
+from whetstone.hashing import canonical_json_hash, draft_hash
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, _validate_reviewer_feedback, run_telemetry_totals
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
@@ -810,6 +810,7 @@ def _continue_vertical_phase1(
     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
     while any(int(profile_state[profile]["rounds_used"]) < int(profile_state[profile]["round_budget"]) for profile in profiles):
         merged_feedback: list[dict[str, Any]] = []
+        merged_feedback_id_counts: dict[str, int] = {}
         draft_hash_at_cycle_start = draft_hash(config.spec_path.read_text(encoding="utf-8"))
         for profile in profiles:
             if int(profile_state[profile]["rounds_used"]) >= int(profile_state[profile]["round_budget"]):
@@ -868,7 +869,12 @@ def _continue_vertical_phase1(
                 major_count=major_count,
             )
             for issue in reviewer_feedback.get("feedback", []):
-                merged_feedback.append({**issue, "feedback_id": f"{profile}:{issue.get('feedback_id')}"})
+                feedback_id = _vertical_merged_feedback_id(
+                    profile,
+                    str(issue.get("feedback_id", "")),
+                    merged_feedback_id_counts,
+                )
+                merged_feedback.append({**issue, "feedback_id": feedback_id})
             _append_continue_history(
                 config.history_path,
                 round_number=round_number,
@@ -1705,23 +1711,57 @@ def _write_budget_extension_event(
     events = state.get("budget_extensions")
     if not isinstance(events, list):
         events = []
-    events.append(
-        {
-            "event_id": f"budget_extension_{len(events) + 1:03d}",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-            "phase": "phase_1",
-            "previous_terminal_state": previous_state.get("terminal_state"),
-            "previous_current_round": previous_state.get("current_round"),
-            "previous_review_profile_budgets": original_budgets,
-            "new_review_profile_budgets": extended_budgets,
-            "added_rounds_per_profile": extension_rounds,
-            "reason": "operator_requested_resume_budget_extension",
-        }
-    )
+    reason = "operator_requested_resume_budget_extension"
+    extension_ordinal = len(events) + 1
+    event = {
+        "event_id": _budget_extension_event_id(
+            previous_state=previous_state,
+            original_budgets=original_budgets,
+            extended_budgets=extended_budgets,
+            extension_rounds=extension_rounds,
+            reason=reason,
+            extension_ordinal=extension_ordinal,
+        ),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "phase": "phase_1",
+        "previous_terminal_state": previous_state.get("terminal_state"),
+        "previous_current_round": previous_state.get("current_round"),
+        "previous_review_profile_budgets": original_budgets,
+        "new_review_profile_budgets": extended_budgets,
+        "added_rounds_per_profile": extension_rounds,
+        "reason": reason,
+    }
+    if not any(existing.get("event_id") == event["event_id"] for existing in events if isinstance(existing, dict)):
+        events.append(event)
     state["budget_extensions"] = events
     state["review_profile_budgets"] = extended_budgets
     state["effective_run_config"] = effective_run_config(config)
     state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _budget_extension_event_id(
+    *,
+    previous_state: dict[str, Any],
+    original_budgets: dict[str, int],
+    extended_budgets: dict[str, int],
+    extension_rounds: int,
+    reason: str,
+    extension_ordinal: int,
+) -> str:
+    fingerprint = canonical_json_hash(
+        {
+            "phase": "phase_1",
+            "previous_terminal_state": previous_state.get("terminal_state"),
+            "previous_current_round": previous_state.get("current_round"),
+            "previous_current_draft_hash": previous_state.get("current_draft_hash"),
+            "previous_review_profile_budgets": original_budgets,
+            "new_review_profile_budgets": extended_budgets,
+            "added_rounds_per_profile": extension_rounds,
+            "reason": reason,
+            "extension_ordinal": extension_ordinal,
+        }
+    )
+    return f"bxe_{fingerprint[:16]}"
 
 
 def _append_resume_history(
@@ -1895,6 +1935,14 @@ def _vertical_profile_status(
         ],
         "total_round_budget": sum(int(item["round_budget"]) for item in profiles),
     }
+
+
+def _vertical_merged_feedback_id(profile: str, feedback_id: str, counts: dict[str, int]) -> str:
+    base = f"{profile}:{feedback_id}"
+    counts[base] = counts.get(base, 0) + 1
+    if counts[base] == 1:
+        return base
+    return f"{base}:{counts[base]}"
 
 
 def _contract_surface_policy(config: OrchestratorConfig) -> ContractSurfacePolicy:

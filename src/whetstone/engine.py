@@ -176,6 +176,7 @@ class FixtureEngine:
                 )
 
             feedback_detection = None
+            tracked_conflicts = list(step.conflicts)
             if phase == "phase_2":
                 feedback_detection = oscillation_tracker.record_phase2_feedback(
                     round_number=round_number,
@@ -196,6 +197,7 @@ class FixtureEngine:
                         terminal_candidates.append(TerminationCandidate("HALTED_OSCILLATION", round_number, phase, report_path))
                     if feedback_detection.recommendation == "escalate_conflict":
                         conflict = conflict_from_oscillation_detection(feedback_detection)
+                        tracked_conflicts.append(conflict)
                         conflict_report = self.report_writer.write_conflict_report(
                             round_number=round_number,
                             conflicts=[conflict],
@@ -207,9 +209,10 @@ class FixtureEngine:
 
             conflict_escalation = conflict_tracker.record_round(
                 round_number=round_number,
-                conflicts=step.conflicts,
+                conflicts=tracked_conflicts,
                 issues=result.unresolved_issues,
             )
+            conflict_tracker.write_snapshot(self.config.rounds_dir / "conflict_state.json", round_number=round_number)
             if conflict_escalation is not None:
                 report_path = self.report_writer.write_conflict_report(
                     round_number=round_number,

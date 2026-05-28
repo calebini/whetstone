@@ -7,6 +7,7 @@ import unittest
 
 from whetstone.config import DecisionPointConfig
 from whetstone.decisions import (
+    _checkpoint_card,
     detect_decision_points,
     operator_decision_checkpoint,
     summarize_decision_register,
@@ -368,6 +369,40 @@ The Arbiter owns the resolution strategy. For Foreman MVP, the Arbiter MUST appl
             )
             self.assertTrue(outputs["operator_decision_checkpoint_summary"].exists())
             self.assertTrue(outputs["operator_decision_checkpoint_summary_markdown"].exists())
+
+    def test_operator_decision_checkpoint_id_uses_round_profile_and_sorted_sources(self) -> None:
+        base = {
+            "source_type": "decision_point",
+            "source_ids": ["b", "a"],
+            "severity": "major",
+            "trigger_reason": "validation_policy",
+            "affected_sections": ["Validation"],
+            "question": "What validation depth applies?",
+            "evidence_lines": [],
+            "options": [
+                {
+                    "option_id": "required_fields",
+                    "label": "Required fields",
+                    "description": "Define required fields only.",
+                    "recommended": True,
+                }
+            ],
+            "recommended_option_id": "required_fields",
+            "risk_if_skipped": "Editor may invent validation policy.",
+        }
+
+        card_a = _checkpoint_card(round_number=1, profile="determinism", **base)
+        card_b = _checkpoint_card(
+            round_number=1,
+            profile="determinism",
+            **{**base, "source_ids": ["a", "b"]},
+        )
+        card_c = _checkpoint_card(round_number=2, profile="determinism", **base)
+        card_d = _checkpoint_card(round_number=1, profile="operability", **base)
+
+        self.assertEqual(card_a["checkpoint_id"], card_b["checkpoint_id"])
+        self.assertNotEqual(card_a["checkpoint_id"], card_c["checkpoint_id"])
+        self.assertNotEqual(card_a["checkpoint_id"], card_d["checkpoint_id"])
 
 
 def _feedback(severity: str) -> dict:

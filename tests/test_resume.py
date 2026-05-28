@@ -13,7 +13,13 @@ from whetstone.config import OrchestratorConfig
 from whetstone.cli import main, _apply_resume_run_state_config
 from whetstone.hashing import draft_hash
 from whetstone.live_phase1 import LivePhase1Runner
-from whetstone.resume import plan_budget_extension_resume, plan_resume_halted_run, resume_budget_exhausted_run, resume_halted_run
+from whetstone.resume import (
+    _budget_extension_event_id,
+    plan_budget_extension_resume,
+    plan_resume_halted_run,
+    resume_budget_exhausted_run,
+    resume_halted_run,
+)
 from tests.test_live import (
     AppliedDraftEditorClient,
     GoodEmptyReviewerClient,
@@ -408,6 +414,45 @@ class ResumeTests(unittest.TestCase):
             self.assertEqual(len(state["budget_extensions"]), 1)
             self.assertEqual(state["budget_extensions"][0]["previous_terminal_state"], "TARGET_NOT_REACHED")
             self.assertEqual(state["budget_extensions"][0]["added_rounds_per_profile"], 1)
+            self.assertRegex(state["budget_extensions"][0]["event_id"], r"^bxe_[a-f0-9]{16}$")
+
+    def test_budget_extension_event_id_is_stable_and_excludes_timestamp(self) -> None:
+        previous_state = {
+            "terminal_state": "TARGET_NOT_REACHED",
+            "current_round": 6,
+            "current_draft_hash": "a" * 64,
+            "updated_at": "2026-05-01T00:00:00Z",
+        }
+        original_budgets = {"structural_integrity": 2, "determinism": 2, "operability": 2}
+        extended_budgets = {"structural_integrity": 3, "determinism": 3, "operability": 3}
+
+        first = _budget_extension_event_id(
+            previous_state=previous_state,
+            original_budgets=original_budgets,
+            extended_budgets=extended_budgets,
+            extension_rounds=1,
+            reason="operator_requested_resume_budget_extension",
+            extension_ordinal=1,
+        )
+        second = _budget_extension_event_id(
+            previous_state={**previous_state, "updated_at": "2026-05-02T00:00:00Z"},
+            original_budgets=dict(reversed(original_budgets.items())),
+            extended_budgets=dict(reversed(extended_budgets.items())),
+            extension_rounds=1,
+            reason="operator_requested_resume_budget_extension",
+            extension_ordinal=1,
+        )
+        third = _budget_extension_event_id(
+            previous_state=previous_state,
+            original_budgets=original_budgets,
+            extended_budgets=extended_budgets,
+            extension_rounds=1,
+            reason="operator_requested_resume_budget_extension",
+            extension_ordinal=2,
+        )
+
+        self.assertEqual(first, second)
+        self.assertNotEqual(first, third)
 
     def test_vertical_budget_extension_resume_appends_cycles_and_records_event(self) -> None:
         with TemporaryDirectory() as tmp:

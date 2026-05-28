@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 
 from whetstone.hashing import (
+    canonical_json_dumps,
+    canonical_json_hash,
     draft_hash,
     mechanical_change_keys,
     normalize_draft,
@@ -40,6 +42,13 @@ class HashingTests(unittest.TestCase):
 
     def test_rubric_content_hash_uses_draft_normalization(self) -> None:
         self.assertEqual(rubric_content_hash("# Rubric\r\n"), draft_hash("# Rubric\n\n"))
+
+    def test_canonical_json_sorts_keys_and_removes_insignificant_whitespace(self) -> None:
+        left = {"b": [2, 1], "a": {"z": None, "m": "text"}}
+        right = {"a": {"m": "text", "z": None}, "b": [2, 1]}
+
+        self.assertEqual(canonical_json_dumps(left), '{"a":{"m":"text","z":null},"b":[2,1]}')
+        self.assertEqual(canonical_json_hash(left), canonical_json_hash(right))
 
 
 if __name__ == "__main__":

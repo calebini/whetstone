@@ -11,4 +11,5 @@ rounds/*
 !rounds/.gitkeep
 rounds/round-*/
 rounds/*.json
+whetstone_runs/
 tmp/

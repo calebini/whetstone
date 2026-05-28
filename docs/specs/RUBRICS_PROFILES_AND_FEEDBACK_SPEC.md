@@ -311,7 +311,7 @@ Explicit `review.profile_budgets` and `convergence.profile_budgets` override onl
 
 `mvp_readiness_check` is a Phase 2 convergence-acceptance profile for `utility_mvp` in the same way that `convergence_strict_check` is the convergence-acceptance profile for stricter profile sets.
 
-For clean-status invalidation, each review profile MUST also have computable focus anchors. Focus anchors are canonical Markdown section IDs derived from the current draft using the section-index rule in this spec.
+For clean-status invalidation, each review profile MUST also have computable focus anchors. Focus anchors are canonical Markdown section IDs derived from the current draft using the canonical section-index rule defined by the artifact/content normalization spec.
 
 Default focus anchors:
 
@@ -362,7 +362,7 @@ profile_focus_anchors:
     - convergence-declaration
 ```
 
-When the draft title includes a versioned root heading, the Orchestrator MUST resolve these anchors by suffix match against the canonical section index. If zero or multiple section IDs match a focus anchor suffix, configuration is invalid and the Orchestrator MUST halt with `CONFIG_INVALID`.
+The Orchestrator MUST resolve these anchors by suffix match against the canonical section index. If zero or multiple section IDs match a focus anchor suffix, configuration is invalid and the Orchestrator MUST halt with `CONFIG_INVALID`.
 
 ---
 
@@ -501,7 +501,7 @@ opposition_key: string
 
 `section_id` is the canonical primary anchor for the issue. It MUST be a single section ID, not a list. If a concern spans multiple sections, the reviewer MUST choose one primary anchor and MAY include the rest in `affected_sections`.
 
-The Orchestrator MUST derive the canonical section index from the current `draft_before.md` Markdown heading paths using lowercase slug words joined by hyphens. If the same heading path repeats, append `#N` using the one-based occurrence count. The Phase 2 reviewer prompt MUST include the allowed section IDs, and reviewers MUST choose from that list.
+The Orchestrator MUST derive the canonical section index from the current `draft_before.md` using the canonical section-index rule defined by the artifact/content normalization spec. The Phase 2 reviewer prompt MUST include the allowed section IDs, and reviewers MUST choose from that list.
 
 When `oscillation_key` is present, `oscillation_key.section_id` is the primary anchor and `affected_sections` lists all touched sections, including secondary sections. The primary anchor SHOULD also appear in `affected_sections` for consistency.
 

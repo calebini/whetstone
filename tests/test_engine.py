@@ -115,6 +115,10 @@ class FixtureEngineTests(unittest.TestCase):
             self.assertEqual(result.terminal_state, "HALTED_CONFLICT")
             self.assertEqual(result.round_number, 2)
             self.assertTrue((root / "rounds" / "conflict_report.json").exists())
+            state = json.loads((root / "rounds" / "conflict_state.json").read_text())
+            self.assertEqual(state["schema_version"], "conflict_state_v1")
+            self.assertEqual(state["conflicts"][0]["state"], "present")
+            self.assertEqual(state["conflicts"][0]["consecutive_present_rounds"], 2)
 
     def test_fixture_engine_reports_nonblocker_conflict_without_halting(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -135,6 +139,10 @@ class FixtureEngineTests(unittest.TestCase):
             report = json.loads((root / "rounds" / "conflict_report.json").read_text())
             self.assertIsNone(report["terminal_state"])
             self.assertEqual(report["conflicts"][0]["conflict_severity"], "major")
+            state = json.loads((root / "rounds" / "conflict_state.json").read_text())
+            self.assertEqual(state["conflicts"][0]["state"], "absent")
+            self.assertEqual(state["conflicts"][0]["consecutive_present_rounds"], 0)
+            self.assertEqual(state["conflicts"][0]["total_present_rounds"], 2)
 
     def test_fixture_engine_escalates_nonconsecutive_conflict_on_third_appearance(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -154,6 +162,8 @@ class FixtureEngineTests(unittest.TestCase):
             self.assertEqual(result.round_number, 5)
             report = json.loads((root / "rounds" / "conflict_report.json").read_text())
             self.assertIn("3 times non-consecutively", report["exit_reason"])
+            state = json.loads((root / "rounds" / "conflict_state.json").read_text())
+            self.assertEqual(state["conflicts"][0]["total_present_rounds"], 3)
 
     def test_phase2_feedback_churn_creates_nonhalting_conflict_report(self) -> None:
         with TemporaryDirectory() as tmp:

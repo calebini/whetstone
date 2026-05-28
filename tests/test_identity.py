@@ -27,6 +27,14 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertRegex(issue_id(first), r"^iss_[a-f0-9]{16}$")
 
+    def test_issue_identity_sorts_sections_and_canonicalizes_null_invariant(self) -> None:
+        first = issue_fingerprint("gap", ["b", "a"], None, "Missing rule")
+        second = issue_fingerprint("gap", ["a", "b"], None, "Missing rule")
+        explicit_empty = issue_fingerprint("gap", ["a", "b"], "", "Missing rule")
+
+        self.assertEqual(first, second)
+        self.assertNotEqual(first, explicit_empty)
+
     def test_conflict_identity_sorts_participating_issue_fingerprints(self) -> None:
         first = conflict_fingerprint("profile_conflict", ["b" * 64, "a" * 64], "Profiles disagree")
         second = conflict_fingerprint("profile_conflict", ["a" * 64, "b" * 64], "Profiles disagree")

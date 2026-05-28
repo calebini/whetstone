@@ -294,6 +294,34 @@ promoted_by: string | null
 promotion_manifest_hash: string | null
 ```
 
+`decomposition_manifest.audit` MUST be null before audit runs. After audit runs, it MUST contain:
+
+```yaml
+status: passed | failed
+audited_at: string
+source_spec_hash: string
+approved_plan_hash: string
+coverage_status: complete | incomplete
+target_existence_status: passed | failed
+target_hash_status: passed | failed
+provenance_header_status: passed | failed
+authority_duplication_status: passed | failed
+unmapped_unit_count: integer
+duplicated_authority_count: integer
+issues:
+  - issue_id: string
+    severity: blocker | major | minor | nit
+    category: missing_target | target_hash_drift | missing_provenance | source_hash_drift | unmapped_unit | duplicated_authority | invalid_manifest
+    target_spec_id: string | null
+    source_unit_id: string | null
+    message: string
+coverage_matrix_path: string
+unmapped_requirements_path: string | null
+duplicated_authority_report_path: string | null
+```
+
+Promotion validation MUST treat `audit.status = passed`, `coverage_status = complete`, zero blocker/major audit issues, matching `source_spec_hash`, matching `approved_plan_hash`, passing target existence, passing target hashes, passing provenance headers, and passing authority duplication status as required gates. `promoted = true` MUST NOT be written when any required audit gate fails.
+
 Lossless extraction rules:
 
 - The source spec hash MUST match the approved plan hash guard before extraction.

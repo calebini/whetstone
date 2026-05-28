@@ -25,6 +25,8 @@ Runtime halt precedence:
 
 The first condition satisfied halts execution.
 
+Only active conditions from the current evaluation cycle participate in halt precedence. Historical terminal reports from earlier halted, resumed, or superseded states are audit artifacts and MUST NOT preempt the current `run_state.json` interpretation after a valid continuation has advanced the run. When a resumed or continued run writes a later `run_state.json`, that run state is the authority for current terminal evaluation; preserved older terminal reports remain historical evidence only.
+
 ---
 
 ## HALT ARTIFACT MATRIX
@@ -35,6 +37,29 @@ clean convergence achieved:
   - spec.md
   - spec.history.md
   - convergence_declaration.md
+
+Phase 1 stable boundary:
+- terminal_state: PHASE_1_STABLE
+- required artifacts:
+  - spec.md
+  - spec.history.md
+  - rounds/run_state.json
+  - latest draft_after.md
+  - one current-draft reviewer_feedback.json per required Phase 1 profile
+  - one profile_used.yaml per required Phase 1 profile identifying the reviewed draft hash, profile name, round path, and round kind
+- must set:
+  - ready_for_phase_2: true
+
+focused profile stable:
+- terminal_state: FOCUSED_PROFILE_STABLE
+- required artifacts:
+  - spec.md
+  - spec.history.md
+  - rounds/run_state.json
+  - latest draft_after.md
+  - latest reviewer_feedback.json proving the focused profile is clean on the current draft hash
+- must set:
+  - ready_for_phase_2: false
 
 blocker-level conflict escalation:
 - terminal_state: HALTED_CONFLICT
@@ -176,6 +201,17 @@ Each version stamp is an Orchestrator-owned mutation. It MUST be persisted to `s
 
 Rollback authority remains the round artifacts and hashes. Version labels are human navigation aids and MUST NOT replace hash validation for replay, audit, or rollback correctness.
 
+All draft, spec, snapshot, run-state, and artifact hashes used by this leaf MUST use the canonical text, canonical JSON, and SHA-256 hash semantics defined by the artifact/content normalization spec. Resume guards, version stamping, accepted-draft tracking, budget-extension events, and `spec.history.md` entries MUST compute hashes after the relevant content is persisted in canonical form. Version stamping MUST occur before the stamped draft's persisted `draft_after_hash` or Phase 2 promoted `draft_before_hash` is computed.
+
+When more than one supported numeric version anchor exists, version-anchor precedence is:
+
+1. explicit `Version:` field in frontmatter or document metadata
+2. visible `Version:` line in the document body before the first non-title section
+3. root heading numeric version label
+4. `Status:` line numeric version label
+
+If multiple supported anchors are present, they MUST either agree before stamping or the Orchestrator MUST halt with `HALTED_ARTIFACT_INVALID` before mutating `spec.md`. Stamping MUST update the highest-precedence anchor. Lower-precedence synchronized anchors MAY also be updated only when they exactly matched the prior authoritative version; conflicting lower-precedence anchors are invalid rather than silently overwritten.
+
 ---
 
 ## ROUND STRATEGY (ADAPTIVE)
@@ -217,9 +253,21 @@ Phase 1 supports two review modes:
 - `horizontal` (default): execute one profile review, run the Editor, then repeat or advance according to that profile's result.
 - `vertical`: execute each configured Phase 1 profile as an independent Reviewer pass over the same `draft_before.md`, merge the resulting feedback, run one consolidated Editor revision, then repeat the full profile stack against the revised draft until every profile verifies clean on the same draft or profile budgets are exhausted.
 
+Canonical section IDs and profile focus anchors used by scheduling are imported from the artifact/content normalization spec and the rubric/profile spec. Each Reviewer pass MUST persist the resolved focus anchor set for its profile in `profile_used.yaml`. Clean-profile reuse and invalidation MUST compare semantic change section IDs against that persisted anchor set, not against freshly inferred prose labels.
+
+If an edit renames or moves a section, invalidation uses the semantic change record: the old canonical section ID is treated as changed, and the new canonical section ID is treated as changed. If either ID matches a persisted focus anchor for a previously clean profile, that profile's clean status is invalidated for the new draft.
+
+The Orchestrator is the producer of semantic change records used for clean-profile invalidation. A mutating round MUST persist the canonical changed section IDs in the round artifacts before clean-status reuse is evaluated. If the semantic change record is missing, schema-invalid, or cannot map an edit to canonical section IDs, the Orchestrator MUST use the conservative fallback: invalidate every previously clean Phase 1 profile for the new draft. If the record cannot be produced because the draft artifact itself is unreadable or invalid, the round MUST halt under artifact validation policy instead.
+
 In `vertical` mode, each profile review remains independent: it MUST have its own prompt, profile focus, `reviewer_feedback.json`, `profile_used.yaml`, prompt snapshot, context files, telemetry, and validation. Only the Editor step is consolidated.
 
-The vertical merge artifact MUST preserve each finding's source profile. If feedback IDs are not globally unique across profile reviews, the Orchestrator MUST rewrite feedback IDs in the consolidated Editor packet using a deterministic profile-qualified form. Issue IDs and issue fingerprints remain those of the original reviewer findings.
+The vertical merge artifact MUST preserve each finding's source profile. If feedback IDs are not globally unique across profile reviews, the Orchestrator MUST rewrite feedback IDs in the consolidated Editor packet using:
+
+```text
+feedback_id = profile_slug + ":" + original_feedback_id
+```
+
+`profile_slug` is the lowercase profile name with every contiguous run of non-ASCII alphanumeric characters replaced by `-` and leading/trailing `-` removed. The consolidated packet MUST preserve `source_profile` and `original_feedback_id` for audit. If two rewritten IDs still collide, append `":" + N` using the one-based occurrence count in stable source ordering. Stable source ordering is phase profile order, then round number, then original feedback order inside the source `reviewer_feedback.json`. Issue IDs and issue fingerprints remain those of the original reviewer findings.
 
 Each round's `profile_used.yaml` MUST include:
 - `profile`: the review profile or synthetic profile label
@@ -248,6 +296,9 @@ Phase 1 `horizontal` mode executes configured profiles in order.
 For each Phase 1 profile in `horizontal` mode:
 - run the profile unless `skip_if_clean = true` and the current draft already has a valid clean result for that profile
 - the profile result is clean only when the Reviewer review of `draft_before.md` for that round returns zero in-scope blocker issues and zero in-scope major issues
+- if the Reviewer returns no in-scope feedback requiring draft mutation, the Orchestrator MUST skip the Editor and persist an Orchestrator-owned no-op `editor_summary.json` with `draft_before_hash = draft_after_hash`
+- if the Reviewer returns only minor or nit feedback, the Orchestrator MAY invoke the Editor only when the selected target policy says minor/nit cleanup is in scope for the current profile; otherwise it MUST carry the findings as nonblocking residual feedback and advance or close out according to profile cleanliness
+- if the Reviewer returns any in-scope blocker or major feedback selected for resolution, the Orchestrator MUST invoke the Editor unless another higher-precedence halt condition applies
 - editor resolution claims in `editor_summary.json` determine which findings remain unresolved after the edit, but they MUST NOT by themselves mark the reviewed profile clean
 - if the profile returns in-scope blocker or major issues and `repeat_if_blockers = true`, schedule the same profile again after editor revision until a later Reviewer pass verifies the current draft clean or the profile's `round_budget` is exhausted
 - if the Reviewer pass is clean but the Editor mutates the draft in the same round, that clean result applies only to the pre-edit draft and MUST NOT mark the post-edit draft clean; the same profile requires a later clean verification pass unless a computable skip rule applies
@@ -271,7 +322,9 @@ Phase 1 completes only when:
 
 Phase 2 executes configured profiles in order.
 
-After each Phase 2 reviewer/editor cycle, the Orchestrator MUST evaluate halt conditions in the ordered precedence defined by this spec.
+After each Phase 2 reviewer/editor cycle, the Orchestrator MUST first perform Orchestrator-owned declaration maintenance for the current draft lineage, then evaluate halt conditions in the ordered precedence defined by this spec. Declaration maintenance includes regenerating a stale candidate `convergence_declaration.md` for the current draft hash and removing active declaration hash-binding findings that are fully repaired by that regeneration.
+
+Client invocation timeout and artifact validation failure are evaluated before declaration maintenance when the client call or artifact needed for the current cycle did not complete validly. Decision intervention is evaluated after artifact validation and before invoking an Editor or declaration revision that would require an operator-owned choice. Once a valid Phase 2 cycle exists and no intervention blocks maintenance, declaration maintenance MUST happen before oscillation, conflict, target-matrix, clean-convergence, or budget-exhaustion evaluation.
 
 Phase 2 completion is checked after each validated Phase 2 review cycle and any resulting declaration revision, not only after the full configured Phase 2 profile sequence has been exhausted.
 
@@ -446,6 +499,22 @@ Resume MUST NOT rerun prior rounds. For the supported Editor-timeout path, resum
 
 Resume does not imply hidden client session reuse. It uses persisted file artifacts as the replay source of truth.
 
+For Editor-timeout resume idempotency, the halted round number is reused until a valid `editor_summary.json` and corresponding validated `draft_after.md` are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Editor responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Editor artifact. If the halted round later contains a valid Editor artifact, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
+
+Attempt numbers are derived from persisted attempt artifacts in the halted `round-N/` directory. Authoritative attempt artifacts are filenames matching:
+
+```text
+<client_role>-<artifact_name>-attempt-<attempt_number>.json
+```
+
+where `client_role` is `reviewer` or `editor`, `artifact_name` is the expected client artifact, and `attempt_number` is a positive base-10 integer without leading zeros. The next attempt number is:
+
+```text
+max(valid attempt_number values for the same round, client_role, and artifact_name) + 1
+```
+
+If no valid attempt artifact exists, the next attempt number is `1`. Malformed attempt filenames are preserved as diagnostics but ignored for attempt-number calculation. Duplicate valid attempt numbers for the same round/client/artifact are artifact-invalid unless one file is the canonical validated artifact and the other is explicitly named as raw diagnostic output.
+
 Resume MUST inherit persisted effective run configuration from the halted run's `run_state.json` when present. At minimum, resume MUST inherit `review_profile_budgets`, `convergence_profile_budgets`, `decision_points`, and `timeouts` from `effective_run_config`. For compatibility with older runs, resume MAY fall back to top-level `run_state.json` `review_profile_budgets`, `convergence_profile_budgets`, and `timeouts` when `effective_run_config` is absent. Explicit CLI overrides supplied to the resume command take precedence over inherited run-state values.
 
 By default, resume recovers only the halted round and then stops. If invoked with `--continue`, the Orchestrator MAY continue Phase 1 after the recovered round succeeds. `resume --continue` MUST:
@@ -497,6 +566,14 @@ Budget-extension resume MUST NOT overwrite, delete, renumber, or rerun prior rou
 - continue applying normal Phase 1 scheduling, validation, timeout, decision, oscillation, and halting rules
 - update `run_state.json`, `spec.md`, and `spec.history.md` after each appended round
 
+For `review.mode: horizontal`, budget-extension resume MUST reconstruct per-profile `rounds_used` from prior round artifacts. For each profile, the resumed effective budget MUST be:
+
+```text
+max(previous_effective_budget, reconstructed_rounds_used) + added_rounds_per_profile
+```
+
+This rule ensures a budget extension always creates additional capacity even when a previous closeout or verification pass consumed rounds beyond the explicit configured value.
+
 For `review.mode: vertical`, budget-extension resume MUST replay the prior vertical event stream to reconstruct:
 - per-profile `rounds_used`
 - per-profile clean/exhausted/residual status
@@ -504,8 +581,10 @@ For `review.mode: vertical`, budget-extension resume MUST replay the prior verti
 - `seen_draft_hashes`
 - latest unresolved issues from the most recent synthetic `profile: vertical` editor round
 
-After reconstruction, vertical budget-extension resume MUST increase each effective Phase 1 profile review budget by the operator-requested extension amount, then append additional vertical cycles. Each appended vertical cycle MUST:
-- run each non-exhausted profile review pass against the same draft at the start of that cycle
+After reconstruction, vertical budget-extension resume MUST increase each effective Phase 1 profile review budget by the operator-requested extension amount, then recompute profile eligibility from reconstructed `rounds_used` and the new effective budgets. A profile is eligible in resumed vertical cycles when `rounds_used < new_effective_budget`, regardless of whether it previously ended in exhausted or residual status. A profile is ineligible only when it has no remaining review capacity under the new effective budget or a separate terminal guard blocks continuation.
+
+Each appended vertical cycle MUST:
+- run each eligible profile review pass against the same draft at the start of that cycle
 - merge profile feedback into a synthetic `profile: vertical` reviewer artifact when any profile reports feedback
 - run one consolidated Editor revision for the merged feedback
 - stop with `PHASE_1_STABLE` only when all required profiles are clean on the current draft and the current draft is accepted
@@ -524,6 +603,28 @@ Budget-extension resume MUST record an auditable event in `run_state.json.budget
 - `reason`
 
 The default reason for an operator-requested budget extension is `operator_requested_resume_budget_extension`.
+
+`event_id` MUST be deterministic:
+
+```text
+event_id = "bxe_" + first_16_hex_chars(SHA256(canonical_json({
+  "phase": phase,
+  "previous_terminal_state": previous_terminal_state,
+  "previous_current_round": previous_current_round,
+  "previous_current_draft_hash": current_draft_hash,
+  "previous_review_profile_budgets": previous_review_profile_budgets,
+  "new_review_profile_budgets": new_review_profile_budgets,
+  "added_rounds_per_profile": added_rounds_per_profile,
+  "reason": reason,
+  "extension_ordinal": extension_ordinal
+})))
+```
+
+`extension_ordinal` is one plus the number of prior budget-extension events already persisted for the run. `generated_at` MUST NOT participate in `event_id`.
+
+If a budget-extension event with the same `event_id` already exists and no appended client round has been persisted after that event, a repeated resume command MUST reuse the existing event and continue without appending a duplicate event. If appended rounds already exist after the event, the repeated resume command MUST reconstruct from the latest persisted round and continue normally or refuse if the run is no longer resumable.
+
+An appended client round is considered persisted only when its `round-N/` directory contains a schema-valid `profile_used.yaml` and the required validated reviewer/editor artifacts for that round kind. Prompt snapshots, telemetry files, raw invalid responses, or partial attempt diagnostics without a valid round artifact set are partial attempt artifacts, not completed appended rounds. A repeated resume command after such a partial attempt MUST preserve the partial artifacts, reuse the existing budget-extension event, reuse the same next round number, and continue with the next deterministic attempt number for the interrupted client role.
 
 Budget-extension events MUST be preserved across subsequent `run_state.json` rewrites during the resumed continuation.
 
