@@ -62,6 +62,8 @@ issue_id = "iss_" + first_16_hex_chars(issue_fingerprint)
 
 `oscillation_key` MAY be null in Phase 1.
 
+`change_audit_feedback.json` MUST use the same canonical persisted schema as `reviewer_feedback.json`. It is produced by the `audit-change` workflow and differs only in artifact path, prompt context, and hash authority: its `draft_hash` is the hash of `change_audit/audit_brief.md`.
+
 Phase 2 reviewer input MUST use the phase-specific reviewer input schema. In Phase 2 reviewer input, `oscillation_key` MUST contain exactly the reviewer-proposed classification fields:
 - `section_id`
 - `concern_type`
@@ -313,6 +315,53 @@ Checkpoint summary clusters MUST be mechanical:
 - `recommended_operator_review` MUST contain at most five checkpoint cards sorted by deterministic priority: authority boundary, deferred scope boundary, failure/reporting policy, validation policy, then general operator policy choice; ties sort by severity, round number, then checkpoint ID. Severity sort order is `blocker`, `major`, `minor`, `nit`, `null`.
 
 The human-readable Markdown summary MUST expose the same counts, recommended review cards, and clusters without adding semantic interpretation beyond persisted checkpoint fields.
+
+`change_audit_report.json` MUST contain:
+
+```yaml
+schema_version: change-audit-report-v1
+generated_at: string
+audit_brief_hash: string
+profile: string
+verdict: pass | pass_with_minor_clarification | needs_revision | blocked | audit_failed
+boundary_preserved: boolean | null
+failure_reason: string | null
+feedback_counts:
+  blocker: integer
+  major: integer
+  minor: integer
+  nit: integer
+in_scope_feedback_ids: [string]
+out_of_scope_feedback_ids: [string]
+recommended_next_action: none | manual_patch | run_focused_whetstone | run_full_whetstone | fix_audit_setup
+source_feedback_path: string
+audit_manifest_path: string
+```
+
+`change_audit_report.json` is Orchestrator-owned. It summarizes validated Reviewer feedback from `change_audit_feedback.json`; the Reviewer MUST NOT produce the report directly. The report MUST NOT be used as a convergence declaration, terminal report, apply-back report, or Phase 1/Phase 2 scheduler input.
+
+`feedback_counts` MUST count in-scope feedback only. Out-of-scope feedback MUST be represented by `out_of_scope_feedback_ids` and preserved in `change_audit_feedback.json`, but it MUST NOT increment `feedback_counts`.
+
+`failure_reason` MUST be non-null when `verdict = audit_failed`; otherwise it MUST be null.
+
+`audit_manifest.json` MUST contain:
+
+```yaml
+schema_version: change-audit-manifest-v1
+generated_at: string
+audit_notes_path: string
+audit_notes_hash: string
+profile: string
+specs:
+  - path: string
+    hash: string
+client:
+  name: string
+  version: string
+  model: string
+```
+
+The manifest binds the audit inputs and reviewer identity. It does not assert convergence or source-spec mutation.
 
 `decision_register.json` MUST contain:
 

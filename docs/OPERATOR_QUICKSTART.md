@@ -372,6 +372,44 @@ next_action: manual_review_required
 
 read `rounds/technical_failure_report.json`. The run completed a soft Phase 1 diagnostic sweep, but at least one profile still has residual blocker/major or oscillation status. Do not proceed to Phase 2 from this state.
 
+## Run A Lightweight Change Audit
+
+Use `audit-change` when a small feature or boundary update touched multiple specs and you want a reviewer-only sanity check without starting a Whetstone convergence loop.
+
+Create an audit notes file with the intended contract:
+
+```markdown
+# Change Intent
+
+# Expected Boundary
+
+# Specs To Check
+
+# Out Of Scope
+```
+
+Then run:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli audit-change \
+  --root "$AUDIT_ROOT" \
+  --notes audit-notes.md \
+  --spec docs/POLICY_SPEC.md \
+  --spec docs/EVIDENCE_LIFECYCLE_SPEC.md \
+  --profile consistency
+```
+
+This writes:
+
+```text
+$AUDIT_ROOT/change_audit/audit_brief.md
+$AUDIT_ROOT/change_audit/audit_manifest.json
+$AUDIT_ROOT/change_audit/change_audit_feedback.json
+$AUDIT_ROOT/change_audit/change_audit_report.md
+```
+
+The source specs are not mutated. Treat `pass` and `pass_with_minor_clarification` as low-friction review outcomes. Treat `needs_revision` or `blocked` as a signal to patch manually or run a focused Whetstone job.
+
 ## Run A Focused Profile Recheck
 
 Use a focused Phase 1 profile run when a prior run leaves one profile uncertain and you want normal Whetstone artifacts for a targeted recheck.

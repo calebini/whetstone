@@ -15,7 +15,7 @@ Automate iterative technical review between AI clients (e.g., Claude Code, Codex
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
 
-Version `0.68` tightens decomposition extraction readability by restoring parent heading context for intro units and normalizing standalone child headings under generated target titles.
+Version `0.69` specifies the lightweight `audit-change` workflow for reviewer-only cross-spec change audits.
 
 ---
 
@@ -33,7 +33,7 @@ Owns rubric profiles, workflow presets, review profiles, profile sets, severity 
 
 See [Scope Intake And Decisions Spec](SCOPE_INTAKE_AND_DECISIONS_SPEC.md).
 
-Owns scope contracts, first-contact intake, decision summaries, decision intervention/checkpoint artifacts, expanding contract surface detection, and the spec decomposition workflow. The decomposition material lives here under `SPEC DECOMPOSITION WORKFLOW`.
+Owns scope contracts, first-contact intake, lightweight change audits, decision summaries, decision intervention/checkpoint artifacts, expanding contract surface detection, and the spec decomposition workflow. The decomposition material lives here under `SPEC DECOMPOSITION WORKFLOW`.
 
 ### Scheduler, State, Resume, And Budgets
 
@@ -125,6 +125,11 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
 - /rounds/operator_decision_checkpoint_summary.json (at terminal state)
 - /rounds/operator_decision_checkpoint_summary.md (human-readable checkpoint summary, at terminal state)
 - /rounds/intake/scope_contract.json (approved scope contract, when present)
+- /change_audit/audit_manifest.json (if `audit-change` is run)
+- /change_audit/audit_brief.md (self-contained review brief for `audit-change`)
+- /change_audit/change_audit_feedback.json (canonical reviewer feedback for `audit-change`)
+- /change_audit/change_audit_report.json (machine-readable audit verdict)
+- /change_audit/change_audit_report.md (human-readable audit verdict)
 - /rounds/contract_surface_report.json (if expanding contract surface is detected)
 - /rounds/contract_surface_report.md (human-readable synthesis recommendation, if detected)
 - /rounds/rubric_manifest.json (required before Phase 2 review begins)

@@ -68,6 +68,154 @@ approval:
 
 `whetstone intake --template mvp --output scope-notes.md` MUST produce a human-editable scope notes template. `whetstone intake --from-notes scope-notes.md` MUST produce a schema-valid scope contract. Unless `--approve` is supplied, generated contracts MUST remain `status = draft` and MUST NOT satisfy the MVP preflight requirement.
 
+## CHANGE AUDIT WORKFLOW
+
+`audit-change` is a lightweight reviewer-only workflow for checking whether a bounded change preserved its intended contract across one or more specs. It is not a convergence run, not a Phase 1 or Phase 2 round, not an apply-back path, and not an Editor workflow.
+
+Use `audit-change` when an operator has already made or is about to make a small feature, policy, boundary, or terminology update that crosses spec boundaries and wants a low-friction sanity check. The workflow answers:
+
+```text
+Did this specific cross-spec change preserve the intended contract?
+```
+
+It MUST NOT answer:
+
+```text
+Is the full spec converged?
+```
+
+The command surface SHOULD be:
+
+```text
+whetstone audit-change \
+  --root <audit_root> \
+  --notes <audit_notes.md> \
+  --spec <spec_path> \
+  [--spec <spec_path> ...] \
+  [--profile consistency] \
+  [--client <reviewer_client>] \
+  [--model <model>] \
+  [--timeout-seconds <seconds>]
+```
+
+`--notes` is required. `--spec` MUST be provided at least once. The default review profile SHOULD be `consistency` because the primary use case is boundary, terminology, authority, and artifact consistency across already-authored specs. Operators MAY choose another review profile when the change intent is narrower, but the audit remains reviewer-only.
+
+Audit notes MUST be human-readable Markdown and SHOULD contain:
+
+```markdown
+# Change Intent
+
+# Expected Boundary
+
+# Specs To Check
+
+# Out Of Scope
+```
+
+The Orchestrator MUST build a self-contained `audit_brief.md` from the audit notes and listed specs. The brief MUST include:
+
+- source audit notes path and content
+- each spec path, canonical text hash, and full text content
+- profile name
+- explicit instruction that the Reviewer evaluates only the stated change intent and expected boundary
+- explicit instruction that unrelated convergence, polish, and post-change improvements are out of scope unless they directly contradict the stated boundary
+
+The Orchestrator MUST write audit artifacts under:
+
+```text
+<audit_root>/change_audit/
+```
+
+Required artifacts:
+
+```text
+audit_manifest.json
+audit_brief.md
+change_audit_feedback.json
+change_audit_report.json
+change_audit_report.md
+```
+
+`audit_manifest.json` MUST bind the inputs:
+
+```yaml
+schema_version: change-audit-manifest-v1
+generated_at: string
+audit_notes_path: string
+audit_notes_hash: string
+profile: string
+specs:
+  - path: string
+    hash: string
+client:
+  name: string
+  version: string
+  model: string
+```
+
+Terminology note:
+
+- `audit-change` is the CLI command and workflow name.
+- `audit_change` is the prompt-context phase label used to tell the Reviewer this is not Phase 1 or Phase 2.
+- `change_audit/` is the artifact directory under the audit root.
+- `change-audit-*` prefixes are schema-version identifiers.
+
+`change_audit_feedback.json` MUST use canonical `reviewer_feedback.json` shape with `round_number = 1`, `phase = audit_change` by prompt context, and `profile` equal to the selected audit profile. The `draft_hash` MUST be the canonical text hash of `audit_brief.md`, not any individual source spec.
+
+`change_audit_report.json` MUST contain:
+
+```yaml
+schema_version: change-audit-report-v1
+generated_at: string
+audit_brief_hash: string
+profile: string
+verdict: pass | pass_with_minor_clarification | needs_revision | blocked | audit_failed
+boundary_preserved: boolean | null
+failure_reason: string | null
+feedback_counts:
+  blocker: integer
+  major: integer
+  minor: integer
+  nit: integer
+in_scope_feedback_ids: [string]
+out_of_scope_feedback_ids: [string]
+recommended_next_action: none | manual_patch | run_focused_whetstone | run_full_whetstone | fix_audit_setup
+source_feedback_path: string
+audit_manifest_path: string
+```
+
+`feedback_counts` MUST count in-scope feedback only. Out-of-scope feedback MUST be represented by `out_of_scope_feedback_ids` and preserved in `change_audit_feedback.json`, but it MUST NOT increment `feedback_counts`.
+
+Verdict mapping:
+
+- `pass`: zero in-scope feedback items.
+- `pass_with_minor_clarification`: one or more in-scope `minor` or `nit` items and zero in-scope `major` or `blocker` items.
+- `needs_revision`: one or more in-scope `major` items and zero in-scope `blocker` items.
+- `blocked`: one or more in-scope `blocker` items.
+- `audit_failed`: readable audit inputs were assembled, but the Reviewer artifact could not be produced or validated, or the audit setup failed after preflight.
+
+`boundary_preserved` MUST be:
+
+- `true` for `pass` and `pass_with_minor_clarification`
+- `false` for `needs_revision` and `blocked`
+- `null` for `audit_failed`
+
+`failure_reason` MUST be non-null when `verdict = audit_failed`; otherwise it MUST be null.
+
+Recommended next action mapping:
+
+- `pass`: `none`
+- `pass_with_minor_clarification`: `manual_patch`
+- `needs_revision`: `manual_patch` or `run_focused_whetstone`
+- `blocked`: `run_focused_whetstone` or `run_full_whetstone`
+- `audit_failed`: `fix_audit_setup`
+
+`audit-change` MUST NOT mutate any listed source spec. It MUST NOT write `spec.md`, `spec.history.md`, `rounds/run_state.json`, `convergence_declaration.md`, or apply-back artifacts. It MAY reuse Reviewer clients, reviewer artifact validation, controlled vocabulary, canonical issue identity, and telemetry helpers, but the resulting artifacts are scoped to `change_audit/`.
+
+If the Reviewer returns valid out-of-scope feedback, the Orchestrator MUST preserve it in `change_audit_feedback.json` and list it in `out_of_scope_feedback_ids`. Out-of-scope feedback MUST NOT affect `feedback_counts`, `verdict`, `boundary_preserved`, or `recommended_next_action`.
+
+The human-readable `change_audit_report.md` MUST include the verdict, boundary-preserved value, in-scope feedback counts, recommended next action, and a concise grouped list of in-scope findings. It MUST NOT add new semantic findings beyond the persisted reviewer feedback.
+
 ## SPEC DECOMPOSITION WORKFLOW
 
 Spec decomposition splits an overloaded source spec into a governed spec family while preserving normative content, source provenance, and authority boundaries.

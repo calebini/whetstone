@@ -162,6 +162,18 @@ Check status:
 PYTHONPATH=src python3 -m whetstone.cli status --root "$RUN_ROOT" --format text
 ```
 
+Run a lightweight cross-spec change audit:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli audit-change \
+  --root "$AUDIT_ROOT" \
+  --notes audit-notes.md \
+  --spec docs/POLICY_SPEC.md \
+  --spec docs/EVIDENCE_LIFECYCLE_SPEC.md
+```
+
+`audit-change` is reviewer-only. It writes `change_audit/audit_brief.md`, `change_audit/change_audit_feedback.json`, and `change_audit/change_audit_report.md` without mutating any listed spec.
+
 Run Phase 2:
 
 ```bash

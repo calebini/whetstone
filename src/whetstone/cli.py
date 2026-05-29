@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from whetstone.apply_back import apply_back
+from whetstone.change_audit import AuditClientIdentity, run_change_audit
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import load_config
 from whetstone.decisions import scan_decision_points, write_decision_scan_outputs, write_decision_summary_outputs
@@ -129,6 +130,31 @@ def main(argv: list[str] | None = None) -> int:
     reviewer_smoke.add_argument("--command", dest="reviewer_command", help="reviewer executable")
     reviewer_smoke.add_argument("--model", help="optional reviewer model")
     reviewer_smoke.add_argument("--timeout-seconds", type=int, help="optional reviewer subprocess timeout")
+
+    audit_change = subparsers.add_parser(
+        "audit-change",
+        help="run a lightweight reviewer-only cross-spec change audit",
+        description=(
+            "Build a self-contained audit brief from operator notes and one or more specs, run one Reviewer pass, "
+            "and write change_audit artifacts without mutating any source spec."
+        ),
+        epilog=(
+            "Example:\n"
+            "  whetstone audit-change --root \"$AUDIT_ROOT\" --notes audit-notes.md "
+            "--spec docs/POLICY_SPEC.md --spec docs/EVIDENCE_LIFECYCLE_SPEC.md\n\n"
+            "This is not a convergence run and does not invoke the Editor."
+        ),
+        formatter_class=FORMATTER,
+    )
+    audit_change.add_argument("--root", default=".", help="audit root where change_audit artifacts are written")
+    audit_change.add_argument("--notes", required=True, help="Markdown notes describing the change intent and boundary")
+    audit_change.add_argument("--spec", action="append", required=True, help="spec file to include; may be repeated")
+    audit_change.add_argument("--profile", default="consistency", help="review profile; defaults to consistency")
+    audit_change.add_argument("--client", choices=["codex", "claude-code"], default="codex", help="reviewer client")
+    audit_change.add_argument("--command", dest="reviewer_command", help="reviewer executable")
+    audit_change.add_argument("--model", help="optional reviewer model")
+    audit_change.add_argument("--client-version", default="unknown", help="reviewer client version to record in audit_manifest.json")
+    audit_change.add_argument("--timeout-seconds", type=int, help="optional reviewer subprocess timeout")
 
     editor_smoke = subparsers.add_parser("editor-smoke", help="run a schema-valid non-mutating editor")
     editor_smoke.add_argument("--root", default=".", help="repository root")
@@ -545,6 +571,53 @@ def main(argv: list[str] | None = None) -> int:
         output = Path(args.output)
         output.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"output": str(output), "feedback_count": len(artifact.get("feedback", []))}))
+        return 0
+    if args.command == "audit-change":
+        root = Path(args.root)
+        notes_path = Path(args.notes)
+        spec_paths = [Path(path) for path in args.spec]
+        if args.client == "claude-code":
+            client = ClaudeCodeReviewerClient(
+                command=args.reviewer_command or "claude",
+                model=args.model,
+                cwd=Path.cwd(),
+                phase="phase_1",
+                section_ids=[],
+                timeout_seconds=args.timeout_seconds,
+            )
+        else:
+            client = CodexReviewerClient(
+                command=args.reviewer_command or "codex",
+                model=args.model,
+                cwd=Path.cwd(),
+                phase="phase_1",
+                section_ids=[],
+                timeout_seconds=args.timeout_seconds,
+            )
+        result = run_change_audit(
+            root=root,
+            notes_path=notes_path,
+            spec_paths=spec_paths,
+            profile=args.profile,
+            reviewer_client=client,
+            client_identity=AuditClientIdentity(
+                name=args.client,
+                version=args.client_version,
+                model=args.model or "unspecified",
+            ),
+        )
+        print(
+            json.dumps(
+                {
+                    "verdict": result.verdict,
+                    "boundary_preserved": result.boundary_preserved,
+                    "report": str(result.report_path),
+                    "feedback": str(result.feedback_path),
+                    "manifest": str(result.manifest_path),
+                    "brief": str(result.brief_path),
+                }
+            )
+        )
         return 0
     if args.command == "editor-smoke":
         root = Path(args.root)

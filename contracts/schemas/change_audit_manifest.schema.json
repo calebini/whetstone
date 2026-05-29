@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/change_audit_manifest.schema.json",
+  "title": "Whetstone Change Audit Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "audit_notes_path",
+    "audit_notes_hash",
+    "profile",
+    "specs",
+    "client"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "change-audit-manifest-v1" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "audit_notes_path": { "$ref": "common.schema.json#/$defs/path" },
+    "audit_notes_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "hash"],
+        "properties": {
+          "path": { "$ref": "common.schema.json#/$defs/path" },
+          "hash": { "$ref": "common.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "model"],
+      "properties": {
+        "name": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}

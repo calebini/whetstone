@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/change_audit_report.schema.json",
+  "title": "Whetstone Change Audit Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "audit_brief_hash",
+    "profile",
+    "verdict",
+    "boundary_preserved",
+    "failure_reason",
+    "feedback_counts",
+    "in_scope_feedback_ids",
+    "out_of_scope_feedback_ids",
+    "recommended_next_action",
+    "source_feedback_path",
+    "audit_manifest_path"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "change-audit-report-v1" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "audit_brief_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "profile": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "pass_with_minor_clarification", "needs_revision", "blocked", "audit_failed"]
+    },
+    "boundary_preserved": {
+      "anyOf": [
+        { "type": "boolean" },
+        { "type": "null" }
+      ]
+    },
+    "failure_reason": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "feedback_counts": {
+      "type": "object",
+      "description": "Counts in-scope feedback only; out-of-scope feedback is preserved by out_of_scope_feedback_ids and the source feedback artifact.",
+      "additionalProperties": false,
+      "required": ["blocker", "major", "minor", "nit"],
+      "properties": {
+        "blocker": { "type": "integer", "minimum": 0 },
+        "major": { "type": "integer", "minimum": 0 },
+        "minor": { "type": "integer", "minimum": 0 },
+        "nit": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "in_scope_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/feedbackId" }
+    },
+    "out_of_scope_feedback_ids": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/feedbackId" }
+    },
+    "recommended_next_action": {
+      "type": "string",
+      "enum": ["none", "manual_patch", "run_focused_whetstone", "run_full_whetstone", "fix_audit_setup"]
+    },
+    "source_feedback_path": { "$ref": "common.schema.json#/$defs/path" },
+    "audit_manifest_path": { "$ref": "common.schema.json#/$defs/path" }
+  }
+}

@@ -1144,6 +1144,67 @@ JSON
             self.assertEqual(exit_code, 0)
             self.assertIn("fingerprint", artifact["feedback"][0]["oscillation_key"])
 
+    def test_audit_change_cli_writes_change_audit_artifacts_without_mutating_specs(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            notes = root / "audit-notes.md"
+            spec = root / "policy.md"
+            notes.write_text("# Change Intent\n\nKeep policy evaluator side-effect-free.\n", encoding="utf-8")
+            before = "# Policy\n\nThe Evaluator MUST NOT read storage.\n"
+            spec.write_text(before, encoding="utf-8")
+            command = root / "codex"
+            command.write_text(
+                """#!/bin/sh
+out=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "--output-last-message" ]; then
+    shift
+    out="$1"
+  fi
+  shift
+done
+prompt="$(cat)"
+hash="$(printf '%s\n' "$prompt" | awk '/^- draft_hash: / {print $3; exit}')"
+cat > "$out" <<JSON
+{"round_number":1,"profile":"consistency","reviewer":{"name":"fixture","version":"0","model":"fixture"},"draft_hash":"$hash","feedback":[{"feedback_id":"fb-1","issue_id":"iss_aaaaaaaaaaaaaaaa","issue_fingerprint":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","issue_type":"consistency_violation","affected_sections":["policy"],"baseline_severity":"minor","authority_impact":null,"determinism_impact":null,"rubric_impact":null,"normalized_severity":"minor","invariant_violated":"authority_boundary","claim":"Scope wording differs.","evidence":"Fixture evidence.","recommended_change":"Clarify the boundary.","in_scope":true,"severity_rationale":null,"oscillation_key":null}]}
+JSON
+""",
+                encoding="utf-8",
+            )
+            command.chmod(command.stat().st_mode | stat.S_IXUSR)
+            audit_root = root / "audit-run"
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "audit-change",
+                        "--root",
+                        str(audit_root),
+                        "--notes",
+                        str(notes),
+                        "--spec",
+                        str(spec),
+                        "--client",
+                        "codex",
+                        "--command",
+                        str(command),
+                        "--model",
+                        "fixture",
+                        "--client-version",
+                        "0",
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(spec.read_text(encoding="utf-8"), before)
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["verdict"], "pass_with_minor_clarification")
+            report = json.loads((audit_root / "change_audit" / "change_audit_report.json").read_text(encoding="utf-8"))
+            self.assertTrue(report["boundary_preserved"])
+            self.assertTrue((audit_root / "change_audit" / "audit_brief.md").exists())
+            self.assertTrue((audit_root / "change_audit" / "change_audit_report.md").exists())
+
     def test_editor_smoke_writes_schema_valid_output_without_mutating_spec(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
