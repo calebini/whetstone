@@ -19,7 +19,7 @@ Use these defaults for normal spec sharpening:
 
 - workflow: `standard`
 - reviewer: Codex `gpt-5.5`
-- editor: Codex `gpt-5.2`
+- editor: Codex `gpt-5.5`
 - source mutation: manual apply-back only
 - decision mode: `end_of_cycle`
 - profile budgets: start generous, then tune after observing run shape
@@ -74,7 +74,7 @@ clients:
     name: codex
     command: codex
     version: "0.128.0"
-    model: gpt-5.2
+    model: gpt-5.5
 
 review:
   mode: horizontal
@@ -185,6 +185,8 @@ review:
 
 Vertical mode is usually the better economy choice for MVP and medium-size specs. It preserves separate Reviewer artifacts per profile, but the Editor sees the full cross-profile problem set before changing the draft.
 
+Profile budgets are per-profile, not total-run round limits. In vertical mode, a budget of `10` with three Phase 1 profiles allows up to ten independent Reviewer passes for each profile, plus consolidated Editor rounds between review cycles and any bounded closeout passes. This can multiply into many absolute `round-N/` directories. Use lower per-profile budgets or lighter profile sets when you want a short diagnostic run.
+
 Round folders identify their shape in `profile_used.yaml` with `round_kind`. In vertical runs, profile rounds use `review_only`; the merged Editor round uses `consolidated_editor`.
 
 If a run ends immediately after an Editor mutation, Whetstone may report the draft as accepted but still unverified. That means the edit resolved the known blocker/major feedback, but the revised draft still needs another clean profile-review cycle before Phase 2.
@@ -199,6 +201,8 @@ Use `profile_set` to choose the review lenses and default per-profile budgets be
 review:
   profile_set: stateful_system
 ```
+
+Each profile set defines profile budgets per profile. For example, a stateful-system Phase 1 stack with structural, determinism, and operability budgets of `10` can consume far more than ten total rounds because each profile receives its own budget.
 
 Available profile sets:
 
