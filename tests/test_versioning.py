@@ -18,8 +18,11 @@ from whetstone.versioning import (
 class VersioningTests(unittest.TestCase):
     def test_promoted_phase2_version_rounds_up_to_whole_major(self) -> None:
         self.assertEqual(promoted_phase2_version("0.17"), "1.0")
+        self.assertEqual(promoted_phase2_version("0.1.1"), "1.0")
         self.assertEqual(promoted_phase2_version("1.7"), "2.0")
         self.assertEqual(promoted_phase2_version("2.0"), "2.0")
+        self.assertEqual(promoted_phase2_version("2.0.0"), "2.0")
+        self.assertEqual(promoted_phase2_version("2.0.1"), "3.0")
 
     def test_promote_spec_text_updates_root_heading_only(self) -> None:
         draft = "# Whetstone (0.17 - STRICT CANDIDATE)\n\nVersion 0.17 in body.\n"
@@ -160,6 +163,11 @@ class VersioningTests(unittest.TestCase):
         self.assertEqual(stamped_round_version("0.99", phase="phase_1"), "1.00")
         self.assertEqual(stamped_round_version("1.00", phase="phase_1"), "1.01")
 
+    def test_stamped_round_version_increments_patch_versions_without_rewriting_scheme(self) -> None:
+        self.assertEqual(stamped_round_version("0.1.1", phase="phase_1"), "0.1.2")
+        self.assertEqual(stamped_round_version("0.04.1", phase="phase_1"), "0.04.2")
+        self.assertEqual(stamped_round_version("1.0.3", phase="phase_2"), "1.0.4")
+
     def test_stamped_round_version_increments_phase2_decimal_counter(self) -> None:
         self.assertEqual(stamped_round_version("1.0", phase="phase_2"), "1.1")
         self.assertEqual(stamped_round_version("1.9", phase="phase_2"), "1.10")
@@ -186,6 +194,23 @@ class VersioningTests(unittest.TestCase):
         self.assertEqual(result.after_version, "0.03")
         self.assertIn("Status: Draft v0.03", result.content)
         self.assertIn("Body 0.02 remains.", result.content)
+
+    def test_stamp_spec_text_for_round_supports_patch_status_version_and_demotes_accepted_phase1(self) -> None:
+        draft = "# Spine Spec Versioning and Freeze Policy\n\nStatus: Accepted v0.1.1  \n\nBody.\n"
+
+        result = stamp_spec_text_for_round(draft, phase="phase_1")
+
+        self.assertTrue(result.stamped)
+        self.assertEqual(result.before_version, "0.1.1")
+        self.assertEqual(result.after_version, "0.1.2")
+        self.assertIn("Status: Draft v0.1.2", result.content)
+        self.assertNotIn("v0.02.1", result.content)
+
+    def test_stamp_spec_text_for_round_rejects_four_component_versions_instead_of_partial_parse(self) -> None:
+        draft = "# Spec\n\nStatus: Draft v0.1.1.1\n"
+
+        with self.assertRaises(ValueError):
+            stamp_spec_text_for_round(draft, phase="phase_1")
 
 
 if __name__ == "__main__":

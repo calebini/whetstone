@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-import math
 import re
 from pathlib import Path
 
@@ -12,9 +11,10 @@ from whetstone.hashing import draft_hash
 
 
 ROOT_HEADING_RE = re.compile(r"^(# .*)$", re.MULTILINE)
-STATUS_VERSION_RE = re.compile(r"^(Status:\s+.*?)(v?)(\d+(?:\.\d+)?)(.*)$", re.MULTILINE)
-VERSION_FIELD_RE = re.compile(r"^(Version:\s+)(v?)(\d+(?:\.\d+)?)(.*)$", re.MULTILINE)
-VERSION_RE = re.compile(r"(?<!\d)(\d+)(?:\.(\d+))?(?!\d)")
+VERSION_LABEL = r"\d+(?:\.\d+){0,2}"
+STATUS_VERSION_RE = re.compile(rf"^(Status:\s+.*?)(?<![\d.])(v?)({VERSION_LABEL})(?![\d.])(.*)$", re.MULTILINE)
+VERSION_FIELD_RE = re.compile(rf"^(Version:\s+)(?<![\d.])(v?)({VERSION_LABEL})(?![\d.])(.*)$", re.MULTILINE)
+VERSION_RE = re.compile(rf"(?<![\d.])({VERSION_LABEL})(?![\d.])")
 
 
 @dataclass(frozen=True)
@@ -38,26 +38,20 @@ class VersionStampResult:
 
 def promoted_phase2_version(version: str) -> str:
     """Return the Phase 2 whole-major version for a numeric spec version."""
-    parts = version.strip().split(".")
-    if not parts or not parts[0].isdigit() or len(parts) > 2:
-        raise ValueError(f"unsupported spec version {version!r}")
-    major = int(parts[0])
-    minor = int(parts[1]) if len(parts) == 2 and parts[1].isdigit() else None
-    if len(parts) == 2 and minor is None:
-        raise ValueError(f"unsupported spec version {version!r}")
-    if minor is None or minor == 0:
+    parsed = _parse_version(version)
+    major = parsed.parts[0]
+    if len(parsed.parts) == 1 or all(part == 0 for part in parsed.parts[1:]):
         return f"{max(major, 1)}.0"
-    return f"{max(math.floor(major) + 1, 1)}.0"
+    return f"{max(major + 1, 1)}.0"
 
 
 def stamped_round_version(version: str, *, phase: str) -> str:
     """Return the next accepted-round version for a mutating live round."""
-    major, minor = _parse_version(version)
+    parsed = _parse_version(version)
     if phase == "phase_1":
-        total = major * 100 + minor + 1
-        return f"{total // 100}.{total % 100:02d}"
+        return parsed.next_phase1().format()
     if phase == "phase_2":
-        return f"{major}.{minor + 1}"
+        return parsed.next_phase2().format()
     raise ValueError(f"unsupported phase {phase!r}")
 
 
@@ -72,6 +66,8 @@ def stamp_spec_text_for_round(spec_text: str, *, phase: str) -> VersionStampResu
     if before_version == after_version:
         return VersionStampResult(False, before_version, after_version, before_hash, before_hash, spec_text)
     stamped_text = target.replace(spec_text, after_version)
+    if phase == "phase_1":
+        stamped_text = target.demote_accepted_status(stamped_text)
     after_hash = draft_hash(stamped_text)
     return VersionStampResult(True, before_version, after_version, before_hash, after_hash, stamped_text)
 
@@ -120,16 +116,45 @@ def promote_spec_file_for_phase2(*, spec_path: Path, history_path: Path, rounds_
     return VersionPromotionResult(promoted, before_version, after_version, before_hash, after_hash)
 
 
-def _parse_version(version: str) -> tuple[int, int]:
+@dataclass(frozen=True)
+class _ParsedVersion:
+    parts: tuple[int, ...]
+    widths: tuple[int, ...]
+
+    def format(self) -> str:
+        formatted = [str(self.parts[0])]
+        for part, width in zip(self.parts[1:], self.widths[1:]):
+            formatted.append(str(part).zfill(width))
+        return ".".join(formatted)
+
+    def next_phase1(self) -> "_ParsedVersion":
+        if len(self.parts) == 1:
+            return _ParsedVersion((self.parts[0], 1), (self.widths[0], 2))
+        if len(self.parts) == 2:
+            major, minor = self.parts
+            minor_width = self.widths[1]
+            next_minor = minor + 1
+            if minor_width >= 2 and next_minor >= 10**minor_width:
+                return _ParsedVersion((major + 1, 0), self.widths)
+            return _ParsedVersion((major, next_minor), self.widths)
+        major, minor, patch = self.parts
+        return _ParsedVersion((major, minor, patch + 1), self.widths)
+
+    def next_phase2(self) -> "_ParsedVersion":
+        if len(self.parts) == 1:
+            return _ParsedVersion((self.parts[0], 1), (self.widths[0], 1))
+        if len(self.parts) == 2:
+            major, minor = self.parts
+            return _ParsedVersion((major, minor + 1), self.widths)
+        major, minor, patch = self.parts
+        return _ParsedVersion((major, minor, patch + 1), self.widths)
+
+
+def _parse_version(version: str) -> _ParsedVersion:
     parts = version.strip().split(".")
-    if not parts or not parts[0].isdigit() or len(parts) > 2:
+    if not parts or len(parts) > 3 or any(not part.isdigit() for part in parts):
         raise ValueError(f"unsupported spec version {version!r}")
-    major = int(parts[0])
-    if len(parts) == 1:
-        return major, 0
-    if not parts[1].isdigit():
-        raise ValueError(f"unsupported spec version {version!r}")
-    return major, int(parts[1])
+    return _ParsedVersion(tuple(int(part) for part in parts), tuple(len(part) for part in parts))
 
 
 @dataclass(frozen=True)
@@ -138,9 +163,22 @@ class _VersionTarget:
     end: int
     version: str
     prefix: str = ""
+    line_start: int | None = None
 
     def replace(self, text: str, version: str) -> str:
         return text[: self.start] + self.prefix + version + text[self.end :]
+
+    def demote_accepted_status(self, text: str) -> str:
+        if self.line_start is None:
+            return text
+        line_end = text.find("\n", self.line_start)
+        if line_end == -1:
+            line_end = len(text)
+        line = text[self.line_start : line_end]
+        demoted = re.sub(r"^(Status:\s*)Accepted(\b)", r"\1Draft\2", line, count=1)
+        if demoted == line:
+            return text
+        return text[: self.line_start] + demoted + text[line_end:]
 
 
 def _find_version_target(spec_text: str) -> _VersionTarget | None:
@@ -162,6 +200,7 @@ def _find_version_target(spec_text: str) -> _VersionTarget | None:
             end=status_match.end(3),
             version=status_match.group(3),
             prefix=status_match.group(2),
+            line_start=status_match.start(0),
         )
     version_field_match = VERSION_FIELD_RE.search(spec_text)
     if version_field_match is not None:

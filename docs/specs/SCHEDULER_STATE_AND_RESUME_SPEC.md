@@ -160,16 +160,19 @@ Spec version labels express maturity:
 
 Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft.
 
-For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading, `Status:` line, or `Version:` field contains a supported numeric version label. If no supported numeric version anchor exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
+For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading, `Status:` line, or `Version:` field contains a supported numeric version label. Supported numeric version labels contain one, two, or three numeric components (`N`, `N.N`, or `N.N.N`). The Orchestrator MUST parse the complete version label and MUST NOT partially match a longer dotted label. If no supported numeric version anchor exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
 
 Version stamping rules:
 
-- Phase 1 accepted mutating revision: increment the fractional stabilization version by one hundredth.
+- Phase 1 accepted mutating revision with a two-component stabilization label: increment the second component while preserving its visible width and carrying two-digit overflow into the major component.
+- Phase 1 accepted mutating revision with a three-component label: increment the third component and preserve the existing version scheme.
+- Phase 1 accepted mutating revision of a `Status: Accepted ...` document MUST demote the run-root draft status to `Status: Draft ...`; Phase 1 stabilization does not by itself produce a newly accepted source artifact.
 - Phase 1 non-mutating round: do not change the version label.
 - Phase 1 rejected or unresolved round: do not change the version label.
 - Phase 2 entry: promote to the smallest whole major version that is greater than or equal to the current numeric version, with a minimum of `1.0`.
 - Unversioned Phase 2 entry: if no supported numeric version anchor exists, promotion MUST be a no-op (`promoted = false`) and MUST NOT block Phase 2 when the Phase 1 stable hash guard otherwise passes.
-- Phase 2 accepted mutating revision after entry: increment the first decimal place under the current major version.
+- Phase 2 accepted mutating revision after entry with a two-component label: increment the first decimal place under the current major version.
+- Phase 2 accepted mutating revision after entry with a three-component label: increment the third component and preserve the existing version scheme.
 - Phase 2 non-mutating round: do not change the version label.
 - Phase 2 rejected or unresolved round: do not change the version label.
 - Clean convergence declaration generation alone does not change the version label unless the same accepted round also mutates `spec.md`.
@@ -177,11 +180,14 @@ Version stamping rules:
 Examples:
 - Phase 1 accepted mutation: `0.17` stamps to `0.18`
 - Phase 1 accepted mutation: `0.99` stamps to `1.00`, but this does not by itself authorize Phase 2 entry
+- Phase 1 accepted mutation: `0.1.1` stamps to `0.1.2`
 - `0.17` promotes to `1.0`
+- `0.1.1` promotes to `1.0`
 - `1.7` promotes to `2.0`
 - `2.0` remains `2.0`
 - Phase 2 accepted mutation: `1.0` stamps to `1.1`
 - Phase 2 accepted mutation: `1.9` stamps to `1.10`
+- Phase 2 accepted mutation: `1.0.3` stamps to `1.0.4`
 
 Phase 2 entry promotion MUST happen only after the accepted-draft gate is satisfied and all required Phase 1 clean-profile conditions are met. Invoking a Phase 2 command directly does not by itself authorize version promotion.
 
