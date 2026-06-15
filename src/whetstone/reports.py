@@ -7,14 +7,18 @@ from pathlib import Path
 from typing import Any
 
 from whetstone.artifacts import ArtifactStore
+from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
+from whetstone.run_state import run_artifact_pointers
 
 
 class ReportWriter:
     """Write schema-validated terminal reports under rounds/."""
 
-    def __init__(self, root: Path | str) -> None:
-        self.store = ArtifactStore(root)
+    def __init__(self, root: Path | str, *, config: OrchestratorConfig | None = None) -> None:
+        self.root = Path(root)
+        self.config = config
+        self.store = ArtifactStore(self.root)
 
     def write_oscillation_report(
         self,
@@ -40,6 +44,7 @@ class ReportWriter:
             "oscillation_fingerprints": oscillation_fingerprints or [],
             "oscillation_opposition_keys": oscillation_opposition_keys or [],
             "recommendation": recommendation,
+            "run_artifact_pointers": self._run_artifact_pointers(),
         }
         return self._write_terminal_json("oscillation_report.json", packet, "oscillation_report")
 
@@ -60,6 +65,7 @@ class ReportWriter:
             "conflicts": conflicts,
             "exit_reason": exit_reason,
             "recommendation": recommendation,
+            "run_artifact_pointers": self._run_artifact_pointers(),
         }
         return self._write_terminal_json("conflict_report.json", packet, "conflict_report")
 
@@ -110,6 +116,7 @@ class ReportWriter:
             "recommendation": recommendation,
             "profile_status": effective_profile_status,
             "last_reviewer_findings": last_reviewer_findings,
+            "run_artifact_pointers": self._run_artifact_pointers(),
         }
         return self._write_terminal_json("technical_failure_report.json", packet, "technical_failure_report")
 
@@ -168,6 +175,7 @@ class ReportWriter:
                 "total_round_budget": 0,
             },
             "last_reviewer_findings": last_reviewer_findings,
+            "run_artifact_pointers": self._run_artifact_pointers(),
         }
         return self._write_terminal_json("convergence_failure_report.json", packet, "convergence_failure_report")
 
@@ -181,6 +189,10 @@ class ReportWriter:
         validate_artifact(packet, schema_name)
         output.write_text(dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return output
+
+    def _run_artifact_pointers(self) -> dict[str, Any]:
+        config = self.config or OrchestratorConfig.default(self.root)
+        return run_artifact_pointers(self.root, config)
 
 
 def _now() -> str:

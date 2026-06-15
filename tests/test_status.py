@@ -19,6 +19,23 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(status["next_action"], "run_live_phase1")
             self.assertIsNone(status["latest_round"])
 
+    def test_status_reports_run_artifact_pointers(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("whetstone_job.json").write_text('{"job": "fixture"}\n', encoding="utf-8")
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            pointers = status["run_artifact_pointers"]
+            self.assertEqual(pointers["scope_contract"]["path"], "rounds/intake/scope_contract.json")
+            self.assertFalse(pointers["scope_contract"]["exists"])
+            self.assertEqual(pointers["job_descriptor"]["path"], "whetstone_job.json")
+            self.assertTrue(pointers["job_descriptor"]["exists"])
+            self.assertRegex(pointers["job_descriptor"]["sha256"], r"^[a-f0-9]{64}$")
+            self.assertIn("artifact_pointers:", rendered)
+            self.assertIn("job_descriptor=whetstone_job.json", rendered)
+
     def test_status_reports_phase1_handoff_and_decision_summary(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

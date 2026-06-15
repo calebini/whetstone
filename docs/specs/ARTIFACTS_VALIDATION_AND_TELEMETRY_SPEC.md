@@ -407,6 +407,8 @@ If the retry fails, the Orchestrator MUST halt with `HALTED_ARTIFACT_INVALID` an
 
 If a client invocation times out before returning an artifact, the Orchestrator MUST NOT retry the same prompt automatically. It MUST halt with `HALTED_CLIENT_TIMEOUT`, produce `/rounds/artifact_validation_error.json`, set `failure_type = client_timeout`, and produce the phase-appropriate companion failure report. Timeout halts are distinct from artifact validation failures because no candidate artifact was available to validate.
 
+Terminal reports MUST include `run_artifact_pointers` with the same scope-contract and job-descriptor pointer shape used by `run_state.json`. This lets a standalone terminal report identify the scope/job artifacts that shaped the run without requiring an operator to inspect the full run state first.
+
 When `HALTED_ARTIFACT_INVALID` occurs, `last_valid_draft_path` MUST point to the most recent draft snapshot the Orchestrator can safely treat as validated. If reviewer artifact validation fails before any validated review exists for the round, this MUST be the current round `draft_before.md`. If editor artifact validation fails after a validated reviewer artifact, this MAY be the current round `draft_after.md` only when that file is an Orchestrator-owned snapshot and not an unvalidated client artifact.
 
 When `HALTED_CLIENT_TIMEOUT` occurs, `last_valid_draft_path` follows the same rule as artifact validation failures. A timed-out Reviewer points to `draft_before.md`. A timed-out Editor after validated reviewer feedback MAY point to the Orchestrator-owned `draft_after.md` snapshot for the round.

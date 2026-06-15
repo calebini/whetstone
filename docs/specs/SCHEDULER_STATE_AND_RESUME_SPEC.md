@@ -419,6 +419,8 @@ effective_run_config:
 
 The budget maps in `effective_run_config` MUST be the resolved effective maps used by the scheduler, not merely the operator-supplied override maps.
 
+`rounds/run_state.json` and `whetstone status` output MUST include `run_artifact_pointers` with operator-facing pointers to the active scope contract and any discovered job descriptor. Each pointer MUST include the artifact path, whether it currently exists, and a content hash when the file exists. The job descriptor pointer MAY be absent/missing when no first-contact job descriptor was used.
+
 `review_budget_exhaustion_policy` controls only Phase 1 profile-budget exhaustion and Phase 1 profile-level oscillation handling:
 
 - `hard`: the Orchestrator preserves the default strict behavior. A profile that exhausts its budget with unresolved or unverified blocker/major status prevents further Phase 1 advancement and ultimately halts with `TARGET_NOT_REACHED`, unless a higher-precedence halt fires first.

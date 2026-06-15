@@ -44,7 +44,7 @@ class FixtureEngine:
         self.root = Path(root)
         self.config = config or OrchestratorConfig.default(self.root)
         self.runner = FixtureRunner(self.root, self.config)
-        self.report_writer = ReportWriter(self.root)
+        self.report_writer = ReportWriter(self.root, config=self.config)
 
     def run(self, steps: Iterable[FixtureScriptStep], *, overwrite_rounds: bool = False) -> EngineResult:
         phase = "phase_1"

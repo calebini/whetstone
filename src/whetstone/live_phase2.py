@@ -18,7 +18,7 @@ from whetstone.hashing import draft_hash, rubric_content_hash, semantic_changes
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, run_telemetry_totals
 from whetstone.oscillation import OscillationTracker
 from whetstone.reports import ReportWriter
-from whetstone.run_state import effective_run_config
+from whetstone.run_state import effective_run_config, run_artifact_pointers
 from whetstone.rubrics import RubricManifest, read_rubric_text, rubric_manifest_identity, write_rubric_manifest
 from whetstone.scheduler import (
     CONVERGENCE_ACCEPTANCE_PROFILES,
@@ -61,7 +61,7 @@ class LivePhase2Runner:
         self.draft_after_provider = draft_after_provider
         self.timeout_seconds = timeout_seconds
         self.store = ArtifactStore(self.root)
-        self.report_writer = ReportWriter(self.root)
+        self.report_writer = ReportWriter(self.root, config=self.config)
         self.rubric_manifest: RubricManifest | None = None
         self.phase_1_rounds_completed = 0
 
@@ -919,6 +919,7 @@ class LivePhase2Runner:
             "convergence_round_budget": convergence_round_budget,
             "total_absolute_round_budget": review_round_budget + convergence_round_budget,
             "effective_run_config": effective_run_config(self.config),
+            "run_artifact_pointers": run_artifact_pointers(self.root, self.config),
             "active_profile": active_profile,
             "current_draft_hash": current_draft_hash,
             "last_accepted_draft_hash": last_accepted_draft_hash,

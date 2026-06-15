@@ -42,6 +42,7 @@ class ReportWriterTests(unittest.TestCase):
 
             packet = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(packet["terminal_state"], "HALTED_OSCILLATION")
+            self.assertIn("scope_contract", packet["run_artifact_pointers"])
 
     def test_writes_nonhalting_oscillation_report(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -71,6 +72,7 @@ class ReportWriterTests(unittest.TestCase):
 
             packet = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(packet["conflicts"][0]["conflict_id"], "con_bbbbbbbbbbbbbbbb")
+            self.assertIn("job_descriptor", packet["run_artifact_pointers"])
 
     def test_writes_nonhalting_conflict_report(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -123,6 +125,10 @@ class ReportWriterTests(unittest.TestCase):
             packet = json.loads(technical.read_text(encoding="utf-8"))
             self.assertEqual(packet["current_draft_status"], "not_accepted")
             self.assertFalse(packet["ready_for_phase_2"])
+            self.assertEqual(packet["run_artifact_pointers"]["scope_contract"]["path"], "rounds/intake/scope_contract.json")
+            self.assertFalse(packet["run_artifact_pointers"]["scope_contract"]["exists"])
+            convergence_packet = json.loads(convergence.read_text(encoding="utf-8"))
+            self.assertIn("job_descriptor", convergence_packet["run_artifact_pointers"])
 
 
 if __name__ == "__main__":

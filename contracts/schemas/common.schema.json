@@ -60,9 +60,41 @@
       "type": "string",
       "minLength": 1
     },
+    "nullablePath": {
+      "anyOf": [
+        { "$ref": "#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
     "nonEmptyString": {
       "type": "string",
       "minLength": 1
+    },
+    "nullableSha256": {
+      "anyOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "filePointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/nullablePath" },
+        "exists": { "type": "boolean" },
+        "sha256": { "$ref": "#/$defs/nullableSha256" },
+        "candidate_paths": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "runArtifactPointers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_contract", "job_descriptor"],
+      "properties": {
+        "scope_contract": { "$ref": "#/$defs/filePointer" },
+        "job_descriptor": { "$ref": "#/$defs/filePointer" }
+      }
     },
     "stringArray": {
       "type": "array",

@@ -1674,7 +1674,7 @@ def _write_artifact_validation_companion_report(
     final_draft_path: str,
     failure_type: str = "artifact_validation",
 ) -> None:
-    writer = ReportWriter(root)
+    writer = ReportWriter(root, config=config)
     terminal_state = "HALTED_CLIENT_TIMEOUT" if failure_type == "client_timeout" else "HALTED_ARTIFACT_INVALID"
     exit_reason = "client invocation timed out before producing a valid artifact" if failure_type == "client_timeout" else "artifact validation retry exhausted"
     if phase == "phase_2":

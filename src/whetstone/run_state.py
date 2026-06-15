@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,16 @@ from whetstone.config import (
     TimeoutConfig,
 )
 from whetstone.scheduler import resolved_phase_1_profile_budgets, resolved_phase_2_profile_budgets
+
+
+JOB_DESCRIPTOR_CANDIDATE_PATHS = (
+    "whetstone_job.json",
+    "job_descriptor.json",
+    "rounds/whetstone_job.json",
+    "rounds/job_descriptor.json",
+    "rounds/intake/whetstone_job.json",
+    "rounds/intake/job_descriptor.json",
+)
 
 
 def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
@@ -69,6 +80,20 @@ def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
                 }
                 for item in config.reference_context_files
             }
+        },
+    }
+
+
+def run_artifact_pointers(root: Path | str, config: OrchestratorConfig) -> dict[str, Any]:
+    """Return operator-facing pointers to run-shaping artifacts."""
+
+    root = Path(root)
+    job_descriptor = _first_existing_pointer(root, JOB_DESCRIPTOR_CANDIDATE_PATHS)
+    return {
+        "scope_contract": _file_pointer(root, config.scope_contract.path),
+        "job_descriptor": {
+            **job_descriptor,
+            "candidate_paths": list(JOB_DESCRIPTOR_CANDIDATE_PATHS),
         },
     }
 
@@ -254,3 +279,38 @@ def _bool(value: Any, fallback: bool) -> bool:
     if isinstance(value, bool):
         return value
     return fallback
+
+
+def _first_existing_pointer(root: Path, candidates: tuple[str, ...]) -> dict[str, Any]:
+    for candidate in candidates:
+        path = root / candidate
+        if path.exists():
+            return _file_pointer(root, path)
+    return {
+        "path": None,
+        "exists": False,
+        "sha256": None,
+    }
+
+
+def _file_pointer(root: Path, path: Path) -> dict[str, Any]:
+    return {
+        "path": _display_path(root, path),
+        "exists": path.exists(),
+        "sha256": _sha256_file(path) if path.exists() and path.is_file() else None,
+    }
+
+
+def _display_path(root: Path, path: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()

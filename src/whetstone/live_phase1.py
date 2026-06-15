@@ -16,7 +16,7 @@ from whetstone.hashing import draft_hash
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, run_telemetry_totals
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
-from whetstone.run_state import effective_run_config
+from whetstone.run_state import effective_run_config, run_artifact_pointers
 from whetstone.scheduler import (
     PhaseScheduler,
     default_phase_1_scheduler,
@@ -68,7 +68,7 @@ class LivePhase1Runner:
         self.completion_terminal_state = completion_terminal_state
         self.completion_ready_for_phase_2 = completion_ready_for_phase_2
         self.timeout_seconds = timeout_seconds
-        self.report_writer = ReportWriter(self.root)
+        self.report_writer = ReportWriter(self.root, config=self.config)
 
     def run(self, *, overwrite: bool = False) -> LivePhase1Result:
         if self.config.review_mode == "vertical" and self.scheduler_factory is None:
@@ -1139,6 +1139,7 @@ class LivePhase1Runner:
             "convergence_round_budget": convergence_round_budget,
             "total_absolute_round_budget": review_round_budget + convergence_round_budget,
             "effective_run_config": effective_run_config(self.config),
+            "run_artifact_pointers": run_artifact_pointers(self.root, self.config),
             "active_profile": active_profile,
             "current_draft_hash": current_draft_hash,
             "last_accepted_draft_hash": last_accepted_draft_hash,

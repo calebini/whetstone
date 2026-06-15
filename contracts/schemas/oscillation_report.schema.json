@@ -59,6 +59,9 @@
     "recommendation": {
       "type": "string",
       "enum": ["freeze_prior_decision", "escalate_conflict", "continue_once", "stop_iteration"]
+    },
+    "run_artifact_pointers": {
+      "$ref": "common.schema.json#/$defs/runArtifactPointers"
     }
   }
 }

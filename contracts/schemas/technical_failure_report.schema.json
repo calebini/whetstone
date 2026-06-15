@@ -70,7 +70,8 @@
         { "$ref": "technical_failure_report.schema.json#/$defs/lastReviewerFindings" },
         { "type": "null" }
       ]
-    }
+    },
+    "run_artifact_pointers": { "$ref": "common.schema.json#/$defs/runArtifactPointers" }
   },
   "$defs": {
     "profileStatus": {

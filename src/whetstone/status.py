@@ -11,6 +11,7 @@ from typing import Any
 from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
 from whetstone.live import run_telemetry_totals
+from whetstone.run_state import run_artifact_pointers
 from whetstone.scheduler import (
     default_phase_1_scheduler,
     default_phase_2_scheduler,
@@ -66,6 +67,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     apply_back = _apply_back_status(root, rounds_dir, run_state)
     resume_status = _resume_status(root, rounds_dir, run_state)
     scope_status = _scope_status(root, config)
+    artifact_pointers = _artifact_pointers(root, config, run_state)
     default_review_round_budget = default_phase_1_scheduler(
         config.review_profile_budgets,
         profile_set=config.review_profile_set,
@@ -118,6 +120,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "resumable": bool(run_state.get("resumable")) or bool(resume_status.get("eligible")) if run_state else False,
         "resume": resume_status,
         "scope_contract": scope_status,
+        "run_artifact_pointers": artifact_pointers,
         "latest_round": latest_round,
         "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
         "decision_register": _decision_register(rounds_dir, root),
@@ -140,6 +143,7 @@ def render_status_text(status: dict[str, Any]) -> str:
     telemetry = status.get("telemetry_totals") or {}
     apply_back = status.get("apply_back") or {}
     resume_status = status.get("resume") or {}
+    artifact_pointers = status.get("run_artifact_pointers") or {}
     latest_round_text = "none"
     if latest_round:
         completeness = "complete" if latest_round.get("complete") else "partial"
@@ -167,6 +171,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"current_draft_status: {_display(status.get('current_draft_status'))}",
         f"resumable: {str(bool(status.get('resumable'))).lower()}",
         f"scope_contract: {_scope_display(status.get('scope_contract'))}",
+        f"artifact_pointers: {_artifact_pointer_display(artifact_pointers)}",
         f"last_accepted_draft_hash: {_display(status.get('last_accepted_draft_hash'))}",
         f"latest_round: {latest_round_text}",
         f"next_action: {_display(status.get('next_action'))}",
@@ -254,6 +259,12 @@ def _scope_status(root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         }
     summary = scope_contract_summary(contract, root=root) or {}
     return {"exists": True, "valid": True, **summary}
+
+
+def _artifact_pointers(root: Path, config: OrchestratorConfig, run_state: dict[str, Any] | None) -> dict[str, Any]:
+    if run_state and isinstance(run_state.get("run_artifact_pointers"), dict):
+        return run_state["run_artifact_pointers"]
+    return run_artifact_pointers(root, config)
 
 
 def _decision_register(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
@@ -642,3 +653,24 @@ def _scope_display(value: object) -> str:
     if not value.get("valid"):
         return f"invalid ({value.get('error')})"
     return f"{value.get('path')} approved={str(bool(value.get('approved'))).lower()}"
+
+
+def _artifact_pointer_display(value: object) -> str:
+    if not isinstance(value, dict):
+        return "none"
+    scope = value.get("scope_contract")
+    job = value.get("job_descriptor")
+    return (
+        f"scope_contract={_single_pointer_display(scope)}, "
+        f"job_descriptor={_single_pointer_display(job)}"
+    )
+
+
+def _single_pointer_display(value: object) -> str:
+    if not isinstance(value, dict):
+        return "none"
+    path = value.get("path")
+    if not path:
+        return "missing"
+    suffix = "" if value.get("exists") else " (missing)"
+    return f"{path}{suffix}"

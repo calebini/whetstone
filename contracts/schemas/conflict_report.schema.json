@@ -31,6 +31,9 @@
     "recommendation": {
       "type": "string",
       "enum": ["manual_review_required", "freeze_prior_decision", "narrow_scope"]
+    },
+    "run_artifact_pointers": {
+      "$ref": "common.schema.json#/$defs/runArtifactPointers"
     }
   }
 }

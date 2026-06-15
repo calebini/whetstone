@@ -16,7 +16,7 @@ from whetstone.hashing import canonical_json_hash, draft_hash
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, _validate_reviewer_feedback, run_telemetry_totals
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
-from whetstone.run_state import effective_run_config
+from whetstone.run_state import effective_run_config, run_artifact_pointers
 from whetstone.scheduler import (
     default_phase_1_scheduler,
     default_phase_2_scheduler,
@@ -441,7 +441,7 @@ def resume_budget_exhausted_run(
                 last_accepted_draft_hash,
                 False,
             )
-        ReportWriter(root).write_technical_failure_report(
+        ReportWriter(root, config=config).write_technical_failure_report(
             round_number=closeout_result["round_number"],
             final_draft_path="./spec.md",
             unresolved_blockers=[
@@ -636,7 +636,7 @@ def _continue_phase1(
                 terminal_state=terminal_state,
             )
             if terminal_state == "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS":
-                ReportWriter(root).write_technical_failure_report(
+                ReportWriter(root, config=config).write_technical_failure_report(
                     round_number=round_number - 1,
                     final_draft_path="./spec.md",
                     unresolved_blockers=[],
@@ -744,7 +744,7 @@ def _continue_phase1(
 
         seen_hashes.append(result.draft_after_hash)
         if _no_op_with_unresolved_serious_findings(result=result, unresolved=unresolved):
-            ReportWriter(root).write_technical_failure_report(
+            ReportWriter(root, config=config).write_technical_failure_report(
                 round_number=round_number,
                 final_draft_path="./spec.md",
                 unresolved_blockers=[
@@ -784,7 +784,7 @@ def _continue_phase1(
             update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
             return ResumeResult(True, "TARGET_NOT_REACHED", round_number, "phase_1", profile, result.draft_after_hash, last_accepted_draft_hash, False)
         if result.draft_after_hash in seen_hashes[:-1] and (reviewer_blocker_count > 0 or reviewer_major_count > 0):
-            ReportWriter(root).write_oscillation_report(
+            ReportWriter(root, config=config).write_oscillation_report(
                 round_number=round_number,
                 detected=True,
                 oscillation_type="cycle",
@@ -918,7 +918,7 @@ def _continue_phase1(
 
     blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
     majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
-    ReportWriter(root).write_technical_failure_report(
+    ReportWriter(root, config=config).write_technical_failure_report(
         round_number=max(start_round, total_budget),
         final_draft_path="./spec.md",
         unresolved_blockers=blockers,
@@ -1117,7 +1117,7 @@ def _continue_vertical_phase1(
                     packet = _read_json(artifact_error)
                     terminal_state = str(packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
                     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
-                    ReportWriter(root).write_technical_failure_report(
+                    ReportWriter(root, config=config).write_technical_failure_report(
                         round_number=round_number,
                         final_draft_path=str(packet.get("last_valid_draft_path", "./spec.md")),
                         unresolved_blockers=[
@@ -1250,7 +1250,7 @@ def _continue_vertical_phase1(
         profile_status = closeout_result["profile_status"]
         last_unresolved = closeout_result["last_unresolved"]
         last_reviewer_findings = closeout_result["last_reviewer_findings"]
-    ReportWriter(root).write_technical_failure_report(
+    ReportWriter(root, config=config).write_technical_failure_report(
         round_number=round_number,
         final_draft_path="./spec.md",
         unresolved_blockers=[_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"],
@@ -1952,6 +1952,7 @@ def _write_phase1_state(
             "editor_seconds": config.timeouts.editor_seconds,
         },
         "effective_run_config": effective_run_config(config),
+        "run_artifact_pointers": run_artifact_pointers(config.rounds_dir.parent, config),
         "active_profile": active_profile,
         "current_draft_hash": current_draft_hash,
         "last_accepted_draft_hash": last_accepted_draft_hash,

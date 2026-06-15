@@ -299,6 +299,12 @@ class LivePhase1RunnerTests(unittest.TestCase):
             )
             self.assertEqual(state["effective_run_config"]["decision_points"]["mode"], "end_of_cycle")
             self.assertEqual(state["effective_run_config"]["timeouts"]["editor_seconds"], 900)
+            self.assertEqual(
+                state["run_artifact_pointers"]["scope_contract"]["path"],
+                "rounds/intake/scope_contract.json",
+            )
+            self.assertFalse(state["run_artifact_pointers"]["scope_contract"]["exists"])
+            self.assertFalse(state["run_artifact_pointers"]["job_descriptor"]["exists"])
             self.assertEqual(state["telemetry_totals"]["round_count"], 3)
             self.assertEqual(state["telemetry_totals"]["attempt_count"], 3)
             self.assertEqual(state["telemetry_totals"]["missing_usage_attempts"], 3)
