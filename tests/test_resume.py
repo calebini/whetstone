@@ -71,6 +71,11 @@ class NoopEditorClient:
         }
 
 
+class TimeoutReviewerClient:
+    def review(self, prompt: str) -> dict:
+        raise TimeoutError("fixture reviewer timed out")
+
+
 class OperabilityMinorReviewerClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -181,6 +186,49 @@ class ResolvingPromptEditorClient:
 
 
 class ResumeTests(unittest.TestCase):
+    def test_resume_phase1_reviewer_timeout_retries_reviewer_and_completes_round(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            halted = LivePhase1Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=TimeoutReviewerClient(),
+                editor_client=NoopEditorClient(),
+            ).run()
+
+            self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_invalid_attempt_1.json").exists())
+            self.assertFalse(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+
+            plan = plan_resume_halted_run(root, OrchestratorConfig.default(root), continue_run=True)
+            self.assertTrue(plan.resumable)
+            self.assertEqual(plan.client_role, "reviewer")
+            self.assertEqual(plan.next_attempt_number, 2)
+            self.assertIn("Reviewer timeout", plan.reason)
+
+            resumed = resume_halted_run(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(
+                    "# Spec\n\n## Hashing\n\nDraft.\n\nClarified after reviewer retry.\n",
+                    resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"],
+                ),
+            )
+
+            self.assertTrue(resumed.resumed)
+            self.assertIsNone(resumed.terminal_state)
+            self.assertEqual(resumed.round_number, 1)
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/editor_summary.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_invalid_attempt_1.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/prompt_snapshots/reviewer-reviewer_feedback.json-attempt-2.json").exists())
+            self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
+            self.assertIn("Clarified after reviewer retry.", root.joinpath("spec.md").read_text(encoding="utf-8"))
+
     def test_resume_phase1_editor_timeout_reuses_existing_reviewer_feedback(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

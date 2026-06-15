@@ -84,6 +84,8 @@ class LiveRoundRunner:
         draft_after: str | None = None,
         apply: bool = False,
         overwrite: bool = False,
+        reuse_existing_round: bool = False,
+        start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:
@@ -93,7 +95,12 @@ class LiveRoundRunner:
             write_rubric_manifest(self.config)
             _maybe_promote_phase2_version(self.config)
 
-        round_dir = self.store.begin_round(round_number, overwrite=overwrite)
+        if reuse_existing_round:
+            round_dir = self.store.round_dir(round_number)
+            if not round_dir.exists():
+                raise ValueError(f"round-{round_number} does not exist")
+        else:
+            round_dir = self.store.begin_round(round_number, overwrite=overwrite)
         draft_before = self.config.spec_path.read_text(encoding="utf-8")
         draft_before_hash = draft_hash(draft_before)
         explicit_draft_after = draft_after is not None
@@ -179,6 +186,7 @@ class LiveRoundRunner:
                 schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
             ),
             last_valid_draft_hash=draft_before_hash,
+            start_attempt_number=start_reviewer_attempt_number,
             context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)

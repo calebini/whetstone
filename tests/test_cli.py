@@ -24,7 +24,7 @@ class CliTests(unittest.TestCase):
         rendered = output.getvalue()
         self.assertIn("whetstone resume --root \"$RUN_ROOT\" --dry-run --continue", rendered)
         self.assertIn("whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3", rendered)
-        self.assertIn("Phase 1 Editor timeouts, or explicit Phase 1 budget extension", rendered)
+        self.assertIn("Phase 1 Reviewer/Editor timeouts, or explicit Phase 1 budget extension", rendered)
 
     def test_live_focused_phase1_help_explains_targeted_rechecks(self) -> None:
         output = io.StringIO()

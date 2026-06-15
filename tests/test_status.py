@@ -333,6 +333,48 @@ class StatusTests(unittest.TestCase):
             self.assertIn("resume_command:", rendered)
             self.assertIn("resume_continue_command:", rendered)
 
+    def test_status_reports_resumable_reviewer_timeout_commands(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 7,
+                        "terminal_state": "HALTED_CLIENT_TIMEOUT",
+                        "resumable": True,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("artifact_validation_error.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "HALTED_CLIENT_TIMEOUT",
+                        "failure_type": "client_timeout",
+                        "phase": "phase_1",
+                        "client_role": "reviewer",
+                        "round_number": 7,
+                        "profile": "determinism",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertEqual(status["next_action"], "resume_or_increase_timeout")
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertEqual(status["resume"]["client_role"], "reviewer")
+            self.assertIn("whetstone resume --root", status["resume"]["command"])
+            self.assertIn("--continue", status["resume"]["continue_command"])
+            self.assertIn("resume_command:", rendered)
+
     def test_status_reports_budget_extension_resume_command(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

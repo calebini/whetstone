@@ -475,22 +475,37 @@ Soft budget mode MUST NOT weaken accepted-draft requirements, clean-profile requ
 
 The Orchestrator MAY resume only explicitly resumable terminal states. In this version, the supported resume paths are:
 
-1. Phase 1 Editor timeout recovery.
-2. Phase 1 budget-extension continuation after explicit operator request.
+1. Phase 1 Reviewer timeout recovery.
+2. Phase 1 Editor timeout recovery.
+3. Phase 1 budget-extension continuation after explicit operator request.
 
-### Editor Timeout Resume
+### Client Timeout Resume
 
-The supported Editor-timeout resume path is:
+The supported Phase 1 client-timeout resume paths are:
 
 - `terminal_state = HALTED_CLIENT_TIMEOUT`
 - `failure_type = client_timeout`
 - `phase = phase_1`
-- `client_role = editor`
-- the halted round already has validated `reviewer_feedback.json`
+- `client_role = reviewer | editor`
+- for `client_role = reviewer`, the halted round has persisted `draft_before.md` but no validated `reviewer_feedback.json` is required
+- for `client_role = editor`, the halted round already has validated `reviewer_feedback.json`
 
-Resume MUST be hash-guarded. Before invoking the Editor, the Orchestrator MUST verify that the current `spec.md` hash equals the halted artifact's `last_valid_draft_hash`. If the hash differs, resume MUST refuse unless a future explicit override is defined.
+Resume MUST be hash-guarded. Before invoking the resumed client, the Orchestrator MUST verify that the current `spec.md` hash equals the halted artifact's `last_valid_draft_hash`. If the hash differs, resume MUST refuse unless a future explicit override is defined.
 
-Resume MUST NOT rerun prior rounds. For the supported Editor-timeout path, resume MUST:
+Resume MUST NOT rerun prior rounds. For a supported Reviewer-timeout path, resume MUST:
+- read `rounds/run_state.json`
+- read `rounds/artifact_validation_error.json`
+- read the halted round's `draft_before.md`
+- reconstruct Phase 1 scheduler state from completed prior rounds
+- verify the scheduler's next profile matches the halted profile
+- invoke the Reviewer for the halted round using the halted draft/context
+- if Reviewer output validates, complete the normal round flow, including invoking the Editor when Reviewer feedback requires it
+- start resumed Reviewer attempt numbering after the last recorded Reviewer attempt number
+- preserve prior invalid Reviewer attempt artifacts, timeout telemetry, and prompt snapshots
+- clear the top-level timeout terminal report only after the resumed round completes successfully
+- update `run_state.json`, and when the round completes, update the normal round artifacts (`reviewer_feedback.json`, `editor_summary.json`, `draft_after.md`, `unresolved_issues.json`, `decision_points.json`, `spec.md`, and `spec.history.md` as applicable)
+
+For a supported Editor-timeout path, resume MUST:
 - read `rounds/run_state.json`
 - read `rounds/artifact_validation_error.json`
 - read the halted round's `draft_before.md` and `reviewer_feedback.json`
@@ -504,6 +519,8 @@ Resume MUST NOT rerun prior rounds. For the supported Editor-timeout path, resum
 - update `run_state.json`, `spec.md`, `draft_after.md`, `editor_summary.json`, `unresolved_issues.json`, `decision_points.json`, and `spec.history.md`
 
 Resume does not imply hidden client session reuse. It uses persisted file artifacts as the replay source of truth.
+
+For Reviewer-timeout resume idempotency, the halted round number is reused until a valid `reviewer_feedback.json` and the corresponding normal round completion artifacts are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Reviewer responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Reviewer artifact. If the halted round later contains a valid Reviewer artifact and normal round completion artifacts, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
 
 For Editor-timeout resume idempotency, the halted round number is reused until a valid `editor_summary.json` and corresponding validated `draft_after.md` are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Editor responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Editor artifact. If the halted round later contains a valid Editor artifact, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
 
@@ -531,9 +548,9 @@ By default, resume recovers only the halted round and then stops. If invoked wit
 - halt normally on `PHASE_1_STABLE`, `TARGET_NOT_REACHED`, `HALTED_CLIENT_TIMEOUT`, `HALTED_ARTIFACT_INVALID`, `HALTED_CONFLICT`, or `HALTED_OSCILLATION`
 - update `run_state.json` and `spec.history.md` after each continued round
 
-`resume --continue` MUST NOT retroactively alter prior rounds, rerun the halted round's Reviewer, or restart the profile sequence.
+`resume --continue` MUST NOT retroactively alter prior rounds or restart the profile sequence. It MUST rerun the halted round's Reviewer only for an explicitly supported Reviewer-timeout resume where no valid `reviewer_feedback.json` was persisted.
 
-`resume --dry-run` MUST validate resume eligibility without invoking any client. It MUST perform the same terminal-state, failure-type, role, phase, hash, scheduler, and persisted Reviewer-feedback checks as live resume. It MUST report at minimum:
+`resume --dry-run` MUST validate resume eligibility without invoking any client. It MUST perform the same terminal-state, failure-type, role, phase, hash, scheduler, and role-specific artifact checks as live resume. It MUST report at minimum:
 - whether the run is resumable
 - halted `round_number`
 - halted `profile`
@@ -541,7 +558,7 @@ By default, resume recovers only the halted round and then stops. If invoked wit
 - `client_role`
 - `failure_type`
 - current and expected draft hashes
-- next Editor attempt number
+- next resumed client attempt number
 - whether `--continue` was requested
 - next continued round number when computable
 

@@ -507,14 +507,15 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
     if error.get("failure_type") != "client_timeout":
         packet["reason"] = "terminal timeout artifact is not failure_type=client_timeout"
         return packet
-    if error.get("phase") != "phase_1" or error.get("client_role") != "editor":
-        packet["reason"] = "only Phase 1 editor timeouts are resumable"
+    if error.get("phase") != "phase_1" or error.get("client_role") not in {"reviewer", "editor"}:
+        packet["reason"] = "only Phase 1 reviewer/editor timeouts are resumable"
         return packet
     command_root = shlex.quote(str(root))
+    client_role = str(error.get("client_role"))
     packet.update(
         {
             "eligible": True,
-            "reason": "supported Phase 1 Editor timeout",
+            "reason": f"supported Phase 1 {client_role.title()} timeout",
             "command": f"whetstone resume --root {command_root}",
             "continue_command": f"whetstone resume --root {command_root} --continue",
         }

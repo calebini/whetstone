@@ -66,7 +66,7 @@ def resume_halted_run(
     editor_client: EditorClient | None = None,
     timeout_seconds: int | None = None,
 ) -> ResumeResult:
-    """Resume the narrow safe path: a Phase 1 editor timeout with validated reviewer feedback."""
+    """Resume supported Phase 1 client timeout paths without replaying prior rounds."""
 
     root = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
@@ -76,18 +76,34 @@ def resume_halted_run(
     last_accepted_draft_hash = context["last_accepted_draft_hash"]
     seen_hashes = context["seen_hashes"]
     start_attempt_number = context["next_attempt_number"]
-    result = LiveRoundRunner(
-        root,
-        config,
-        editor_client=editor_client,
-        timeout_seconds=timeout_seconds,
-    ).resume_editor_round(
-        round_number=round_number,
-        profile=profile,
-        phase="phase_1",
-        apply=True,
-        start_attempt_number=start_attempt_number,
-    )
+    if context["client_role"] == "reviewer":
+        result = LiveRoundRunner(
+            root,
+            config,
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        ).run_round(
+            round_number=round_number,
+            profile=profile,
+            phase="phase_1",
+            apply=True,
+            reuse_existing_round=True,
+            start_reviewer_attempt_number=start_attempt_number,
+        )
+    else:
+        result = LiveRoundRunner(
+            root,
+            config,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        ).resume_editor_round(
+            round_number=round_number,
+            profile=profile,
+            phase="phase_1",
+            apply=True,
+            start_attempt_number=start_attempt_number,
+        )
 
     reviewer_feedback = _read_json(config.rounds_dir / f"round-{round_number}" / "reviewer_feedback.json")
     editor_summary = _read_json(config.rounds_dir / f"round-{round_number}" / "editor_summary.json")
@@ -111,6 +127,7 @@ def resume_halted_run(
     )
     if result.accepted:
         last_accepted_draft_hash = result.draft_after_hash
+    _remove_top_level_timeout_artifacts(config.rounds_dir)
     seen_hashes.append(result.draft_after_hash)
     phase_complete = scheduler.phase_complete(accepted_draft=result.accepted)
     terminal_state = "PHASE_1_STABLE" if phase_complete else None
@@ -382,6 +399,11 @@ def plan_resume_halted_run(
     if continue_run:
         next_profile = scheduler.next_profile()
         next_round_number = context["round_number"] + 1 if next_profile is not None else None
+    reason = (
+        "supported Phase 1 Reviewer timeout; will retry reviewer and then complete the round"
+        if context["client_role"] == "reviewer"
+        else "supported Phase 1 Editor timeout with validated Reviewer feedback"
+    )
     return ResumePlan(
         resumable=True,
         terminal_state=context["terminal_state"],
@@ -395,7 +417,7 @@ def plan_resume_halted_run(
         next_attempt_number=context["next_attempt_number"],
         continue_run=continue_run,
         next_round_number=next_round_number,
-        reason="supported Phase 1 Editor timeout with validated Reviewer feedback",
+        reason=reason,
     )
 
 
@@ -1357,10 +1379,11 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
         raise ValueError("resume currently supports only HALTED_CLIENT_TIMEOUT")
     if error.get("failure_type") != "client_timeout":
         raise ValueError("resume currently supports only client_timeout failures")
-    if error.get("client_role") != "editor":
-        raise ValueError("resume currently supports only editor timeouts")
+    client_role = str(error.get("client_role"))
+    if client_role not in {"reviewer", "editor"}:
+        raise ValueError("resume currently supports only reviewer or editor timeouts")
     if error.get("phase") != "phase_1":
-        raise ValueError("resume currently supports only Phase 1 editor timeouts")
+        raise ValueError("resume currently supports only Phase 1 client timeouts")
 
     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
     expected_hash = str(error.get("last_valid_draft_hash") or state.get("current_draft_hash"))
@@ -1376,24 +1399,27 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
     round_dir = config.rounds_dir / f"round-{round_number}"
     draft_before_path = round_dir / "draft_before.md"
     reviewer_feedback_path = round_dir / "reviewer_feedback.json"
-    if not draft_before_path.exists() or not reviewer_feedback_path.exists():
+    if not draft_before_path.exists():
+        raise ValueError(f"resume requires round-{round_number}/draft_before.md")
+    if client_role == "editor" and not reviewer_feedback_path.exists():
         raise ValueError(f"resume requires round-{round_number}/draft_before.md and reviewer_feedback.json")
     draft_before_hash = draft_hash(draft_before_path.read_text(encoding="utf-8"))
-    reviewer_feedback = _read_json(reviewer_feedback_path)
-    _validate_reviewer_feedback(
-        reviewer_feedback,
-        round_number=round_number,
-        profile=profile,
-        draft_hash_value=draft_before_hash,
-        schema_name="reviewer_feedback",
-    )
+    if client_role == "editor":
+        reviewer_feedback = _read_json(reviewer_feedback_path)
+        _validate_reviewer_feedback(
+            reviewer_feedback,
+            round_number=round_number,
+            profile=profile,
+            draft_hash_value=draft_before_hash,
+            schema_name="reviewer_feedback",
+        )
     return {
         "state": state,
         "error": error,
         "terminal_state": str(error["terminal_state"]),
         "failure_type": str(error["failure_type"]),
         "phase": str(error["phase"]),
-        "client_role": str(error["client_role"]),
+        "client_role": client_role,
         "round_number": round_number,
         "profile": profile,
         "scheduler": scheduler,
@@ -1782,6 +1808,13 @@ def _append_resume_history(
             f"before `{before_hash}`, after `{after_hash}`, "
             f"accepted={str(accepted).lower()}, blockers={blocker_count}, majors={major_count}.\n"
         )
+
+
+def _remove_top_level_timeout_artifacts(rounds_dir: Path) -> None:
+    for filename in ("artifact_validation_error.json", "technical_failure_report.json"):
+        path = rounds_dir / filename
+        if path.exists():
+            path.unlink()
 
 
 def _append_continue_history(
