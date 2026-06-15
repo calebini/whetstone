@@ -498,7 +498,7 @@ PYTHONPATH=src python3 -m whetstone.cli resume \
 
 Budget-extension resume appends new `round-N/` directories, preserves prior artifacts, and records the extension in `rounds/run_state.json` under `budget_extensions`. In horizontal mode it appends profile rounds. In vertical mode it appends additional vertical review cycles: profile review passes over the same draft, followed by one consolidated Editor revision when feedback remains.
 
-Current resume support is intentionally narrow. It supports Phase 1 Editor timeouts after validated Reviewer feedback and explicit Phase 1 budget-extension continuation. It does not resume arbitrary artifact validation failures, Reviewer timeouts, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
+Current resume support is intentionally narrow. It supports Phase 1 Reviewer timeouts, Phase 1 Editor timeouts after validated Reviewer feedback, and explicit Phase 1 budget-extension continuation. It does not resume arbitrary artifact validation failures, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
 
 ## Run Phase 2
 

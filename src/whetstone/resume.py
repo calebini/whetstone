@@ -70,6 +70,16 @@ def resume_halted_run(
 
     root = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
+    if context.get("review_mode") == "vertical":
+        return _resume_vertical_halted_run(
+            root,
+            config,
+            context=context,
+            continue_run=continue_run,
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        )
     round_number = context["round_number"]
     profile = context["profile"]
     scheduler = context["scheduler"]
@@ -175,6 +185,128 @@ def resume_halted_run(
             reviewer_client=reviewer_client,
             editor_client=editor_client,
             timeout_seconds=timeout_seconds,
+        )
+    return ResumeResult(
+        resumed=True,
+        terminal_state=terminal_state,
+        round_number=round_number,
+        phase="phase_1",
+        profile=profile,
+        current_draft_hash=result.draft_after_hash,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        ready_for_phase_2=phase_complete,
+    )
+
+
+def _resume_vertical_halted_run(
+    root: Path,
+    config: OrchestratorConfig,
+    *,
+    context: dict[str, Any],
+    continue_run: bool,
+    reviewer_client: ReviewerClient | None,
+    editor_client: EditorClient | None,
+    timeout_seconds: int | None,
+) -> ResumeResult:
+    round_number = int(context["round_number"])
+    profile = str(context["profile"])
+    start_attempt_number = int(context["next_attempt_number"])
+    if context["client_role"] == "reviewer":
+        result = LiveRoundRunner(
+            root,
+            config,
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        ).run_review_only_round(
+            round_number=round_number,
+            profile=profile,
+            phase="phase_1",
+            reuse_existing_round=True,
+            start_reviewer_attempt_number=start_attempt_number,
+        )
+    else:
+        result = LiveRoundRunner(
+            root,
+            config,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+        ).resume_editor_round(
+            round_number=round_number,
+            profile=profile,
+            phase="phase_1",
+            apply=True,
+            start_attempt_number=start_attempt_number,
+        )
+
+    _remove_top_level_timeout_artifacts(config.rounds_dir)
+    vertical_state = _reconstruct_vertical_phase1_state(config, through_round=round_number)
+    last_accepted_draft_hash = vertical_state["last_accepted_draft_hash"]
+    seen_hashes = vertical_state["seen_hashes"]
+    cycle_context = _vertical_cycle_context(config, through_round=round_number)
+    if (
+        not cycle_context["merged_feedback"]
+        and all(bool(state["clean"]) for state in vertical_state["profile_state"].values())
+    ):
+        last_accepted_draft_hash = result.draft_after_hash
+    phase_complete = _vertical_phase_complete(
+        vertical_state["profile_state"],
+        current_hash=result.draft_after_hash,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+    )
+    terminal_state = "PHASE_1_STABLE" if phase_complete else None
+    if phase_complete:
+        write_decision_register(
+            rounds_dir=config.rounds_dir,
+            mode=config.decision_points.mode,
+            terminal_state="PHASE_1_STABLE",
+        )
+        update_contract_surface_lifecycle(rounds_dir=config.rounds_dir, terminal=True)
+    else:
+        maybe_write_contract_surface_report(
+            rounds_dir=config.rounds_dir,
+            current_round=round_number,
+            profile=profile,
+            policy=_contract_surface_policy(config),
+        )
+        update_contract_surface_lifecycle(rounds_dir=config.rounds_dir)
+
+    _append_resume_history(
+        config.history_path,
+        round_number=round_number,
+        profile=profile,
+        before_hash=result.draft_before_hash,
+        after_hash=result.draft_after_hash,
+        accepted=result.accepted,
+        blocker_count=_count(vertical_state["last_unresolved"], "blocker"),
+        major_count=_count(vertical_state["last_unresolved"], "major"),
+    )
+    _write_phase1_state(
+        config=config,
+        current_round=round_number,
+        active_profile=None if phase_complete else _expected_vertical_next_profile(config, through_round=round_number),
+        current_draft_hash=result.draft_after_hash,
+        last_accepted_draft_hash=last_accepted_draft_hash,
+        seen_draft_hashes=seen_hashes,
+        terminal_state=terminal_state,
+        ready_for_phase_2=phase_complete,
+    )
+    if continue_run and not phase_complete:
+        return _continue_vertical_phase1(
+            root,
+            config,
+            profile_state=vertical_state["profile_state"],
+            start_round=round_number + 1,
+            last_accepted_draft_hash=last_accepted_draft_hash,
+            seen_hashes=seen_hashes,
+            last_unresolved=vertical_state["last_unresolved"],
+            last_reviewer_findings=vertical_state["last_reviewer_findings"],
+            reviewer_client=reviewer_client,
+            editor_client=editor_client,
+            timeout_seconds=timeout_seconds,
+            initial_completed_profiles=cycle_context["completed_profiles"],
+            initial_merged_feedback=cycle_context["merged_feedback"],
+            initial_merged_feedback_id_counts=cycle_context["merged_feedback_id_counts"],
         )
     return ResumeResult(
         resumed=True,
@@ -394,10 +526,17 @@ def plan_resume_halted_run(
 
     _ = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
-    scheduler = context["scheduler"]
     next_round_number = None
     if continue_run:
-        next_profile = scheduler.next_profile()
+        if context.get("review_mode") == "vertical":
+            next_profile = (
+                str(context["profile"])
+                if context["client_role"] == "editor"
+                else _expected_vertical_next_profile(config, through_round=int(context["round_number"]) - 1)
+            )
+        else:
+            scheduler = context["scheduler"]
+            next_profile = scheduler.next_profile()
         next_round_number = context["round_number"] + 1 if next_profile is not None else None
     reason = (
         "supported Phase 1 Reviewer timeout; will retry reviewer and then complete the round"
@@ -826,15 +965,30 @@ def _continue_vertical_phase1(
     reviewer_client: ReviewerClient | None,
     editor_client: EditorClient | None,
     timeout_seconds: int | None,
+    initial_completed_profiles: set[str] | None = None,
+    initial_merged_feedback: list[dict[str, Any]] | None = None,
+    initial_merged_feedback_id_counts: dict[str, int] | None = None,
 ) -> ResumeResult:
     profiles = list(profile_state.keys())
     round_number = start_round - 1
     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
-    while any(int(profile_state[profile]["rounds_used"]) < int(profile_state[profile]["round_budget"]) for profile in profiles):
-        merged_feedback: list[dict[str, Any]] = []
-        merged_feedback_id_counts: dict[str, int] = {}
+    seed_completed_profiles = set(initial_completed_profiles or set())
+    seed_merged_feedback = list(initial_merged_feedback or [])
+    seed_merged_feedback_id_counts = dict(initial_merged_feedback_id_counts or {})
+    while seed_merged_feedback or any(
+        int(profile_state[profile]["rounds_used"]) < int(profile_state[profile]["round_budget"])
+        for profile in profiles
+    ):
+        completed_profiles_this_cycle = set(seed_completed_profiles)
+        merged_feedback: list[dict[str, Any]] = list(seed_merged_feedback)
+        merged_feedback_id_counts: dict[str, int] = dict(seed_merged_feedback_id_counts)
+        seed_completed_profiles = set()
+        seed_merged_feedback = []
+        seed_merged_feedback_id_counts = {}
         draft_hash_at_cycle_start = draft_hash(config.spec_path.read_text(encoding="utf-8"))
         for profile in profiles:
+            if profile in completed_profiles_this_cycle:
+                continue
             if int(profile_state[profile]["rounds_used"]) >= int(profile_state[profile]["round_budget"]):
                 continue
             round_number += 1
@@ -1392,9 +1546,18 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
 
     round_number = int(error["round_number"])
     profile = str(error["profile"])
-    scheduler, last_accepted_draft_hash, seen_hashes = _reconstruct_phase1_state(config, through_round=round_number - 1)
-    if scheduler.next_profile() != profile:
-        raise ValueError(f"resume profile mismatch: expected {scheduler.next_profile()!r}, artifact has {profile!r}")
+    if config.review_mode == "vertical":
+        vertical_state = _reconstruct_vertical_phase1_state(config, through_round=round_number - 1)
+        expected_profile = _expected_vertical_next_profile(config, through_round=round_number - 1)
+        if expected_profile != profile:
+            raise ValueError(f"resume profile mismatch: expected {expected_profile!r}, artifact has {profile!r}")
+        scheduler = None
+        last_accepted_draft_hash = vertical_state["last_accepted_draft_hash"]
+        seen_hashes = vertical_state["seen_hashes"]
+    else:
+        scheduler, last_accepted_draft_hash, seen_hashes = _reconstruct_phase1_state(config, through_round=round_number - 1)
+        if scheduler.next_profile() != profile:
+            raise ValueError(f"resume profile mismatch: expected {scheduler.next_profile()!r}, artifact has {profile!r}")
 
     round_dir = config.rounds_dir / f"round-{round_number}"
     draft_before_path = round_dir / "draft_before.md"
@@ -1422,6 +1585,7 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
         "client_role": client_role,
         "round_number": round_number,
         "profile": profile,
+        "review_mode": config.review_mode,
         "scheduler": scheduler,
         "last_accepted_draft_hash": last_accepted_draft_hash,
         "seen_hashes": seen_hashes,
@@ -1460,6 +1624,84 @@ def _validated_budget_extension_context(config: OrchestratorConfig, *, extend_re
     else:
         _reconstruct_phase1_state(config, through_round=current_round)
     return state
+
+
+def _expected_vertical_next_profile(config: OrchestratorConfig, *, through_round: int) -> str | None:
+    vertical_state = _reconstruct_vertical_phase1_state(config, through_round=through_round)
+    profile_state = vertical_state["profile_state"]
+    cycle_context = _vertical_cycle_context(config, through_round=through_round)
+    for profile, state in profile_state.items():
+        if profile in cycle_context["completed_profiles"]:
+            continue
+        if int(state["rounds_used"]) < int(state["round_budget"]):
+            return profile
+    if cycle_context["merged_feedback"]:
+        return "vertical"
+    return None
+
+
+def _vertical_cycle_context(config: OrchestratorConfig, *, through_round: int) -> dict[str, Any]:
+    profiles = set(
+        resolved_phase_1_profile_budgets(
+            config.review_profile_budgets,
+            profile_set=config.review_profile_set,
+        )
+    )
+    if through_round < 1:
+        return {
+            "completed_profiles": set(),
+            "merged_feedback": [],
+            "merged_feedback_id_counts": {},
+        }
+    last_vertical_round = 0
+    for round_number in range(1, through_round + 1):
+        round_dir = config.rounds_dir / f"round-{round_number}"
+        reviewer_feedback_path = round_dir / "reviewer_feedback.json"
+        if not reviewer_feedback_path.exists():
+            continue
+        reviewer_feedback = _read_json(reviewer_feedback_path)
+        if reviewer_feedback.get("profile") == "vertical":
+            last_vertical_round = round_number
+
+    completed_profiles: set[str] = set()
+    merged_feedback: list[dict[str, Any]] = []
+    merged_feedback_id_counts: dict[str, int] = {}
+    for round_number in range(last_vertical_round + 1, through_round + 1):
+        round_dir = config.rounds_dir / f"round-{round_number}"
+        reviewer_feedback_path = round_dir / "reviewer_feedback.json"
+        if not reviewer_feedback_path.exists():
+            continue
+        reviewer_feedback = _read_json(reviewer_feedback_path)
+        profile = str(reviewer_feedback.get("profile") or "")
+        if profile not in profiles:
+            continue
+        completed_profiles.add(profile)
+        for issue in reviewer_feedback.get("feedback", []):
+            feedback_id = _vertical_merged_feedback_id(
+                profile,
+                str(issue.get("feedback_id", "")),
+                merged_feedback_id_counts,
+            )
+            merged_feedback.append({**issue, "feedback_id": feedback_id})
+    return {
+        "completed_profiles": completed_profiles,
+        "merged_feedback": merged_feedback,
+        "merged_feedback_id_counts": merged_feedback_id_counts,
+    }
+
+
+def _vertical_phase_complete(
+    profile_state: dict[str, dict[str, Any]],
+    *,
+    current_hash: str,
+    last_accepted_draft_hash: str | None,
+) -> bool:
+    profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
+    return (
+        last_accepted_draft_hash == current_hash
+        and not profile_status["unverified_profiles"]
+        and not profile_status["exhausted_profiles"]
+    )
 
 
 def _empty_vertical_profile_state(budgets: dict[str, int]) -> dict[str, dict[str, Any]]:

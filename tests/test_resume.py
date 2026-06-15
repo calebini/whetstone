@@ -76,6 +76,46 @@ class TimeoutReviewerClient:
         raise TimeoutError("fixture reviewer timed out")
 
 
+class TimeoutOnSecondReviewerClient:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        if self.calls == 2:
+            raise TimeoutError("fixture reviewer timed out")
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash(self.root.joinpath("spec.md").read_text(encoding="utf-8")),
+            "feedback": [
+                {
+                    "feedback_id": "fb-1",
+                    "issue_id": "iss_aaaaaaaaaaaaaaaa",
+                    "issue_fingerprint": "a" * 64,
+                    "issue_type": "precision_gap",
+                    "affected_sections": ["Spec"],
+                    "baseline_severity": "major",
+                    "authority_impact": None,
+                    "determinism_impact": None,
+                    "rubric_impact": None,
+                    "normalized_severity": "major",
+                    "invariant_violated": None,
+                    "claim": "Fixture major.",
+                    "evidence": "Fixture evidence.",
+                    "recommended_change": "Clarify issue.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": None,
+                }
+            ],
+        }
+
+
 class OperabilityMinorReviewerClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -228,6 +268,59 @@ class ResumeTests(unittest.TestCase):
             self.assertTrue(root.joinpath("rounds/round-1/prompt_snapshots/reviewer-reviewer_feedback.json-attempt-2.json").exists())
             self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
             self.assertIn("Clarified after reviewer retry.", root.joinpath("spec.md").read_text(encoding="utf-8"))
+
+    def test_resume_vertical_reviewer_timeout_preserves_partial_cycle_feedback(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            config = replace(
+                OrchestratorConfig.default(root),
+                review_mode="vertical",
+                review_profile_budgets={
+                    "structural_integrity": 1,
+                    "determinism": 1,
+                    "operability": 1,
+                },
+            )
+
+            halted = LivePhase1Runner(
+                root,
+                config,
+                reviewer_client=TimeoutOnSecondReviewerClient(root),
+                editor_client=NoopEditorClient(),
+            ).run()
+
+            self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(halted.round_number, 2)
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+            self.assertFalse(root.joinpath("rounds/round-2/reviewer_feedback.json").exists())
+
+            plan = plan_resume_halted_run(root, config, continue_run=True)
+            self.assertTrue(plan.resumable)
+            self.assertEqual(plan.client_role, "reviewer")
+            self.assertEqual(plan.profile, "determinism")
+            self.assertEqual(plan.next_attempt_number, 2)
+            self.assertEqual(plan.next_round_number, 3)
+
+            resumed = resume_halted_run(
+                root,
+                config,
+                continue_run=True,
+                reviewer_client=GoodEmptyReviewerClient(root),
+                editor_client=ResolvingPromptEditorClient(root),
+            )
+
+            self.assertEqual(resumed.terminal_state, "PHASE_1_STABLE")
+            self.assertTrue(resumed.ready_for_phase_2)
+            self.assertEqual(resumed.round_number, 7)
+            synthetic_feedback = json.loads(root.joinpath("rounds/round-4/reviewer_feedback.json").read_text(encoding="utf-8"))
+            self.assertEqual(synthetic_feedback["profile"], "vertical")
+            self.assertEqual(synthetic_feedback["feedback"][0]["feedback_id"], "structural_integrity:fb-1")
+            self.assertTrue(root.joinpath("rounds/round-2/prompt_snapshots/reviewer-reviewer_feedback.json-attempt-2.json").exists())
+            state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
+            self.assertTrue(state["ready_for_phase_2"])
 
     def test_resume_phase1_editor_timeout_reuses_existing_reviewer_feedback(self) -> None:
         with TemporaryDirectory() as tmp:

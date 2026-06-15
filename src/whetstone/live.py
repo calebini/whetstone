@@ -430,6 +430,8 @@ class LiveRoundRunner:
         profile: str,
         phase: str = "phase_1",
         overwrite: bool = False,
+        reuse_existing_round: bool = False,
+        start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
         """Run and persist an independent reviewer pass without invoking the Editor."""
 
@@ -437,7 +439,12 @@ class LiveRoundRunner:
         if invalid_fields:
             _write_config_error(self.config.rounds_dir, invalid_fields)
             raise ValueError("configuration validation failed")
-        round_dir = self.store.begin_round(round_number, overwrite=overwrite)
+        if reuse_existing_round:
+            round_dir = self.store.round_dir(round_number)
+            if not round_dir.exists():
+                raise ValueError(f"round-{round_number} does not exist")
+        else:
+            round_dir = self.store.begin_round(round_number, overwrite=overwrite)
         draft_before = self.config.spec_path.read_text(encoding="utf-8")
         draft_before_hash = draft_hash(draft_before)
         rubric = read_rubric_text(self.config)
@@ -518,6 +525,7 @@ class LiveRoundRunner:
                 schema_name="phase2_reviewer_feedback" if phase == "phase_2" else "reviewer_feedback",
             ),
             last_valid_draft_hash=draft_before_hash,
+            start_attempt_number=start_reviewer_attempt_number,
             context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
