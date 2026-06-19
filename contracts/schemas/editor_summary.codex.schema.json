@@ -23,8 +23,15 @@
       "pattern": "^[a-f0-9]{64}$"
     },
     "draft_after_hash": {
-      "type": ["string", "null"],
-      "pattern": "^[a-f0-9]{64}$"
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "accepted_feedback_ids": {
       "type": "array",

@@ -272,7 +272,8 @@ def main(argv: list[str] | None = None) -> int:
             "  whetstone resume --root \"$RUN_ROOT\" --editor-timeout-seconds 1800 --continue\n\n"
             "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3 --dry-run\n"
             "  whetstone resume --root \"$RUN_ROOT\" --extend-review-budget 3\n\n"
-            "Supported paths: Phase 1 Reviewer/Editor timeouts, or explicit Phase 1 budget extension. "
+            "Supported paths: Phase 1 Reviewer/Editor timeouts, Phase 1 Editor artifact-validation retries, "
+            "or explicit Phase 1 budget extension. "
             "Budget extension appends rounds in place and preserves prior artifacts."
         ),
         formatter_class=FORMATTER,

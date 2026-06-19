@@ -68,6 +68,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     resume_status = _resume_status(root, rounds_dir, run_state)
     scope_status = _scope_status(root, config)
     artifact_pointers = _artifact_pointers(root, config, run_state)
+    status_warnings = _status_warnings(run_state, terminal_report_path=terminal_report_path)
     default_review_round_budget = default_phase_1_scheduler(
         config.review_profile_budgets,
         profile_set=config.review_profile_set,
@@ -130,6 +131,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "telemetry_totals": telemetry_totals,
         "next_action": _next_action(run_state, terminal_report_path=terminal_report_path),
         "historical_terminal_reports": historical_terminal_reports,
+        "status_warnings": status_warnings,
     }
     return packet
 
@@ -144,6 +146,7 @@ def render_status_text(status: dict[str, Any]) -> str:
     apply_back = status.get("apply_back") or {}
     resume_status = status.get("resume") or {}
     artifact_pointers = status.get("run_artifact_pointers") or {}
+    status_warnings = status.get("status_warnings") or []
     latest_round_text = "none"
     if latest_round:
         completeness = "complete" if latest_round.get("complete") else "partial"
@@ -177,6 +180,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"next_action: {_display(status.get('next_action'))}",
         f"terminal_report: {_display(status.get('terminal_report_path'))}",
         f"historical_terminal_reports: {_display(status.get('historical_terminal_reports'))}",
+        f"status_warnings: {_display(status_warnings)}",
         (
             "decisions: "
             f"{_display(decision_summary.get('decision_count', decision_register.get('decision_count')))}, "
@@ -360,7 +364,44 @@ def _current_draft_status(run_state: dict[str, Any] | None, terminal_report: dic
         return "phase_1_stable"
     if run_state and run_state.get("terminal_state") == "CONVERGED":
         return "converged"
+    if run_state and run_state.get("terminal_state") is not None:
+        current_hash = run_state.get("current_draft_hash")
+        accepted_hash = run_state.get("last_accepted_draft_hash")
+        if current_hash is not None and accepted_hash is not None:
+            return "accepted_unverified_profiles" if current_hash == accepted_hash else "not_accepted"
     return terminal_report.get("current_draft_status") if terminal_report else None
+
+
+def _status_warnings(run_state: dict[str, Any] | None, *, terminal_report_path: Path | None) -> list[dict[str, Any]]:
+    if not run_state:
+        return []
+    warnings: list[dict[str, Any]] = []
+    terminal_state = run_state.get("terminal_state")
+    if terminal_state in {
+        "TARGET_NOT_REACHED",
+        "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS",
+        "HALTED_CONFLICT",
+        "HALTED_OSCILLATION",
+        "HALTED_ARTIFACT_INVALID",
+        "HALTED_CLIENT_TIMEOUT",
+        "CONFIG_INVALID",
+    } and terminal_report_path is None:
+        warnings.append(
+            {
+                "code": "terminal_report_missing",
+                "message": "run_state has a terminal failure state but no terminal report artifact was found",
+                "terminal_state": terminal_state,
+            }
+        )
+    if run_state.get("phase") is not None and run_state.get("run_mode") is None:
+        warnings.append(
+            {
+                "code": "run_mode_missing",
+                "message": "run_state is missing run_mode; status inferred phase from run_state.phase",
+                "phase": run_state.get("phase"),
+            }
+        )
+    return warnings
 
 
 def _inferred_round_accounting(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, int | None]:
@@ -501,7 +542,7 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
                 }
             )
             return packet
-    if terminal_state != "HALTED_CLIENT_TIMEOUT":
+    if terminal_state not in {"HALTED_CLIENT_TIMEOUT", "HALTED_ARTIFACT_INVALID"}:
         return packet
     error = _read_json_object(rounds_dir / "artifact_validation_error.json")
     if error is None:
@@ -515,18 +556,34 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
             "failure_type": error.get("failure_type"),
         }
     )
-    if error.get("failure_type") != "client_timeout":
-        packet["reason"] = "terminal timeout artifact is not failure_type=client_timeout"
+    failure_type = error.get("failure_type")
+    client_role = error.get("client_role")
+    is_client_timeout = terminal_state == "HALTED_CLIENT_TIMEOUT" and failure_type == "client_timeout"
+    is_editor_artifact_validation = (
+        terminal_state == "HALTED_ARTIFACT_INVALID"
+        and failure_type in {"artifact_validation", "client_error"}
+        and client_role == "editor"
+    )
+    if not is_client_timeout and not is_editor_artifact_validation:
+        packet["reason"] = "terminal artifact does not describe a supported resumable failure"
         return packet
-    if error.get("phase") != "phase_1" or error.get("client_role") not in {"reviewer", "editor"}:
+    if error.get("phase") != "phase_1":
+        packet["reason"] = "only Phase 1 halted runs are resumable"
+        return packet
+    if is_client_timeout and client_role not in {"reviewer", "editor"}:
         packet["reason"] = "only Phase 1 reviewer/editor timeouts are resumable"
         return packet
     command_root = shlex.quote(str(root))
-    client_role = str(error.get("client_role"))
+    client_role = str(client_role)
+    reason = (
+        "supported Phase 1 Editor artifact-validation retry"
+        if is_editor_artifact_validation
+        else f"supported Phase 1 {client_role.title()} timeout"
+    )
     packet.update(
         {
             "eligible": True,
-            "reason": f"supported Phase 1 {client_role.title()} timeout",
+            "reason": reason,
             "command": f"whetstone resume --root {command_root}",
             "continue_command": f"whetstone resume --root {command_root} --continue",
         }

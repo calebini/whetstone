@@ -71,6 +71,10 @@
         { "type": "null" }
       ]
     },
+    "closeout_findings_by_profile": {
+      "type": "array",
+      "items": { "$ref": "technical_failure_report.schema.json#/$defs/closeoutProfileFindings" }
+    },
     "run_artifact_pointers": { "$ref": "common.schema.json#/$defs/runArtifactPointers" }
   },
   "$defs": {
@@ -137,6 +141,41 @@
         "feedback_ids": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "closeoutProfileFindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "round_number",
+        "draft_hash",
+        "clean",
+        "blocker_count",
+        "major_count",
+        "feedback_ids",
+        "unresolved_blockers",
+        "unresolved_major_issues"
+      ],
+      "properties": {
+        "profile": { "type": "string", "minLength": 1 },
+        "round_number": { "type": "integer", "minimum": 1 },
+        "draft_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+        "clean": { "type": "boolean" },
+        "blocker_count": { "type": "integer", "minimum": 0 },
+        "major_count": { "type": "integer", "minimum": 0 },
+        "feedback_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "unresolved_blockers": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
+        },
+        "unresolved_major_issues": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/issueSummary" }
         }
       }
     }

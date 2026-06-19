@@ -409,6 +409,10 @@ If a client invocation times out before returning an artifact, the Orchestrator 
 
 Terminal reports MUST include `run_artifact_pointers` with the same scope-contract and job-descriptor pointer shape used by `run_state.json`. This lets a standalone terminal report identify the scope/job artifacts that shaped the run without requiring an operator to inspect the full run state first.
 
+When a terminal failure report follows a reviewer-only closeout sweep across multiple profiles, it MUST include `closeout_findings_by_profile`. This block MUST group the closeout reviewer result by profile, including round number, draft hash, clean status, blocker/major counts, feedback IDs, and unresolved blocker/major issue summaries. `last_reviewer_findings` remains the final reviewer pass only and MUST NOT be treated as a complete summary of multi-profile closeout residuals.
+
+When a Phase 1 Editor artifact-validation failure occurs after validated Reviewer feedback, the companion technical failure report MUST preserve the Reviewer blocker/major context. The report's `unresolved_blockers`, `unresolved_major_issues`, and `last_reviewer_findings` MUST be derived from the validated Reviewer artifact because no valid Editor artifact exists to resolve those findings.
+
 When `HALTED_ARTIFACT_INVALID` occurs, `last_valid_draft_path` MUST point to the most recent draft snapshot the Orchestrator can safely treat as validated. If reviewer artifact validation fails before any validated review exists for the round, this MUST be the current round `draft_before.md`. If editor artifact validation fails after a validated reviewer artifact, this MAY be the current round `draft_after.md` only when that file is an Orchestrator-owned snapshot and not an unvalidated client artifact.
 
 When `HALTED_CLIENT_TIMEOUT` occurs, `last_valid_draft_path` follows the same rule as artifact validation failures. A timed-out Reviewer points to `draft_before.md`. A timed-out Editor after validated reviewer feedback MAY point to the Orchestrator-owned `draft_after.md` snapshot for the round.

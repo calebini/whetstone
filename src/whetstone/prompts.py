@@ -264,8 +264,10 @@ def render_editor_prompt(
         lines.append("Set draft_after_content to null.")
     else:
         lines.append("This live round may mutate the draft after validation.")
+        lines.append("In mutating mode, draft_after_content MUST be a string; do not return null.")
         lines.append("If you change the draft, include draft_after_content as the complete revised draft text.")
         lines.append("If you make no draft changes, set draft_after_content to the original draft text.")
+        lines.append("If any feedback is accepted, modified, or resolved, draft_after_content MUST contain the complete resulting draft.")
         lines.append("Whetstone computes draft_after_hash from draft_after_content; set draft_after_hash to null if no explicit hash was provided above.")
     lines.extend(
         [

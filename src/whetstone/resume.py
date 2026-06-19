@@ -66,7 +66,7 @@ def resume_halted_run(
     editor_client: EditorClient | None = None,
     timeout_seconds: int | None = None,
 ) -> ResumeResult:
-    """Resume supported Phase 1 client timeout paths without replaying prior rounds."""
+    """Resume supported Phase 1 halted paths without replaying prior rounds."""
 
     root = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
@@ -541,7 +541,11 @@ def plan_resume_halted_run(
     reason = (
         "supported Phase 1 Reviewer timeout; will retry reviewer and then complete the round"
         if context["client_role"] == "reviewer"
-        else "supported Phase 1 Editor timeout with validated Reviewer feedback"
+        else (
+            "supported Phase 1 Editor artifact-validation retry with validated Reviewer feedback"
+            if context["terminal_state"] == "HALTED_ARTIFACT_INVALID"
+            else "supported Phase 1 Editor timeout with validated Reviewer feedback"
+        )
     )
     return ResumePlan(
         resumable=True,
@@ -914,7 +918,10 @@ def _continue_phase1(
         profile_status = closeout_result["profile_status"]
         last_unresolved = closeout_result["last_unresolved"]
         last_reviewer_findings = closeout_result["last_reviewer_findings"]
+        closeout_findings_by_profile = closeout_result["closeout_findings_by_profile"]
         total_budget = closeout_result["round_number"]
+    else:
+        closeout_findings_by_profile = None
 
     blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
     majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
@@ -930,6 +937,7 @@ def _continue_phase1(
         recommendation="manual_review_required",
         profile_status=profile_status,
         last_reviewer_findings=last_reviewer_findings,
+        closeout_findings_by_profile=closeout_findings_by_profile,
         terminal_state="PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED",
     )
     terminal_state = "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED"
@@ -1250,6 +1258,9 @@ def _continue_vertical_phase1(
         profile_status = closeout_result["profile_status"]
         last_unresolved = closeout_result["last_unresolved"]
         last_reviewer_findings = closeout_result["last_reviewer_findings"]
+        closeout_findings_by_profile = closeout_result["closeout_findings_by_profile"]
+    else:
+        closeout_findings_by_profile = None
     ReportWriter(root, config=config).write_technical_failure_report(
         round_number=round_number,
         final_draft_path="./spec.md",
@@ -1262,6 +1273,7 @@ def _continue_vertical_phase1(
         recommendation="manual_review_required",
         profile_status=profile_status,
         last_reviewer_findings=last_reviewer_findings,
+        closeout_findings_by_profile=closeout_findings_by_profile,
         terminal_state=terminal_state,
     )
     _write_phase1_state(
@@ -1298,6 +1310,7 @@ def _run_vertical_closeout_check(
     profiles = list(profile_state.keys())
     round_number = start_round - 1
     closeout_unresolved: list[dict[str, Any]] = []
+    closeout_findings_by_profile: list[dict[str, Any]] = []
     last_reviewer_findings: dict[str, Any] | None = None
     for profile in profiles:
         current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
@@ -1343,6 +1356,7 @@ def _run_vertical_closeout_check(
                     "profile_status": _vertical_profile_status(profile_state, current_draft_hash=current_hash),
                     "last_unresolved": closeout_unresolved,
                     "last_reviewer_findings": last_reviewer_findings,
+                    "closeout_findings_by_profile": closeout_findings_by_profile,
                 }
             raise
         reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
@@ -1363,6 +1377,17 @@ def _run_vertical_closeout_check(
             reviewer_feedback=reviewer_feedback,
             blocker_count=blocker_count,
             major_count=major_count,
+        )
+        closeout_findings_by_profile.append(
+            _closeout_profile_findings(
+                profile=profile,
+                round_number=round_number,
+                draft_hash=review_result.draft_after_hash,
+                reviewer_feedback=reviewer_feedback,
+                unresolved=unresolved,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
         )
         _append_continue_history(
             config.history_path,
@@ -1391,6 +1416,7 @@ def _run_vertical_closeout_check(
         "profile_status": profile_status,
         "last_unresolved": closeout_unresolved,
         "last_reviewer_findings": last_reviewer_findings,
+        "closeout_findings_by_profile": closeout_findings_by_profile,
     }
 
 
@@ -1408,6 +1434,7 @@ def _run_horizontal_closeout_check(
 ) -> dict[str, Any]:
     round_number = start_round - 1
     closeout_unresolved: list[dict[str, Any]] = []
+    closeout_findings_by_profile: list[dict[str, Any]] = []
     last_reviewer_findings: dict[str, Any] | None = None
     mutable_status = _copy_profile_status(profile_status)
     for profile in list(profile_status.get("unverified_profiles", [])):
@@ -1455,6 +1482,7 @@ def _run_horizontal_closeout_check(
                     "profile_status": mutable_status,
                     "last_unresolved": closeout_unresolved,
                     "last_reviewer_findings": last_reviewer_findings,
+                    "closeout_findings_by_profile": closeout_findings_by_profile,
                 }
             raise
         reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
@@ -1474,6 +1502,17 @@ def _run_horizontal_closeout_check(
             reviewer_feedback=reviewer_feedback,
             blocker_count=blocker_count,
             major_count=major_count,
+        )
+        closeout_findings_by_profile.append(
+            _closeout_profile_findings(
+                profile=str(profile),
+                round_number=round_number,
+                draft_hash=review_result.draft_after_hash,
+                reviewer_feedback=reviewer_feedback,
+                unresolved=unresolved,
+                blocker_count=blocker_count,
+                major_count=major_count,
+            )
         )
         _append_continue_history(
             config.history_path,
@@ -1502,6 +1541,7 @@ def _run_horizontal_closeout_check(
         "profile_status": mutable_status,
         "last_unresolved": closeout_unresolved,
         "last_reviewer_findings": last_reviewer_findings,
+        "closeout_findings_by_profile": closeout_findings_by_profile,
     }
 
 
@@ -1529,15 +1569,29 @@ def _validated_resume_context(config: OrchestratorConfig, *, continue_run: bool)
         raise ValueError("resume requires rounds/run_state.json and rounds/artifact_validation_error.json")
     state = _read_json(state_path)
     error = _read_json(error_path)
-    if state.get("terminal_state") != "HALTED_CLIENT_TIMEOUT" or error.get("terminal_state") != "HALTED_CLIENT_TIMEOUT":
-        raise ValueError("resume currently supports only HALTED_CLIENT_TIMEOUT")
-    if error.get("failure_type") != "client_timeout":
-        raise ValueError("resume currently supports only client_timeout failures")
+    state_terminal = str(state.get("terminal_state") or "")
+    error_terminal = str(error.get("terminal_state") or "")
+    failure_type = str(error.get("failure_type") or "")
     client_role = str(error.get("client_role"))
-    if client_role not in {"reviewer", "editor"}:
-        raise ValueError("resume currently supports only reviewer or editor timeouts")
+    is_client_timeout = (
+        state_terminal == "HALTED_CLIENT_TIMEOUT"
+        and error_terminal == "HALTED_CLIENT_TIMEOUT"
+        and failure_type == "client_timeout"
+        and client_role in {"reviewer", "editor"}
+    )
+    is_editor_artifact_validation = (
+        state_terminal == "HALTED_ARTIFACT_INVALID"
+        and error_terminal == "HALTED_ARTIFACT_INVALID"
+        and failure_type in {"artifact_validation", "client_error"}
+        and client_role == "editor"
+    )
+    if not is_client_timeout and not is_editor_artifact_validation:
+        raise ValueError(
+            "resume currently supports Phase 1 reviewer/editor timeouts or "
+            "Phase 1 editor artifact-validation failures"
+        )
     if error.get("phase") != "phase_1":
-        raise ValueError("resume currently supports only Phase 1 client timeouts")
+        raise ValueError("resume currently supports only Phase 1 halted runs")
 
     current_hash = draft_hash(config.spec_path.read_text(encoding="utf-8"))
     expected_hash = str(error.get("last_valid_draft_hash") or state.get("current_draft_hash"))
@@ -2155,6 +2209,37 @@ def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:
         "normalized_severity": issue["normalized_severity"],
         "affected_sections": issue["affected_sections"],
         "claim": issue["claim"],
+    }
+
+
+def _closeout_profile_findings(
+    *,
+    profile: str,
+    round_number: int,
+    draft_hash: str,
+    reviewer_feedback: dict[str, Any],
+    unresolved: list[dict[str, Any]],
+    blocker_count: int,
+    major_count: int,
+) -> dict[str, Any]:
+    return {
+        "profile": profile,
+        "round_number": round_number,
+        "draft_hash": draft_hash,
+        "clean": blocker_count == 0 and major_count == 0,
+        "blocker_count": blocker_count,
+        "major_count": major_count,
+        "feedback_ids": [
+            str(issue.get("feedback_id"))
+            for issue in reviewer_feedback.get("feedback", [])
+            if issue.get("feedback_id") is not None
+        ],
+        "unresolved_blockers": [
+            _issue_summary(issue) for issue in unresolved if issue.get("normalized_severity") == "blocker"
+        ],
+        "unresolved_major_issues": [
+            _issue_summary(issue) for issue in unresolved if issue.get("normalized_severity") == "major"
+        ],
     }
 
 

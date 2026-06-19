@@ -116,6 +116,24 @@ class TimeoutOnSecondReviewerClient:
         }
 
 
+class MissingDraftContentEditorClient:
+    def revise(self, prompt: str) -> dict:
+        round_number = _editor_round_number(prompt)
+        current_hash = _hash_line(prompt, "The draft_before_hash MUST be ")
+        return {
+            "round_number": round_number,
+            "draft_before_hash": current_hash,
+            "draft_after_hash": current_hash,
+            "accepted_feedback_ids": ["fb-1"],
+            "modified_feedback_ids": [],
+            "declined_feedback": [],
+            "created_conflict_ids": [],
+            "resolved_issue_ids": ["iss_aaaaaaaaaaaaaaaa"],
+            "unresolved_issue_ids": [],
+            "draft_after_content": None,
+        }
+
+
 class OperabilityMinorReviewerClient:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -362,6 +380,54 @@ class ResumeTests(unittest.TestCase):
             self.assertEqual(state["current_round"], 1)
             self.assertEqual(state["active_profile"], "structural_integrity")
             self.assertIn("Clarified.", root.joinpath("spec.md").read_text(encoding="utf-8"))
+
+    def test_resume_phase1_editor_artifact_validation_reuses_existing_reviewer_feedback(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            halted = LivePhase1Runner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=MissingDraftContentEditorClient(),
+            ).run()
+
+            self.assertEqual(halted.terminal_state, "HALTED_ARTIFACT_INVALID")
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_1.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/editor_invalid_attempt_2.json").exists())
+            report = json.loads(root.joinpath("rounds/technical_failure_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["last_reviewer_findings"]["profile"], "structural_integrity")
+            self.assertEqual(report["last_reviewer_findings"]["blocker_count"], 0)
+            self.assertEqual(report["last_reviewer_findings"]["major_count"], 1)
+            self.assertEqual(report["last_reviewer_findings"]["feedback_ids"], ["fb-1"])
+            self.assertEqual(report["unresolved_major_issues"][0]["issue_id"], "iss_aaaaaaaaaaaaaaaa")
+            before_resume_feedback = root.joinpath("rounds/round-1/reviewer_feedback.json").read_text(encoding="utf-8")
+
+            plan = plan_resume_halted_run(root, OrchestratorConfig.default(root), continue_run=True)
+            self.assertTrue(plan.resumable)
+            self.assertEqual(plan.terminal_state, "HALTED_ARTIFACT_INVALID")
+            self.assertEqual(plan.failure_type, "artifact_validation")
+            self.assertEqual(plan.client_role, "editor")
+            self.assertEqual(plan.next_attempt_number, 3)
+            self.assertIn("artifact-validation", plan.reason)
+
+            resumed = resume_halted_run(
+                root,
+                OrchestratorConfig.default(root),
+                editor_client=UniqueAppliedDraftEditorClient(root),
+            )
+
+            self.assertTrue(resumed.resumed)
+            self.assertIsNone(resumed.terminal_state)
+            self.assertEqual(resumed.round_number, 1)
+            self.assertEqual(root.joinpath("rounds/round-1/reviewer_feedback.json").read_text(encoding="utf-8"), before_resume_feedback)
+            self.assertTrue(root.joinpath("rounds/round-1/editor_summary.json").exists())
+            self.assertTrue(root.joinpath("rounds/round-1/prompt_snapshots/editor-editor_summary.json-attempt-3.json").exists())
+            self.assertFalse(root.joinpath("rounds/artifact_validation_error.json").exists())
+            self.assertIn("Clarified in round 1.", root.joinpath("spec.md").read_text(encoding="utf-8"))
 
     def test_resume_continue_drives_remaining_phase1_profiles(self) -> None:
         with TemporaryDirectory() as tmp:

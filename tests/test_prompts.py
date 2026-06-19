@@ -139,6 +139,8 @@ class PromptTests(unittest.TestCase):
         )
 
         self.assertIn("Whetstone computes draft_after_hash from draft_after_content", prompt)
+        self.assertIn("draft_after_content MUST be a string", prompt)
+        self.assertIn("If any feedback is accepted, modified, or resolved", prompt)
 
     def test_editor_prompt_includes_bounded_synthesis_guidance_when_report_supplied(self) -> None:
         prompt = render_editor_prompt(

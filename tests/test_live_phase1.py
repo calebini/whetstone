@@ -428,6 +428,17 @@ class LivePhase1RunnerTests(unittest.TestCase):
             self.assertFalse(report["ready_for_phase_2"])
             self.assertEqual(report["last_accepted_draft_hash"], report["last_draft_hash"])
             self.assertIn("structural_integrity", report["profile_status"]["unverified_profiles"])
+            self.assertEqual(report["last_reviewer_findings"]["profile"], "operability")
+            closeout_findings = report["closeout_findings_by_profile"]
+            self.assertEqual(
+                [item["profile"] for item in closeout_findings],
+                ["structural_integrity", "determinism", "operability"],
+            )
+            self.assertFalse(closeout_findings[0]["clean"])
+            self.assertEqual(closeout_findings[0]["major_count"], 1)
+            self.assertEqual(closeout_findings[0]["unresolved_major_issues"][0]["issue_id"], "iss_0000000000000004")
+            self.assertTrue(closeout_findings[1]["clean"])
+            self.assertTrue(closeout_findings[2]["clean"])
 
     def test_vertical_closeout_check_stabilizes_accepted_minor_only_editor_change(self) -> None:
         with TemporaryDirectory() as tmp:

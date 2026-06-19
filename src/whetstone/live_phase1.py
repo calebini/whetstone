@@ -13,7 +13,13 @@ from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
 from whetstone.hashing import draft_hash
-from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, run_telemetry_totals
+from whetstone.live import (
+    EditorClient,
+    LiveRoundRunner,
+    ReviewerClient,
+    _write_artifact_validation_companion_report,
+    run_telemetry_totals,
+)
 from whetstone.reports import ReportWriter
 from whetstone.runner import _unresolved_issues
 from whetstone.run_state import effective_run_config, run_artifact_pointers
@@ -169,6 +175,16 @@ class LivePhase1Runner:
                         rounds_dir=self.config.rounds_dir,
                         mode=self.config.decision_points.mode,
                         terminal_state=terminal_state,
+                    )
+                    _write_artifact_validation_companion_report(
+                        self.root,
+                        self.config,
+                        round_number=round_number,
+                        phase="phase_1",
+                        profile=profile,
+                        client_role=str(error_packet.get("client_role") or ""),
+                        final_draft_path=str(error_packet.get("last_valid_draft_path") or "./spec.md"),
+                        failure_type=str(error_packet.get("failure_type") or "artifact_validation"),
                     )
                     return LivePhase1Result(
                         terminal_state,
@@ -411,7 +427,10 @@ class LivePhase1Runner:
             profile_status = closeout_result["profile_status"]
             last_unresolved = closeout_result["last_unresolved"]
             last_reviewer_findings = closeout_result["last_reviewer_findings"]
+            closeout_findings_by_profile = closeout_result["closeout_findings_by_profile"]
             exhausted_round_number = closeout_result["round_number"]
+        else:
+            closeout_findings_by_profile = None
         blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
         majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
         report_path = self.report_writer.write_technical_failure_report(
@@ -426,6 +445,7 @@ class LivePhase1Runner:
             recommendation="manual_review_required",
             profile_status=profile_status,
             last_reviewer_findings=last_reviewer_findings,
+            closeout_findings_by_profile=closeout_findings_by_profile,
             terminal_state="PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(self.config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED",
         )
         terminal_state = "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS" if _soft_budget_policy(self.config) and scheduler.sweep_complete() else "TARGET_NOT_REACHED"
@@ -745,6 +765,9 @@ class LivePhase1Runner:
             profile_status = closeout_result["profile_status"]
             last_unresolved = closeout_result["last_unresolved"]
             last_reviewer_findings = closeout_result["last_reviewer_findings"]
+            closeout_findings_by_profile = closeout_result["closeout_findings_by_profile"]
+        else:
+            closeout_findings_by_profile = None
         blockers = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "blocker"]
         majors = [_issue_summary(issue) for issue in last_unresolved if issue["normalized_severity"] == "major"]
         report_path = self.report_writer.write_technical_failure_report(
@@ -759,6 +782,7 @@ class LivePhase1Runner:
             recommendation="manual_review_required",
             profile_status=profile_status,
             last_reviewer_findings=last_reviewer_findings,
+            closeout_findings_by_profile=closeout_findings_by_profile,
             terminal_state="TARGET_NOT_REACHED",
         )
         self._write_state(
@@ -789,6 +813,7 @@ class LivePhase1Runner:
         profiles = list(profile_state.keys())
         round_number = start_round - 1
         closeout_unresolved: list[dict[str, Any]] = []
+        closeout_findings_by_profile: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
         for profile in profiles:
             current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
@@ -838,6 +863,7 @@ class LivePhase1Runner:
                         "profile_status": _vertical_profile_status(profile_state, current_draft_hash=current_hash),
                         "last_unresolved": closeout_unresolved,
                         "last_reviewer_findings": last_reviewer_findings,
+                        "closeout_findings_by_profile": closeout_findings_by_profile,
                     }
                 raise
             reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
@@ -858,6 +884,17 @@ class LivePhase1Runner:
                 reviewer_feedback=reviewer_feedback,
                 blocker_count=blocker_count,
                 major_count=major_count,
+            )
+            closeout_findings_by_profile.append(
+                _closeout_profile_findings(
+                    profile=profile,
+                    round_number=round_number,
+                    draft_hash=review_result.draft_after_hash,
+                    reviewer_feedback=reviewer_feedback,
+                    unresolved=unresolved,
+                    blocker_count=blocker_count,
+                    major_count=major_count,
+                )
             )
             self._append_history(
                 round_number=round_number,
@@ -886,6 +923,7 @@ class LivePhase1Runner:
             "profile_status": profile_status,
             "last_unresolved": closeout_unresolved,
             "last_reviewer_findings": last_reviewer_findings,
+            "closeout_findings_by_profile": closeout_findings_by_profile,
         }
 
     def _run_horizontal_closeout_check(
@@ -899,6 +937,7 @@ class LivePhase1Runner:
     ) -> dict[str, Any]:
         round_number = start_round - 1
         closeout_unresolved: list[dict[str, Any]] = []
+        closeout_findings_by_profile: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
         mutable_status = _copy_profile_status(profile_status)
         for profile in list(profile_status.get("unverified_profiles", [])):
@@ -949,6 +988,7 @@ class LivePhase1Runner:
                         "profile_status": mutable_status,
                         "last_unresolved": closeout_unresolved,
                         "last_reviewer_findings": last_reviewer_findings,
+                        "closeout_findings_by_profile": closeout_findings_by_profile,
                     }
                 raise
             reviewer_feedback = _read_json(review_result.round_dir / "reviewer_feedback.json")
@@ -968,6 +1008,17 @@ class LivePhase1Runner:
                 reviewer_feedback=reviewer_feedback,
                 blocker_count=blocker_count,
                 major_count=major_count,
+            )
+            closeout_findings_by_profile.append(
+                _closeout_profile_findings(
+                    profile=str(profile),
+                    round_number=round_number,
+                    draft_hash=review_result.draft_after_hash,
+                    reviewer_feedback=reviewer_feedback,
+                    unresolved=unresolved,
+                    blocker_count=blocker_count,
+                    major_count=major_count,
+                )
             )
             self._append_history(
                 round_number=round_number,
@@ -995,6 +1046,7 @@ class LivePhase1Runner:
             "profile_status": mutable_status,
             "last_unresolved": closeout_unresolved,
             "last_reviewer_findings": last_reviewer_findings,
+            "closeout_findings_by_profile": closeout_findings_by_profile,
         }
 
     def _complete(
@@ -1234,6 +1286,37 @@ def _issue_summary(issue: dict[str, Any]) -> dict[str, Any]:
         "normalized_severity": issue["normalized_severity"],
         "affected_sections": issue["affected_sections"],
         "claim": issue["claim"],
+    }
+
+
+def _closeout_profile_findings(
+    *,
+    profile: str,
+    round_number: int,
+    draft_hash: str,
+    reviewer_feedback: dict[str, Any],
+    unresolved: list[dict[str, Any]],
+    blocker_count: int,
+    major_count: int,
+) -> dict[str, Any]:
+    return {
+        "profile": profile,
+        "round_number": round_number,
+        "draft_hash": draft_hash,
+        "clean": blocker_count == 0 and major_count == 0,
+        "blocker_count": blocker_count,
+        "major_count": major_count,
+        "feedback_ids": [
+            str(issue.get("feedback_id"))
+            for issue in reviewer_feedback.get("feedback", [])
+            if issue.get("feedback_id") is not None
+        ],
+        "unresolved_blockers": [
+            _issue_summary(issue) for issue in unresolved if issue.get("normalized_severity") == "blocker"
+        ],
+        "unresolved_major_issues": [
+            _issue_summary(issue) for issue in unresolved if issue.get("normalized_severity") == "major"
+        ],
     }
 
 

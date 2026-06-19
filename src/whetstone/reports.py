@@ -83,6 +83,7 @@ class ReportWriter:
         recommendation: str,
         profile_status: dict[str, Any] | None = None,
         last_reviewer_findings: dict[str, Any] | None = None,
+        closeout_findings_by_profile: list[dict[str, Any]] | None = None,
         terminal_state: str = "TARGET_NOT_REACHED",
     ) -> Path:
         current_hash = draft_hash(self.store.read_spec())
@@ -118,6 +119,8 @@ class ReportWriter:
             "last_reviewer_findings": last_reviewer_findings,
             "run_artifact_pointers": self._run_artifact_pointers(),
         }
+        if closeout_findings_by_profile is not None:
+            packet["closeout_findings_by_profile"] = closeout_findings_by_profile
         return self._write_terminal_json("technical_failure_report.json", packet, "technical_failure_report")
 
     def write_convergence_failure_report(

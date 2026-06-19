@@ -892,6 +892,8 @@ class LiveRoundRunner:
                         self.config,
                         round_number=round_number,
                         phase=phase,
+                        profile=profile,
+                        client_role=client_role,
                         final_draft_path=last_valid_draft_path,
                         failure_type="client_timeout",
                     )
@@ -917,6 +919,8 @@ class LiveRoundRunner:
                     self.config,
                     round_number=round_number,
                     phase=phase,
+                    profile=profile,
+                    client_role=client_role,
                     final_draft_path=last_valid_draft_path,
                     failure_type="client_error",
                 )
@@ -970,6 +974,8 @@ class LiveRoundRunner:
                     self.config,
                     round_number=round_number,
                     phase=phase,
+                    profile=profile,
+                    client_role=client_role,
                     final_draft_path=last_valid_draft_path,
                 )
                 raise ValueError(f"{artifact_name} validation failed after retry") from exc
@@ -1565,6 +1571,16 @@ def _read_json_list_if_present(path: Path) -> list[dict[str, Any]]:
     return [item for item in data if isinstance(item, dict)]
 
 
+def _read_json_object_if_present(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _sum_nullable(values: Any) -> int | None:
     total = 0
     seen = False
@@ -1671,6 +1687,8 @@ def _write_artifact_validation_companion_report(
     *,
     round_number: int,
     phase: str,
+    profile: str,
+    client_role: str,
     final_draft_path: str,
     failure_type: str = "artifact_validation",
 ) -> None:
@@ -1699,18 +1717,83 @@ def _write_artifact_validation_companion_report(
             terminal_state=terminal_state,
         )
         return
+    phase1_context = _phase1_artifact_failure_report_context(
+        config,
+        round_number=round_number,
+        profile=profile,
+        client_role=client_role,
+    )
     writer.write_technical_failure_report(
         round_number=round_number,
         final_draft_path=final_draft_path,
-        unresolved_blockers=[],
-        unresolved_major_issues=[],
+        unresolved_blockers=phase1_context["unresolved_blockers"],
+        unresolved_major_issues=phase1_context["unresolved_major_issues"],
         unresolved_conflicts=[],
         unresolved_oscillation=None,
-        last_accepted_draft_hash=None,
+        last_accepted_draft_hash=phase1_context["last_accepted_draft_hash"],
         exit_reason=exit_reason,
         recommendation="manual_review_required",
+        last_reviewer_findings=phase1_context["last_reviewer_findings"],
         terminal_state=terminal_state,
     )
+
+
+def _phase1_artifact_failure_report_context(
+    config: OrchestratorConfig,
+    *,
+    round_number: int,
+    profile: str,
+    client_role: str,
+) -> dict[str, Any]:
+    state = _read_json_object_if_present(config.rounds_dir / "run_state.json") or {}
+    reviewer_feedback_path = config.rounds_dir / f"round-{round_number}" / "reviewer_feedback.json"
+    if client_role != "editor" or not reviewer_feedback_path.exists():
+        return {
+            "unresolved_blockers": [],
+            "unresolved_major_issues": [],
+            "last_reviewer_findings": None,
+            "last_accepted_draft_hash": state.get("last_accepted_draft_hash"),
+        }
+    reviewer_feedback = _read_json_object_if_present(reviewer_feedback_path) or {}
+    blockers = [
+        _phase1_failure_issue_summary(issue)
+        for issue in reviewer_feedback.get("feedback", [])
+        if issue.get("normalized_severity") == "blocker" and bool(issue.get("in_scope", True))
+    ]
+    majors = [
+        _phase1_failure_issue_summary(issue)
+        for issue in reviewer_feedback.get("feedback", [])
+        if issue.get("normalized_severity") == "major" and bool(issue.get("in_scope", True))
+    ]
+    serious_feedback_ids = [
+        str(issue.get("feedback_id"))
+        for issue in reviewer_feedback.get("feedback", [])
+        if issue.get("normalized_severity") in {"blocker", "major"}
+        and bool(issue.get("in_scope", True))
+        and issue.get("feedback_id") is not None
+    ]
+    return {
+        "unresolved_blockers": blockers,
+        "unresolved_major_issues": majors,
+        "last_reviewer_findings": {
+            "round_number": round_number,
+            "profile": profile,
+            "blocker_count": len(blockers),
+            "major_count": len(majors),
+            "feedback_ids": serious_feedback_ids,
+        },
+        "last_accepted_draft_hash": state.get("last_accepted_draft_hash"),
+    }
+
+
+def _phase1_failure_issue_summary(issue: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "issue_id": issue.get("issue_id"),
+        "issue_fingerprint": issue.get("issue_fingerprint"),
+        "normalized_severity": issue.get("normalized_severity"),
+        "affected_sections": issue.get("affected_sections", []),
+        "claim": issue.get("claim"),
+    }
 
 
 def _retry_prompt(prompt: str, *, artifact_name: str, validation_errors: list[str]) -> str:

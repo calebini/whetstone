@@ -498,7 +498,7 @@ PYTHONPATH=src python3 -m whetstone.cli resume \
 
 Budget-extension resume appends new `round-N/` directories, preserves prior artifacts, and records the extension in `rounds/run_state.json` under `budget_extensions`. In horizontal mode it appends profile rounds. In vertical mode it appends additional vertical review cycles: profile review passes over the same draft, followed by one consolidated Editor revision when feedback remains.
 
-Current resume support is intentionally narrow. It supports Phase 1 Reviewer timeouts, Phase 1 Editor timeouts after validated Reviewer feedback, and explicit Phase 1 budget-extension continuation. It does not resume arbitrary artifact validation failures, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
+Current resume support is intentionally narrow. It supports Phase 1 Reviewer timeouts, Phase 1 Editor timeouts after validated Reviewer feedback, Phase 1 Editor artifact-validation failures after validated Reviewer feedback, and explicit Phase 1 budget-extension continuation. It does not resume Reviewer artifact-validation failures, arbitrary malformed run roots, Phase 2 timeouts, source hash mismatches, or manually edited run drafts.
 
 ## Run Phase 2
 
@@ -692,6 +692,8 @@ If status says the latest round is partial, read `missing_round_artifacts` and t
 If a run halts because the nested Codex CLI cannot access `~/.codex/sessions`, do not diagnose the spec and do not burn time probing generic resume. That failure happened before the model could perform a valid review/edit. Rerun from a clean isolated root, or overwrite only when you are certain no semantic round artifacts from the failed attempt should be preserved, using the required execution approval for nested client access.
 
 If a client times out, use `status --format text`, then `resume --dry-run --continue`. Increase `--editor-timeout-seconds` if the Editor timed out while producing a large draft.
+
+If a Phase 1 Editor artifact fails validation after a valid Reviewer handoff, `status --format text` may show a resumable Editor artifact-validation retry. In that case, use `resume --dry-run --continue`, then run the same command without `--dry-run` if the hash guard passes. Do not use this path for Reviewer artifact-validation failures or sandbox/session-access failures that occurred before semantic review.
 
 If Phase 1 reaches `TARGET_NOT_REACHED`, check whether the latest failure report says issues remain unresolved or whether a profile simply never got a clean Reviewer verification.
 

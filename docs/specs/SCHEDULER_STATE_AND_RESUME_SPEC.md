@@ -479,7 +479,8 @@ The Orchestrator MAY resume only explicitly resumable terminal states. In this v
 
 1. Phase 1 Reviewer timeout recovery.
 2. Phase 1 Editor timeout recovery.
-3. Phase 1 budget-extension continuation after explicit operator request.
+3. Phase 1 Editor artifact-validation recovery after validated Reviewer feedback.
+4. Phase 1 budget-extension continuation after explicit operator request.
 
 ### Client Timeout Resume
 
@@ -520,13 +521,28 @@ For a supported Editor-timeout path, resume MUST:
 - clear the top-level timeout terminal report only after the resumed round completes successfully
 - update `run_state.json`, `spec.md`, `draft_after.md`, `editor_summary.json`, `unresolved_issues.json`, `decision_points.json`, and `spec.history.md`
 
+### Editor Artifact-Validation Resume
+
+The supported Phase 1 Editor artifact-validation resume path is:
+
+- `terminal_state = HALTED_ARTIFACT_INVALID`
+- `failure_type = artifact_validation | client_error`
+- `phase = phase_1`
+- `client_role = editor`
+- the halted round already has validated `reviewer_feedback.json`
+- the current `spec.md` hash equals the halted artifact's `last_valid_draft_hash`
+
+This path exists because the Reviewer handoff can be valid while the Editor response fails structured artifact validation after retry. In that case, rerunning the Reviewer would waste tokens and could change the already-validated feedback surface. Resume MUST reuse the persisted Reviewer feedback and retry only the Editor for the halted round.
+
+For a supported Editor artifact-validation path, resume MUST follow the same scheduler reconstruction, Reviewer feedback validation, attempt-numbering, hash guard, artifact preservation, and successful-cleanup rules as the Editor-timeout path. It MUST NOT resume Reviewer artifact-validation failures, Phase 2 artifact-validation failures, hash mismatches, or arbitrary malformed run roots.
+
 Resume does not imply hidden client session reuse. It uses persisted file artifacts as the replay source of truth.
 
 When `review.mode = vertical`, client-timeout resume MUST reconstruct the vertical event stream rather than the horizontal profile scheduler. The reconstructed state MUST include completed profile review rounds in the current vertical cycle, the latest synthetic `profile: vertical` editor round, the per-profile clean/exhausted/verified-draft state, and any unedited feedback already collected in the interrupted cycle. If a Reviewer timeout occurs after one or more profile reviews in the same vertical cycle, `resume --continue` MUST carry those prior profile findings forward into the next synthetic `profile: vertical` consolidated Editor artifact rather than rerunning or dropping them.
 
 For Reviewer-timeout resume idempotency, the halted round number is reused until a valid `reviewer_feedback.json` and the corresponding normal round completion artifacts are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Reviewer responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Reviewer artifact. If the halted round later contains a valid Reviewer artifact and normal round completion artifacts, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
 
-For Editor-timeout resume idempotency, the halted round number is reused until a valid `editor_summary.json` and corresponding validated `draft_after.md` are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Editor responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Editor artifact. If the halted round later contains a valid Editor artifact, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
+For Editor-timeout and Editor artifact-validation resume idempotency, the halted round number is reused until a valid `editor_summary.json` and corresponding validated `draft_after.md` are persisted for that round. Prompt snapshots, telemetry files, raw timeout diagnostics, invalid Editor responses, or partial attempt artifacts do not complete the resumed round. A repeated resume command after a partial resumed attempt MUST preserve those artifacts, reuse the halted round number, and choose the next attempt number as one plus the highest persisted attempt number for that halted Editor artifact. If the halted round later contains a valid Editor artifact, a repeated resume command MUST refuse unless the run remains resumable for a later terminal state.
 
 Attempt numbers are derived from persisted attempt artifacts in the halted `round-N/` directory. Authoritative attempt artifacts are filenames matching:
 

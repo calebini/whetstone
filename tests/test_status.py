@@ -36,6 +36,49 @@ class StatusTests(unittest.TestCase):
             self.assertIn("artifact_pointers:", rendered)
             self.assertIn("job_descriptor=whetstone_job.json", rendered)
 
+    def test_status_marks_phase1_editor_artifact_validation_failure_resumable(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 10,
+                        "active_profile": "determinism",
+                        "terminal_state": "HALTED_ARTIFACT_INVALID",
+                        "ready_for_phase_2": False,
+                        "current_draft_hash": "a" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("artifact_validation_error.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "HALTED_ARTIFACT_INVALID",
+                        "failure_type": "artifact_validation",
+                        "phase": "phase_1",
+                        "client_role": "editor",
+                        "round_number": 10,
+                        "profile": "determinism",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertEqual(status["resume"]["failure_type"], "artifact_validation")
+            self.assertEqual(status["resume"]["client_role"], "editor")
+            self.assertEqual(status["resume"]["round_number"], 10)
+            self.assertIn("artifact-validation", status["resume"]["reason"])
+            self.assertIn("whetstone resume --root", status["resume"]["command"])
+
     def test_status_reports_phase1_handoff_and_decision_summary(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -283,6 +326,35 @@ class StatusTests(unittest.TestCase):
             self.assertFalse(status["latest_round"]["complete"])
             self.assertIn("reviewer_feedback.json", status["latest_round"]["missing_required_artifacts"])
             self.assertEqual(status["next_action"], "continue_or_resume_phase1")
+
+    def test_status_warns_when_terminal_failure_report_is_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 13,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "current_draft_hash": "a" * 64,
+                        "last_accepted_draft_hash": "a" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertEqual(status["current_draft_status"], "accepted_unverified_profiles")
+            self.assertEqual(status["terminal_report_path"], None)
+            self.assertEqual(status["status_warnings"][0]["code"], "terminal_report_missing")
+            self.assertEqual(status["status_warnings"][1]["code"], "run_mode_missing")
+            self.assertIn("status_warnings:", rendered)
+            self.assertIn("terminal_report_missing", rendered)
 
     def test_status_reports_pending_client_attempt_without_telemetry(self) -> None:
         with TemporaryDirectory() as tmp:
