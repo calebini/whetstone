@@ -9,6 +9,7 @@ import shlex
 from typing import Any
 
 from whetstone.config import OrchestratorConfig
+from whetstone.context_pressure import REPORT_JSON
 from whetstone.hashing import draft_hash
 from whetstone.live import run_telemetry_totals
 from whetstone.run_state import apply_effective_run_config, run_artifact_pointers
@@ -68,6 +69,8 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     resume_status = _resume_status(root, rounds_dir, run_state, config)
     scope_status = _scope_status(root, config)
     artifact_pointers = _artifact_pointers(root, config, run_state)
+    context_pressure = _context_pressure_status(rounds_dir, root)
+    round_context_pressure = _round_context_pressure_status(rounds_dir, root)
     status_warnings = _status_warnings(rounds_dir, root, run_state, terminal_report_path=terminal_report_path)
     default_review_round_budget = default_phase_1_scheduler(
         config.review_profile_budgets,
@@ -122,6 +125,8 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "resume": resume_status,
         "scope_contract": scope_status,
         "run_artifact_pointers": artifact_pointers,
+        "context_pressure": context_pressure,
+        "round_context_pressure": round_context_pressure,
         "latest_round": latest_round,
         "terminal_report_path": _path_or_none(terminal_report_path, root) if terminal_report_path else None,
         "decision_register": _decision_register(rounds_dir, root),
@@ -146,6 +151,8 @@ def render_status_text(status: dict[str, Any]) -> str:
     apply_back = status.get("apply_back") or {}
     resume_status = status.get("resume") or {}
     artifact_pointers = status.get("run_artifact_pointers") or {}
+    context_pressure = status.get("context_pressure") or {}
+    round_context_pressure = status.get("round_context_pressure") or {}
     status_warnings = status.get("status_warnings") or []
     latest_round_text = "none"
     if latest_round:
@@ -175,6 +182,8 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"resumable: {str(bool(status.get('resumable'))).lower()}",
         f"scope_contract: {_scope_display(status.get('scope_contract'))}",
         f"artifact_pointers: {_artifact_pointer_display(artifact_pointers)}",
+        f"context_pressure: {_context_pressure_display(context_pressure)}",
+        f"round_context_pressure: {_round_context_pressure_display(round_context_pressure)}",
         f"last_accepted_draft_hash: {_display(status.get('last_accepted_draft_hash'))}",
         f"latest_round: {latest_round_text}",
         f"next_action: {_display(status.get('next_action'))}",
@@ -269,6 +278,64 @@ def _artifact_pointers(root: Path, config: OrchestratorConfig, run_state: dict[s
     if run_state and isinstance(run_state.get("run_artifact_pointers"), dict):
         return run_state["run_artifact_pointers"]
     return run_artifact_pointers(root, config)
+
+
+def _context_pressure_status(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    path = rounds_dir / REPORT_JSON
+    packet = _read_json_object(path)
+    if packet is None:
+        return None
+    totals = packet.get("totals") if isinstance(packet.get("totals"), dict) else {}
+    warnings = packet.get("warnings") if isinstance(packet.get("warnings"), list) else []
+    return {
+        "path": _path_or_none(path, root),
+        "behavior": packet.get("behavior"),
+        "action_taken": packet.get("action_taken"),
+        "component_count": totals.get("component_count"),
+        "existing_component_count": totals.get("existing_component_count"),
+        "byte_count": totals.get("byte_count"),
+        "estimated_tokens": totals.get("estimated_tokens"),
+        "warning_count": len(warnings),
+        "warning_codes": [item.get("code") for item in warnings if isinstance(item, dict)],
+    }
+
+
+def _round_context_pressure_status(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
+    reports: list[dict[str, Any]] = []
+    round_dirs = [
+        path
+        for path in rounds_dir.glob("round-*")
+        if path.is_dir() and path.name.removeprefix("round-").isdigit()
+    ]
+    for round_dir in sorted(round_dirs, key=lambda path: int(path.name.removeprefix("round-"))):
+        path = round_dir / REPORT_JSON
+        packet = _read_json_object(path)
+        if packet is None:
+            continue
+        totals = packet.get("totals") if isinstance(packet.get("totals"), dict) else {}
+        referenced = packet.get("referenced_context") if isinstance(packet.get("referenced_context"), dict) else {}
+        reports.append(
+            {
+                "round_number": int(round_dir.name.removeprefix("round-")),
+                "path": _path_or_none(path, root),
+                "profile": packet.get("profile"),
+                "phase": packet.get("phase"),
+                "byte_count": totals.get("byte_count", 0),
+                "estimated_tokens": totals.get("estimated_tokens", 0),
+                "component_count": totals.get("component_count", 0),
+                "referenced_context_count": referenced.get("reference_count", 0),
+            }
+        )
+    if not reports:
+        return None
+    max_by_tokens = max(reports, key=lambda item: int(item.get("estimated_tokens") or 0))
+    latest = reports[-1]
+    return {
+        "round_report_count": len(reports),
+        "latest": latest,
+        "max_estimated_tokens": max_by_tokens,
+        "total_referenced_context_count": sum(int(item.get("referenced_context_count") or 0) for item in reports),
+    }
 
 
 def _decision_register(rounds_dir: Path, root: Path) -> dict[str, Any] | None:
@@ -832,6 +899,21 @@ def _context_pressure_display(value: object) -> str:
         f"est_tokens={_display(value.get('estimated_tokens'))}, "
         f"warnings={_display(value.get('warning_count'))}, "
         f"action={_display(value.get('action_taken'))}"
+    )
+
+
+def _round_context_pressure_display(value: object) -> str:
+    if not isinstance(value, dict):
+        return "none"
+    latest = value.get("latest") if isinstance(value.get("latest"), dict) else {}
+    max_tokens = value.get("max_estimated_tokens") if isinstance(value.get("max_estimated_tokens"), dict) else {}
+    return (
+        f"reports={_display(value.get('round_report_count'))}, "
+        f"latest_round={_display(latest.get('round_number'))}, "
+        f"latest_est_tokens={_display(latest.get('estimated_tokens'))}, "
+        f"max_round={_display(max_tokens.get('round_number'))}, "
+        f"max_est_tokens={_display(max_tokens.get('estimated_tokens'))}, "
+        f"referenced_context_mentions={_display(value.get('total_referenced_context_count'))}"
     )
 
 

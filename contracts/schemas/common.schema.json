@@ -93,7 +93,9 @@
       "required": ["scope_contract", "job_descriptor"],
       "properties": {
         "scope_contract": { "$ref": "#/$defs/filePointer" },
-        "job_descriptor": { "$ref": "#/$defs/filePointer" }
+        "job_descriptor": { "$ref": "#/$defs/filePointer" },
+        "context_pressure_report": { "$ref": "#/$defs/filePointer" },
+        "context_pressure_report_markdown": { "$ref": "#/$defs/filePointer" }
       }
     },
     "stringArray": {

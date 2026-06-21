@@ -590,6 +590,24 @@ $RUN_ROOT/rounds/operator_decision_checkpoint_summary.md
 
 This summary clusters checkpoint candidates and shows the top cards worth operator review.
 
+## Context Pressure
+
+If a run feels unusually slow, inspect the advisory context report before changing budgets or timeouts:
+
+```text
+$RUN_ROOT/rounds/context_pressure_report.md
+```
+
+`context_pressure_report.json` and `.md` measure the mutable draft, selected rubric, approved scope contract, and configured reference context files. They report byte counts, rough estimated tokens, large-component warnings, missing required context warnings, and reference-context count. This is observability only: Whetstone does not trim context, change scheduling, halt, or accept/reject a run because of this report.
+
+For actual per-round prompt payloads, inspect:
+
+```text
+$RUN_ROOT/rounds/round-N/context_pressure_report.md
+```
+
+Per-round reports measure the concrete files written under `round-N/context/`. They also show `referenced_context` when Reviewer findings cite generated reference filenames such as `reference_ontology.md`. This helps identify which references are proving useful before introducing any future profile-aware context selection.
+
 ## Review Before Apply-Back
 
 Before changing the source spec, inspect:

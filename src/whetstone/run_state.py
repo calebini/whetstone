@@ -27,6 +27,9 @@ JOB_DESCRIPTOR_CANDIDATE_PATHS = (
     "rounds/intake/job_descriptor.json",
 )
 
+CONTEXT_PRESSURE_REPORT_PATH = "rounds/context_pressure_report.json"
+CONTEXT_PRESSURE_MARKDOWN_PATH = "rounds/context_pressure_report.md"
+
 
 def effective_run_config(config: OrchestratorConfig) -> dict[str, Any]:
     """Return the effective run config that resume must preserve."""
@@ -95,6 +98,8 @@ def run_artifact_pointers(root: Path | str, config: OrchestratorConfig) -> dict[
             **job_descriptor,
             "candidate_paths": list(JOB_DESCRIPTOR_CANDIDATE_PATHS),
         },
+        "context_pressure_report": _file_pointer(root, root / CONTEXT_PRESSURE_REPORT_PATH),
+        "context_pressure_report_markdown": _file_pointer(root, root / CONTEXT_PRESSURE_MARKDOWN_PATH),
     }
 
 

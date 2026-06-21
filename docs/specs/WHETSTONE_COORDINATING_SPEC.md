@@ -111,6 +111,8 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
     - reviewer_feedback.json (Editor prompts only)
   - client_telemetry/
     - {client_role}-{artifact_name}-attempt-{attempt_number}.json
+  - context_pressure_report.json (advisory actual prompt-context payload summary)
+  - context_pressure_report.md (human-readable actual prompt-context payload summary)
 - /rounds/oscillation_report.json (if detected)
 - /rounds/conflict_report.json (if escalated)
 - /rounds/technical_failure_report.json (if Phase 1 fails)
@@ -125,6 +127,8 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
 - /rounds/operator_decision_checkpoint_summary.json (at terminal state)
 - /rounds/operator_decision_checkpoint_summary.md (human-readable checkpoint summary, at terminal state)
 - /rounds/intake/scope_contract.json (approved scope contract, when present)
+- /rounds/context_pressure_report.json (advisory context payload observability)
+- /rounds/context_pressure_report.md (human-readable context payload summary)
 - /change_audit/audit_manifest.json (if `audit-change` is run)
 - /change_audit/audit_brief.md (self-contained review brief for `audit-change`)
 - /change_audit/change_audit_feedback.json (canonical reviewer feedback for `audit-change`)

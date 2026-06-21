@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/context_pressure_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "root",
+    "phase",
+    "round_number",
+    "profile",
+    "behavior",
+    "action_taken",
+    "estimate_method",
+    "report_scope",
+    "thresholds",
+    "totals",
+    "components",
+    "referenced_context",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "context-pressure-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "profile": {
+      "type": "string"
+    },
+    "behavior": {
+      "const": "observability_only"
+    },
+    "action_taken": {
+      "const": "none"
+    },
+    "estimate_method": {
+      "type": "string"
+    },
+    "report_scope": {
+      "enum": [
+        "configured_run_inputs",
+        "round_prompt_context"
+      ]
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_warning_bytes",
+        "component_warning_bytes",
+        "reference_count_warning"
+      ],
+      "properties": {
+        "total_warning_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "component_warning_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reference_count_warning": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component_count",
+        "existing_component_count",
+        "byte_count",
+        "char_count",
+        "estimated_tokens",
+        "reference_context_count"
+      ],
+      "properties": {
+        "component_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "existing_component_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "byte_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "char_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "estimated_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reference_context_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "kind",
+          "role",
+          "path",
+          "required",
+          "exists",
+          "byte_count",
+          "char_count",
+          "estimated_tokens",
+          "sha256",
+          "read_error"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "exists": {
+            "type": "boolean"
+          },
+          "byte_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "char_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "estimated_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "read_error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "referenced_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference_count",
+        "references"
+      ],
+      "properties": {
+        "reference_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "path",
+              "mention_count",
+              "source_feedback_ids"
+            ],
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "mention_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_feedback_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "code",
+          "message"
+        ],
+        "properties": {
+          "severity": {
+            "enum": [
+              "info",
+              "warning"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

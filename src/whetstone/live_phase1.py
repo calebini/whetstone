@@ -11,6 +11,7 @@ from typing import Any, Callable
 
 from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
+from whetstone.context_pressure import write_context_pressure_report
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
 from whetstone.hashing import draft_hash
 from whetstone.live import (
@@ -81,6 +82,7 @@ class LivePhase1Runner:
             return self._run_vertical(overwrite=overwrite)
         if overwrite:
             _clear_top_level_run_artifacts(self.config.rounds_dir)
+        write_context_pressure_report(root=self.root, config=self.config, phase="phase_1", round_number=0)
         scheduler = (
             self.scheduler_factory(self.config.review_profile_budgets)
             if self.scheduler_factory is not None
@@ -468,6 +470,7 @@ class LivePhase1Runner:
     def _run_vertical(self, *, overwrite: bool = False) -> LivePhase1Result:
         if overwrite:
             _clear_top_level_run_artifacts(self.config.rounds_dir)
+        write_context_pressure_report(root=self.root, config=self.config, phase="phase_1", round_number=0)
         scheduler = default_phase_1_scheduler(self.config.review_profile_budgets, profile_set=self.config.review_profile_set)
         profiles = [step.profile for step in scheduler.steps]
         budgets = resolved_phase_1_profile_budgets(
@@ -1497,6 +1500,8 @@ def _clear_top_level_run_artifacts(rounds_dir: Path) -> None:
         "decision_intervention_request.json",
         "contract_surface_report.json",
         "contract_surface_report.md",
+        "context_pressure_report.json",
+        "context_pressure_report.md",
     ):
         path = rounds_dir / filename
         if path.exists():

@@ -11,6 +11,7 @@ from typing import Any
 
 from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
+from whetstone.context_pressure import write_context_pressure_report
 from whetstone.decisions import write_decision_intervention_request, write_decision_register
 from whetstone.hashing import canonical_json_hash, draft_hash
 from whetstone.live import EditorClient, LiveRoundRunner, ReviewerClient, _validate_reviewer_feedback, run_telemetry_totals
@@ -70,6 +71,13 @@ def resume_halted_run(
 
     root = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
+    write_context_pressure_report(
+        root=root,
+        config=config,
+        phase=str(context.get("phase") or "phase_1"),
+        round_number=int(context.get("round_number", 0)),
+        profile=str(context.get("profile") or ""),
+    )
     if context.get("review_mode") == "vertical":
         return _resume_vertical_halted_run(
             root,
@@ -342,6 +350,13 @@ def resume_budget_exhausted_run(
 
     root = Path(root)
     state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
+    write_context_pressure_report(
+        root=root,
+        config=config,
+        phase=str(state.get("phase") or "phase_1"),
+        round_number=int(state.get("current_round", 0)) + 1,
+        profile=str(state.get("active_profile") or ""),
+    )
     original_budgets = resolved_phase_1_profile_budgets(
         config.review_profile_budgets,
         profile_set=config.review_profile_set,

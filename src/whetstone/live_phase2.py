@@ -11,6 +11,7 @@ from typing import Any, Callable
 from whetstone.artifacts import ArtifactStore
 from whetstone.config import OrchestratorConfig
 from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection, read_conflict_state
+from whetstone.context_pressure import write_context_pressure_report
 from whetstone.declaration import render_convergence_declaration, validate_convergence_declaration, write_convergence_declaration
 from whetstone.decisions import write_decision_register
 from whetstone.evaluation import target_matrix_satisfied
@@ -71,15 +72,16 @@ class LivePhase2Runner:
 
         state = _read_phase1_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("current_round", 0))
+        start_round = int(state.get("current_round", 0)) + 1
         self.rubric_manifest = write_rubric_manifest(self.config)
         promotion = promote_spec_file_for_phase2(
             spec_path=self.config.spec_path,
             history_path=self.config.history_path,
             rounds_dir=self.config.rounds_dir,
         )
+        write_context_pressure_report(root=self.root, config=self.config, phase="phase_2", round_number=start_round)
         current_hash = promotion.after_hash
         last_accepted_draft_hash: str | None = current_hash
-        start_round = int(state.get("current_round", 0)) + 1
         scheduler = default_phase_2_scheduler(
             self.config.convergence_profile_budgets,
             profile_set=self.config.review_profile_set,

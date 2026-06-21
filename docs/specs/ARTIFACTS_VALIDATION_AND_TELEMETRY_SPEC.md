@@ -316,6 +316,65 @@ Checkpoint summary clusters MUST be mechanical:
 
 The human-readable Markdown summary MUST expose the same counts, recommended review cards, and clusters without adding semantic interpretation beyond persisted checkpoint fields.
 
+`context_pressure_report.json` MUST contain:
+
+```yaml
+schema_version: context-pressure-v1
+generated_at: string
+root: string
+phase: string
+round_number: integer
+profile: string
+behavior: observability_only
+action_taken: none
+estimate_method: string
+report_scope: configured_run_inputs | round_prompt_context
+thresholds:
+  total_warning_bytes: integer
+  component_warning_bytes: integer
+  reference_count_warning: integer
+totals:
+  component_count: integer
+  existing_component_count: integer
+  byte_count: integer
+  char_count: integer
+  estimated_tokens: integer
+  reference_context_count: integer
+components:
+  - label: string
+    kind: mutable_draft | scope_contract | rubric | reference_context | string
+    role: string
+    path: string
+    required: boolean
+    exists: boolean
+    byte_count: integer
+    char_count: integer
+    estimated_tokens: integer
+    sha256: string
+    read_error: string
+referenced_context:
+  reference_count: integer
+  references:
+    - label: string
+      path: string
+      mention_count: integer
+      source_feedback_ids: [string]
+warnings:
+  - severity: info | warning
+    code: string
+    message: string
+```
+
+The context pressure report is Orchestrator-owned and advisory. It estimates context payload using a simple `ceil(char_count / 4)` estimate. The estimate is not provider tokenizer output.
+
+When `report_scope = configured_run_inputs`, the report measures the configured mutable draft, scope contract, selected rubric, and reference context files. When `report_scope = round_prompt_context`, the report measures the actual context files written into `rounds/round-N/context/` for that round, including generated Reviewer feedback or contract-surface reports when those files are part of the active prompt.
+
+For round prompt context reports, `referenced_context` SHOULD identify reference-context files mentioned by Reviewer findings using deterministic text matching against generated context filenames, reference labels, and reference paths. This field is an observability signal for future context-selection work; it MUST NOT make a reference context authoritative, non-authoritative, included, excluded, resolved, or stale by itself.
+
+The report MUST NOT trim prompt context, alter profile scheduling, halt a run, mark a profile clean, or satisfy convergence. It exists so operators and supervising agents can identify oversized drafts, many reference files, missing required context, or unusually large individual context components before attributing slow runs to model behavior alone.
+
+The Orchestrator SHOULD write `/rounds/context_pressure_report.json` and `/rounds/context_pressure_report.md` at live Phase 1 start, live Phase 2 start, and supported resume entrypoints. It SHOULD also write `/rounds/round-N/context_pressure_report.json` and `.md` for each live round.
+
 `change_audit_report.json` MUST contain:
 
 ```yaml

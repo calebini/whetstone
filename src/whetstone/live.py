@@ -14,6 +14,7 @@ from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, 
 from whetstone.config import ClientConfig, OrchestratorConfig
 from whetstone.contracts import validate_artifact
 from whetstone.contract_surface import read_contract_surface_report
+from whetstone.context_pressure import write_round_context_pressure_report
 from whetstone.decisions import detect_decision_points, operator_decision_checkpoint
 from whetstone.evaluation import accepted_draft
 from whetstone.hashing import draft_hash, rubric_content_hash, semantic_change_hash
@@ -160,6 +161,12 @@ class LiveRoundRunner:
             prompt_snapshot,
             profile,
             round_kind="review_editor",
+        )
+        self._write_round_context_pressure(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            context_files=reviewer_context_files,
         )
 
         reviewer = self.reviewer_client or create_reviewer_client(
@@ -309,6 +316,13 @@ class LiveRoundRunner:
             scope_contract=scope_contract,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
+        self._write_round_context_pressure(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            context_files=editor_context_files,
+            reviewer_feedback=reviewer_feedback,
+        )
 
         editor = self.editor_client or create_editor_client(
             self.config.editor,
@@ -500,6 +514,12 @@ class LiveRoundRunner:
             profile,
             round_kind="review_only",
         )
+        self._write_round_context_pressure(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            context_files=reviewer_context_files,
+        )
 
         reviewer = self.reviewer_client or create_reviewer_client(
             self.config.reviewer,
@@ -529,6 +549,13 @@ class LiveRoundRunner:
             context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
+        self._write_round_context_pressure(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            context_files=reviewer_context_files,
+            reviewer_feedback=reviewer_feedback,
+        )
         editor_summary = _no_op_editor_summary(
             round_number=round_number,
             draft_hash_value=draft_before_hash,
@@ -679,6 +706,13 @@ class LiveRoundRunner:
             scope_contract=scope_contract,
         )
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
+        self._write_round_context_pressure(
+            round_number=round_number,
+            phase=phase,
+            profile=profile,
+            context_files=editor_context_files,
+            reviewer_feedback=reviewer_feedback,
+        )
 
         editor = self.editor_client or create_editor_client(
             self.config.editor,
@@ -1136,6 +1170,25 @@ class LiveRoundRunner:
         self.store.write_round_text(round_number, "draft_after.md", draft_after)
         self.store.write_round_json(round_number, "profile_used.yaml", {"profile": profile, "round_kind": round_kind})
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
+
+    def _write_round_context_pressure(
+        self,
+        *,
+        round_number: int,
+        phase: str,
+        profile: str,
+        context_files: list[ContextFile],
+        reviewer_feedback: dict[str, Any] | None = None,
+    ) -> None:
+        write_round_context_pressure_report(
+            root=self.root,
+            round_dir=self.store.round_dir(round_number),
+            phase=phase,
+            round_number=round_number,
+            profile=profile,
+            context_files=context_files,
+            reviewer_feedback=reviewer_feedback,
+        )
 
     def _write_reviewer_context_files(
         self,

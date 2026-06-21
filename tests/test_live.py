@@ -370,6 +370,8 @@ class LiveRoundRunnerTests(unittest.TestCase):
                 "draft_after.md",
                 "client_telemetry",
                 "context",
+                "context_pressure_report.json",
+                "context_pressure_report.md",
                 "decision_points.json",
                 "editor_summary.json",
                 "operator_decision_checkpoint.json",
