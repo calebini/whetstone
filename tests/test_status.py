@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from whetstone.config import OrchestratorConfig
+from whetstone.hashing import draft_hash
 from whetstone.status import read_status, render_status_text
 
 
@@ -270,6 +271,45 @@ class StatusTests(unittest.TestCase):
             )
             self.assertIn("historical_terminal_reports:", rendered)
 
+    def test_status_treats_older_same_terminal_report_as_stale(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rounds = root / "rounds"
+            rounds.mkdir()
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 25,
+                        "active_profile": None,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "current_draft_hash": "b" * 64,
+                        "last_accepted_draft_hash": "b" * 64,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            rounds.joinpath("technical_failure_report.json").write_text(
+                json.dumps(
+                    {
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "round_number": 20,
+                        "draft_hash": "a" * 64,
+                        "current_draft_status": "accepted_unverified_profiles",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+
+            self.assertIsNone(status["terminal_report_path"])
+            self.assertEqual(status["current_draft_status"], "accepted_unverified_profiles")
+            self.assertEqual(status["historical_terminal_reports"][0]["lifecycle_status"], "historical_superseded")
+            self.assertEqual(status["status_warnings"][0]["code"], "stale_terminal_report")
+
     def test_status_prefers_round_telemetry_over_stale_run_state(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -469,11 +509,43 @@ class StatusTests(unittest.TestCase):
             root = Path(tmp)
             rounds = root / "rounds"
             rounds.mkdir()
+            spec = "# Spec\n\nDraft.\n"
+            root.joinpath("spec.md").write_text(spec, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            round_1 = rounds / "round-1"
+            round_1.mkdir()
+            round_1.joinpath("draft_before.md").write_text(spec, encoding="utf-8")
+            round_1.joinpath("draft_after.md").write_text(spec, encoding="utf-8")
+            round_1.joinpath("profile_used.yaml").write_text(
+                json.dumps({"profile": "structural_integrity", "round_kind": "review_editor"}),
+                encoding="utf-8",
+            )
+            round_1.joinpath("reviewer_feedback.json").write_text(
+                json.dumps({"round_number": 1, "profile": "structural_integrity", "feedback": []}),
+                encoding="utf-8",
+            )
+            round_1.joinpath("editor_summary.json").write_text(
+                json.dumps(
+                    {
+                        "round_number": 1,
+                        "draft_before_hash": draft_hash(spec),
+                        "draft_after_hash": draft_hash(spec),
+                        "accepted_feedback_ids": [],
+                        "modified_feedback_ids": [],
+                        "declined_feedback": [],
+                        "created_conflict_ids": [],
+                        "resolved_issue_ids": [],
+                        "unresolved_issue_ids": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
             rounds.joinpath("run_state.json").write_text(
                 json.dumps(
                     {
                         "phase": "phase_1",
-                        "current_round": 9,
+                        "current_round": 1,
+                        "current_draft_hash": draft_hash(spec),
                         "terminal_state": "TARGET_NOT_REACHED",
                         "resumable": False,
                     }

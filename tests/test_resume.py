@@ -20,6 +20,7 @@ from whetstone.resume import (
     resume_budget_exhausted_run,
     resume_halted_run,
 )
+from whetstone.status import read_status
 from tests.test_live import (
     AppliedDraftEditorClient,
     GoodEmptyReviewerClient,
@@ -113,6 +114,49 @@ class TimeoutOnSecondReviewerClient:
                     "oscillation_key": None,
                 }
             ],
+        }
+
+
+class ScriptedSeverityReviewerClient:
+    def __init__(self, root: Path, severities: list[str | None]) -> None:
+        self.root = root
+        self.severities = severities
+        self.calls = 0
+
+    def review(self, prompt: str) -> dict:
+        self.calls += 1
+        profile = _line_value(prompt, "Review profile:")
+        round_number = int(_line_value(prompt, "- round_number:"))
+        severity = self.severities[self.calls - 1] if self.calls - 1 < len(self.severities) else None
+        feedback = []
+        if severity is not None:
+            feedback.append(
+                {
+                    "feedback_id": f"fb-{self.calls}",
+                    "issue_id": f"iss_{self.calls:016x}",
+                    "issue_fingerprint": f"{self.calls:x}" * 64,
+                    "issue_type": "precision_gap",
+                    "affected_sections": ["Spec"],
+                    "baseline_severity": severity,
+                    "authority_impact": None,
+                    "determinism_impact": None,
+                    "rubric_impact": None,
+                    "normalized_severity": severity,
+                    "invariant_violated": None,
+                    "claim": f"Fixture {severity}.",
+                    "evidence": "Fixture evidence.",
+                    "recommended_change": "Clarify the behavior.",
+                    "in_scope": True,
+                    "severity_rationale": None,
+                    "oscillation_key": None,
+                }
+            )
+        return {
+            "round_number": round_number,
+            "profile": profile,
+            "reviewer": {"name": "fixture-reviewer", "version": "0.0.0", "model": "fixture"},
+            "draft_hash": draft_hash(self.root.joinpath("spec.md").read_text(encoding="utf-8")),
+            "feedback": feedback,
         }
 
 
@@ -339,6 +383,60 @@ class ResumeTests(unittest.TestCase):
             state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
             self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
             self.assertTrue(state["ready_for_phase_2"])
+
+    def test_resume_horizontal_continuation_runs_closeout_when_no_profiles_remain(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            config = replace(
+                OrchestratorConfig.default(root),
+                review_profile_budgets={
+                    "structural_integrity": 1,
+                    "determinism": 1,
+                    "operability": 1,
+                },
+            )
+
+            halted = LivePhase1Runner(
+                root,
+                config,
+                reviewer_client=TimeoutOnSecondReviewerClient(root),
+                editor_client=ResolvingPromptEditorClient(root),
+            ).run()
+
+            self.assertEqual(halted.terminal_state, "HALTED_CLIENT_TIMEOUT")
+            self.assertEqual(halted.round_number, 2)
+            self.assertTrue(root.joinpath("rounds/round-1/reviewer_feedback.json").exists())
+            self.assertFalse(root.joinpath("rounds/round-2/reviewer_feedback.json").exists())
+
+            resumed = resume_halted_run(
+                root,
+                config,
+                continue_run=True,
+                reviewer_client=ScriptedSeverityReviewerClient(root, ["major", None, None, None]),
+                editor_client=ResolvingPromptEditorClient(root),
+            )
+
+            self.assertEqual(resumed.terminal_state, "PHASE_1_STABLE")
+            self.assertTrue(resumed.ready_for_phase_2)
+            self.assertEqual(resumed.round_number, 5)
+            expected_schedule = [
+                ("structural_integrity", "review_editor"),
+                ("determinism", "review_editor"),
+                ("operability", "review_editor"),
+                ("structural_integrity", "review_only"),
+                ("determinism", "review_only"),
+            ]
+            for round_number, expected in enumerate(expected_schedule, start=1):
+                profile_used = json.loads(
+                    root.joinpath(f"rounds/round-{round_number}/profile_used.yaml").read_text(encoding="utf-8")
+                )
+                self.assertEqual((profile_used["profile"], profile_used["round_kind"]), expected)
+            state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["terminal_state"], "PHASE_1_STABLE")
+            self.assertTrue(state["ready_for_phase_2"])
+            self.assertFalse(root.joinpath("rounds/technical_failure_report.json").exists())
 
     def test_resume_phase1_editor_timeout_reuses_existing_reviewer_feedback(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -623,6 +721,47 @@ class ResumeTests(unittest.TestCase):
             self.assertEqual(state["budget_extensions"][0]["added_rounds_per_profile"], 1)
             self.assertRegex(state["budget_extensions"][0]["event_id"], r"^bxe_[a-f0-9]{16}$")
 
+    def test_budget_extension_second_budget_stop_refreshes_terminal_report(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\n## Hashing\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            config = replace(
+                OrchestratorConfig.default(root),
+                review_profile_budgets={
+                    "structural_integrity": 1,
+                    "determinism": 1,
+                    "operability": 1,
+                },
+            )
+
+            exhausted = LivePhase1Runner(
+                root,
+                config,
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=UniqueAppliedDraftEditorClient(root),
+            ).run()
+            self.assertEqual(exhausted.terminal_state, "TARGET_NOT_REACHED")
+            first_report = json.loads(root.joinpath("rounds/technical_failure_report.json").read_text(encoding="utf-8"))
+
+            resumed = resume_budget_exhausted_run(
+                root,
+                config,
+                extend_review_budget=1,
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=UniqueAppliedDraftEditorClient(root),
+            )
+
+            self.assertEqual(resumed.terminal_state, "TARGET_NOT_REACHED")
+            self.assertGreater(resumed.round_number, first_report["round_number"])
+            state = json.loads(root.joinpath("rounds/run_state.json").read_text(encoding="utf-8"))
+            report = json.loads(root.joinpath("rounds/technical_failure_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["terminal_state"], "TARGET_NOT_REACHED")
+            self.assertEqual(report["round_number"], state["current_round"])
+            self.assertEqual(report["round_number"], resumed.round_number)
+            self.assertEqual(report["draft_hash"], state["current_draft_hash"])
+            self.assertEqual(report["current_draft_status"], "accepted_unverified_profiles")
+
     def test_budget_extension_event_id_is_stable_and_excludes_timestamp(self) -> None:
         previous_state = {
             "terminal_state": "TARGET_NOT_REACHED",
@@ -871,6 +1010,95 @@ class ResumeTests(unittest.TestCase):
             self.assertEqual(packet["failure_type"], "budget_exhausted")
             self.assertEqual(packet["extend_review_budget"], 2)
             self.assertEqual(packet["next_round_number"], 7)
+
+    def test_budget_extension_dry_run_accepts_horizontal_blocks_with_closeout_after_prior_extension(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            root.joinpath("spec.md").write_text("# Spec\n\nDraft.\n", encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+            original_budgets = {
+                "structural_integrity": 2,
+                "determinism": 2,
+                "operability": 1,
+            }
+            extended_budgets = {
+                "structural_integrity": 5,
+                "determinism": 5,
+                "operability": 4,
+            }
+            config = replace(OrchestratorConfig.default(root), review_profile_budgets=original_budgets)
+            result = LivePhase1Runner(
+                root,
+                config,
+                reviewer_client=ScriptedSeverityReviewerClient(
+                    root,
+                    [
+                        "major",
+                        "major",
+                        "major",
+                        "major",
+                        None,
+                        "major",
+                        "major",
+                    ],
+                ),
+                editor_client=ResolvingPromptEditorClient(root),
+            ).run()
+
+            self.assertEqual(result.terminal_state, "TARGET_NOT_REACHED")
+            self.assertEqual(result.round_number, 7)
+            expected_schedule = [
+                ("structural_integrity", "review_editor"),
+                ("structural_integrity", "review_editor"),
+                ("determinism", "review_editor"),
+                ("determinism", "review_editor"),
+                ("operability", "review_editor"),
+                ("structural_integrity", "review_only"),
+                ("determinism", "review_only"),
+            ]
+            for round_number, expected in enumerate(expected_schedule, start=1):
+                profile_used = json.loads(
+                    root.joinpath(f"rounds/round-{round_number}/profile_used.yaml").read_text(encoding="utf-8")
+                )
+                self.assertEqual((profile_used["profile"], profile_used["round_kind"]), expected)
+
+            state_path = root / "rounds" / "run_state.json"
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            state["review_profile_budgets"] = extended_budgets
+            state["configured_review_profile_budgets"] = extended_budgets
+            state["review_round_budget"] = sum(extended_budgets.values())
+            state["effective_run_config"]["review_profile_budgets"] = extended_budgets
+            state["budget_extensions"] = [
+                {
+                    "added_rounds_per_profile": 3,
+                    "event_id": "bxe_fixture000000",
+                    "generated_at": "2026-06-20T00:00:00+00:00",
+                    "new_review_profile_budgets": extended_budgets,
+                    "phase": "phase_1",
+                    "previous_current_round": 5,
+                    "previous_review_profile_budgets": original_budgets,
+                    "previous_terminal_state": "TARGET_NOT_REACHED",
+                    "reason": "operator_requested_resume_budget_extension",
+                }
+            ]
+            state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+            resume_config = _apply_resume_run_state_config(OrchestratorConfig.default(root))
+            plan = plan_budget_extension_resume(root, resume_config, extend_review_budget=3)
+            self.assertTrue(plan.resumable)
+            self.assertEqual(plan.next_round_number, 8)
+
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                exit_code = main(["resume", "--root", str(root), "--extend-review-budget", "3", "--dry-run"])
+            packet = json.loads(stdout.getvalue())
+            self.assertEqual(exit_code, 0)
+            self.assertTrue(packet["resumable"])
+            self.assertEqual(packet["next_round_number"], 8)
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            self.assertTrue(status["resume"]["eligible"])
+            self.assertIn("--extend-review-budget 3", status["resume"]["command"])
 
 
 def _feedback_text_from_prompt(prompt: str, root: Path) -> str:

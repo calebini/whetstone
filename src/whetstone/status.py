@@ -11,7 +11,7 @@ from typing import Any
 from whetstone.config import OrchestratorConfig
 from whetstone.hashing import draft_hash
 from whetstone.live import run_telemetry_totals
-from whetstone.run_state import run_artifact_pointers
+from whetstone.run_state import apply_effective_run_config, run_artifact_pointers
 from whetstone.scheduler import (
     default_phase_1_scheduler,
     default_phase_2_scheduler,
@@ -65,10 +65,10 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     current_draft_status = _current_draft_status(run_state, terminal_report)
     telemetry_totals = _telemetry_totals(rounds_dir, run_state)
     apply_back = _apply_back_status(root, rounds_dir, run_state)
-    resume_status = _resume_status(root, rounds_dir, run_state)
+    resume_status = _resume_status(root, rounds_dir, run_state, config)
     scope_status = _scope_status(root, config)
     artifact_pointers = _artifact_pointers(root, config, run_state)
-    status_warnings = _status_warnings(run_state, terminal_report_path=terminal_report_path)
+    status_warnings = _status_warnings(rounds_dir, root, run_state, terminal_report_path=terminal_report_path)
     default_review_round_budget = default_phase_1_scheduler(
         config.review_profile_budgets,
         profile_set=config.review_profile_set,
@@ -320,8 +320,45 @@ def _terminal_report_path(rounds_dir: Path, run_state: dict[str, Any] | None = N
     for name in TERMINAL_REPORTS:
         path = rounds_dir / name
         if path.exists():
-            return path
+            packet = _read_json_object(path)
+            if _terminal_report_matches_run_state(packet, run_state):
+                return path
     return None
+
+
+def _terminal_report_matches_run_state(packet: dict[str, Any] | None, run_state: dict[str, Any] | None) -> bool:
+    if packet is None:
+        return False
+    if not run_state:
+        return True
+    if packet.get("terminal_state") != run_state.get("terminal_state"):
+        return False
+    report_round = packet.get("round_number")
+    current_round = run_state.get("current_round")
+    if isinstance(report_round, int) and isinstance(current_round, int) and report_round != current_round:
+        return False
+    report_hash = packet.get("draft_hash") or packet.get("last_draft_hash")
+    current_hash = run_state.get("current_draft_hash")
+    if isinstance(report_hash, str) and isinstance(current_hash, str) and report_hash != current_hash:
+        return False
+    return True
+
+
+def _terminal_report_superseded_by_run_state(packet: dict[str, Any], run_state: dict[str, Any] | None) -> bool:
+    if not run_state:
+        return False
+    current_terminal_state = run_state.get("terminal_state")
+    current_round = run_state.get("current_round")
+    if current_terminal_state in {"CONVERGED", "PHASE_1_STABLE", "FOCUSED_PROFILE_STABLE"}:
+        return True
+    if packet.get("terminal_state") != current_terminal_state:
+        return True
+    report_round = packet.get("round_number")
+    if isinstance(current_round, int) and isinstance(report_round, int) and report_round < current_round:
+        return True
+    report_hash = packet.get("draft_hash") or packet.get("last_draft_hash")
+    current_hash = run_state.get("current_draft_hash")
+    return isinstance(report_hash, str) and isinstance(current_hash, str) and report_hash != current_hash
 
 
 def _historical_terminal_reports(
@@ -340,12 +377,7 @@ def _historical_terminal_reports(
             continue
         packet = _read_json_object(path) or {}
         report_round = packet.get("round_number")
-        superseded = current_terminal_state in {"CONVERGED", "PHASE_1_STABLE", "FOCUSED_PROFILE_STABLE"} or (
-            isinstance(current_round, int)
-            and isinstance(report_round, int)
-            and report_round < current_round
-            and packet.get("terminal_state") != current_terminal_state
-        )
+        superseded = _terminal_report_superseded_by_run_state(packet, run_state)
         historical.append(
             {
                 "path": _path_or_none(path, root),
@@ -372,11 +404,26 @@ def _current_draft_status(run_state: dict[str, Any] | None, terminal_report: dic
     return terminal_report.get("current_draft_status") if terminal_report else None
 
 
-def _status_warnings(run_state: dict[str, Any] | None, *, terminal_report_path: Path | None) -> list[dict[str, Any]]:
+def _status_warnings(
+    rounds_dir: Path,
+    root: Path,
+    run_state: dict[str, Any] | None,
+    *,
+    terminal_report_path: Path | None,
+) -> list[dict[str, Any]]:
     if not run_state:
         return []
     warnings: list[dict[str, Any]] = []
     terminal_state = run_state.get("terminal_state")
+    stale_reports = _stale_terminal_reports(rounds_dir, root, run_state, active_terminal_report_path=terminal_report_path)
+    if stale_reports:
+        warnings.append(
+            {
+                "code": "stale_terminal_report",
+                "message": "terminal report artifact is older than current run_state and is treated as historical",
+                "reports": stale_reports,
+            }
+        )
     if terminal_state in {
         "TARGET_NOT_REACHED",
         "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS",
@@ -385,7 +432,7 @@ def _status_warnings(run_state: dict[str, Any] | None, *, terminal_report_path: 
         "HALTED_ARTIFACT_INVALID",
         "HALTED_CLIENT_TIMEOUT",
         "CONFIG_INVALID",
-    } and terminal_report_path is None:
+    } and terminal_report_path is None and not stale_reports:
         warnings.append(
             {
                 "code": "terminal_report_missing",
@@ -402,6 +449,33 @@ def _status_warnings(run_state: dict[str, Any] | None, *, terminal_report_path: 
             }
         )
     return warnings
+
+
+def _stale_terminal_reports(
+    rounds_dir: Path,
+    root: Path,
+    run_state: dict[str, Any] | None,
+    *,
+    active_terminal_report_path: Path | None,
+) -> list[dict[str, Any]]:
+    stale: list[dict[str, Any]] = []
+    for name in TERMINAL_REPORTS:
+        path = rounds_dir / name
+        if not path.exists() or path == active_terminal_report_path:
+            continue
+        packet = _read_json_object(path) or {}
+        if not _terminal_report_superseded_by_run_state(packet, run_state):
+            continue
+        stale.append(
+            {
+                "path": _path_or_none(path, root),
+                "report_terminal_state": packet.get("terminal_state"),
+                "report_round_number": packet.get("round_number"),
+                "current_terminal_state": (run_state or {}).get("terminal_state"),
+                "current_round": (run_state or {}).get("current_round"),
+            }
+        )
+    return stale
 
 
 def _inferred_round_accounting(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, int | None]:
@@ -491,7 +565,7 @@ def _apply_back_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] |
     return packet
 
 
-def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
+def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | None, config: OrchestratorConfig) -> dict[str, Any]:
     packet: dict[str, Any] = {
         "eligible": False,
         "command": None,
@@ -506,6 +580,19 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
         return packet
     terminal_state = run_state.get("terminal_state")
     if terminal_state in {"TARGET_NOT_REACHED", "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"} and run_state.get("phase") == "phase_1":
+        supported, validation_error = _budget_extension_resume_supported(config, run_state)
+        if not supported:
+            packet.update(
+                {
+                    "eligible": False,
+                    "reason": f"budget-extension resume validation failed: {validation_error}",
+                    "round_number": run_state.get("current_round"),
+                    "profile": run_state.get("active_profile"),
+                    "client_role": "orchestrator",
+                    "failure_type": "budget_exhausted",
+                }
+            )
+            return packet
         command_root = shlex.quote(str(root))
         packet.update(
             {
@@ -589,6 +676,19 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
         }
     )
     return packet
+
+
+def _budget_extension_resume_supported(config: OrchestratorConfig, run_state: dict[str, Any]) -> tuple[bool, str | None]:
+    try:
+        from whetstone.resume import _validated_budget_extension_context
+
+        _validated_budget_extension_context(
+            apply_effective_run_config(config, run_state),
+            extend_review_budget=1,
+        )
+    except Exception as exc:  # pragma: no cover - exact exception type is operator-facing detail.
+        return False, str(exc)
+    return True, None
 
 
 def _telemetry_totals(rounds_dir: Path, run_state: dict[str, Any] | None) -> dict[str, Any]:
@@ -720,6 +820,18 @@ def _artifact_pointer_display(value: object) -> str:
     return (
         f"scope_contract={_single_pointer_display(scope)}, "
         f"job_descriptor={_single_pointer_display(job)}"
+    )
+
+
+def _context_pressure_display(value: object) -> str:
+    if not isinstance(value, dict):
+        return "none"
+    return (
+        f"path={_display(value.get('path'))}, "
+        f"bytes={_display(value.get('byte_count'))}, "
+        f"est_tokens={_display(value.get('estimated_tokens'))}, "
+        f"warnings={_display(value.get('warning_count'))}, "
+        f"action={_display(value.get('action_taken'))}"
     )
 
 

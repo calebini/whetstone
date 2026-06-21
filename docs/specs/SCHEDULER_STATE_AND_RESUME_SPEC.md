@@ -318,6 +318,8 @@ If horizontal mode exhausts profile review budgets immediately after an accepted
 - be persisted as normal review-only `round-N/` artifacts
 - mark Phase 1 stable only if every closeout profile review is clean for the current draft hash
 
+Resume continuation MUST apply the same horizontal closeout eligibility check when the reconstructed scheduler has no remaining review-editor profile to run. The fact that exhaustion is reached inside `resume` rather than inside the original live Phase 1 loop MUST NOT suppress an otherwise eligible closeout pass.
+
 If the horizontal closeout pass finds any blocker or major issue, the Orchestrator MUST NOT run another automatic Editor revision. It MUST halt using the applicable Phase 1 budget-exhaustion terminal state and report the remaining verification debt.
 
 If a Phase 1 Editor returns an unchanged draft while one or more in-scope blocker or major Reviewer findings remain unresolved, the Orchestrator MUST NOT classify that event as oscillation solely because the draft hash repeats. It MUST produce a Phase 1 technical failure report with `terminal_state: TARGET_NOT_REACHED`, `current_draft_status: not_accepted`, and an exit reason indicating unchanged Editor output with unresolved serious findings. This represents Reviewer/Editor disagreement or no-op editing debt, not semantic draft churn.
@@ -672,6 +674,8 @@ An appended client round is considered persisted only when its `round-N/` direct
 Budget-extension events MUST be preserved across subsequent `run_state.json` rewrites during the resumed continuation.
 
 Budget-extension resume is a continuation of the same run, not a new run. Prior terminal reports remain historical artifacts unless a later run-state field supersedes their operational interpretation. Operators SHOULD treat `run_state.json` as the current status source of truth and preserved terminal reports as historical checkpoints.
+
+Read-only status MUST treat a terminal report as active only when the report's `terminal_state`, `round_number`, and `draft_hash` or `last_draft_hash` match the current `run_state.json` terminal state, current round, and current draft hash. If any of those fields conflict after a valid continuation advances the run, status MUST classify the report as historical or stale rather than present it as the active terminal report, and SHOULD emit an operator-visible stale-terminal-report warning.
 
 Read-only status MUST prefer superseding `run_state.json` terminal state over stale historical terminal reports. If `run_state.json.terminal_state = PHASE_1_STABLE` and `ready_for_phase_2 = true`, status MUST report `current_draft_status = phase_1_stable` even if a prior `technical_failure_report.json` remains in `/rounds/`.
 
