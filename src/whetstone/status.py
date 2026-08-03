@@ -69,6 +69,7 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     resume_status = _resume_status(root, rounds_dir, run_state, config)
     scope_status = _scope_status(root, config)
     artifact_pointers = _artifact_pointers(root, config, run_state)
+    root_draft_hash = _draft_hash_or_none(root / "spec.md")
     context_pressure = _context_pressure_status(rounds_dir, root)
     round_context_pressure = _round_context_pressure_status(rounds_dir, root)
     status_warnings = _status_warnings(rounds_dir, root, run_state, terminal_report_path=terminal_report_path)
@@ -120,6 +121,12 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "ready_for_phase_2": run_state.get("ready_for_phase_2") if run_state else False,
         "current_draft_status": current_draft_status,
         "current_draft_hash": run_state.get("current_draft_hash") if run_state else None,
+        "root_draft_hash": root_draft_hash,
+        "root_draft_matches_run_state": (
+            None
+            if root_draft_hash is None or not run_state or run_state.get("current_draft_hash") is None
+            else root_draft_hash == run_state.get("current_draft_hash")
+        ),
         "last_accepted_draft_hash": run_state.get("last_accepted_draft_hash") if run_state else None,
         "resumable": bool(run_state.get("resumable")) or bool(resume_status.get("eligible")) if run_state else False,
         "resume": resume_status,
@@ -179,6 +186,7 @@ def render_status_text(status: dict[str, Any]) -> str:
         f"active_profile: {_display(status.get('active_profile'))}",
         f"ready_for_phase_2: {str(bool(status.get('ready_for_phase_2'))).lower()}",
         f"current_draft_status: {_display(status.get('current_draft_status'))}",
+        f"root_draft_matches_run_state: {_display(status.get('root_draft_matches_run_state'))}",
         f"resumable: {str(bool(status.get('resumable'))).lower()}",
         f"scope_contract: {_scope_display(status.get('scope_contract'))}",
         f"artifact_pointers: {_artifact_pointer_display(artifact_pointers)}",
@@ -505,6 +513,17 @@ def _status_warnings(
                 "code": "terminal_report_missing",
                 "message": "run_state has a terminal failure state but no terminal report artifact was found",
                 "terminal_state": terminal_state,
+            }
+        )
+    root_draft_hash = _draft_hash_or_none(root / "spec.md")
+    current_draft_hash = run_state.get("current_draft_hash")
+    if root_draft_hash is not None and current_draft_hash is not None and root_draft_hash != current_draft_hash:
+        warnings.append(
+            {
+                "code": "root_draft_hash_mismatch",
+                "message": "root spec.md hash differs from run_state.current_draft_hash; run_state remains authoritative until the draft is reconciled",
+                "root_draft_hash": root_draft_hash,
+                "run_state_current_draft_hash": current_draft_hash,
             }
         )
     if run_state.get("phase") is not None and run_state.get("run_mode") is None:

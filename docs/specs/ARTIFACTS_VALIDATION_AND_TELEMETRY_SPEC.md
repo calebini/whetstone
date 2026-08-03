@@ -375,6 +375,51 @@ The report MUST NOT trim prompt context, alter profile scheduling, halt a run, m
 
 The Orchestrator SHOULD write `/rounds/context_pressure_report.json` and `/rounds/context_pressure_report.md` at live Phase 1 start, live Phase 2 start, and supported resume entrypoints. It SHOULD also write `/rounds/round-N/context_pressure_report.json` and `.md` for each live round.
 
+`profile_sweep_report.json` MUST contain:
+
+```yaml
+schema_version: profile-sweep-report-v1
+generated_at: string
+root: string
+phase: phase_1
+review_profile_set: string
+draft_hash: string
+editor_invoked: false
+spec_mutated: false
+profiles:
+  - profile: string
+    round_number: integer
+    clean: boolean
+    feedback_count: integer
+    blocker_count: integer
+    major_count: integer
+    minor_count: integer
+    nit_count: integer
+    reviewer_feedback_path: string
+clusters:
+  by_profile:
+    - key: string
+      blocker_count: integer
+      major_count: integer
+      feedback_ids: [string]
+  by_issue_type:
+    - key: string
+      blocker_count: integer
+      major_count: integer
+      feedback_ids: [string]
+  by_section:
+    - key: string
+      blocker_count: integer
+      major_count: integer
+      feedback_ids: [string]
+recommendation: start_phase_1 | run_bounded_synthesis | run_vertical_phase_1 | manual_scope_review
+recommendation_rationale: string
+```
+
+`profile_sweep_report.json` is Orchestrator-owned. It is produced by a diagnostic sweep command after Reviewer-only passes across the configured Phase 1 profile set. It MUST NOT be produced by the Reviewer or Editor. It MUST NOT be used as a convergence declaration, accepted-draft artifact, clean-profile proof, apply-back report, or Phase 1/Phase 2 scheduler input.
+
+`profile_sweep_report.md` SHOULD present the same information in operator-readable form, including the recommended next action and the largest blocker/major clusters.
+
 `change_audit_report.json` MUST contain:
 
 ```yaml

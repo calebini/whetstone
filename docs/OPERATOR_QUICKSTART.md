@@ -189,6 +189,33 @@ Profile budgets are per-profile, not total-run round limits. In vertical mode, a
 
 Round folders identify their shape in `profile_used.yaml` with `round_kind`. In vertical runs, profile rounds use `review_only`; the merged Editor round uses `consolidated_editor`.
 
+## Diagnostic Sweep
+
+Use `diagnostic-sweep` when you want to understand the shape of a new or expensive spec before letting the Editor mutate it:
+
+```bash
+PYTHONPATH=src python3 -m whetstone.cli diagnostic-sweep \
+  --root "$RUN_ROOT" \
+  --reviewer-timeout-seconds 420
+```
+
+The command runs one Reviewer-only pass for each configured Phase 1 profile against the same current `spec.md`. It does not invoke the Editor, does not mutate `spec.md`, does not mark Phase 1 stable, and does not authorize Phase 2.
+
+Read:
+
+- `rounds/profile_sweep_report.md`
+- `rounds/profile_sweep_report.json`
+- each `rounds/round-N/reviewer_feedback.json`
+
+Use the recommendation as job-design input:
+
+- `start_phase_1`: run normal Phase 1.
+- `run_bounded_synthesis`: do a bounded synthesis pass before normal Phase 1.
+- `run_vertical_phase_1`: vertical Phase 1 is likely a reasonable next run shape.
+- `manual_scope_review`: revisit the scope contract, reference authority set, or job design before mutation.
+
+In-scope contract authority gaps, such as identity ownership or response authority, usually mean `run_bounded_synthesis`. Reserve `manual_scope_review` for cases where the run boundary itself looks wrong.
+
 If a run ends immediately after an Editor mutation, Whetstone may report the draft as accepted but still unverified. That means the edit resolved the known blocker/major feedback, but the revised draft still needs another clean profile-review cycle before Phase 2.
 
 When this happens at the end of the budget, Whetstone can run a verification-only closeout pass. It calls Reviewers only, does not mutate the draft, and either marks Phase 1 stable or stops with the remaining blocker/major verification debt.
@@ -718,6 +745,8 @@ If Phase 1 reaches `TARGET_NOT_REACHED`, check whether the latest failure report
 If Phase 1 reaches `PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS`, check `profile_status.profiles[].residual_status` in `technical_failure_report.json` to see which profiles exhausted budget or hit oscillation during the soft sweep.
 
 If Phase 2 converges suspiciously quickly or every run has the same shape, inspect profile budgets, profile status, and the latest Reviewer findings before trusting the run shape.
+
+If `status --format text` reports `root_draft_matches_run_state: False` or a `root_draft_hash_mismatch` warning, treat `rounds/run_state.json.current_draft_hash` as the authoritative lineage hash. The run-root `spec.md` was changed outside the accepted round chain or after the last run-state update. Restore from the latest accepted `round-N/draft_after.md`, start a fresh seeded run, or perform an explicit operator-approved reconciliation before resuming, promoting to Phase 2, or applying back.
 
 If strop/apply-back refuses to write, read `apply_back_review.json`; common causes are non-converged terminal state, source hash mismatch, final draft hash mismatch against `run_state.current_draft_hash`, or final-draft text hygiene failures.
 

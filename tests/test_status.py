@@ -310,6 +310,39 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(status["historical_terminal_reports"][0]["lifecycle_status"], "historical_superseded")
             self.assertEqual(status["status_warnings"][0]["code"], "stale_terminal_report")
 
+    def test_status_warns_when_root_draft_hash_differs_from_run_state(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "spec.md"
+            rounds = root / "rounds"
+            rounds.mkdir()
+            accepted = "# Spec\n\nStatus: Draft v0.1.120\n"
+            drifted = "# Spec\n\nStatus: Draft v0.1.125\n"
+            spec.write_text(drifted, encoding="utf-8")
+            accepted_hash = draft_hash(accepted)
+            drifted_hash = draft_hash(drifted)
+            rounds.joinpath("run_state.json").write_text(
+                json.dumps(
+                    {
+                        "phase": "phase_1",
+                        "current_round": 50,
+                        "terminal_state": "TARGET_NOT_REACHED",
+                        "current_draft_hash": accepted_hash,
+                        "last_accepted_draft_hash": accepted_hash,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            status = read_status(root=root, config=OrchestratorConfig.default(root))
+            rendered = render_status_text(status)
+
+            self.assertEqual(status["root_draft_hash"], drifted_hash)
+            self.assertFalse(status["root_draft_matches_run_state"])
+            self.assertIn("root_draft_matches_run_state: False", rendered)
+            self.assertTrue(any(warning["code"] == "root_draft_hash_mismatch" for warning in status["status_warnings"]))
+
     def test_status_prefers_round_telemetry_over_stale_run_state(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

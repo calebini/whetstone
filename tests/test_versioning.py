@@ -7,6 +7,7 @@ import unittest
 
 from whetstone.hashing import draft_hash
 from whetstone.versioning import (
+    normalize_editor_version_anchor,
     promote_spec_file_for_phase2,
     promote_spec_text_for_phase2,
     promoted_phase2_version,
@@ -211,6 +212,18 @@ class VersioningTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             stamp_spec_text_for_round(draft, phase="phase_1")
+
+    def test_normalize_editor_version_anchor_restores_pre_round_version(self) -> None:
+        before = "# Spec\n\nStatus: Draft v0.1.67\n\nOld text.\n"
+        editor = "# Spec\n\nStatus: Draft v0.1.68\n\nNew text.\n"
+
+        result = normalize_editor_version_anchor(before, editor)
+
+        self.assertTrue(result.normalized)
+        self.assertEqual(result.before_version, "0.1.67")
+        self.assertEqual(result.editor_version, "0.1.68")
+        self.assertIn("Status: Draft v0.1.67", result.content)
+        self.assertIn("New text.", result.content)
 
 
 if __name__ == "__main__":

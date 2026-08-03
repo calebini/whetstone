@@ -158,7 +158,7 @@ Spec version labels express maturity:
 - whole-number major versions (`1.0`, `2.0`, etc.) indicate the spec has passed Phase 1 acceptance and entered Phase 2 convergence.
 - post-entry Phase 2 decimal versions (`1.1`, `1.2`, etc.) indicate accepted mutating convergence revisions after Phase 2 entry.
 
-Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft.
+Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft. If an Editor-produced draft changes the visible version anchor before an accepted mutating round is stamped, the Orchestrator MUST restore the pre-round version anchor before applying the Orchestrator-owned stamp. This normalization SHOULD be recorded in the round Editor artifact so operators can see that the Editor attempted a version change, but it MUST NOT double-increment the visible version label.
 
 For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading, `Status:` line, or `Version:` field contains a supported numeric version label. Supported numeric version labels contain one, two, or three numeric components (`N`, `N.N`, or `N.N.N`). The Orchestrator MUST parse the complete version label and MUST NOT partially match a longer dotted label. If no supported numeric version anchor exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
 
@@ -258,6 +258,25 @@ Phase 1 supports two review modes:
 
 - `horizontal` (default): execute one profile review, run the Editor, then repeat or advance according to that profile's result.
 - `vertical`: execute each configured Phase 1 profile as an independent Reviewer pass over the same `draft_before.md`, merge the resulting feedback, run one consolidated Editor revision, then repeat the full profile stack against the revised draft until every profile verifies clean on the same draft or profile budgets are exhausted.
+
+The Orchestrator MAY provide a pre-mutation diagnostic sweep command for first-contact or expensive-scope runs. A diagnostic sweep is not a Phase 1 stabilization run. It MUST:
+- execute exactly one Reviewer-only pass for each configured Phase 1 profile in the selected profile set
+- review the same current `spec.md` hash for every profile
+- invoke only Reviewer clients
+- MUST NOT invoke the Editor
+- MUST NOT mutate `spec.md`
+- persist normal `round-N/` review-only artifacts for each profile
+- write `/rounds/profile_sweep_report.json` and `/rounds/profile_sweep_report.md`
+
+The diagnostic sweep report MUST cluster blocker and major findings by profile, issue type, affected section, and feedback identifier. It SHOULD recommend one of:
+- `start_phase_1`: the sweep found no blocker or major feedback
+- `run_bounded_synthesis`: serious findings cluster across multiple profiles, sections, or contract families and should be handled as a synthesis pass before normal Phase 1
+- `run_vertical_phase_1`: serious findings exist but are small enough for normal vertical review/edit cycles
+- `manual_scope_review`: findings suggest the scope contract or job design is too broad, contradictory, or missing a run-boundary authority rule
+
+A diagnostic sweep MUST NOT mark any Phase 1 profile clean, set `ready_for_phase_2`, satisfy accepted-draft requirements, produce a convergence declaration, or count as a Phase 1 closeout cycle. It exists to reveal the shape of the problem before the first mutating Editor pass.
+
+In-scope implementation authority conflicts, such as identifier ownership, row identity, response authority, or source-of-truth precedence inside the approved scope, SHOULD normally recommend `run_bounded_synthesis` rather than `manual_scope_review`. `manual_scope_review` is reserved for cases where the operator likely needs to change the scope contract, reference authority set, or job design before mutation.
 
 Canonical section IDs and profile focus anchors used by scheduling are imported from the artifact/content normalization spec and the rubric/profile spec. Each Reviewer pass MUST persist the resolved focus anchor set for its profile in `profile_used.yaml`. Clean-profile reuse and invalidation MUST compare semantic change section IDs against that persisted anchor set, not against freshly inferred prose labels.
 
@@ -678,6 +697,8 @@ Budget-extension resume is a continuation of the same run, not a new run. Prior 
 Read-only status MUST treat a terminal report as active only when the report's `terminal_state`, `round_number`, and `draft_hash` or `last_draft_hash` match the current `run_state.json` terminal state, current round, and current draft hash. If any of those fields conflict after a valid continuation advances the run, status MUST classify the report as historical or stale rather than present it as the active terminal report, and SHOULD emit an operator-visible stale-terminal-report warning.
 
 Read-only status MUST prefer superseding `run_state.json` terminal state over stale historical terminal reports. If `run_state.json.terminal_state = PHASE_1_STABLE` and `ready_for_phase_2 = true`, status MUST report `current_draft_status = phase_1_stable` even if a prior `technical_failure_report.json` remains in `/rounds/`.
+
+Read-only status MUST compare the current run-root `spec.md` hash with `run_state.json.current_draft_hash` when both are available. If they differ, status MUST emit an operator-visible warning that `run_state.json` remains the authoritative lineage hash until the root draft is reconciled. The warning MUST include both hashes. This warning is informational for diagnosis, but resume, Phase 2 promotion, and apply-back hash guards MUST continue to enforce their own existing lineage checks.
 
 ---
 

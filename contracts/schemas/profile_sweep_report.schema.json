@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/profile_sweep_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "root",
+    "phase",
+    "review_profile_set",
+    "draft_hash",
+    "editor_invoked",
+    "spec_mutated",
+    "profiles",
+    "clusters",
+    "recommendation",
+    "recommendation_rationale"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "profile-sweep-report-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "phase": {
+      "const": "phase_1"
+    },
+    "review_profile_set": {
+      "type": "string",
+      "minLength": 1
+    },
+    "draft_hash": {
+      "$ref": "common.schema.json#/$defs/sha256"
+    },
+    "editor_invoked": {
+      "const": false
+    },
+    "spec_mutated": {
+      "const": false
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profile",
+          "round_number",
+          "clean",
+          "feedback_count",
+          "blocker_count",
+          "major_count",
+          "minor_count",
+          "nit_count",
+          "reviewer_feedback_path"
+        ],
+        "properties": {
+          "profile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "round_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "clean": {
+            "type": "boolean"
+          },
+          "feedback_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "blocker_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "major_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minor_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nit_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reviewer_feedback_path": {
+            "$ref": "common.schema.json#/$defs/path"
+          }
+        }
+      }
+    },
+    "clusters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "by_profile",
+        "by_issue_type",
+        "by_section"
+      ],
+      "properties": {
+        "by_profile": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "blocker_count",
+              "major_count",
+              "feedback_ids"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "blocker_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "major_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "feedback_ids": {
+                "$ref": "common.schema.json#/$defs/stringArray"
+              }
+            }
+          }
+        },
+        "by_issue_type": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "blocker_count",
+              "major_count",
+              "feedback_ids"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "blocker_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "major_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "feedback_ids": {
+                "$ref": "common.schema.json#/$defs/stringArray"
+              }
+            }
+          }
+        },
+        "by_section": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "blocker_count",
+              "major_count",
+              "feedback_ids"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "blocker_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "major_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "feedback_ids": {
+                "$ref": "common.schema.json#/$defs/stringArray"
+              }
+            }
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "enum": [
+        "start_phase_1",
+        "run_bounded_synthesis",
+        "run_vertical_phase_1",
+        "manual_scope_review"
+      ]
+    },
+    "recommendation_rationale": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

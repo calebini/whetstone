@@ -36,6 +36,17 @@ class VersionStampResult:
     content: str
 
 
+@dataclass(frozen=True)
+class VersionAnchorNormalizationResult:
+    normalized: bool
+    before_version: str
+    editor_version: str
+    before_hash: str
+    editor_hash: str
+    normalized_hash: str
+    content: str
+
+
 def promoted_phase2_version(version: str) -> str:
     """Return the Phase 2 whole-major version for a numeric spec version."""
     parsed = _parse_version(version)
@@ -70,6 +81,39 @@ def stamp_spec_text_for_round(spec_text: str, *, phase: str) -> VersionStampResu
         stamped_text = target.demote_accepted_status(stamped_text)
     after_hash = draft_hash(stamped_text)
     return VersionStampResult(True, before_version, after_version, before_hash, after_hash, stamped_text)
+
+
+def normalize_editor_version_anchor(draft_before: str, draft_after: str) -> VersionAnchorNormalizationResult:
+    """Restore the pre-round version label before Orchestrator-owned stamping.
+
+    Editors may rewrite the visible version label while applying substantive edits.
+    The version label is Orchestrator-owned, so accepted mutating rounds must stamp
+    from the pre-round version rather than from an Editor-chosen value.
+    """
+    before_target = _find_version_target(draft_before)
+    editor_target = _find_version_target(draft_after)
+    before_hash = draft_hash(draft_before)
+    editor_hash = draft_hash(draft_after)
+    if before_target is None or editor_target is None or before_target.version == editor_target.version:
+        return VersionAnchorNormalizationResult(
+            False,
+            before_target.version if before_target is not None else "",
+            editor_target.version if editor_target is not None else "",
+            before_hash,
+            editor_hash,
+            editor_hash,
+            draft_after,
+        )
+    normalized = editor_target.replace(draft_after, before_target.version)
+    return VersionAnchorNormalizationResult(
+        True,
+        before_target.version,
+        editor_target.version,
+        before_hash,
+        editor_hash,
+        draft_hash(normalized),
+        normalized,
+    )
 
 
 def promote_spec_text_for_phase2(spec_text: str) -> tuple[str, str, str, bool]:

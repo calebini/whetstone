@@ -26,7 +26,7 @@ from whetstone.scheduler import CONVERGENCE_ACCEPTANCE_PROFILES, PROFILE_SETS
 from whetstone.sections import section_index
 from whetstone.scope import LoadedScopeContract, read_scope_contract, scope_contract_summary
 from whetstone.text_validation import validate_generated_text
-from whetstone.versioning import promote_spec_file_for_phase2, stamp_spec_text_for_round
+from whetstone.versioning import normalize_editor_version_anchor, promote_spec_file_for_phase2, stamp_spec_text_for_round
 
 
 class ReviewerClient(Protocol):
@@ -357,6 +357,20 @@ class LiveRoundRunner:
         accepted = accepted_draft(unresolved)
         version_stamp = None
         if apply and accepted and draft_after_content != draft_before:
+            normalization = normalize_editor_version_anchor(draft_before, draft_after_content)
+            if normalization.normalized:
+                draft_after_content = normalization.content
+                draft_after_hash = normalization.normalized_hash
+                editor_summary["draft_after_hash"] = draft_after_hash
+                if "draft_after_content" in editor_summary or not explicit_draft_after:
+                    editor_summary["draft_after_content"] = draft_after_content
+                editor_summary["version_anchor_normalization"] = {
+                    "normalized": True,
+                    "before_version": normalization.before_version,
+                    "editor_version": normalization.editor_version,
+                    "editor_hash": normalization.editor_hash,
+                    "normalized_hash": normalization.normalized_hash,
+                }
             version_stamp = _try_stamp_spec_text_for_round(draft_after_content, phase=phase)
             if version_stamp is not None:
                 draft_after_content = version_stamp.content
@@ -745,6 +759,19 @@ class LiveRoundRunner:
         unresolved = _unresolved_issues(reviewer_feedback, editor_summary)
         accepted = accepted_draft(unresolved)
         if apply and accepted and draft_after_content != draft_before:
+            normalization = normalize_editor_version_anchor(draft_before, draft_after_content)
+            if normalization.normalized:
+                draft_after_content = normalization.content
+                draft_after_hash = normalization.normalized_hash
+                editor_summary["draft_after_hash"] = draft_after_hash
+                editor_summary["draft_after_content"] = draft_after_content
+                editor_summary["version_anchor_normalization"] = {
+                    "normalized": True,
+                    "before_version": normalization.before_version,
+                    "editor_version": normalization.editor_version,
+                    "editor_hash": normalization.editor_hash,
+                    "normalized_hash": normalization.normalized_hash,
+                }
             version_stamp = _try_stamp_spec_text_for_round(draft_after_content, phase=phase)
             if version_stamp is not None:
                 draft_after_content = version_stamp.content

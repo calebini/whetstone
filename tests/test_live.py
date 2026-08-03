@@ -891,6 +891,31 @@ class LiveRoundRunnerTests(unittest.TestCase):
             self.assertEqual(editor_summary["draft_after_hash"], draft_hash(stamped))
             self.assertIn("Version stamp: round 1", root.joinpath("spec.history.md").read_text(encoding="utf-8"))
 
+    def test_accepted_mutating_round_normalizes_editor_version_before_stamping(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = "# Spec\n\nStatus: Draft v0.1.67\n\nDraft.\n"
+            editor_after = "# Spec\n\nStatus: Draft v0.1.68\n\nDraft.\n\nClarified.\n"
+            root.joinpath("spec.md").write_text(before, encoding="utf-8")
+            root.joinpath("spec.history.md").write_text("# History\n", encoding="utf-8")
+
+            result = LiveRoundRunner(
+                root,
+                OrchestratorConfig.default(root),
+                reviewer_client=GoodIssueReviewerClient(root),
+                editor_client=AppliedDraftEditorClient(editor_after, resolved_issue_ids=["iss_aaaaaaaaaaaaaaaa"]),
+            ).run_round(round_number=1, profile="determinism", phase="phase_1", apply=True)
+
+            stamped = root.joinpath("spec.md").read_text(encoding="utf-8")
+            editor_summary = json.loads(root.joinpath("rounds/round-1/editor_summary.json").read_text(encoding="utf-8"))
+
+            self.assertTrue(result.accepted)
+            self.assertIn("Status: Draft v0.1.68", stamped)
+            self.assertNotIn("Status: Draft v0.1.69", stamped)
+            self.assertEqual(editor_summary["version_anchor_normalization"]["before_version"], "0.1.67")
+            self.assertEqual(editor_summary["version_anchor_normalization"]["editor_version"], "0.1.68")
+            self.assertIn("Version stamp: round 1, phase `phase_1`, `0.1.67` -> `0.1.68`", root.joinpath("spec.history.md").read_text(encoding="utf-8"))
+
     def test_accepted_mutating_phase2_round_stamps_version_before_persisted_hash(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

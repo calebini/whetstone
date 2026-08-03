@@ -19,6 +19,7 @@ from whetstone.decomposition import (
     extract_decomposition_plan,
     promote_decomposition_manifest,
 )
+from whetstone.diagnostic_sweep import run_diagnostic_sweep
 from whetstone.engine import FixtureEngine, fixture_steps_from_json
 from whetstone.hashing import draft_hash
 from whetstone.live import LiveRoundRunner
@@ -211,6 +212,26 @@ def main(argv: list[str] | None = None) -> int:
     live_phase1.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
     live_phase1.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
     live_phase1.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
+
+    diagnostic_sweep = subparsers.add_parser(
+        "diagnostic-sweep",
+        help="run a reviewer-only Phase 1 profile sweep without editing",
+        description=(
+            "Run one Reviewer-only pass for each configured Phase 1 profile against the same current draft. "
+            "This command writes profile_sweep_report artifacts and does not invoke the Editor or mutate spec.md."
+        ),
+        epilog=(
+            "Example:\n"
+            "  whetstone diagnostic-sweep --root \"$RUN_ROOT\"\n\n"
+            "Use this before an expensive first Phase 1 run to learn whether the draft needs a bounded synthesis pass."
+        ),
+        formatter_class=FORMATTER,
+    )
+    diagnostic_sweep.add_argument("--root", default=".", help="isolated Whetstone run root")
+    diagnostic_sweep.add_argument("--config", default="orchestrator_config.yaml", help="config path relative to root")
+    diagnostic_sweep.add_argument("--overwrite", action="store_true", help="danger: replace existing sweep round directories")
+    diagnostic_sweep.add_argument("--timeout-seconds", type=int, help="fallback timeout for reviewer subprocesses")
+    diagnostic_sweep.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
 
     live_focused_phase1 = subparsers.add_parser(
         "live-focused-phase1",
@@ -685,6 +706,32 @@ def main(argv: list[str] | None = None) -> int:
                     "last_accepted_draft_hash": result.last_accepted_draft_hash,
                     "ready_for_phase_2": result.ready_for_phase_2,
                     "report_path": str(result.report_path) if result.report_path else None,
+                }
+            )
+        )
+        return 0
+    if args.command == "diagnostic-sweep":
+        root = Path(args.root)
+        config = load_config(root / args.config)
+        config = _apply_timeout_overrides(config, args=args)
+        result = run_diagnostic_sweep(
+            root,
+            config,
+            overwrite=args.overwrite,
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(
+            json.dumps(
+                {
+                    "report": str(result.report_path),
+                    "markdown": str(result.markdown_path),
+                    "profile_count": result.profile_count,
+                    "feedback_count": result.feedback_count,
+                    "blocker_count": result.blocker_count,
+                    "major_count": result.major_count,
+                    "recommendation": result.recommendation,
+                    "editor_invoked": False,
+                    "spec_mutated": False,
                 }
             )
         )
