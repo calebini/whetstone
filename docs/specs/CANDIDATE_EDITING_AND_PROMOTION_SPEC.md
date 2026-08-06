@@ -69,23 +69,35 @@ The current verified draft pointer may advance if and only if all of the followi
 2. The patch set and every payload artifact validate against their version-pinned contracts.
 3. Deterministic structural and preservation validation returns `pass`.
 4. Independent semantic verification returns `pass`.
-5. Every finding targeted for resolution has an allowed terminal disposition.
+5. Every finding admitted to the transaction has semantic disposition `resolved` for the exact candidate hash.
 6. No unresolved operator decision, authority conflict, or scope-change gate applies to the candidate.
 7. The candidate hash still identifies the exact bytes evaluated by both validation layers.
 8. The transaction's base hash still equals the current verified draft hash at promotion time.
 9. Promotion completes through the atomic current-verified-pointer protocol.
 
-Equivalently:
+Promotion eligibility is the conjunction of conditions 1 through 8:
 
 ```text
-promote(candidate) =
-  patch_contract_valid
+promotion_eligible(candidate) =
+  assembled_from_declared_base
+  AND patch_contract_valid
   AND deterministic_validation_passed
   AND semantic_verification_passed
+  AND all_admitted_findings_resolved
   AND required_decisions_resolved
   AND candidate_hashes_match
   AND base_hash_is_current
 ```
+
+Promotion succeeds only when an eligible candidate completes condition 9:
+
+```text
+promotion_succeeded(candidate) =
+  promotion_eligible(candidate)
+  AND atomic_current_verified_pointer_commit_completed
+```
+
+`promotion_eligible` is a pre-commit predicate. It does not advance authority. `promotion_succeeded` becomes true only at the atomic current-verified-pointer commit point; no pre-commit artifact, including a candidate-scoped prepared promotion intent, may be reported as completed promotion.
 
 No configuration flag, Editor claim, budget policy, timeout recovery, manual file copy, or legacy accepted-draft status may bypass this invariant in automatic editing mode.
 
@@ -105,6 +117,9 @@ No configuration flag, Editor claim, budget policy, timeout recovery, manual fil
 
 `proposal`
 : An Editor-produced patch set and associated claims. A proposal is never draft authority.
+
+`admitted finding`
+: A finding whose entry in the transaction's immutable mutation plan has `admitted_to_editing = true` and whose ID appears in that plan's admitted finding set. The admitted finding set is fixed before Editor invocation and is the single finding population used by patch attribution, semantic verification, and promotion eligibility.
 
 `candidate`
 : The deterministic result of applying a validated patch set to its immutable base draft.
@@ -208,8 +223,10 @@ job_id: string
 created_at: timestamp
 editing_mode: reviewer_only | proposal_only | verified_promotion
 contract_suite_version: string
+parser_contract_version: string
 assembler_version: string
 inventory_version: string
+normalization_version: string
 semantic_verifier_policy_version: string
 seed_draft:
   path: string
@@ -227,6 +244,8 @@ source_spec:
 ```
 
 `job_id` MUST be deterministic from the canonical job inputs and MUST exclude timestamps. A job descriptor MUST NOT be mutated after the first review attempt. Changed job inputs require a new descriptor and new `job_id`.
+
+The descriptor-bound `parser_contract_version`, `assembler_version`, `inventory_version`, and `normalization_version` are the only versions permitted for section identity, candidate identity, candidate assembly, deterministic validation, and resume or replay within the job. An implementation default, installed latest version, or retry-time override MUST NOT replace a descriptor-bound version.
 
 ## Explicit Authority Model
 
@@ -460,6 +479,8 @@ slices:
 
 `transaction_id` MUST be deterministic from the job ID, base draft hash, admitted finding IDs, decision-response hashes, and mutation constraints.
 
+The transaction's admitted finding set is exactly the canonical sorted set of `finding_dispositions[].finding_id` values whose `admitted_to_editing` field is `true`. Every `slices[].admitted_finding_ids` value and every patch operation's `addressed_finding_ids` value MUST be a subset of that set. No separate "targeted finding" population exists. Semantic verification MUST emit exactly one `finding_results` entry for every admitted finding, and promotion requires every such entry to have `disposition = resolved` for the candidate hash under review.
+
 The Orchestrator MUST reject a mutation plan that admits any finding whose classification is not `editor_fixable`, references a stale base, exceeds configured mutation budgets, contains a dependency cycle, or authorizes a deletion not backed by an applicable operator decision.
 
 ## Stable Section Identity
@@ -502,7 +523,7 @@ For verified edits:
 - ambiguous identity transfer is a deterministic validation failure;
 - manual changes outside the promotion pipeline invalidate the identity map and block resume.
 
-The Markdown parser contract MUST be version-pinned. It MUST distinguish actual ATX headings from heading-like text inside fenced code blocks. Parser upgrades require a new parser contract version and conformance fixtures.
+The Markdown parser contract MUST use the job descriptor's `parser_contract_version`. It MUST distinguish actual ATX headings from heading-like text inside fenced code blocks. Parser upgrades require a new parser contract version, conformance fixtures, and a new job descriptor; they MUST NOT alter an existing job's section identities.
 
 ## Preservation Inventory
 
@@ -551,7 +572,9 @@ Replacing concrete contracts with placeholders, summaries, ellipses, statements 
 
 ### Patch Set
 
-The Editor MUST return metadata as `proposed_patch.json`. Substantial Markdown MUST be stored as separate content-addressed payload artifacts.
+The Editor MUST return patch-set metadata. The Orchestrator MUST preserve each raw client response as immutable `proposals/attempts/proposal-attempt-M.json`; an attempt artifact is evidence and is never the authoritative patch set.
+
+After an attempt and all referenced payload hashes pass the client-input contract, the Orchestrator MUST compute all Orchestrator-owned fields, validate the persisted contract, and write the canonical patch set exactly once at `proposals/{proposal_id}/proposed_patch.json`. Substantial Markdown MUST be stored below `proposals/{proposal_id}/payloads/` as content-addressed payload artifacts. This canonical `proposed_patch.json`, and only this file for that `proposal_id`, supplies `patch_set_hash` and candidate-assembly input. A retry that produces different canonical patch bytes receives a different `proposal_id` and path; it MUST NOT overwrite an earlier canonical patch set.
 
 Minimum fields:
 
@@ -577,9 +600,27 @@ editor_claims:
   normative_change_summary: string
 ```
 
-`proposal_id` MUST be computed by the Orchestrator from the canonicalized patch set after validating all referenced payload hashes. Editor-provided proposal IDs are placeholders.
+Client-input and persisted patch contracts MUST be distinct where Orchestrator-owned identities differ. The client-input contract MUST require `proposal_id = null`; any non-null Editor-provided proposal ID is invalid rather than authoritative.
 
-Client-input and persisted patch contracts MUST be distinct where Orchestrator-owned identities differ. Client input MAY contain a null proposal ID; the persisted patch set MUST contain the computed value.
+After client-input validation and payload-hash validation, the Orchestrator MUST normalize each payload path to `payloads/{payload_sha256}.md` relative to the proposal root and construct the proposal identity projection from every persisted patch-set field with `proposal_id` fixed to null. No raw-attempt path, timestamp, filesystem root, or eventual proposal directory name may enter this projection.
+
+```text
+proposal_identity_bytes = canonical_json_utf8(
+  persisted_patch_set_fields_with_proposal_id_null
+)
+
+proposal_id = "pro_" + first_16_hex_chars(
+  SHA256(proposal_identity_bytes)
+)
+```
+
+The Orchestrator MUST then inject the computed `proposal_id`, serialize the complete persisted patch set as canonical JSON UTF-8 bytes, and write those exact bytes once at `proposals/{proposal_id}/proposed_patch.json`.
+
+```text
+patch_set_hash = SHA256(exact_persisted_proposed_patch_json_bytes)
+```
+
+Thus `proposal_id` identifies the normalized patch content under an explicit null-ID projection, while `patch_set_hash` identifies the final persisted bytes containing that computed ID. Candidate identity, validation, resume, and promotion MUST use `patch_set_hash`; they MUST NOT recompute it from the null-ID projection or raw attempt artifact.
 
 An Editor decline is not a patch operation and cannot resolve a finding. If a proposal declines any admitted finding, the Orchestrator MUST reconcile that finding through conflict, decision, scope, or deferral handling before candidate assembly. It MAY create a new mutation plan for independent remaining findings, but it MUST NOT silently drop the declined finding from the existing transaction.
 
@@ -683,13 +724,13 @@ The Orchestrator MUST:
 3. Verify the base and target preimage hashes.
 4. Apply operations in canonical order using the version-pinned assembler.
 5. Apply any Orchestrator-owned version stamp as an explicit system operation.
-6. Canonicalize the assembled text once under the active text-normalization version.
+6. Canonicalize the assembled text once under the job descriptor's `normalization_version`.
 7. Write `candidate_unverified.md` as an immutable artifact.
 8. Compute the candidate hash from the persisted candidate bytes.
 
 The candidate hash evaluated by validators MUST identify the exact bytes eligible for promotion. Promotion-time version stamping, formatting, or cleanup is forbidden because it would create unverified bytes.
 
-Two conforming implementations applying the same validated patch set, payloads, base, parser version, assembler version, and normalization version MUST produce byte-identical candidate artifacts and identical candidate hashes.
+Two conforming implementations applying the same validated patch set, payloads, base, and descriptor-bound parser, assembler, inventory, and normalization versions MUST produce byte-identical candidate artifacts and identical candidate hashes.
 
 ### Candidate Identity And Disposition
 
@@ -698,8 +739,8 @@ candidate_id = "can_" + first_16_hex_chars(SHA256(canonical_json({
   "transaction_id": transaction_id,
   "base_draft_hash": base_draft_hash,
   "patch_set_hash": patch_set_hash,
-  "assembler_version": assembler_version,
-  "normalization_version": normalization_version
+  "assembler_version": job_descriptor.assembler_version,
+  "normalization_version": job_descriptor.normalization_version
 })))
 ```
 
@@ -707,14 +748,55 @@ Candidate disposition is separate from run terminal state:
 
 ```text
 CANDIDATE_UNVERIFIED
-CANDIDATE_DETERMINISTICALLY_VALID
 CANDIDATE_VERIFIED
 CANDIDATE_REJECTED
 CANDIDATE_PROMOTED
-CANDIDATE_SUPERSEDED
 ```
 
 Only `CANDIDATE_VERIFIED` may transition to `CANDIDATE_PROMOTED`.
+
+### Candidate Registration And Run-Wide Ordering
+
+Candidate creation order is Orchestrator-owned and independent of content-derived `candidate_id`. Every assembled candidate that becomes visible to status, terminal reporting, or resume MUST be registered by one immutable event at:
+
+```text
+rounds/candidate_index/creation-{candidate_creation_ordinal}.json
+```
+
+Minimum fields:
+
+```yaml
+schema_version: candidate-creation-event-v1
+job_id: string
+creation_event_id: string
+candidate_creation_ordinal: integer
+round_number: integer
+transaction_id: string
+proposal_id: string
+candidate_id: string
+candidate_path: string
+candidate_hash: sha256
+initial_disposition_event_path: string
+initial_disposition_event_hash: sha256
+previous_creation_event_hash: sha256 | null
+created_at: timestamp
+```
+
+Registration MUST be serialized under the run's single-Orchestrator write lock. Ordinals start at 1, increase contiguously by 1, and bind the exact canonical persisted bytes of the prior creation event through `previous_creation_event_hash`. `creation_event_id` MUST be computed from every field except `creation_event_id` and `created_at`; the persisted event hash includes all fields. Duplicate ordinals, gaps, a broken previous-event hash, duplicate registration of one candidate ID, or a registered candidate path or hash mismatch is `HALTED_ARTIFACT_INVALID`; consumers MUST NOT guess an ordering.
+
+Before allocating a new ordinal, the Orchestrator MUST reconcile any orphan that claims the one next ordinal; it MUST NOT register a later candidate around an unresolved orphan. Under the registration lock it determines the next ordinal and uses that same value in the initial disposition event and creation event.
+
+Candidate assembly and registration commit in this order:
+
+1. Persist and hash the immutable candidate and section identity map.
+2. Persist candidate-local disposition event ordinal 1 with `event_kind = candidate_created`, `previous_disposition = null`, `new_disposition = CANDIDATE_UNVERIFIED`, and the candidate artifact as its source.
+3. Persist the next creation event with the exact initial disposition-event path and hash.
+
+The creation event is the registration commit point. A candidate directory or initial disposition event not referenced by a valid creation event is an orphan and MUST NOT be selected as latest, resumed, verified, promoted, or reported as registered. Recovery MAY finish the next unoccupied registration ordinal only when the candidate identity, bytes, initial event, prior creation-event hash, and expected ordinal all validate; otherwise it MUST preserve the orphan for diagnosis and halt artifact-invalid.
+
+Reassembling byte-identical candidate inputs MUST reuse the existing candidate ID, creation event, and creation ordinal. It MUST NOT append a duplicate registration merely because a client or process retry occurred.
+
+The run's `latest_candidate` is the candidate referenced by the highest ordinal in the unique contiguous valid creation-event chain. Terminal reporting, read-only status, and candidate resume selection MUST use that rule and MUST NOT compare candidate IDs, timestamps, proposal attempt numbers, or candidate-local event ordinals across candidates. Resume MUST NOT skip a final latest candidate to continue an older candidate; a further editing retry creates or reuses a candidate under the normal registration rule. Apply-back authority remains the current verified pointer, never the latest-candidate ordering.
 
 ## Deterministic Validation
 
@@ -722,10 +804,10 @@ Deterministic validation MUST run against the persisted candidate and immutable 
 
 Validation order:
 
-1. Verify job, transaction, base, patch, payload, candidate, parser, assembler, and inventory identities.
+1. Verify job, transaction, base, patch, payload, candidate, parser, assembler, inventory, and normalization identities against the job descriptor.
 2. Reapply the patch independently and require the reproduced candidate hash to match.
 3. Validate operation targeting, ordering, dependency, overlap, and mutation budgets.
-4. Build base and candidate inventories with the same inventory version.
+4. Build base and candidate inventories with the descriptor-bound inventory version.
 5. Compare heading hierarchy and stable identity transfer.
 6. Compare normative and protected units.
 7. Evaluate deterministic protected invariants.
@@ -746,6 +828,7 @@ patch_set_hash: sha256
 parser_contract_version: string
 assembler_version: string
 inventory_version: string
+normalization_version: string
 reproduced_candidate_hash: sha256
 result: pass | fail
 mutation_budget:
@@ -809,6 +892,7 @@ schema_version: semantic-verification-v1
 job_id: string
 transaction_id: string
 candidate_id: string
+semantic_verifier_policy_version: string
 base_draft_hash: sha256
 candidate_hash: sha256
 patch_set_hash: sha256
@@ -834,6 +918,11 @@ normative_change_assessment:
     verifier_assessment: string
     agrees: boolean
 operator_decision_required: boolean
+uncertainty_resolutions:
+  - field_path: string
+    policy_rule_id: string
+    disposition: reject | operator_decision_required
+    decision_id: string | null
 verdict: pass | reject | operator_decision_required
 rationale: string
 ```
@@ -848,7 +937,14 @@ Automatic promotion requires:
 - every blocking semantic assertion passes;
 - `operator_decision_required = false`.
 
-`uncertain` fails closed. It MUST produce either rejection or an operator-decision requirement; it MUST NOT be coerced to `pass` by majority fields.
+`uncertain` fails closed and MUST be resolved by the job descriptor's versioned semantic-verifier policy. The minimum deterministic mapping is:
+
+- `unrelated_semantic_change = uncertain` maps to `reject`;
+- `lost_or_weakened_semantics = uncertain` maps to `reject`;
+- `authority_compliance = uncertain` maps to `operator_decision_required` only when the uncertainty identifies a concrete choice among named applicable authorities and supplies a hash-bound decision request; otherwise it maps to `reject`;
+- a blocking semantic assertion with `result = uncertain` maps according to its policy rule, and defaults to `reject` unless that rule explicitly declares a hash-bound operator decision gate.
+
+Every uncertain field MUST have one `uncertainty_resolutions` entry naming the applied policy rule. If any entry maps to `reject`, the overall verdict MUST be `reject`. Otherwise, if one or more entries map to `operator_decision_required`, the overall verdict MUST be `operator_decision_required`. An empty, missing, ambiguous, or version-mismatched mapping is artifact-invalid and MUST NOT be interpreted as either verdict. Uncertainty MUST NOT be coerced to `pass` by majority fields or operator waiver.
 
 If a safe patch intentionally addresses only part of a broader finding, the Orchestrator MUST create a narrower derived finding before mutation planning. Partial resolution of the broader original finding cannot satisfy promotion for a transaction that admitted the broader finding itself.
 
@@ -856,7 +952,7 @@ Independence policy MUST be versioned. It MAY require a different model or provi
 
 ## Candidate Verification Decision
 
-The Orchestrator MUST combine both verification layers into `candidate_verification.json`.
+The Orchestrator MUST combine both verification layers into an append-only sequence of immutable `candidate_verification-attempt-{decision_ordinal}.json` decision artifacts. It MUST NOT overwrite an earlier decision when semantic verification later completes or resume advances the candidate through another gate.
 
 Minimum fields:
 
@@ -865,6 +961,9 @@ schema_version: candidate-verification-v1
 job_id: string
 transaction_id: string
 candidate_id: string
+candidate_creation_ordinal: integer
+decision_ordinal: integer
+previous_decision_hash: sha256 | null
 base_draft_hash: sha256
 candidate_hash: sha256
 patch_set_hash: sha256
@@ -875,19 +974,91 @@ semantic_result: pass | reject | operator_decision_required | not_run
 outstanding_decision_ids: [string]
 candidate_disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED
 promotion_permitted: boolean
+decision_final: boolean
 rejection_codes: [string]
 decided_at: timestamp
 ```
 
 This artifact is Orchestrator-owned. Client output MUST NOT set `candidate_disposition` or `promotion_permitted`.
 
-If deterministic validation fails, semantic verification MUST NOT run and the candidate disposition MUST be `CANDIDATE_REJECTED`.
+After writing and validating a decision attempt, the Orchestrator MUST commit it with a disposition event under `Candidate Disposition Event Commit Rules`, then atomically update the candidate-scoped convenience pointer `candidate_verification_current.json`:
 
-If deterministic validation passes but semantic verification is missing, invalid, timed out, inconclusive, or interrupted, the candidate disposition MUST be `CANDIDATE_UNVERIFIED` and promotion MUST remain prohibited.
+```yaml
+schema_version: candidate-verification-pointer-v1
+job_id: string
+transaction_id: string
+candidate_id: string
+candidate_creation_ordinal: integer
+current_decision_ordinal: integer
+current_decision_path: string
+current_decision_hash: sha256
+current_disposition_event_path: string
+current_disposition_event_hash: sha256
+candidate_disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED
+decision_final: boolean
+updated_at: timestamp
+```
 
-`CANDIDATE_DETERMINISTICALLY_VALID` is a transient audit event recorded after deterministic validation passes and before semantic verification finishes. It MUST collapse to `CANDIDATE_UNVERIFIED` in terminal reporting when semantic verification does not complete.
+Decision ordinals start at 1 and increase contiguously. The pointer targets are authoritative for the candidate's current verification decision and its corresponding disposition event; the pointer file is not itself a substitute for either immutable target. Both target paths MUST resolve below the same immutable candidate directory and match their recorded hashes. The event MUST name the decision attempt as its source artifact, and its `new_disposition` MUST equal both the decision attempt's and pointer's `candidate_disposition`. A pointer update may advance only to the next decision and event ordinals for the same job, transaction, candidate, base, candidate, and patch hashes. Every attempt after ordinal 1 MUST bind the prior decision target through `previous_decision_hash`.
 
-If semantic verification rejects the candidate or requires an unresolved operator decision, the candidate disposition MUST be `CANDIDATE_REJECTED` until a new transaction produces a new candidate. An operator decision does not retroactively turn rejected bytes into verified bytes; the resulting patch must be reassembled and both verification layers rerun.
+If deterministic validation fails, semantic verification MUST NOT run, the candidate disposition MUST be `CANDIDATE_REJECTED`, and `decision_final` MUST be `true`.
+
+If deterministic validation passes but semantic verification is missing, invalid, timed out, inconclusive, or interrupted, the candidate disposition MUST be `CANDIDATE_UNVERIFIED`, `decision_final` MUST be `false`, and promotion MUST remain prohibited. Resume MAY append a higher-ordinal decision for the same candidate after completing the first incomplete gate; it MUST preserve the non-final attempt.
+
+A deterministic-validation pass is a preservation-report milestone, not a candidate disposition. The candidate remains `CANDIDATE_UNVERIFIED` until a final candidate-verification decision establishes `CANDIDATE_VERIFIED` or `CANDIDATE_REJECTED`.
+
+If semantic verification rejects the candidate or requires an unresolved operator decision, the candidate disposition MUST be `CANDIDATE_REJECTED` and `decision_final` MUST be `true`; a new transaction is required to produce a new candidate. An operator decision does not retroactively turn rejected bytes into verified bytes; the resulting patch must be reassembled and both verification layers rerun.
+
+If both validation layers pass and every automatic-promotion semantic requirement holds, the candidate disposition MUST be `CANDIDATE_VERIFIED` and `decision_final` MUST be `true`. A final verification decision MUST NOT be replaced by another verification decision for the same candidate. Later promotion is recorded only through disposition events and the current verified pointer.
+
+Promotion, resume, read-only status, and terminal reporting MUST resolve and hash-check `candidate_verification_current.json` before consuming a candidate decision. Promotion additionally requires `decision_final = true`, `candidate_disposition = CANDIDATE_VERIFIED`, and the selected candidate-scoped promotion intent's `candidate_verification_hash` equal to the current immutable decision target's hash. If the pointer is absent, invalid, stale, or targets a non-final decision, promotion MUST refuse.
+
+## Candidate Disposition Event Commit Rules
+
+Candidate disposition history is an immutable candidate-local hash chain. Each event is stored at `{registered_candidate_directory}/disposition_events/event-{event_ordinal}.json`:
+
+```yaml
+schema_version: candidate-disposition-event-v1
+event_id: string
+job_id: string
+candidate_id: string
+candidate_creation_ordinal: integer
+event_ordinal: integer
+event_kind: candidate_created | verification_decision | promotion_committed
+previous_event_hash: sha256 | null
+previous_disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED | null
+new_disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED | CANDIDATE_PROMOTED
+source_artifact_path: string
+source_artifact_hash: sha256
+recorded_at: timestamp
+```
+
+Event ordinals start at 1 and increase contiguously. `event_id` MUST be computed from every field except `event_id` and `recorded_at`; `previous_event_hash` and all pointer bindings use the SHA-256 hash of the exact canonical persisted prior-event bytes. Gaps, duplicate ordinals, a broken previous-event hash, or an event whose source path and hash do not validate is artifact-invalid.
+
+The only legal event forms are:
+
+- `candidate_created`: ordinal 1, null previous event and disposition, `new_disposition = CANDIDATE_UNVERIFIED`, and the immutable candidate artifact as source;
+- `verification_decision`: the next ordinal, the preceding effective disposition as `previous_disposition`, any decision disposition as `new_disposition`, and the immutable candidate-verification attempt as source; an event is required for every committed verification decision even when the disposition remains `CANDIDATE_UNVERIFIED`;
+- `promotion_committed`: the next ordinal, `CANDIDATE_VERIFIED` to `CANDIDATE_PROMOTED`, and the immutable promotion intent as source.
+
+Event effectiveness is commit-bound rather than based on directory enumeration:
+
+1. The initial `candidate_created` event becomes effective only when a valid run-wide candidate creation event binds its path and hash.
+2. A `verification_decision` event becomes effective only when `candidate_verification_current.json` atomically binds both that event and its source decision attempt.
+3. A `promotion_committed` event becomes effective only when `rounds/current_verified.json` atomically binds that event and its source promotion intent while advancing to the same candidate and candidate hash.
+
+For a verification decision, the Orchestrator MUST write and validate the immutable decision attempt at `candidate_verification-attempt-{decision_ordinal}.json`, write and validate its next disposition event, and only then atomically replace `candidate_verification_current.json` with a pointer binding both. For promotion, it MUST use the ordering defined in `Promotion And Current Verified Authority`. A crash before either pointer replacement leaves prepared immutable artifacts but does not change effective disposition.
+
+Before creating a new verification decision, recovery MUST reconcile the one canonical next decision path. A valid next decision attempt without an event requires creation of its exact next event; a valid attempt plus matching event requires completion of the pointer replacement; a pointer already binding both means the decision committed. A conflicting decision at that path, an event with no matching decision source, or multiple artifacts claiming the next decision or event ordinal is artifact-invalid.
+
+Before appending any later event, recovery MUST reconcile a single prepared next event: if its ordinal, previous hash, source artifact, candidate identity, and expected pointer target all match, recovery MUST reuse it and complete the pending pointer replacement; if it conflicts or more than one candidate event claims the next ordinal, recovery MUST halt artifact-invalid. Consumers MUST ignore unbound prepared decisions and events when deriving current disposition, but MUST surface their presence for recovery or diagnosis.
+
+| Lifecycle result | Commit artifact | Effective disposition event |
+| --- | --- | --- |
+| Candidate registered, no verification decision | Run-wide candidate creation event | Its bound `candidate_created` event |
+| Verification incomplete | `candidate_verification_current.json` | Its bound `verification_decision` event with `CANDIDATE_UNVERIFIED` |
+| Verification final | `candidate_verification_current.json` | Its bound `verification_decision` event with `CANDIDATE_VERIFIED` or `CANDIDATE_REJECTED` |
+| Promotion committed | `rounds/current_verified.json` | Its bound `promotion_committed` event with `CANDIDATE_PROMOTED` |
 
 ## Promotion And Current Verified Authority
 
@@ -907,59 +1078,72 @@ verified_draft_path: string
 verified_draft_hash: sha256
 source_transaction_id: string | null
 source_candidate_id: string | null
+source_candidate_creation_ordinal: integer | null
+source_candidate_creation_event_path: string | null
+source_candidate_creation_event_hash: sha256 | null
+candidate_verification_path: string | null
 candidate_verification_hash: sha256 | null
+promotion_intent_path: string | null
+promotion_intent_hash: sha256 | null
+promotion_disposition_event_path: string | null
+promotion_disposition_event_hash: sha256 | null
 previous_verified_draft_hash: sha256 | null
+previous_verified_pointer_hash: sha256 | null
 promoted_at: timestamp
 ```
 
-The initial pointer MUST reference an immutable normalized seed artifact. Subsequent pointers MUST reference immutable promoted candidate artifacts.
+The initial pointer MUST reference an immutable normalized seed artifact and set all candidate, verification, intent, disposition-event, and previous-pointer fields to null. Subsequent pointers MUST reference immutable promoted candidate artifacts and populate every such field with mutually consistent paths, hashes, identities, and ordinals.
 
 `spec.md` becomes a materialized convenience copy of the pointer target, not independent lineage authority. Review, resume, Phase 2 entry, convergence, and apply-back MUST resolve the current verified pointer first and verify any `spec.md` mirror against it.
 
-Before the pointer commit point, the Orchestrator MUST persist `promotion_intent.json`:
+Before the pointer commit point, the Orchestrator MUST persist one immutable candidate-scoped promotion intent at:
+
+```text
+rounds/round-N/candidates/{candidate_id}/promotion_intents/promotion-intent-{next_promotion_ordinal}.json
+```
 
 ```yaml
 schema_version: promotion-intent-v1
+intent_id: string
 job_id: string
 transaction_id: string
 candidate_id: string
+candidate_creation_ordinal: integer
+candidate_creation_event_path: string
+candidate_creation_event_hash: sha256
 base_draft_hash: sha256
 candidate_hash: sha256
+candidate_verification_path: string
 candidate_verification_hash: sha256
 expected_current_verified_hash: sha256
+expected_current_verified_pointer_hash: sha256
 next_promotion_ordinal: integer
 status: prepared
 prepared_at: timestamp
 ```
 
-Candidate disposition changes MUST be append-only artifacts rather than in-place mutation of candidate verification:
+The path is derived from the registered candidate and the current pointer's `promotion_ordinal + 1`; timestamps and directory enumeration MUST NOT select an intent. `intent_id` MUST be computed from every field except `intent_id` and `prepared_at`, and the intent hash MUST cover the exact canonical persisted bytes including both fields. The candidate creation-event path and hash MUST identify the exact run-wide registration selected by `candidate_creation_ordinal`. The candidate verification path and hash MUST identify the final `CANDIDATE_VERIFIED` decision currently bound by `candidate_verification_current.json`. The expected pointer hash MUST identify the exact canonical bytes of `rounds/current_verified.json` observed during preparation.
 
-```yaml
-schema_version: candidate-disposition-event-v1
-job_id: string
-candidate_id: string
-event_ordinal: integer
-previous_disposition: string | null
-new_disposition: string
-source_artifact_path: string
-source_artifact_hash: sha256
-recorded_at: timestamp
-```
+At most one valid intent may exist at the derived path. Repeated preparation with the same bound inputs MUST reuse the byte-identical persisted intent and MUST NOT rewrite `prepared_at`. If the path already contains different bytes, if multiple files claim the same candidate and next promotion ordinal, or if any bound path or hash mismatches, promotion and resume MUST halt artifact-invalid.
 
-Disposition event identity MUST exclude `recorded_at` and include the candidate ID, ordinal, previous and new dispositions, and source artifact hash.
+Intent selection and recovery are deterministic:
+
+- If the current verified pointer still matches both expected current fields and its next ordinal equals the intent's `next_promotion_ordinal`, the prepared intent is eligible to continue.
+- If the current verified pointer already binds the intent path and hash, advances to the same candidate, candidate hash, verification decision, registration event, and promotion ordinal, and its bound promotion event validates, promotion has committed; recovery MUST continue only post-commit materialization and history repair.
+- Otherwise the intent is stale. It remains immutable evidence but MUST NOT be selected, rewritten, promoted, or used to resume candidate verification. No flag may refresh it in place; changed pointer inputs require a newly eligible transaction and candidate under the normal base-current rules.
 
 Promotion protocol:
 
 1. Revalidate all gate hashes and require the base hash still to be current.
-2. Write the immutable verified candidate artifact if it is not already persisted.
-3. Write and validate an immutable promotion-intent artifact.
-4. Atomically replace `rounds/current_verified.json` with a pointer to the verified candidate.
-5. Materialize `spec.md` byte-identically from the pointer target.
-6. Write `draft_after.md` byte-identically from the promoted candidate.
-7. Append promotion history and update run state.
-8. Record candidate disposition `CANDIDATE_PROMOTED` in an append-only disposition event.
+2. Revalidate the registered immutable candidate and final verification-decision pointer targets.
+3. Create or reuse the one eligible immutable candidate-scoped promotion intent.
+4. Create or reuse the next candidate disposition event with `event_kind = promotion_committed`, source path and hash equal to the intent, and transition `CANDIDATE_VERIFIED -> CANDIDATE_PROMOTED`.
+5. Conditionally and atomically replace `rounds/current_verified.json` only if its exact bytes still match `expected_current_verified_pointer_hash`; the new pointer MUST bind that value as `previous_verified_pointer_hash` together with the candidate registration ordinal and creation-event path and hash, final verification path and hash, promotion-intent path and hash, and promotion-disposition-event path and hash.
+6. Materialize `spec.md` byte-identically from the pointer target.
+7. Write `draft_after.md` byte-identically from the promoted candidate.
+8. Append promotion history and update run state from the committed pointer bindings.
 
-The pointer replacement is the authority-advancing commit point. If a crash occurs before it, the previous pointer remains authoritative. If a crash occurs after it but before `spec.md` or run-state materialization completes, recovery MUST rematerialize from the pointer and MUST NOT roll back to an unverified or ambiguous draft.
+The pointer replacement is the authority-advancing commit point and makes the bound promotion disposition event effective. If a crash occurs before it, the previous pointer and prior candidate disposition remain authoritative; the prepared intent and event remain unbound. If a crash occurs after it but before `spec.md`, `draft_after.md`, history, or run-state materialization completes, recovery MUST treat the promotion as committed, rematerialize from the pointer, and MUST NOT append another promotion event, allocate another ordinal, or roll back to an unverified or ambiguous draft.
 
 The promoted bytes MUST be byte-identical to the verified candidate bytes. No post-verification mutation is permitted.
 
@@ -1019,50 +1203,70 @@ Resume MUST:
 
 - verify the job descriptor and contract-suite version;
 - verify the current pointer and target draft hash;
+- validate the unique contiguous run-wide candidate creation-event chain and select `latest_candidate` only by its highest ordinal;
 - verify the transaction base equals the current verified hash;
-- reconstruct the exact candidate from the immutable base, patch metadata, payloads, and assembler version;
+- reconstruct the exact candidate from the immutable base, patch metadata, payloads, and the descriptor-bound parser, assembler, inventory, and normalization versions;
 - require the reconstructed candidate hash to match the persisted candidate hash;
+- resolve and hash-check `candidate_verification_current.json` when present, including its immutable target and decision hash chain;
 - reuse existing valid deterministic and semantic reports only when all bound hashes match;
-- continue at the first incomplete gate;
+- when the current decision is non-final, continue at the first incomplete gate and append `candidate_verification-attempt-{next_decision_ordinal}.json` rather than overwrite the prior decision;
+- refuse candidate-verification continuation when the current decision is final;
+- reconcile any single prepared next disposition event under the event commit rules before appending another event;
+- for a final verified latest candidate, derive the only eligible promotion-intent path from the candidate path and current pointer's next promotion ordinal, then continue pre-commit promotion or post-commit materialization according to the intent recovery rules;
+- preserve but never select a stale promotion intent;
 - never call an Editor merely to reproduce an already persisted candidate;
 - never seed a retry or later round from an unverified or rejected candidate.
 
-If required assembler, parser, inventory, normalization, or contract versions are unavailable, resume MUST refuse. It MUST NOT silently replay under newer semantics.
+Resume MUST read every required parser, assembler, inventory, normalization, semantic-verifier-policy, and contract version from the immutable job descriptor. If any descriptor-bound version is unavailable, resume MUST refuse. It MUST NOT silently replay under defaults or newer semantics.
 
 Two implementations resuming the same validated transaction MUST reproduce the same candidate bytes and hashes before either may continue verification or promotion.
 
 ## Round Artifact Layout
 
-A mutating vNext round MUST preserve at least:
+A mutating vNext run MUST preserve at least:
 
 ```text
-rounds/round-N/
-  draft_before.md
-  mutation_plan.json
-  section_identity_map_before.json
-  context/
-  prompt_snapshots/
-  client_telemetry/
-  proposals/
-    proposal-attempt-M.json
-    payloads/
-      {operation_id}.md
-  candidates/
-    {candidate_id}/
-      candidate_unverified.md
-      section_identity_map_candidate.json
-      preservation_report.json
-      semantic_verification-attempt-M.json
-      candidate_verification.json
-      disposition_events/
-        event-K.json
-  draft_after.md                 # only after promotion
-  editor_summary.json            # Orchestrator-derived compatibility summary
-  unresolved_issues.json
-  decision_points.json
+rounds/
+  current_verified.json
+  candidate_index/
+    creation-{candidate_creation_ordinal}.json
+  round-N/
+    draft_before.md
+    mutation_plan.json
+    section_identity_map_before.json
+    context/
+    prompt_snapshots/
+    client_telemetry/
+    proposals/
+      attempts/
+        proposal-attempt-M.json       # immutable raw client response
+      {proposal_id}/
+        proposed_patch.json           # immutable canonical validated patch set
+        payloads/
+          {payload_sha256}.md
+    candidates/
+      {candidate_id}/
+        candidate_unverified.md
+        section_identity_map_candidate.json
+        preservation_report.json
+        semantic_verification-attempt-M.json
+        candidate_verification-attempt-{decision_ordinal}.json
+        candidate_verification_current.json
+        promotion_intents/
+          promotion-intent-{next_promotion_ordinal}.json
+        disposition_events/
+          event-{event_ordinal}.json
+    draft_after.md                 # only after promotion
+    editor_summary.json            # Orchestrator-derived compatibility summary
+    unresolved_issues.json
+    decision_points.json
 ```
 
-Candidate and attempt artifacts are immutable. Convenience pointers MAY be updated only when their targets and hashes are explicit. A rejected or unverified candidate MUST remain inspectable but MUST NOT appear at `draft_after.md`.
+Candidate creation events, candidates, canonical patch sets, payloads, semantic-verification attempts, candidate-verification attempts, promotion intents, and disposition events are immutable. Each candidate MUST bind one canonical `proposals/{proposal_id}/proposed_patch.json` by hash. `candidate_verification_current.json` is the only mutable candidate-local verification pointer; it MAY advance only under the append-only and hash-chain rules in `Candidate Verification Decision` and `Candidate Disposition Event Commit Rules`. Other convenience pointers MAY be updated only when their targets and hashes are explicit. A rejected or unverified candidate MUST remain inspectable but MUST NOT appear at `draft_after.md`.
+
+An immutable lifecycle artifact MUST be completely written, durability-synchronized under the storage contract, schema-validated, and hash-validated before it is atomically published at its canonical path or referenced by a commit pointer. A partial temporary file is not an artifact and MUST NOT participate in directory enumeration. A partial or mismatched file already visible at a canonical immutable path is artifact-invalid and MUST NOT be overwritten during recovery.
+
+Every braced path component in the layout is the exact validated field named inside the braces; none is derived from timestamps or directory enumeration.
 
 `editor_summary.json` MAY remain as a compatibility and audit artifact, but the Orchestrator MUST derive its persisted resolved/unresolved status from candidate verification. Editor claims alone MUST NOT resolve issues, update `last_accepted_draft_hash`, or authorize scheduling.
 
@@ -1079,9 +1283,17 @@ current_verified_draft_path: string
 current_verified_draft_hash: sha256
 latest_candidate:
   candidate_id: string | null
+  candidate_creation_ordinal: integer | null
+  candidate_creation_event_path: string | null
+  candidate_creation_event_hash: sha256 | null
   path: string | null
   hash: sha256 | null
-  disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED | CANDIDATE_PROMOTED | CANDIDATE_SUPERSEDED | null
+  disposition: CANDIDATE_UNVERIFIED | CANDIDATE_VERIFIED | CANDIDATE_REJECTED | CANDIDATE_PROMOTED | null
+  disposition_event_path: string | null
+  disposition_event_hash: sha256 | null
+  verification_decision_path: string | null
+  verification_decision_hash: sha256 | null
+  verification_decision_final: boolean | null
 rejected_candidate_ids: [string]
 outstanding_decision_ids: [string]
 apply_back_permitted: boolean
@@ -1091,14 +1303,25 @@ resume:
   reason: string
 ```
 
-If a token budget, timeout, interruption, or process failure occurs after assembly but before semantic verification completes, the latest candidate disposition MUST be `CANDIDATE_UNVERIFIED`. The prior current verified draft remains authoritative.
+If the valid creation-event chain is empty and no orphan or invalid candidate artifact requires attention, every `latest_candidate` field MUST be null.
+
+Terminal reporting MUST first select the candidate through the run-wide creation-event chain and copy its ID, creation ordinal, creation-event path and hash, candidate path, and candidate hash from that event. It MUST then select exactly one effective disposition event by commit binding:
+
+1. Use the promotion event bound by `rounds/current_verified.json` when that pointer identifies the selected candidate and validates every candidate, intent, verification, and event binding.
+2. Otherwise use the verification-decision event bound by the selected candidate's valid `candidate_verification_current.json`.
+3. Otherwise use the initial disposition event bound by the selected candidate's creation event.
+
+The terminal report MUST copy `disposition`, `disposition_event_path`, and `disposition_event_hash` from that effective event. When a verification-decision pointer exists, it MUST also copy `verification_decision_path`, `verification_decision_hash`, and `verification_decision_final` from the validated immutable decision target. When no decision attempt exists, those three verification-decision fields are null. Unbound prepared events and stale promotion intents MUST NOT affect terminal disposition.
+
+If a token budget, timeout, interruption, or process failure occurs after candidate registration but before semantic verification completes, the selected latest candidate disposition MUST be `CANDIDATE_UNVERIFIED`. If failure occurs before the registration commit point, the incomplete candidate remains an orphan and the prior registered candidate, if any, remains latest. In both cases, the prior current verified draft remains authoritative.
 
 If verification passes but promotion has not committed, the candidate may be `CANDIDATE_VERIFIED`, but the prior pointer remains authoritative and apply-back remains prohibited until promotion completes.
 
 Apply-back is permitted only when:
 
 - the selected bytes are referenced by the current verified pointer;
-- the pointer traces to a passing candidate-verification artifact or the immutable seed initialization;
+- the pointer traces to the final `CANDIDATE_VERIFIED` target of a valid `candidate_verification_current.json` or to the immutable seed initialization;
+- for a promoted candidate, the pointer's candidate registration, promotion-intent, and promotion-disposition-event paths and hashes all validate and agree;
 - the run satisfies the scheduler and convergence policy required by apply-back;
 - the external source hash guard passes;
 - no unresolved apply-back-blocking decision exists.
@@ -1118,7 +1341,8 @@ Before `verified_promotion` is considered stable, Whetstone MUST publish, versio
 - patch set and patch operations;
 - preservation report;
 - semantic verification;
-- candidate verification;
+- candidate creation event and run-wide candidate index;
+- candidate verification decision and current decision pointer;
 - candidate disposition event;
 - operator decision response;
 - promotion intent;
@@ -1181,11 +1405,19 @@ An Editor response is invalid or times out. Any retry uses the last current veri
 
 ### Verification Budget Exhaustion
 
-The run exhausts its token or time budget after candidate assembly but before semantic verification. Candidate disposition is `CANDIDATE_UNVERIFIED`; apply-back is prohibited.
+The run exhausts its token or time budget after candidate registration but before semantic verification. Candidate disposition is `CANDIDATE_UNVERIFIED`; apply-back is prohibited. Exhaustion before registration leaves only an orphan and does not change `latest_candidate`.
 
 ### Exact Resume
 
 Resume reconstructs the exact candidate from immutable base, patch, and payload hashes without invoking the Editor. Any hash mismatch blocks resume.
+
+### Candidate Ordering And Orphan Recovery
+
+Two retries produce distinct candidates and one process crashes after writing a third candidate but before registration. The valid contiguous creation-event chain selects the second registered candidate as latest. Recovery either completes the third candidate's exact next registration once or preserves it as an orphan and halts artifact-invalid; candidate IDs, timestamps, and directory order never break the tie.
+
+### Verification Decision Commit Recovery
+
+Fault injection after decision-attempt write, after disposition-event write, and after verification-pointer replacement never exposes a torn decision and disposition. Recovery reuses at most one exact prepared next event, the pointer binds the decision and event together, and terminal reporting selects only the effective bound event.
 
 ### Historical Recurrence Fixture
 
@@ -1193,7 +1425,7 @@ The destructive first-round recurrence mutation is replayed as a golden fixture 
 
 ### Cross-Implementation Determinism
 
-Two conforming implementations apply the same validated patch inputs and produce byte-identical candidates, identity maps, and candidate hashes.
+Two conforming implementations apply the same validated patch inputs and produce byte-identical candidates, identity maps, and candidate hashes. Given the same persisted creation-event, disposition-event, verification-pointer, intent, and current-verified-pointer bytes, they select the same latest candidate and effective disposition.
 
 ### Normative Weakening Without Deletion
 
@@ -1213,7 +1445,7 @@ The Semantic Verifier times out, returns invalid JSON, reports uncertainty, or r
 
 ### Promotion Crash Recovery
 
-Fault injection at every promotion step yields exactly one authoritative current verified pointer. Recovery either retains the old pointer or completes materialization from the committed new pointer; it never selects an unverified candidate.
+Fault injection at every promotion step yields exactly one authoritative current verified pointer. Before pointer commit, the old pointer remains authoritative and a prepared candidate-scoped intent and promotion event remain ineffective. After commit, the pointer's intent, verification, registration, and event bindings prove the promotion and recovery completes materialization without allocating another event or ordinal. A stale intent never promotes.
 
 ### Decision Staleness
 
@@ -1244,7 +1476,7 @@ P1 features MUST NOT weaken the P0 promotion invariant.
 Ratification does not authorize a single broad rewrite. Implementation SHOULD proceed in independently testable stages:
 
 1. Immediate containment: default new jobs to `reviewer_only` and make full-document Editor promotion unavailable.
-2. Transactional foundation: introduce immutable base artifacts, candidate isolation, current verified pointers, disposition reporting, and crash-safe promotion without enabling automatic promotion.
+2. Transactional foundation: introduce immutable base artifacts, candidate isolation, run-wide candidate registration, commit-bound disposition events, current verified pointers, candidate-scoped promotion intents, and crash-safe promotion without enabling automatic promotion.
 3. Patch protocol: implement stable section identity, payload storage, deterministic patch assembly, and cross-implementation conformance vectors.
 4. Deterministic preservation: implement inventories, typed invariants, mutation budgets, and rejection fixtures.
 5. Authority and decision controls: add authority maps, pre-edit finding classification, and hash-bound operator decisions.
@@ -1261,6 +1493,9 @@ Each stage MUST leave the current verified draft authoritative on failure. A lat
 | --- | --- |
 | Patch-based editing | `Patch Protocol` |
 | Candidate transactions | `Candidate Transaction`, `Candidate Verification Decision` |
+| Run-wide candidate ordering | `Candidate Registration And Run-Wide Ordering` |
+| Candidate disposition commits | `Candidate Disposition Event Commit Rules` |
+| Promotion intent and crash recovery | `Promotion And Current Verified Authority` |
 | Machine-enforced preservation | `Preservation Inventory`, `Deterministic Validation` |
 | Explicit authority model | `Explicit Authority Model` |
 | Protected invariants and prohibited mutations | `Protected Invariants` |
@@ -1273,6 +1508,26 @@ Each stage MUST leave the current verified draft authoritative on failure. A lat
 | Release acceptance scenarios | `P0 Release Acceptance` |
 | Follow-on capabilities | `P1 Follow-On Capabilities` |
 
+## Ratification Delta Map
+
+The following table is the section-addressed amendment plan for ratification. Canonical section IDs are the current Markdown heading-path anchors in the named files. If a heading is renamed before ratification, the amendment that renames it MUST update this map in the same change.
+
+| Current authority surface | Canonical section ID | Required bounded amendment |
+| --- | --- | --- |
+| Family routing and role authority | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map`, `#core-roles` | Add this leaf to the family map; route proposal validation, semantic verification, candidate disposition, and promotion authority; state that Editor output is untrusted. |
+| Run inputs, outputs, configuration, and design principle | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#primary-inputs`, `#primary-outputs`, `#configuration`, `#design-principle` | Add the job descriptor, editing modes, current verified pointer, candidate artifacts, and fail-closed promotion principle; stop describing raw full-document Editor output as a directly mutable primary output in vNext mode. |
+| Halting and terminal artifacts | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#halting-conditions-ordered-precedence`, `#halt-artifact-matrix`, `#phase-1-failure-handling` | Define precedence and required artifacts for proposal, validation, verification, decision, promotion, and recovery failures while preserving the prior verified pointer. |
+| Verified lineage versus quality state | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#accepted-draft-definition`, `#spec-version-lifecycle`, `#definition-clean-profile` | Distinguish verified lineage from accepted-draft, profile-clean, Phase 1 stable, and converged status; prevent `last_accepted_draft_hash` from serving as candidate-verification proof. |
+| Proposal-to-promotion scheduling | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-scheduling-algorithm`, `#state-machine-full-transitions` | Replace direct full-document mutation transitions in vNext mode with proposal capture, deterministic validation, semantic verification, candidate decision, and atomic promotion transitions. |
+| Budgets, retries, resume, and read-only status | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-budget-handling`, `#resume-policy` | Bind replay to the immutable descriptor and current verified pointer; preserve incomplete candidates; select latest candidate only through the run-wide creation-event chain; reconcile prepared decision and promotion artifacts; prohibit retries or resume from unverified bytes. |
+| Public artifacts and attempt semantics | `docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#artifact-schemas-minimum-required-fields`, `#artifact-validation-policy` | Define and validate the vNext contract suite, immutable raw attempts, canonical `proposals/{proposal_id}/proposed_patch.json`, candidate creation events, verification artifacts and pointers, candidate-scoped promotion intents, commit-bound disposition events, current verified pointers, and terminal fields. |
+| Versioned normalization and hashing | `docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#content-normalization-and-hashing` | Bind parser, assembler, inventory, normalization, candidate, report, and pointer hashes to the immutable job descriptor and exact persisted bytes. |
+| Scope, finding admission, authority, and decisions | `docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#scope-contract`, `#expanding-contract-surface`, `#decision-summary` | Add pre-Editor finding classification, authority and prospective-spec gates, hash-bound decision responses, staleness checks, and candidate-blocking decision status. |
+| Phase 2 and convergence lineage | `docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#phase-2-failure-handling`, `#target-matrix-precedence`, `#convergence-declaration`, `#reproducibility` | Require Phase 2, declaration generation, and reproducibility evidence to resolve and bind the promoted current verified draft rather than an unverified candidate or unverified `spec.md` mirror. |
+| Operator defaults and recovery guidance | `docs/OPERATOR_QUICKSTART.md#mental-model`, `#recommended-defaults`, `#running-whetstone-from-an-agent`, `#recover-a-timeout`, `#terminal-states`, `#safety-rules` | Default unfamiliar jobs to reviewer-only mode; document proposal-only and verified-promotion opt-in, candidate inspection, safe recovery, and the prohibition on treating Editor output as current. |
+| Current strop/apply-back operational surface | `docs/OPERATOR_QUICKSTART.md#review-before-apply-back`, `#apply-back`, `#troubleshooting` | Require strop/apply-back review and write paths to select only bytes referenced by a committed current verified pointer and to refuse unverified, rejected, or merely accepted candidates. |
+| Strop/apply-back normative ownership gap | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map` | The current family has no dedicated normative apply-back owner; the Quickstart is the current operational surface. Ratification MUST designate a normative owner for full strop/apply-back policy and route that owner to this leaf's verified-candidate eligibility guard. This leaf does not otherwise absorb external source-spec apply-back policy. |
+
 ## Ratification Checklist
 
 Before this leaf becomes operative, the spec family MUST be amended so that:
@@ -1281,6 +1536,7 @@ Before this leaf becomes operative, the spec family MUST be amended so that:
 - the scheduler distinguishes verified lineage from accepted and profile-clean status;
 - scheduler transitions invoke proposal, validation, verification, and promotion gates;
 - artifact validation defines the new public contract suite and attempt semantics;
+- candidate registration, disposition-event commits, and candidate-scoped promotion intents have validated append-only and recovery contracts;
 - scope and decision handling classifies findings before Editor invocation;
 - Phase 2 evaluates only the current verified draft;
 - status exposes current verified and latest candidate identities separately;
