@@ -17,6 +17,8 @@ Reading guide: This spec defines the core convergence subsystems: round scheduli
 
 Version `0.69` specifies the lightweight `audit-change` workflow for reviewer-only cross-spec change audits.
 
+Version `0.70` begins bounded ratification of the candidate-safe editing design by registering its normative owner and activation gate. This routing amendment does not activate candidate editing or change current runtime behavior by itself.
+
 ---
 
 ## Spec Family Map
@@ -39,13 +41,35 @@ Owns scope contracts, first-contact intake, lightweight change audits, decision 
 
 See [Scheduler State And Resume Spec](SCHEDULER_STATE_AND_RESUME_SPEC.md).
 
-Owns halting precedence, halt artifacts, accepted-draft semantics, version lifecycle, round scheduling, profile budgets, focused profile runs, Phase 1 failure handling, resume behavior, and the state machine. Use this leaf for changes that affect when Whetstone advances, stops, resumes, or declares Phase 1 stable.
+Owns halting precedence, halt artifacts, accepted-draft semantics, version lifecycle, round scheduling, profile budgets, focused profile runs, Phase 1 failure handling, resume behavior, and the state machine. For the pending bounded ratification amendment, it is the designated normative owner for full strop/apply-back eligibility and the external source-write lifecycle; the candidate-editing leaf will supply the additional verified-candidate eligibility guard, and the Operator Quickstart will remain the operational procedure. This designation does not ratify detailed vNext strop/apply-back policy by itself. Until that scheduler amendment is completed, current operative apply-back behavior remains governed by the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. Use the scheduler leaf for changes that affect when Whetstone advances, stops, resumes, declares Phase 1 stable, or may apply a run result back to its source.
 
 ### Artifacts, Validation, Hashing, And Telemetry
 
 See [Artifacts Validation And Telemetry Spec](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md).
 
 Owns minimum artifact schemas, artifact validation policy, client telemetry, content normalization, hashing, and control-character hygiene. Use this leaf when changing persisted artifact contracts, validation retry behavior, or deterministic identity inputs.
+
+### Candidate Editing, Verification, And Promotion
+
+See [Candidate Editing And Promotion Spec](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md).
+
+Owns the vNext trust boundary around Editor proposals, stable section-addressed patching, candidate assembly and disposition, deterministic preservation validation, independent semantic verification, current-verified-draft lineage, serialized promotion, candidate-safe retry and resume, and the verified-candidate apply-back eligibility guard.
+
+Editor output is untrusted client output. It is a change proposal, never draft authority or promotion proof. Only an Orchestrator-validated candidate that completes the leaf's atomic current-verified-pointer protocol may become the current verified draft.
+
+This leaf is registered for ratification but remains non-operative. Registration in the family map does not supersede the current scheduler, artifact, scope/decision, Phase 2, or apply-back contracts and is not evidence that candidate-safe editing is implemented.
+
+### Candidate-Safety Activation Gate
+
+For a particular new job, candidate-safe automatic promotion becomes operative only when all of the following are true:
+
+- the scheduler, artifact-validation, scope/decision, Phase 2, and apply-back authority surfaces named by the candidate-editing leaf's ratification delta map have been amended consistently;
+- the coordinating and amended leaf specs advertise the same supported candidate contract-suite version;
+- the version-pinned public contracts and cross-implementation conformance fixtures exist;
+- every P0 release-acceptance scenario in the candidate-editing leaf passes; and
+- `verified_promotion` is explicitly selected for a new job whose immutable descriptor binds that supported contract suite.
+
+Until every condition holds, `verified_promotion` MUST be unavailable, a configuration value or artifact that claims otherwise is invalid, current runtime behavior remains governed by the existing operative spec family, and reviewer-only operation remains the safe default for valuable or unfamiliar specifications.
 
 ### Identity, Oscillation, And Conflicts
 
@@ -64,13 +88,19 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
 ## CORE ROLES
 
 - Editor:
-  Owns spec mutation, applies/declines feedback, preserves architectural integrity, resolves conflicts within defined authority.
+  Produces proposed specification changes. All Editor output is untrusted client output. In current operative workflows, the Orchestrator may accept Editor draft output only under the existing scheduler and artifact contracts. After candidate-safe editing is activated, the Editor produces section-addressed patch proposals and MUST NOT write `spec.md`, decide candidate disposition, perform semantic verification, or create promotion artifacts.
 
 - Reviewer:
-  Produces structured, classified feedback under a defined review profile.
+  Produces structured, classified findings under a defined review profile. Reviewer findings are review evidence, not mutation commands.
+
+- Deterministic Validator (candidate-safe mode, after activation):
+  Orchestrator-owned code that validates patch contracts, assembles candidates, and checks identities, hashes, assertions, and preservation units. It has no authority to waive a deterministic failure.
+
+- Semantic Verifier (candidate-safe mode, after activation):
+  Independently evaluates the assembled candidate against the admitted findings, preservation obligations, and authority constraints. Its output is untrusted client evidence until validated, and it has no mutation or promotion authority.
 
 - Orchestrator:
-  Owns state, round scheduling, normalization, oscillation detection, conflict escalation, artifacts, and stopping conditions.
+  Owns state, round scheduling, normalization, oscillation detection, conflict escalation, artifacts, and stopping conditions. After candidate-safe editing is activated, it is also the sole authority for proposal admission and validation, candidate assembly and disposition, and atomic current-verified-pointer promotion.
 
 ---
 
@@ -82,11 +112,18 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
 - convergence_rubric.md
 - orchestrator_config.yaml
 
+Candidate-safe vNext reserves these additional authoritative inputs, but they are non-operative until the activation gate passes:
+
+- `job_descriptor.json` (immutable, including editing mode and contract-suite bindings)
+- `authority_map.json`
+- `protected_invariants.json`
+- hash-bound scope contracts, operator decisions, and source-spec expectations referenced by the job descriptor
+
 ---
 
 ## PRIMARY OUTPUTS
 
-- spec.md (mutated per round)
+- spec.md (current operative workflows: accepted round draft; activated candidate-safe mode: byte-identical convenience mirror of the target selected by `/rounds/current_verified.json`, never independent authority or direct Editor output)
 - spec.history.md (append-only)
 - convergence_declaration.md (created/updated in Phase 2)
 - /rounds/round-N/
@@ -143,6 +180,21 @@ Owns Phase 2 failure handling, target matrix precedence, convergence declaration
 - /decomposition/coverage_matrix.md (if extraction or audit is run)
 - /decomposition/unmapped_requirements.md (if required source content is not assigned)
 - /decomposition/duplicated_authority_report.md (if duplicated authority is detected)
+
+After the relevant vNext surfaces are ratified and implemented, `proposal_only` and `verified_promotion` jobs produce the common non-promoting artifact family defined by the candidate-editing leaf, including:
+
+- `/rounds/candidate_index/creation-{candidate_creation_ordinal}.json`
+- `/rounds/round-N/mutation_plan.json`
+- `/rounds/round-N/proposals/attempts/proposal-attempt-M.json`
+- `/rounds/round-N/proposals/{proposal_id}/proposed_patch.json` and content-addressed payloads
+- `/rounds/round-N/candidates/{candidate_id}/candidate_unverified.md`
+- candidate section-identity maps, preservation reports, semantic-verification attempts, candidate-verification decisions and pointers, and non-promotion disposition events beneath the registered candidate directory
+
+Every vNext job initializes `/rounds/current_verified.json` and its byte-identical ordinal-0 `/rounds/verified_history/current-verified-0.json` seed snapshot. A `proposal_only` job MUST NOT advance either artifact and MUST NOT create a promotion intent or a `promotion_committed` disposition event.
+
+Only a `verified_promotion` job performing an authorized promotion attempt may additionally create a candidate-scoped promotion intent, a `promotion_committed` disposition event, a next-ordinal verified-history snapshot, atomically advance `/rounds/current_verified.json`, or materialize the promoted candidate as `draft_after.md`.
+
+These paths describe the ratified target contract; their presence alone does not activate candidate-safe editing or grant promotion authority.
 
 ---
 
@@ -239,6 +291,15 @@ If a required reference context file is missing, the Orchestrator MUST halt befo
 
 Reference context files are not mutable draft artifacts. The Orchestrator MUST NOT edit them. When present, they are supplied as read-only file-backed context to Reviewer and Editor prompts. Reviewers and Editors MUST treat them as authority according to their configured `role` and MUST NOT inspect unlisted files to recover missing architecture or domain context.
 
+Candidate-safe vNext reserves these top-level configuration fields:
+
+```yaml
+editing_mode: reviewer_only       # reviewer_only | proposal_only | verified_promotion
+contract_suite_version: ""        # non-empty supported version for every vNext job
+```
+
+These fields are non-operative until the relevant family surfaces are ratified and the implementation advertises support for them; the current runtime is not required to accept them. Configuration presence, artifact presence, or a caller claim MUST NOT activate `proposal_only` or `verified_promotion`. Once a vNext mode is supported, every new vNext job MUST copy the resolved values into its immutable `job_descriptor.json`; changing either value requires a new descriptor and job identity. `verified_promotion` MUST fail preflight unless the selected non-empty contract-suite version is supported and has passed the complete candidate-safety activation gate.
+
 ---
 
 ## MULTI-REVIEWER (NON-NORMATIVE FUTURE NOTE)
@@ -275,6 +336,10 @@ Every primitive MUST be computable.
 No implied behavior.
 No undefined aggregation.
 No hidden state transitions.
+
+Model output never advances specification authority by assertion. After candidate-safe editing is activated, Editor output is an untrusted proposal, and only a fully validated candidate committed through atomic replacement of the current verified pointer may advance the authoritative run-local draft.
+
+Promotion fails closed: a missing, invalid, stale, or mismatched gate preserves the prior current verified pointer. Partial ratification, configuration presence, or candidate artifact creation does not change current runtime behavior.
 
 Goal:
 Deterministic convergence with no ambiguity in execution.
