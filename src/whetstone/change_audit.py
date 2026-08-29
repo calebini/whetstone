@@ -300,7 +300,7 @@ def _audit_reviewer_prompt(*, profile: str, brief: str, brief_hash: str) -> str:
     return render_reviewer_prompt(
         profile=profile,
         draft=brief,
-        phase="phase_1",
+        phase="audit_change",
         round_number=1,
         draft_hash_value=brief_hash,
     )

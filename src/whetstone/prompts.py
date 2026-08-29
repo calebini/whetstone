@@ -77,6 +77,8 @@ def render_reviewer_prompt(
     lines.extend(f"- {name}: {description}" for name, description in REVIEW_INVARIANTS.items())
     if phase == "phase_1":
         lines.append("For Phase 1, set oscillation_key to null.")
+    if phase == "audit_change":
+        lines.append("For audit_change, set oscillation_key to null; this is a bounded reviewer-only audit, not Phase 1 or Phase 2.")
     if phase == "phase_2":
         lines.extend(
             [

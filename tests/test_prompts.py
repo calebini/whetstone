@@ -47,6 +47,14 @@ class PromptTests(unittest.TestCase):
         self.assertIn("do not report reviewer_final_status `not_run` or declaration_status `rejected` as defects", prompt)
         self.assertIn("exclude staging status fields from findings", prompt)
 
+    def test_audit_change_reviewer_prompt_is_not_phase_1(self) -> None:
+        prompt = render_reviewer_prompt(profile="consistency", draft="# Audit Brief\n", phase="audit_change")
+
+        self.assertIn("Phase: audit_change", prompt)
+        self.assertNotIn("Phase: phase_1", prompt)
+        self.assertIn("bounded reviewer-only audit, not Phase 1 or Phase 2", prompt)
+        self.assertNotIn("Phase 2 reviewer prompt requirements", prompt)
+
     def test_phase_2_reviewer_prompt_includes_declaration_artifact_when_supplied(self) -> None:
         prompt = render_reviewer_prompt(
             profile="convergence_strict_check",

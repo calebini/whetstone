@@ -12,8 +12,10 @@ from whetstone.hashing import draft_hash
 class FixtureReviewer:
     def __init__(self, feedback: list[dict]) -> None:
         self.feedback = feedback
+        self.prompts: list[str] = []
 
     def review(self, prompt: str) -> dict:
+        self.prompts.append(prompt)
         draft_hash_value = _line_value(prompt, "- draft_hash:")
         return {
             "round_number": 1,
@@ -61,6 +63,30 @@ class ChangeAuditTests(unittest.TestCase):
             self.assertEqual(report["recommended_next_action"], "manual_patch")
             self.assertEqual(feedback["draft_hash"], draft_hash(result.brief_path.read_text(encoding="utf-8")))
             self.assertEqual(manifest["specs"][0]["hash"], draft_hash(spec_a.read_text(encoding="utf-8")))
+
+    def test_change_audit_reviewer_prompt_uses_audit_change_phase_label(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            notes = root / "audit-notes.md"
+            spec = root / "policy.md"
+            notes.write_text("# Change Intent\n\nKeep the audit bounded.\n", encoding="utf-8")
+            spec.write_text("# Policy\n\nThe Evaluator MUST NOT read storage.\n", encoding="utf-8")
+            reviewer = FixtureReviewer([])
+
+            run_change_audit(
+                root=root / "audit-run",
+                notes_path=notes,
+                spec_paths=[spec],
+                profile="consistency",
+                reviewer_client=reviewer,
+                client_identity=AuditClientIdentity(name="fixture", version="0", model="fixture"),
+            )
+
+            self.assertEqual(len(reviewer.prompts), 1)
+            prompt = reviewer.prompts[0]
+            self.assertIn("Phase: audit_change", prompt)
+            self.assertNotIn("Phase: phase_1", prompt)
+            self.assertIn("bounded reviewer-only audit, not Phase 1 or Phase 2", prompt)
 
     def test_change_audit_writes_audit_failed_report_when_reviewer_fails(self) -> None:
         with TemporaryDirectory() as tmp:
