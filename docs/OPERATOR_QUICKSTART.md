@@ -19,7 +19,17 @@ Whetstone persists every round under `rounds/`. The run is controlled by `rounds
 
 The [current-runtime preservation bridge](specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) is specified but not yet implemented/qualified. Current full-draft editing is **not** made non-destructive by a bounded prompt, scope contract, or the CLI's historical "guarded" wording. For valuable drafts, keep an isolated source copy and use reviewer-only assessment when automatic rewriting is not acceptable.
 
-The reserved `preservation_bridge` configuration in the [coordinating spec](specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation) is not a runnable option today. Once supported, its intended procedure is: inventory the exact base, approve a bounded allowed/frozen surface against scope and findings, opt into enforcement, then inspect raw-versus-materialized attempts and their preservation reports. Technical resume will retain frozen authorization; changed permissions will require explicit new admission in a fresh root. Rejected output will remain evidence, never a seed chosen automatically by resume or strop. These are release requirements, not claims of existing runtime protection or instructions to try unsupported flags.
+The reserved `preservation_bridge` configuration in the [coordinating spec](specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation) is not a runnable option today. Once qualified, the intended workflow is:
+
+1. Inventory the exact authoritative base and approve the scope, findings and allowed/frozen proposal surface.
+2. Generate an isolated proposal and inspect its raw/materialized diff, preservation assessment and outstanding evidence needs. This cannot change the authoritative draft.
+3. Review grouped exact effects and explicitly adopt the required correspondence and semantic attestations. Whetstone prepares the IDs and hashes; approval must not require manually constructing evidence JSON.
+4. Submit the retained proposal through the local acceptance request operation. It revalidates identical bytes, invokes no Editor, commits only after all gates pass, and completes the pending round once.
+5. Re-review accepted changes under the ordinary profile/stability rules before Phase 2 or source apply-back.
+
+Missing effect evidence at proposal preparation maps to `PAUSED_DECISION`, not malformed Editor output. Known hard violations still reject. The [acceptance request contract](specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#acceptance-request-and-admission) will support a local request-file operation and read-only dry-run; command spelling and executable instructions must be documented when that interface is implemented. Do not treat this description as an existing CLI feature.
+
+New authorization may create a new immutable acceptance attempt in the same run root while the exact proposal base remains current. Earlier reports remain intact. Changed content or base requires a new proposal; a pending/rejected draft is never silently chosen as the next base. Technical resume retains frozen inputs and cannot substitute for approval. Generic Phase 2 timeout resume remains unsupported; explicit local acceptance of retained output is a separate operation. A fresh root remains appropriate for a separate job or incompatible capability, not routine approval of a clarification.
 
 ### Normal Sharpening
 

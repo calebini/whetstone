@@ -70,27 +70,30 @@ approval:
 
 ## Bridge Operator Authority
 
-This section specifies the pending opt-in `preservation-bridge-v1` contract; it does not activate current runtime enforcement or vNext promotion. The [candidate leaf](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) owns preservation policy and the [artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) owns manifest/inventory/attempt formats.
+This section specifies the pending two-stage `preservation-bridge-v1` contract. It does not activate current runtime enforcement or vNext promotion. The [candidate leaf](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) owns preservation policy; the [artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) owns admission, proposal, request and report formats.
 
-A guarded run requires an approved scope contract regardless of workflow. Review scope and edit authority are distinct: Reviewers MUST still inspect and report in-scope problems on frozen or unlisted edit surfaces. An Editor MUST NOT act on those findings under the existing manifest. The Reviewer may recommend a new operator-approved surface, but cannot grant it. A checkpoint recommendation, `end_of_cycle` decision record, Editor resolution claim or clean review is not change authorization.
+A guarded run requires an approved scope contract regardless of workflow. Review scope and edit authority are distinct: Reviewers still inspect and report in-scope problems on frozen/unlisted edit surfaces. They cannot expand the Editor's admitted surface. Checkpoint recommendations, ordinary decision records, Editor resolution claims and clean reviews are not mutation authorizations.
 
-Prepare authority in this order:
+Prepare authority in two stages:
 
-1. Freeze the exact current base and generate its versioned inventory.
-2. Obtain/persist Reviewer findings for that base (a diagnostic or current round may supply them). Identify admitted findings by artifact hash plus feedback ID.
-3. Have the operator approve the change surface's allowed/frozen units, types and limits against the approved scope. Validate the complete bindings before Editor invocation. A finding absent from the approved list cannot be fixed automatically even if discovered later in the same round.
-4. Select any exact-effect operator evidence as a separate configuration-pinned list; it is not embedded into the surface it hashes, avoiding a self-referential hash cycle. Copy all admitted artifacts to immutable per-attempt context.
-5. Compare the materialized proposal and accept only if evidence and every other required gate pass. A change that needs approval unavailable at admission is not presumed approved. Preserve its report for an explicit new admission under the scheduler rules.
+1. Freeze the current authoritative base and generate its inventory. Obtain validated Reviewer findings for that exact base, identified by artifact hash plus feedback ID.
+2. Have the operator approve the allowed/frozen sections/units, change types and limits against scope and findings. Persist a proposal admission before any Editor invocation. This permits bounded proposal generation only; no attestation over unknown output bytes is required.
+3. Retain the raw proposal, materialized output, inventories and normal-round evidence. Produce a preliminary assessment and an exact-effect review showing changed text, finding attribution, correspondence suggestions, hard failures and outstanding evidence obligations.
+4. Mechanically prepare evidence for the operator to review and affirmatively adopt. Explicit correspondence resolves identities; semantic attestations address the meaning of the exact retained effect. An Editor's suggestions cannot become evidence merely by being copied or setting `approved = true`.
+5. Supply an explicit immutable acceptance request binding that proposal, approved scope/surface/findings and adopted evidence. Freeze a new acceptance admission, revalidate the identical bytes and every required gate, then commit only if ordinary acceptance also passes. Acceptance invokes no Editor.
+
+Approval may cover a meaningful group of units in one evidence record, provided the exact relation and complete effect are visible. The operator need not construct hashes or JSON manually; the trusted local channel produces and pins the records after affirmative adoption. A read-only preview does not constitute approval. Missing evidence during proposal preparation is expected pending work; a known hard failure remains a rejection. A later request may explicitly change authorization without rewriting the original admission or report.
 
 ### Operator Evidence Contract
 
-First-release admissible evidence is either exact mechanical identity under the inventory/transform rules or an explicit operator attestation. There is no implicit LLM or independent-verifier evidence producer. An attestation is a trust decision by the operator, not machine proof of natural-language equivalence; reports MUST make that distinction visible.
+First-release admissible preservation evidence is exact mechanical identity under the inventory/transform rules or explicit operator attestation. There is no implicit LLM or Semantic Verifier evidence producer. Attestation is an accountable trust decision about meaning, not machine proof of natural-language equivalence. Reports MUST identify it as operator-attested.
 
-`bridge-operator-evidence-v1` contains exactly:
+`bridge-operator-evidence-v2` contains exactly:
 
 ```yaml
-schema_version: bridge-operator-evidence-v1
+schema_version: bridge-operator-evidence-v2
 kind: authorize_deletion | authorize_weakening | attest_addition | attest_equivalence | attest_strengthening | attest_supersession | authorize_scope_expansion
+proposal: Ref
 base_draft_sha256: sha256
 base_inventory_sha256: sha256
 scope_contract_sha256: sha256
@@ -98,8 +101,11 @@ allowed_change_surface_sha256: sha256
 raw_proposal_sha256: sha256
 materialized_draft_sha256: sha256
 transformations_sha256: sha256
-base_unit_ids: [string]
-successor_unit_ids: [string]
+correspondence:
+  - base_unit_id: string
+    successor_unit_ids: [string]
+    disposition: preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | operator_authorized_weakened
+added_unit_ids: [string]
 change_types: [add | clarify | strengthen | move | rename | reword | supersede | delete | weaken]
 finding_refs: [{artifact_sha256: sha256, feedback_id: string}]
 effect: string
@@ -110,17 +116,38 @@ approval:
   approved_at: RFC3339 UTC timestamp
 ```
 
-The shared `Ref`, hash, closed-field and array rules in the artifact leaf apply. `transformations_sha256` hashes UTF-8 canonical JSON of the report's ordered transformation list (compact separators, unescaped Unicode, object keys sorted); it is not a hash of a prose description. Every binding MUST match the new attempt's admitted inputs and exact final effect. Supersession requires nonempty predecessor and successor lists and an attestation of equal-or-stronger coverage; deletion requires predecessors and no successors. Weakening requires predecessors, successors, `weaken`, and an explicit account of what obligation is relaxed. Equivalence and strengthening require both sides. Scope expansion requires the exact added/changed surface, a newly approved scope/manifest and appropriate unit lists; it grants no separate deletion/weakening permission.
+The shared Ref/hash/closed-field rules apply. `proposal` names the artifact leaf's immutable proposal record, never a preliminary report. Base, inventories, raw/materialized hashes and transformations MUST match that proposal and its admission. Scope/surface hashes MUST match the selected acceptance authorization, which may differ from proposal-generation authorization only through explicit new approval. `transformations_sha256` hashes canonical UTF-8 JSON of the proposal's ordered transform list (compact separators, unescaped Unicode, sorted object keys). Evidence cannot reference its later acceptance request/admission/report. Write a newly approved surface first, then evidence, then the request binding both; do not create a hash cycle.
 
-For a move/rename, equivalence evidence plus the manifest's exact relocation mapping is required. Evidence covers only its listed units and change types; no general statement authorizes unrelated changes. A many-to-one correspondence is permitted only for an attested supersession. One evidence artifact cannot claim both weaker and equivalent/stronger coverage for the same effect. Missing/stale/contradictory evidence fails; it cannot be repaired by changing labels in the preservation report.
+### Explicit Correspondence Rules
 
-`attest_addition` requires no predecessors, nonempty added successor units, `add`, and an explicit assertion that the added text does not repeal, weaken or supersede any base obligation beyond separately authorized dispositions for this exact effect. A global exception or precedence change is not a harmless addition; it requires separate weakening/supersession evidence for affected base units, even when their text remains unchanged. Those units receive the effect's actual disposition rather than `preserved`. Missing addition evidence is deterministic `ambiguous`, not a reason to automatically invoke a semantic verifier. This first-release conservatism is deliberate: a structural inventory alone cannot prove a new paragraph harmless.
+`correspondence` is the sole operator-authorized predecessor/successor relation. Independent aggregate `base_unit_ids` and `successor_unit_ids` fields are removed from evidence; array position never establishes a pairing. The final report combines mechanical matches with adopted entries and gives every base unit exactly one final disposition. Evidence entries cover only the operator-adopted subset, not necessarily the whole inventory.
 
-The operator MUST supply these records through the explicit local configuration/approval channel, never through Editor-returned JSON. Runtime must copy the configured bytes before giving the client read-only context and verify them again before acceptance. `approved_by` is an accountable local operator assertion, not a cryptographic identity service. Do not claim protection against a hostile operator or arbitrary external writes to the run root. Model-generated draft decisions require affirmative operator adoption through that channel before becoming evidence; the model setting `approved = true` is insufficient.
+- Every `base_unit_id` resolves in the exact base inventory and appears once within an evidence record. Every successor resolves in the exact materialized inventory. Emit entries in base byte order and successors/additions in output byte order; ordering is serialization discipline, never implicit mapping.
+- `preserved` has exactly one successor with equal content and structural ownership except verified trusted transform spans. An attestation cannot turn different bytes into mechanically preserved content.
+- `reworded_equivalent`, `strengthened`, `moved` and `operator_authorized_weakened` have one or more explicit successors. One-to-many mappings support evidenced splitting/reflow; the attestation covers their combined effect. Movement also requires the exact manifest relocation mapping and applicable move/rename permissions.
+- `authorized_deleted` has no successors and requires deletion evidence and all deletion permissions. Other successful dispositions require successors.
+- `superseded` has one or more successors and requires equal-or-stronger coverage attestation. Successor sharing across base units is permitted only when every sharing entry is `superseded`. One supersession attestation MUST contain the entire connected predecessor/successor group: include every entry sharing any successor transitively. Thus a group cannot be assembled from incomplete approvals over separate predecessors. The report must match those entries exactly.
+- Every output unit is accounted for as a successor or an addition, never both. Only the supersession rule permits duplicate successor use. A missing predecessor is not cancelled by an unrelated addition.
+- `added_unit_ids` contains units with no predecessors and requires addition evidence. It is not an alternative way to authorize successors.
+- Multiple evidence kinds may support the same final entry, for example scope expansion plus weakening. Their exact relation entries and dispositions MUST agree; conflicting evidence rejects. Final report coverage counts each base unit once, regardless of the number of supporting attestations.
+- Explicit operator entries may resolve ambiguous mechanical matching. Remove the affected provisional suggestions and revalidate full correspondence, ownership, coverage, permissions and all evidence as one relation. No fuzzy match or Editor identity assertion may fill remaining gaps.
+- A container rename must account for descendant units. A move accompanied by weakening needs both relocation permission and weakening evidence; its final semantic disposition is `operator_authorized_weakened`, not equivalent movement. Relocation checks remain independently applicable.
 
-When a prior proposal supplies the exact effect to approve, retain that failed proposal/report immutably. A newly approved manifest, scope or evidence set creates a new admission with predecessor provenance; it does not retroactively approve the old attempt. Because evidence binds the new manifest hash, write the newly approved manifest first and then the evidence artifacts, finally pin both in configuration. Re-materialize from the unchanged base/raw bytes and validate all hashes; do not use the rejected output as the next base.
+For example, entries `A -> [X]` and `B -> [Y]` authorize exactly those mappings; they cannot be read as `A -> [Y]` and `B -> [X]`. Entries `C -> [Z]` and `D -> [Z]` are allowed only as a complete, explicitly attested supersession group. Entry `E -> [U,V]` may represent equivalent reflow when no other predecessor claims U or V. All IDs and dispositions remain bound to exact proposal and acceptance authorization hashes.
 
-The first bridge may pause only for a concretely identified missing scope-expansion or weakening authorization that could make the exact effect valid with no independent failures. It MUST reject corrupt artifacts, unresolved correspondence, unsupported transforms or unsupported equivalence/supersession claims, rather than turn every invalid artifact into an operator question. Guarded safety pauses apply even when decision mode is `end_of_cycle`; selecting enforcement explicitly opts into that gate. Ordinary decision/checkpoint handling outside the bridge remains unchanged.
+### Evidence Kind And Effect Rules
+
+`authorize_deletion` requires nonempty correspondence consisting of `authorized_deleted` entries, empty additions, `delete`, and exact deletion rationale. `authorize_weakening` requires nonempty `operator_authorized_weakened` entries, empty additions, `weaken`, and an account of reduced obligations. `attest_equivalence` covers only nonempty `preserved`, `reworded_equivalent` or `moved` entries with no additions and the relevant reword/clarify/move/rename types. `attest_strengthening` covers only nonempty `strengthened` entries with `strengthen` and no additions. `attest_supersession` covers only nonempty `superseded` entries with `supersede`, no additions, and complete shared groups where applicable. A `preserved` equivalence entry may explicitly resolve duplicate-unit correspondence only when the exact content/ownership checks pass; it authorizes no text change. Each evidence record must use change types applicable to its entries; unchanged correspondence alone may use an empty change-type list. These evidence kinds cannot claim contradictory normative force for the same effect.
+
+`attest_addition` requires empty correspondence, nonempty `added_unit_ids`, `add`, and an explicit assertion that the added text does not repeal, weaken or supersede any base obligation beyond separately authorized dispositions for this exact proposal. An added global exception or precedence rule requires separate weakening/supersession evidence for affected base units even if their text remains verbatim. Those units receive the actual semantic disposition, overriding a merely provisional mechanical `preserved` classification.
+
+`authorize_scope_expansion` requires at least one affected correspondence entry or addition, newly approved scope/surface, applicable change types and exact effect. It supplies no separate deletion, weakening, addition, equivalence, strengthening or supersession attestation; obtain those kinds as needed. Every changed or added unit needs finding attribution within the acceptance surface, apart from exact trusted transform spans.
+
+At proposal assessment, absent equivalence, addition, strengthening, deletion, weakening, supersession or explicit correspondence evidence is pending only when no independent hard failure exists. At submitted acceptance, missing/stale/conflicting evidence rejects; it cannot be repaired by relabeling the report. A clean Reviewer, Editor claim or line-count ratio is not evidence. Binding checks do not prove the operator's semantic assertion correct.
+
+The trusted local channel MUST preserve adopted records immutably and validate them again before acceptance. `approved_by` is a nonempty accountable operator assertion, not a cryptographic identity service. The bridge does not claim protection against a hostile operator or arbitrary external writes to the root. Pending operator work uses the scheduler's `PAUSED_DECISION` mapping even under `end_of_cycle`; ordinary unguarded decisions are unchanged.
+
+A newly approved surface/evidence set creates a new acceptance admission against the retained proposal when its exact base is still current. It may stay in the same root under the scheduler rules. Earlier reports, including rejection reports, remain unchanged. A changed base or changed proposal requires new proposal admission; rejected output is never silently installed as a seed.
 
 ## CHANGE AUDIT WORKFLOW
 
