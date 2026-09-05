@@ -19,6 +19,8 @@ Version `0.69` specifies the lightweight `audit-change` workflow for reviewer-on
 
 Version `0.70` begins bounded ratification of the candidate-safe editing design by registering its normative owner and activation gate. This routing amendment does not activate candidate editing or change current runtime behavior by itself.
 
+Version `0.71` closes the D1-D5 current-runtime preservation bridge contract across its owning leaves. This is a specification milestone, not a runtime capability announcement; the bridge remains gated on implementation and conformance qualification.
+
 ---
 
 ## Spec Family Map
@@ -70,6 +72,29 @@ For a particular new job, candidate-safe automatic promotion becomes operative o
 - `verified_promotion` is explicitly selected for a new job whose immutable descriptor binds that supported contract suite.
 
 Until every condition holds, `verified_promotion` MUST be unavailable, a configuration value or artifact that claims otherwise is invalid, current runtime behavior remains governed by the existing operative spec family, and reviewer-only operation remains the safe default for valuable or unfamiliar specifications.
+
+### Preservation Bridge Activation
+
+The current-runtime full-draft preservation bridge is separately scoped from vNext candidate editing. It MUST remain unavailable until `preservation-bridge-v1` schemas, algorithms and all bridge conformance scenarios in the [candidate leaf](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) are implemented and supported as one capability. Publishing this amendment does not advertise support. D6-D8 vNext identity/suite, candidate-scheduler and promotion-lock work is not a prerequisite for the bridge and is not activated by it.
+
+The reserved opt-in configuration is:
+
+```yaml
+preservation_bridge:
+  mode: enforce
+  capability_version: preservation-bridge-v1
+  allowed_change_surface:
+    path: ./rounds/intake/bounded_change_surface.json
+    sha256: "<SHA-256 of exact artifact bytes>"
+  operator_evidence: []
+  predecessor_report: null
+```
+
+`mode`, `capability_version` and `allowed_change_surface` are required when the block is present. `operator_evidence` is an optional array of artifact Refs, default `[]`; `predecessor_report` is an optional Ref, default null, recording a prior non-authoritative attempt for explicit new admission. The [artifact contracts](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) define Refs and closed schemas. Unknown fields, unsupported versions/modes, partial blocks or mixing the bridge with any vNext `editing_mode`/`contract_suite_version` MUST fail preflight as `CONFIG_INVALID` before clients run. There is no report-only mode or standalone activation flag. Omission of the entire block means `legacy_unguarded`, never implied preservation coverage.
+
+Validate the pinned approved surface/inventory/scope/finding artifacts at admission and again immediately before every Editor invocation. Do not substitute a newer file merely because its path matches. A stale surface after accepted mutation requires new explicit admission; it is not automatically rebased. Legacy runs cannot acquire retrospective bridge coverage, and an opted-in run cannot drop enforcement or downgrade versions on resume. Effective config, context manifests, status and terminal reports MUST expose the actual mode, capability, bound artifact references and pending/accepted evidence.
+
+The bridge's acceptance gate supersedes ordinary permissive full-draft writes for guarded attempts; a pending, failed or paused proposal has no authority regardless of `apply`, soft budgets, ordinary decision mode, recovery options or a later clean Reviewer. Source hash safeguards still apply. Operators may inspect discarded content or approve deliberate deletion, but every new effect must pass the same gate. Reviewer-only runs remain reviewer-only; configuring a bridge does not introduce an Editor call.
 
 ### Identity, Oscillation, And Conflicts
 

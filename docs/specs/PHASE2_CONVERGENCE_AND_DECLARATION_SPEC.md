@@ -9,6 +9,18 @@ target_spec_id: phase2_convergence_and_declaration_spec
 target_spec_role: leaf_spec
 -->
 
+## Guarded Full-Draft Handoff
+
+For an explicitly admitted `preservation-bridge-v1` run, Phase 2 MUST apply the [scheduler's bridge consumer guard](SCHEDULER_STATE_AND_RESUME_SPEC.md#acceptance-and-downstream-consumers) before version promotion or review. Verify the accepted marker/report chain, exact materialized bytes and ordinary Phase 1 stable/normalized-hash gates. An Editor claim, rejected proposal, paused rewrite or missing report cannot supply the handoff. This is a specified pending bridge capability, not activation of vNext candidate promotion.
+
+Phase 2 entry version promotion is the artifact leaf's narrowly defined `phase2_entry` maintenance attempt over the accepted bytes. Preserve its raw base, materialized output and ordered trusted transform, and validate/persist acceptance before writing the first Phase 2 draft. Unversioned entry remains a no-op. Neither promotion nor reviewer-only closeout creates edit authorization for the promoted draft: a later Editor requires an approved surface bound to that exact new base.
+
+Every Phase 2 Editor/fixture path uses the same bridge acceptance gate as Phase 1. Declaration acceptance additionally binds the final accepted bridge marker and exact draft hash; a report-only file cannot satisfy it. Rejected/paused/incomplete materialized bytes are excluded regardless of exhausted budgets or a clean profile result. Reviewer-only clean rounds can verify the already accepted current draft without inventing an Editor mutation. A valid no-op needs no version increment.
+
+Guarded declarations MUST additionally include `preservation_bridge_acceptance` (the acceptance marker Ref) and `final_draft_sha256` (exact bytes). The existing `final_draft_hash` remains the normalized compatibility hash. The Orchestrator owns these fields and verifies that both hashes refer to the same accepted materialized artifact. Legacy declarations omit the bridge fields and do not claim bridge coverage.
+
+When bridge enforcement prevents entry or declaration, report the actual category and bridge artifact pointers. `reviewer_final_status` remains `not_run` when declaration review did not run, not `rejected` merely because preservation failed earlier. Once Phase 2 has begun, the normal convergence failure report accompanies its terminal halt; preflight failures before entry must not pretend that Phase 2 ran. Generic Phase 2 technical resume remains unsupported; do not infer it from the new bridge artifact format.
+
 ## PHASE 2 FAILURE HANDLING
 
 Produces:

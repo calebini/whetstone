@@ -2,9 +2,11 @@
 
 Status: vNext design draft
 
-Version: `0.2`
+Version: `0.3`
 
 Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
+
+The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications.
 
 ## Purpose
 
@@ -557,7 +559,7 @@ unchanged | added | removed | modified | weakened | strengthened | moved | renam
 The preservation decision layer MUST then assign every base unit one preservation disposition:
 
 ```text
-preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | operator_authorized_weakened | unauthorized_deleted | ambiguous
 ```
 
 Disposition semantics:
@@ -568,6 +570,7 @@ Disposition semantics:
 - `strengthened`: the unit remains present and the change makes the requirement stricter or more explicit without changing authority, scope, or product policy.
 - `superseded`: the unit no longer appears as a distinct unit because a new or modified unit covers the same requirement with equal or stronger normative force.
 - `authorized_deleted`: the unit is intentionally removed under a valid operator decision and mutation-plan authorization.
+- `operator_authorized_weakened`: the exact reduction in normative force is explicitly operator-authorized for the named units and effect. This is successful authorized weakening, not a claim of equivalence or supersession; all other acceptance gates still apply.
 - `unauthorized_deleted`: the unit is removed, weakened beyond recognition, replaced by a placeholder, or omitted from the candidate without valid authorization.
 - `ambiguous`: the Orchestrator cannot deterministically classify the unit and semantic verification does not provide hash-bound evidence sufficient to resolve it.
 
@@ -1465,44 +1468,52 @@ The supported migration posture is:
 
 ## Current-Runtime Preservation Bridge
 
-Until patch-based candidate editing is ratified and operative, any guarded current-runtime workflow that asks an Editor for a complete `draft_after_content` MUST run a deterministic preservation bridge before accepting the generated draft as the next run draft. This bridge applies to bounded synthesis, allowed-surface repair jobs, focused synthesis passes, and any future current-runtime mode that claims to constrain a full-document Editor response.
+### Activation And Ownership
 
-The bridge MUST inventory `draft_before.md` before the Editor is invoked and inventory the proposed `draft_after_content` before writing it to authoritative `draft_after.md` or mutating `spec.md`. It MUST compare at least headings, section IDs, normative statements, tables and rows, enum members, schema fields, commands and flags, artifact names, terminal states, acceptance scenarios, and explicit cross-references using the content normalization and canonical section ID rules defined by the artifact validation leaf.
+`preservation-bridge-v1` is an explicit opt-in, hard-enforcement contract for current full-draft editing, independent of vNext `editing_mode`. Configuration and release gates are owned by the [coordinating spec](WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation). A bounded prompt or scope contract alone MUST NOT imply bridge coverage. Absent opt-in means explicitly legacy/unguarded behavior, not an invisible report-only bridge.
 
-A guarded full-draft run MUST persist an allowed-surface contract with:
+When supported and selected, the bridge MUST gate every full-draft path, including normal and resumed Editor calls, horizontal/focused and vertical consolidated editing, supplied revision fixtures, and Orchestrator-owned no-ops. Its comparison operates before any accepted history, authoritative `draft_after.md`, `spec.md`, accepted hash, stability, Phase 2, or strop consumption. Setting `accepted = false` while still writing proposed bytes is not enforcement.
 
-```yaml
-schema_version: bounded-change-surface-v1
-allowed_sections: [string]
-allowed_unit_ids: [string]
-allowed_change_types: [add | clarify | strengthen | move | rename | reword | supersede | delete | weaken]
-deletion_allowed: boolean
-weakening_allowed: boolean
-authorized_deletion_unit_ids: [string]
-authorized_supersession_unit_ids: [string]
-max_changed_sections: integer | null
-max_changed_normative_units: integer | null
-```
+The [artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) owns the exact manifest, inventory, attempt, materialization, evidence-reference and report contracts. The [scope leaf](SCOPE_INTAKE_AND_DECISIONS_SPEC.md#bridge-operator-authority) owns operator approval/evidence and the distinction between review visibility and edit authority. The [scheduler leaf](SCHEDULER_STATE_AND_RESUME_SPEC.md#preservation-bridge-lifecycle) owns failure, retry, resume and consumer gates. These bridge-specific rules supersede older whole-draft acceptance rules only for admitted guarded runs.
 
-The Orchestrator MUST validate and snapshot this contract at `rounds/round-N/context/bounded_change_surface.json` before invoking the Editor. The snapshot is immutable across that round's retries; revising permissions requires a new round or isolated run, preserving the previous snapshot. All fields are required; empty lists authorize nothing and null limits impose no numeric cap. Non-null limits MUST be non-negative integers. A malformed contract MUST prevent Editor invocation. Contradictory permissions MUST NOT be broadened or repaired by inference.
+### Structural Coverage And Correspondence
 
-Authorization is conjunctive and deny-by-default. A change MUST be within `allowed_sections`, use a type in `allowed_change_types`, and satisfy both numeric limits when non-null. Changes to existing units MUST additionally name those units in `allowed_unit_ids`; additions are bounded by their owning allowed section. Moving a unit requires both source and destination sections to be allowed. Sensitive changes also require:
+Generate a deterministic, exact-base-bound inventory before obtaining approval of a change surface. `bridge-inventory-v1` deliberately inventories structural text units rather than claiming to discover all semantic requirements: every physical line is covered, including preamble, parent body, headings, fenced schemas, tables, lists, blank separators and trailing content. Thus a field, enum member, command, failure code, acceptance scenario or reference cannot disappear merely because a semantic classifier did not recognize it. Multi-line concepts are protected through all of their constituent units. Parser and identity rules in the artifact leaf exclude fenced pseudo-headings and are separate from existing review anchors and vNext stable IDs.
 
-- Deletion: `delete` in `allowed_change_types`, `deletion_allowed = true`, membership in `authorized_deletion_unit_ids`, attribution to an admitted finding, and a persisted operator decision explicitly authorizing deletion of that unit.
-- Weakening: `weaken` in `allowed_change_types`, `weakening_allowed = true`, attribution to an admitted finding, and a persisted operator decision explicitly authorizing the exact weakening of that unit.
-- Supersession: `supersede` in `allowed_change_types`, predecessor membership in `authorized_supersession_unit_ids`, attribution to an admitted finding, a successor unit present in the proposed inventory, and evidence proving equal or stronger coverage. Both predecessor and successor MUST satisfy the allowed surface. Changes to product policy or authority still require the applicable operator decision.
+Correspondence MUST NOT use fuzzy similarity or an Editor's identity claim. First match identical direct-content sequences inside unchanged canonical section paths; for edited sections, retain exact line matches only when there is one unambiguous order-preserving match. Equal-content duplicates with several possible predecessors remain ambiguous. Explicit operator evidence may supply an exact predecessor/successor mapping for rewording, moves, renames and supersession. Validate every such mapping against both inventories; missing or conflicting mappings fail. A rename of a container MUST account for all descendant units, not only its heading.
 
-These checks are necessary, not sufficient, for acceptance: preservation validation and evidence requirements still apply. A boolean, list membership, finding, or operator decision cannot override another failed check. Permission lists narrow the allowed surface; they do not expand it. Supersession does not require deletion permission when equal or stronger coverage is established, but MUST NOT be used as a fallback for unauthorized deletion or weakening. Evidence and operator decisions MUST identify the exact units/effects and be bound to the current base draft; supersession evidence MUST additionally bind the proposed draft. Missing, stale, or insufficient evidence fails closed. The bridge MUST NOT infer semantic equivalence from Editor claims or create vNext semantic-verification authority to fill an evidence gap.
+Every base unit receives exactly one disposition; added units are enumerated separately. Successor sharing is prohibited except explicitly evidenced supersession. A missing original unit is never cancelled by an addition elsewhere. A source/destination relocation or rename MUST have explicit `move`/`rename` permission and a manifest mapping; without it, report removal plus unrelated addition and reject. Generic `delete` plus `add` permissions MUST NOT launder a move or rename. Where relocation cannot be distinguished deterministically from independent removal/addition, require exact operator evidence rather than assume either interpretation.
 
-The preservation bridge MUST reject automatic draft acceptance when the proposed output removes, weakens, or ambiguously rewrites a protected unit outside the allowed surface; changes an allowed unit using a disallowed change type; deletes a unit without explicit deletion authorization; claims supersession without a successor unit and evidence; collapses a concrete contract into a summary or placeholder; or changes product policy, authority, lifecycle legality, failure behavior, artifact shape, or acceptance criteria without an admitted finding or operator decision authorizing that exact change.
+### Authorization And Dispositions
 
-Reviewer silence MUST NOT satisfy preservation safety. A clean Reviewer pass only means the Reviewer found no in-scope profile findings in that pass. It does not prove that unrelated units were preserved, that deleted material was authorized, or that a broad rewrite is safe to accept.
+Anything not explicitly authorized is preserved. The manifest identifies allowed and frozen sections/units, admitted findings, allowed change types and limits. Frozen sections include descendants; allowed sections do not implicitly include descendants. Conflicting allowed/frozen declarations fail admission. An existing-unit change requires an allowed section, allowed unit, allowed type, finding attribution and both applicable limits. Additions require an allowed destination and `add`; creating a section requires its exact new canonical path in the manifest. No wildcard or parent-wide permission expansion is permitted. Additions also require exact-effect `attest_addition` evidence: retaining the original text does not prove that an added exception or precedence rule has not weakened it. The first bridge intentionally cannot autonomously certify that semantic claim.
 
-Every completed bridge comparison, whether passing or failing, MUST persist both the current-runtime report and the compared text as a `full_draft_rewrite_attempt` at the paths defined in [Artifacts Validation And Telemetry](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-report). When bridge validation fails, Whetstone MUST leave the prior validated draft authoritative and terminate or pause according to the scheduler's artifact and decision policy. Terminal or validation reporting MUST reference the exact attempt report and its failure categories and affected unit IDs. The operator may then reject the rewrite, authorize specific deletion or supersession unit IDs, extract useful material into a smaller manual patch, or start a new guarded run from the prior validated draft.
+Sensitive changes additionally require:
 
-A `full_draft_rewrite_attempt` is immutable evidence of proposed full-document output, not a vNext `candidate`. It remains non-authoritative evidence regardless of the comparison result; its bytes may become the accepted draft only through the normal draft-acceptance path after all required checks pass. It has no candidate disposition, candidate registration/index entry, or promotion lineage. Later authorization MUST NOT retroactively turn a failed report into a pass; a new attempt must validate against the then-current base and allowed-surface contract.
+- Deletion: `delete`, `deletion_allowed`, membership in `authorized_deletion_unit_ids`, and an operator decision for those units and the exact final effect.
+- Weakening: `weaken`, `weakening_allowed`, and an operator decision for those units and exact reduced obligations; successful disposition is `operator_authorized_weakened`.
+- Supersession: `supersede`, predecessor membership in `authorized_supersession_unit_ids`, allowed successor units/sections and admissible evidence of equal-or-stronger coverage. It does not require deletion permission when that evidence passes.
+- Moves/renames: the exact manifest source/destination mapping, applicable type, and preservation evidence for all affected units. Any accompanying weakening still needs separate weakening permission.
 
-This bridge is intentionally narrower than the full vNext candidate architecture. It does not create verified candidates, current verified pointers, promotion intents, run-wide locks, or semantic-verification authority. It exists to prevent current full-document Editor workflows from silently accepting destructive or overly broad rewrites during the migration period.
+These are conjunctions, not alternative overrides. Approval does not waive syntax, scope, correspondence, text hygiene, numeric limits, or other failed units. A unit cannot be both successfully weakened and claimed equivalent/superseded. The bridge uses the shared disposition vocabulary, with its own evidence rules below; it does not invent a vNext mutation plan or require the not-yet-operative semantic verifier.
+
+For `preserved`, exact content and structural ownership MUST remain equal, except a recorded trusted version transformation. Changed content cannot pass as preserved merely because normalized draft hashes match. For changed wording, strengthening, movement or supersession, first-release admissible evidence is an explicit hash-bound operator attestation defined in the scope leaf. Without that evidence, use `ambiguous` or `unauthenticated_supersession` and reject. A clean Reviewer pass, Editor assertion, line-count ratio or generic similarity score is not an attestation. This conservative bridge validates evidence bindings, not the truth of arbitrary natural-language equivalence; reports MUST identify operator-attested claims as such. A future independent verifier needs a separately versioned admission rule.
+
+The bridge MUST reject unrelated contract loss, protected-unit ambiguity, unauthorized deletion/weakening, surface overruns, and concrete contracts replaced by summaries or placeholders without individually valid dispositions. Legitimate removal is possible through explicit deletion or evidenced supersession; preservation does not mean retaining all text forever.
+
+### Materialization And Authority
+
+Preserve exact raw client response bytes, separately extract and hash the exact UTF-8 `draft_after_content`, then materialize separate final bytes using only the versioned trusted transformations listed in the artifact leaf. Compare the base against those final materialized bytes. Reports bind raw proposal, materialized draft, inventories and ordered transform evidence. Normalized `draft_hash` remains compatibility lineage, never a substitute for either exact-byte hash.
+
+An Editor-authored version change is client content. It MUST NOT be silently restored or relabeled as an Orchestrator stamp. The first bridge permits stamping only when the raw version anchor still matches the base; otherwise reject `untrusted_version_edit`. Even explicit wording permission does not let the Editor choose the Orchestrator-owned version. An unchanged proposal receives no increment. A passing materialized output MUST be consumed byte-for-byte; no post-validation restamping or normalization is allowed.
+
+### Failure And Qualification
+
+Every attempt retains immutable inputs and available outputs. Every completed comparison, passing or failing, retains a complete report. A full-draft rewrite attempt is evidence, not a vNext candidate, and a bridge pass alone is not normal round acceptance. Failed/paused bytes MUST NOT become the next base, satisfy issues, erase residuals or pass recovery/strop controls. New authorization never rewrites a failed report; use the scheduler's explicit new-admission procedure. Transient technical continuation retains frozen bindings, whereas deterministic violations receive no automatic retry.
+
+Before advertising the bridge, conformance tests MUST cover: all-line inventory coverage and fenced pseudo-headings; duplicate headings/units; preamble and parent content; exact and ambiguous correspondence; loss of a schema field/table row/enum; explicit and disguised moves/renames; allowed additions; frozen/default-preserved content; genuine operator-authorized deletion/weakening/supersession; stale evidence; raw versus materialized hash tampering; version edits and repeated stamping; deterministic rejection versus legitimate pause versus transient retry; accepted no-op; persistence failure; normal/resumed/vertical acceptance; and Phase 2/strop bypass attempts. Include a schema-valid large rewrite that satisfies Reviewer findings but destroys unrelated contracts, and positive cases proving authorized cleanup can pass.
+
+This release does not introduce patch proposals, candidate registration, current-verified pointers, promotion locks, new semantic-verifier calls or D6-D8 vNext contracts. It remains unavailable until its own complete qualification passes, even though those later vNext mechanisms are not prerequisites for it.
 
 ## P0 Release Acceptance
 

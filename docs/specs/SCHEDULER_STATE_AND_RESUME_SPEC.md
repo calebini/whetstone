@@ -25,6 +25,8 @@ Runtime halt precedence:
 
 The first condition satisfied halts execution.
 
+For an explicitly guarded run, the [preservation bridge lifecycle](#preservation-bridge-lifecycle) is an acceptance precondition, not another lower-priority vote in halt precedence. A rejected/paused/incomplete proposal cannot satisfy clean convergence, profile-clean or accepted-draft conditions. Evaluate its failure before any proposed bytes become authority.
+
 Only active conditions from the current evaluation cycle participate in halt precedence. Historical terminal reports from earlier halted, resumed, or superseded states are audit artifacts and MUST NOT preempt the current `run_state.json` interpretation after a valid continuation has advanced the run. When a resumed or continued run writes a later `run_state.json`, that run state is the authority for current terminal evaluation; preserved older terminal reports remain historical evidence only.
 
 ---
@@ -141,6 +143,8 @@ A draft is considered accepted if:
 - zero blockers globally
 - zero major issues globally
 
+For an explicitly guarded run, acceptance additionally requires a valid bridge acceptance marker for the exact materialized bytes, or the explicitly recorded unchanged initial seed before any editing. Issue-resolution claims alone do not satisfy that gate.
+
 This is used for:
 - last_accepted_draft_hash
 - convergence readiness baseline
@@ -159,6 +163,8 @@ Spec version labels express maturity:
 - post-entry Phase 2 decimal versions (`1.1`, `1.2`, etc.) indicate accepted mutating convergence revisions after Phase 2 entry.
 
 Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft. If an Editor-produced draft changes the visible version anchor before an accepted mutating round is stamped, the Orchestrator MUST restore the pre-round version anchor before applying the Orchestrator-owned stamp. This normalization SHOULD be recorded in the round Editor artifact so operators can see that the Editor attempted a version change, but it MUST NOT double-increment the visible version label.
+
+The restoration rule above is legacy-only. Under `preservation-bridge-v1`, preserve the raw proposal and reject an Editor-authored version edit as `untrusted_version_edit`; do not disguise it as a trusted restoration/stamp. Apply the versioned Orchestrator transformation to separate materialized bytes before preservation/acceptance, then install those bytes unchanged. Bridge no-ops do not increment the version, and repeated resume cannot restamp an already committed acceptance.
 
 For versioned specs, the Orchestrator MUST stamp accepted mutating rounds with a new visible version label before computing and persisting the final `draft_after_hash`. A spec is versioned when its root heading, `Status:` line, or `Version:` field contains a supported numeric version label. Supported numeric version labels contain one, two, or three numeric components (`N`, `N.N`, or `N.N.N`). The Orchestrator MUST parse the complete version label and MUST NOT partially match a longer dotted label. If no supported numeric version anchor exists, the Orchestrator MAY skip version stamping and MUST continue to use hashes and round artifacts as rollback authority.
 
@@ -493,6 +499,55 @@ When `review_budget_exhaustion_policy = soft`, Phase 1 profile-budget exhaustion
 Soft budget mode MUST NOT weaken accepted-draft requirements, clean-profile requirements, convergence readiness, or Phase 2 entry. It only changes whether Phase 1 stops immediately on the first exhausted/oscillating profile or completes the remaining profile sweep for diagnostic value.
 
 ---
+
+## Preservation Bridge Lifecycle
+
+This section is the pending `preservation-bridge-v1` current-runtime contract, operative only under the [separate activation gate](WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation). It does not implement vNext candidate states or promotion locking. Normal and resumed full-draft acceptance MUST call the same gate. The current single-writer run assumption applies; simultaneous invocations on one root are unsupported and MUST NOT be presented as protected by vNext locking.
+
+### Admission And Transition Table
+
+Validate basic opt-in configuration/capability and pinned artifacts before any client invocation. Before each Editor invocation additionally validate exact current base, approved scope, inventory, admitted finding sources/IDs and configured operator evidence, then freeze them in a new immutable attempt admission. An initial admission failure yields `CONFIG_INVALID` with `Editor invoked = false`; no nonexistent admission/report is fabricated. A changed/stale binding detected after admission rejects that attempt. Technical retries allocate a new attempt number but keep the frozen authorization and exact base unchanged.
+
+The following are internal bridge processing states/outcomes, not additional top-level terminal-state enums:
+
+| From | Condition | To / required action |
+|---|---|---|
+| Unadmitted | Complete supported config and current bindings validate | Admitted; persist immutable inputs before Editor |
+| Unadmitted | Missing, unsupported, conflicting or stale admission | `CONFIG_INVALID`; no Editor, no authority change |
+| Admitted | Client/fixture yields valid raw draft | Materializing; preserve raw response and exact proposal separately |
+| Admitted | Reviewer-only empty feedback / valid unchanged no-op | Materializing unchanged bytes; no Editor or increment |
+| Admitted / materializing / comparing | Deterministic schema, binding, transform, corruption or preservation violation | Rejected; zero automatic retries; `HALTED_ARTIFACT_INVALID` |
+| Comparing | Only legitimately remediable scope-expansion/weakening authorization is absent | Paused; `PAUSED_DECISION`, explicit bound question |
+| Admitted / materializing / comparing / persisting | Transient technical failure | Technical failure; preserve evidence, classify as below |
+| Comparing | Complete passing report and all normal acceptance conditions pass | Eligible; persist report and acceptance marker, then mirrors/history |
+| Comparing | Bridge passes but normal acceptance conditions do not pass | No acceptance marker or authoritative write; ordinary residual/stop policy applies to the prior authoritative draft |
+| Eligible | Materialized bytes equal base and all no-op checks pass | Accepted no-op; no version/history mutation event |
+| Eligible | Valid marker committed for changed bytes | Accepted mutation; install checked bytes and update lineage once |
+| Accepted marker exists | Interrupted mirror/history update | Revalidate and repair only from that marker, no client or restamp |
+
+`PAUSED_DECISION` is allowed only when the comparison identifies exact proposed units/effects and all independent checks pass, apart from the missing scope/weakening authorization (including its corresponding surface permission). Corruption, ambiguous identity, missing equivalence/supersession evidence, contract collapse or other failures make the outcome rejection, not a pause. A pause report lists which new scope/manifest/weakening decision is needed; it never implies approval alone will waive other gates. In an enforced run this safety pause overrides ordinary `end_of_cycle` preference. It does not change ordinary decision behavior in unguarded runs.
+
+The top-level validation/technical report MUST distinguish `failure_type = preservation_violation` from ordinary exhausted client validation when rejection is deterministic. Include the bridge report Ref, exact categories/units, previous accepted marker/hash, available raw/materialized Refs, `automatic_retries = 0` and supported next action. A bridge pause likewise references the full report and approved-input identities in the decision artifact. If no current `draft_after.md` exists, all terminal draft pointers refer to the previous accepted snapshot or initial `draft_before.md`, never to quarantined output.
+
+### Technical Continuation And New Authorization
+
+Transient failures are limited to a recorded client timeout; an explicitly parsed provider `rate_limit` or `service_unavailable` response; transport `ECONNRESET`, `ETIMEDOUT` or `ENETUNREACH`; or local `EINTR`, `EAGAIN`, `ENOSPC` or `EDQUOT` while persisting evidence. Unknown nonzero exits, malformed JSON, wrong schemas, permissions/authentication failures and all deterministic bridge checks are not transient by assumption. Persist the exact machine cause. Client timeouts retain `HALTED_CLIENT_TIMEOUT` and no automatic retry. Other transient client failures may consume at most the one remaining validation retry, under identical frozen input hashes. Local persistence failures have no automatic client retry; halt `HALTED_ARTIFACT_INVALID` with `failure_type = preservation_persistence_failure`, retaining every artifact that could be written.
+
+For Phase 1, `resume --dry-run` MUST report a guarded technical attempt resumable only if it satisfies the existing role/scheduler/hash gates AND all frozen bridge inputs still validate. This adds typed transient bridge failures to the supported Phase 1 Editor artifact-recovery path; it does not make deterministic rejection resumable. Resume may change an explicit timeout/budget under existing precedence but MUST retain mode, capability, base, scope, surface, findings, evidence and transform policy. A new client execution gets a new immutable attempt with predecessor reference. If complete valid outputs already exist after a persistence interruption, revalidate/reuse them instead of invoking the client again. Stale hashes reject, never silently refresh.
+
+Generic Phase 2 timeout/technical resume remains unsupported in this bridge release. Report `resumable = false` and recommend explicit new admission from the last accepted draft; do not promise a new Phase 2 resume API. Reviewer technical recovery follows existing supported phases and must not fabricate or mutate a frozen Editor handoff.
+
+Changed authorization is not technical resume. The first bridge uses an explicit fresh isolated run for that new admission: copy the prior authoritative base (not the failed draft), preserve the predecessor report as a hash-pinned historical artifact, approve new scope/surface/evidence, and set `preservation_bridge.predecessor_report`. New local attempts start at 1 in their new root; the predecessor Ref records continuity. No new CLI activation flag or in-place authorization replacement is introduced. Exact rejected raw bytes may be supplied to the existing `live-round --draft-after` input in the fresh root; this runs all bridge and normal validation again without granting authority to the supplied file. The report records `origin = supplied_revision`, not a new Editor response. Historical report references are provenance, not current-input authorization; only newly validated local input bindings can pass.
+
+If the authoritative base has changed, old proposal/evidence hashes cannot be reused as if technically resumed. Explicitly seed the new root with that validated base and obtain a newly matching inventory, manifest and evidence. A manual patch is a new seed with disclosed provenance, not retroactive bridge certification. Neither root's historical evidence may be overwritten, including via `--overwrite` on an opted-in root with admitted attempts.
+
+### Acceptance And Downstream Consumers
+
+Freeze and validate all inputs, materialize, compare, persist the passing report, apply normal round acceptance conditions, then atomically create the bridge acceptance marker before installing authoritative mirrors/history. Recheck the authoritative base before the marker is created. The marker must chain to the prior accepted marker (or the explicit initial seed) and bind exact bytes. Repeated invocation cannot create a second acceptance for the same operation or duplicate version/history advancement. Persistence errors before that commit point leave the prior draft authoritative; after it, repair uses only the committed checked bytes. Status distinguishes pending mirror repair from a fully completed round.
+
+No rejected, paused, incomplete or merely `eligible` report may advance `last_accepted_draft_hash`, become an authoritative next-round draft, clear profile residuals, enter Phase 2, satisfy a declaration or reach strop/apply-back. This holds for `apply=true, accepted=false`, soft budgets, budget extension, manual recovery and non-converged/source-mismatch override options. A passing bridge report never replaces Reviewer profile verification or normal source-hash checks.
+
+For guarded roots, Phase 2 handoff/declaration and dry/live strop MUST verify the accepted marker/report/transform chain and exact current draft bytes, plus the existing normalized accepted hash and ordinary eligibility conditions. A mismatch yields refusal with artifact references, not automatic reconciliation. Dry strop remains non-mutating. Source-mismatch permission can relax the external source comparison only; it cannot waive internal preservation lineage. Legacy roots continue under existing rules and are explicitly labeled `legacy_unguarded`; do not invent bridge evidence for them or silently reinterpret old reports as v1-compliant.
 
 ## RESUME POLICY
 

@@ -1,6 +1,8 @@
 # Whetstone Implementation Plan
 
-This plan is the traceable build checklist for Whetstone `0.21`.
+This is Whetstone's traceable implementation plan. The original `0.21` gates and completion records below are historical; they are not a current capability inventory. Current behavior is governed by the [coordinating spec](docs/specs/WHETSTONE_COORDINATING_SPEC.md) and its leaf specs.
+
+Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), grounded in candidate-editing design `0.3` and coordinating spec `0.71`. This is the delivery owner for the preservation bridge and later candidate pipeline; the future-improvements list is not a parallel implementation checklist.
 
 ## Build Strategy
 
@@ -8,7 +10,7 @@ Build deterministic behavior first, then introduce live clients behind narrow ga
 
 Fixture mode remains the regression harness. Live Codex/Claude behavior must not weaken fixture determinism, schema validation, artifact integrity, or halt-state reproducibility.
 
-## Current State
+## Historical Build Baseline
 
 Completed:
 
@@ -77,7 +79,7 @@ Acceptance:
 - [x] Compile check passes
 - [x] No stale legacy role terminology remains
 
-Current limitation:
+Limitations at that historical baseline (subsequently superseded by resume and apply-back work):
 
 - Live Phase 1 and Phase 2 runners are intentionally non-resumable.
 - Live spec sharpening currently operates on an isolated run root. Applying accepted changes back to a source repository remains a planned workflow.
@@ -1028,6 +1030,271 @@ Acceptance:
 - [x] `status --format text` gives an operator copyable resume commands when a run is eligible
 - [x] A CLI smoke covers timeout -> dry-run -> resume-continue -> `PHASE_1_STABLE`
 
+### 18. Safer Editor Pipeline
+
+Status: planned, not implemented. Baseline inspected after `e0de700` on 2026-09-05. D1-D5 owning-spec amendments are now drafted for bounded audit; the recorded-decision prose below preserves the decision history, and the owning leaves supersede its earlier proposed wire details. No unchecked item below is an implementation or release claim. Complete each acceptance checklist with test names and a commit/artifact reference when its slice lands; a passing spec audit alone does not complete a slice.
+
+#### Authority And Runtime Map
+
+| Authority | Delivery responsibility |
+|---|---|
+| [Candidate Editing And Promotion](docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md) | Bridge, preservation dispositions, vNext modes, identities, patch protocol, verification, registration, promotion, recovery, P0 qualification |
+| [Artifacts Validation And Telemetry](docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md) | Bridge report, full-draft attempts, validation, hashing, persisted evidence and client contracts |
+| [Coordinating](docs/specs/WHETSTONE_COORDINATING_SPEC.md) | Non-operative registration, family authority, activation and supported contract-suite gates |
+| [Scheduler State And Resume](docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md) | Draft acceptance, state transitions, retries, budgets, resume, and designated apply-back policy owner |
+| [Scope Intake And Decisions](docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md) | Finding admission, authority/scope decisions, operator response bindings |
+| [Phase 2](docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md) | Profile verification, declaration bindings and convergence consumption |
+| [Operator Quickstart](docs/OPERATOR_QUICKSTART.md) | Supported commands, guarded-run setup, inspection, resume and strop procedure |
+
+The current acceptance choke points are `LiveRoundRunner.run_round` and `resume_editor_round` in [live.py](src/whetstone/live.py). Both validate Editor JSON, compute acceptance, normalize/stamp versions, persist round output, and write `spec.md`. `_validate_editor_summary` and `_reject_destructive_draft_after` check corruption, placeholders and size/line collapse; they do not implement a preservation inventory or allowed-surface gate. Crucially, proposed bytes can be written when `apply` is true without `accepted` being true. Bridge rejection must therefore stop the write path itself, not only change an acceptance boolean.
+
+[sections.py](src/whetstone/sections.py) provides canonical heading-path IDs but no preservation-unit identity and currently recognizes heading-like lines inside fences. [decomposition.py](src/whetstone/decomposition.py) has a separate source-range inventory; reuse compatible mechanics only after parser conformance checks, not its extraction ownership model by assumption. [hashing.py](src/whetstone/hashing.py) distinguishes normalized draft hashing from raw byte hashing. Existing `ArtifactStore` writers overwrite named artifacts and are not immutable-attempt or atomic-promotion primitives.
+
+The schema registry in [contracts.py](src/whetstone/contracts.py) implements a limited JSON Schema subset. No bridge or candidate public schemas currently exist under `contracts/schemas/`. Existing job-descriptor discovery in `run_state.py` is a status pointer, not immutable vNext descriptor admission. Existing scope/checkpoint artifacts are not automatically valid hash-bound mutation authorizations.
+
+#### Decisions Required Before Implementation
+
+These are specification work items, not permission to choose undocumented behavior in code. Resolve each in its owning leaf and link the resolution here. Independent fixture preparation and implementation mapping may proceed while a decision is open; the affected slice cannot ship.
+
+| ID | Gap or decision | Owner and blocked delivery |
+|---|---|---|
+| D1 | Activation policy decided by the operator on 2026-09-05: explicit opt-in run configuration, versioned bridge capability, and hard enforcement of a versioned allowed-change-surface contract bound to the exact base and approved scope/findings before Editor invocation. No default-wide activation or unfinished vNext modes. See the recorded decision and recommended configuration below. Owning-spec amendments, public schemas and implementation remain pending. | Policy resolved; coordinating, scheduler, scope, artifacts still gate 18.1 admission and release |
+| D2 | Inventory policy decided by the operator on 2026-09-05: link an operator-approved allowed/frozen change-surface manifest to a deterministic inventory of every section/protected unit bound to the exact base. Preserve unauthorized content by default; use versioned structural identities, total original-unit dispositions and separate additions. Moves/renames require explicit source/destination authorization; preservation does not restrict Reviewer visibility. See the recorded decision below. | Policy resolved; candidate, scope, artifacts still gate 18.1 identity/parser/manifest contracts |
+| D3 | Policy decided by the operator on 2026-09-05: no autonomous acceptance of weakening; an explicit hash-bound operator decision must identify the exact protected units, permitted change type and rationale. Persist a distinct successful weakening disposition. Equivalence/supersession requires admissible evidence or a later independent verifier; absent evidence, reject. See the recorded decision below. | Policy resolved; candidate, scope, artifacts still gate 18.1 representation and evidence contracts |
+| D4 | Identity/ordering policy decided by the operator on 2026-09-05: immutably retain and hash the exact raw Editor proposal, deterministically materialize a separate output using only defined Whetstone-owned transformations, hash its exact bytes separately, and compare the final materialized output before acceptance. Reports bind both identities and the trusted transformation; Editor-authored version edits get no exemption. See the recorded decision below. | Policy resolved; artifacts, candidate, scheduler still gate 18.1 wire contracts and acceptance/replay ordering |
+| D5 | Lifecycle policy decided by the operator on 2026-09-05: freeze base and authorization per attempt; retry/resume only transient technical failures under unchanged bindings; reject deterministic preservation violations without automatic retry; pause only for a legitimate explicit scope-expansion or weakening decision. Changed authorization creates a new validated attempt, never rewrites a failed report. Valid unchanged output may complete as an accepted no-op. See the recorded decision below. | Policy resolved; scheduler, scope, artifacts still gate 18.1 state/report/attempt-binding contracts |
+| D6 | vNext `job_id` is deterministic from canonical inputs, but its exact preimage and all identifier grammars/collision rules are not closed. The public contract suite is a list, not a pinned manifest format with schema/algorithm/fixture digests and support matching. Close these before emitting interoperable identities. | Candidate, artifacts, coordinating; 18.2-18.4 |
+| D7 | Candidate disposition protocols are detailed, but the scheduler lacks a complete candidate-processing transition table covering modes, failed gates, interruption and operator decisions. Define transitions and unavailable/mismatched-mode reporting, including legacy/new-config precedence. | Scheduler, candidate, coordinating; 18.3 and 18.8 |
+| D8 | Promotion requires storage-backed, recoverable, fenced exclusion with registration, but concrete acquisition, fencing, loss, reclamation and supported-filesystem semantics are not published. Select and contract-test the storage protocol before registration/promotion concurrency is exposed. | Candidate, artifacts; 18.5 registration and 18.7 promotion |
+
+Dependency order: 18.1 -> 18.2 -> 18.3 -> 18.4 -> 18.5 -> 18.6 -> 18.7 -> 18.8 -> 18.9. D1-D5 are prerequisites inside the first deliverable, not a separate shipped paperwork milestone. D6-D8 may be resolved alongside earlier work but remain gates on their consumers. Public contract fragments and fixtures land with each consuming slice; 18.2 extends the minimal bridge contracts into the complete vNext suite.
+
+#### D1 Recorded Activation Decision
+
+The operator selected explicit opt-in hard enforcement for the current-runtime bridge. This resolves the activation policy, not the remaining inventory, evidence, hashing, or recovery contracts in D2-D5. The following is the recommended exact configuration shape for the owning-spec amendments; it is not a command/config surface supported by today's runtime:
+
+```yaml
+preservation_bridge:
+  mode: enforce
+  capability_version: preservation-bridge-v1
+  allowed_change_surface:
+    path: ./rounds/intake/bounded_change_surface.json
+    sha256: "<SHA-256 of the exact allowed-change-surface artifact bytes>"
+```
+
+The proposed `preservation-bridge-v1` capability identifies the implemented bridge contract/algorithm version. The surface artifact retains the spec's `schema_version: bounded-change-surface-v1`; capability version and artifact schema version serve different purposes and both must be supported. The path is run-root-relative, resolved and validated before use. The expected SHA-256 pins the supplied contract, rather than trusting whatever bytes later occupy that path. This is separate from vNext `editing_mode` and `contract_suite_version`.
+
+The admission contract must require and validate the surface artifact's bindings to the exact base draft, the configured approved scope contract, and the exact persisted Reviewer finding artifacts and admitted finding IDs. The Orchestrator verifies those bindings and confirms that admitted findings and allowed mutations remain within the approved scope; an Editor's claimed resolutions or a checkpoint recommendation cannot authorize the surface. Deletion/weakening/supersession evidence remains governed by D3 and the candidate leaf. The recorded D4 decision separates raw and materialized byte identities; its owning-spec amendment must define their fields without relaxing the exact-base requirement.
+
+Validate configuration, capability support, contract schema and supplied artifact hash at run admission. Validate the complete current base/scope/finding bindings again immediately before each Editor invocation, after that round's Reviewer artifacts exist, then persist the immutable contract snapshot bound to that attempt. Missing, stale, unsupported or mismatched inputs must fail admission before the Editor runs; do not silently remove the bridge, fall back to unguarded editing, or expand permissions to continue. A contract pinned to an older draft or finding set cannot be reused for a later round merely because the run remains opted in. D5 permits an explicit new validated attempt with changed authorization; technical resume never silently rebinds it.
+
+Omitting the entire `preservation_bridge` block leaves the run under explicitly identified legacy/unguarded semantics. Once the block is present, all shown fields are required; partial configuration is an error, not an implicit opt-out. The first supported mode is `enforce`; there is no report-only mode that can satisfy guarded acceptance. Persist the resolved mode, capability and bound surface identity in effective run configuration, prompt/attempt context, and status/terminal readback. Resuming an opted-in run must inherit enforcement and reject a capability downgrade or missing bindings; a legacy run must never acquire a claim of preservation coverage from the mere presence of an artifact.
+
+Bridge activation remains confined to explicitly opted-in current-runtime full-draft workflows after bridge qualification. It does not select `proposal_only` or `verified_promotion`, grant candidate authority, or change defaults for other runs. Conflicting bridge/vNext configuration must fail rather than choose a more permissive path. This decision creates no standalone CLI flag; a future alias would need the same configuration and binding checks.
+
+No further operator choice is required for D1's activation policy. The field spelling above is the recommended implementation contract, pending its owning-spec amendment; exact inventory/evidence/hash/lifecycle schemas remain the separately tracked D2-D5 work. Recording D1 does not mark 18.1 implemented or ratified.
+
+#### D2 Recorded Change Surface And Inventory Decision
+
+The bridge uses two linked artifacts with different authorities. The operator-approved change-surface manifest declares allowed and frozen surfaces, permitted change types, and applicable limits. The Orchestrator-generated preservation inventory binds to the exact base-draft hash and enumerates every section and protected unit. The manifest is the approval surface; the inventory is deterministic evidence of what exists and cannot grant edit authority by itself. Reconcile the manifest with the existing proposed `bounded-change-surface-v1` contract rather than adding a competing authorization registry.
+
+Generate the inventory before obtaining/validating approval of a surface that references its units. Bind the approved manifest to that exact inventory/base and the D1 approved scope/findings; record both artifact identities in attempt context and reports. Preserve the D5 immutable attempt bindings. Changing the base, inventory/parser version, allowed/frozen surface or relevant approval is new admission, never an invisible refresh of a technical retry.
+
+Anything not explicitly authorized for change is preserved by default. Frozen surfaces cannot be changed under the active manifest; a finding or Editor recommendation cannot remove that protection. Validate manifest references and conflicting allowed/frozen declarations before invocation, and never interpret a missing entry as unconstrained permission.
+
+Unit identity uses canonical heading path, unit type, and a defined position/ordinal within its parent under a versioned parser. Bind the identity namespace to the exact base inventory so the same ordinal in another draft is not automatically the same unit. Do not derive correspondence from fuzzy similarity, model guesses, or absent vNext patch/transaction IDs. The parser must exclude heading-like text inside fences and account for document preamble, direct parent body and nested/overlapping units; nested content cannot disappear between inventories or be implicitly omitted because its parent is authorized. Exact serialization, structural position rules and overlap/change counting belong in the public parser/inventory contract with conformance fixtures.
+
+Every original unit requires an explicit preservation disposition. Enumerate additions separately; an addition cannot cancel a missing original unit or conceal a removed table row/field. Moves and renames require explicit authorization of both source and destination, plus the allowed change type and applicable evidence. Without that authorization, treat the result as removal plus unrelated addition and reject the attempted move/rename; broad delete/add permission cannot be used to launder it. If structural correspondence is ambiguous, reject rather than assume identity continuity. D3 still controls any semantic equivalence/supersession evidence and any weakening approval.
+
+Review scope controls what the Reviewer can inspect and report; the edit-preservation manifest must not hide frozen units or silence otherwise in-scope findings about them. A finding on a frozen surface may justify a new operator-approved surface under D5, but never modifies the current authorization automatically. Keep review visibility, edit authority and scope-expansion approval distinct in prompts and artifacts.
+
+No user-level D2 policy question remains. The owning-spec amendment must now close the linked manifest/inventory fields, parser/identity version and deterministic correspondence/counting rules without weakening these decisions. This records the first bridge's structural model; it does not activate vNext stable-section mapping or candidate promotion.
+
+#### D3 Recorded Weakening And Evidence Decision
+
+The first bridge must never authorize weakening autonomously or accept an Editor assertion as authorization. Acceptance requires a persisted, explicit operator decision bound to the exact protected unit or units, the permitted `weaken` change type and the rationale. The decision must identify the authorized change, not grant a general exemption to preservation. Existing conjunction rules still apply: `weaken` must be allowed, `weakening_allowed` must be true, affected units/sections must be within the admitted surface, and required scope/finding bindings and other validation checks must pass.
+
+Recommended successful disposition token: `operator_authorized_weakened`. Add it consistently to the candidate leaf's preservation disposition definitions and the bridge report schema during the owning-spec amendment. It means an actual reduction in normative force was explicitly approved; it must not be reported as `preserved`, `reworded_equivalent`, `strengthened`, or an ordinary modification. A successful unit disposition is not a pass for the whole draft if any other unit or gate fails. This token is proposed here, not an already-supported runtime enum.
+
+The evidence contract must bind the operator decision to the base, relevant scope/allowed-surface contract and exact proposed effect, retain the operator identity and rationale, and expose the decision artifact path/hash in the attempt report. Under D4, evidence must identify the exact materialized bytes being considered for acceptance and retain their binding to the raw proposal and trusted transformation. Approval of raw text alone cannot authorize an unbound materialized result. Stale decisions, different units/effects, and mismatched hashes fail. Neither an earlier general approval nor an Editor-generated decision record is an operator decision.
+
+Equivalence and supersession are evidence claims, not permission to weaken. They require explicit admissible evidence bound to the compared units/drafts that establishes unchanged meaning or equal-or-stronger successor coverage. A later independent semantic verifier may supply validated evidence when that capability exists; the first bridge must not assume it exists. Editor assertions, a clean Reviewer pass, size ratios and generic similarity do not suffice. An operator's authorization to weaken cannot be relabeled as equivalence or supersession. Without sufficient admissible evidence, reject under the existing ambiguous/unauthenticated-supersession categories.
+
+The public evidence schema and versioned admissibility rules still need bounded specification work: producer/authority, exact input bindings, unit/effect coverage, and the checks that establish the claimed preservation. This is implementation-contract work, not an unresolved choice about whether weakening needs operator approval. Evidence that the first bridge cannot validate remains insufficient; do not add a permissive fallback to get a pass.
+
+If approval arrives after an attempt was rejected, preserve that failure and its frozen contract. Under D5, changed authorization creates a new validated attempt; no approval may retroactively overwrite a failed report or make the rejected artifact current. The decision authorizes only the named weakening and never bypasses remaining preservation or downstream acceptance checks.
+
+No further operator policy choice is needed for D3. The small representation choice is the enum spelling; use `operator_authorized_weakened` in the proposed amendments unless the shared contract vocabulary requires an equivalent name. Scope the first implementation to the evidence it can validate, and keep unsupported claims rejected.
+
+#### D4 Recorded Proposal And Materialization Decision
+
+Retain two distinct artifact identities for every materialized full-draft attempt. First persist the exact raw Editor-proposed draft bytes immutably and compute their SHA-256 before any Whetstone normalization, stamping or other transformation. Then deterministically materialize a separate proposed draft using only explicitly defined Whetstone-owned transformations and compute SHA-256 over those exact final bytes. Raw proposal identity is not the hash of a normalized string or a reconstructed accepted Editor summary; preserve the original client response separately under the existing raw-response policy.
+
+The preservation comparison evaluates the exact base against the final materialized draft. All report, evidence and authorization checks must pass before those bytes can enter accepted history, become authoritative `draft_after.md`, replace `spec.md`, update accepted hashes or advance downstream authority. Do not validate the raw draft and then mutate it after validation. Proposed materialization is isolated attempt evidence and does not create or register a vNext candidate; the current-runtime bridge retains its narrower lifecycle.
+
+Recommended report extensions for the owning-spec amendment are distinct `raw_proposal_path`/`raw_proposal_sha256` and `materialized_draft_path`/`materialized_draft_sha256` bindings, plus an ordered trusted-transformation record. Each transformation records its supported identifier/version, exact parameters, input byte hash and output byte hash. An empty transformation sequence binds identical raw and materialized hashes while preserving their separate artifact roles. Replaying the recorded sequence must reproduce the recorded materialized bytes; unknown transforms, altered parameters, unrecorded writes or mismatched hashes fail validation. These are proposed field names, not existing bridge-report fields.
+
+A version-only change is trusted only when the Orchestrator actually performs the specifically defined and approved version transformation. Provenance, not the shape of a diff or an Editor claim, establishes this exception. An Editor-authored version change remains client-proposed content subject to ordinary allowed-surface/preservation checks; the Orchestrator must not launder it into a trusted stamp by copying its value or tagging it as its own. The transformation contract must identify its exact permitted version anchor/effect and cannot exempt adjacent normative text, arbitrary formatting or broad rewriting.
+
+Reports must bind both artifact identities and the exact transformation between them for passing and failing comparisons. Preserve both artifacts once materialization exists; a failure before materialization must retain the available raw evidence and identify the failed stage rather than fabricate final bytes or a preservation pass. D5 owns that incomplete-attempt terminal/retry representation. Successful acceptance consumes the already-validated materialized bytes without further edits; resume replays/revalidates the bound transformations rather than restamping against an installed default or advancing the version twice.
+
+Current normalized `draft_hash` may remain as an explicitly labeled compatibility identity where existing lineage requires it, but it cannot substitute for either exact-byte SHA-256. The wire contract must relate that normalized identity to the accepted materialized artifact. Report/schema amendments must also distinguish the raw rewrite-attempt artifact from the final materialized artifact, rather than ambiguously reusing the existing `proposed_draft_hash` field for both.
+
+No user-level D4 choice remains. Exact field names, attempt filenames, text-decoding boundary, transformation version/parameters and compatibility wiring need specification/conformance detail, following this settled two-identity and validate-final-output policy. Do not silently generalize the approved version-stamp example into permission for other transformations.
+
+#### D5 Recorded Failure And Continuation Decision
+
+Freeze the exact base draft and authorization for each attempt. An attempt binds its immutable base, allowed surface, approved scope, admitted findings, relevant operator evidence, bridge version and D4 transformation inputs. Technical continuation must validate and retain those same bindings; no timeout, retry, resume flag or recovery path may silently substitute a new base, broaden the surface or refresh approval.
+
+| Outcome | Required handling | Authority effect |
+|---|---|---|
+| Transient technical failure | Retry or resume only under unchanged frozen bindings and the supported technical retry budget; preserve every failed attempt immutably. Record a new attempt for a repeated execution without overwriting the interrupted/failed evidence. | Prior accepted draft remains authoritative. |
+| Deterministic preservation violation | Reject with the exact failed checks and units; no automatic retry. An Editor cannot be asked repeatedly until one output evades the same guard. | Proposed bytes remain non-authoritative evidence. |
+| Legitimate authorization decision | Pause only when explicit scope expansion or weakening authorization could legitimately make the exact proposed change valid. Persist the question, proposed effect and bound evidence for the operator. | No acceptance while approval is absent; approval alone does not advance authority. |
+
+The decision path is not a blanket escape from a failed check. Corrupted or missing evidence, unresolvable identity, unsupported transformations, unauthenticated supersession and other deterministic defects remain rejection cases. If independent failures would remain after the suggested authorization, do not present that authorization as sufficient to pass. A mixed outcome must identify those failures; its reporting cannot imply that a single approval repairs the draft.
+
+Changed authorization requires an explicit new validated attempt with a new immutable authorization snapshot and traceable predecessor/decision reference. Keep the prior base authoritative, revalidate its identity, and rerun every applicable materialization/preservation/acceptance check. Reuse of proposed bytes as evidence does not make those bytes a new accepted base. If the base itself has changed, the original attempt cannot be technically resumed; admission must bind any new attempt to the explicitly selected valid base rather than silently rebase.
+
+This decision refines the earlier round-frozen/new-round-or-run restriction in the candidate leaf and D1/D3 planning text. The owning-spec amendment must support immutable authorization per attempt, with exact report and context references; the single `round-N/context/bounded_change_surface.json` path cannot be overwritten to impersonate a prior attempt's contract. Choose versioned attempt paths/bindings in that amendment. Technical retries share the same authorization; changed authorization is a new admission, not technical resume. Whether the existing CLI expresses that new admission inside a round or by a new round remains lifecycle wiring, not permission to overwrite evidence.
+
+No failed or paused materialized draft may enter accepted history, replace `draft_after.md` or `spec.md` as authority, advance stability, reach Phase 2, or pass recovery/strop controls as accepted output. A soft budget, manual-recovery flag or later clean Reviewer cannot waive this boundary. A completed valid no-change result may be accepted as a no-op after applicable admission, binding, preservation and artifact checks; it does not need an invented mutation or a version increment. Profile-clean/convergence policy remains independently evaluated.
+
+The scheduler/artifact amendments must map these outcomes to existing terminal/decision semantics, define the exact transient-error classification and retry budget inheritance, and report supported next actions without claiming unsupported resume paths. An interrupted/unwritable report retains whatever evidence exists, records the technical failure, and cannot be treated as a completed comparison or accepted round. Repeated continuation must not overwrite completed attempts or duplicate acceptance/history commits. These are remaining contract details under the settled three-way policy, not new operator decisions.
+
+#### D1-D5 Readiness
+
+All five user-level policy decisions are recorded above and now have bounded owning-spec amendments. The previous audit predates these amendments and is not evidence that the new contracts agree. Next: review this committed specification delta through a bounded reviewer-only audit, with explicit payload authorization before invocation, then resolve any genuine gaps before 18.1 implementation.
+
+| Decision | Owning amendment / trace |
+|---|---|
+| D1 | [Preservation Bridge Activation](docs/specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation): explicit `enforce`, version/hash gates, separate vNext capability, legacy readback, no default activation |
+| D2 | [Bridge Contracts](docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) and [Structural Coverage](docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#structural-coverage-and-correspondence): linked manifest/inventory, all-line byte partition, fenced-heading handling, structural IDs, unambiguous matching, total dispositions, frozen surfaces, movement and counting |
+| D3 | [Bridge Operator Authority](docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#bridge-operator-authority): exact-effect local operator attestations, distinct weakening, evidence producer/bindings, additions that could otherwise conceal weakening, no invented semantic-verifier authority |
+| D4 | [Attempt Storage And Materialization](docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#attempt-storage-and-materialization): separate raw/materialized bytes, pinned version transforms, exact versus normalized hashes, no restamping, acceptance marker |
+| D5 | [Bridge Lifecycle](docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#preservation-bridge-lifecycle) and [Phase 2 Handoff](docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#guarded-full-draft-handoff): three-way outcomes, typed transients, frozen technical resume, fresh-root new authorization, no-op and downstream exclusions |
+
+Bounded contract choices to scrutinize in the audit: `bridge-lines-v1` deliberately protects every physical line instead of claiming semantic discovery; changed wording and additions need exact operator attestation in this first bridge without a semantic verifier. New authorization uses a fresh isolated root and existing supplied-revision input, not a new in-place CLI pathway. Phase 2 entry/no-op maintenance can preserve accepted bytes under their existing acceptance chain but cannot authorize an Editor on stale scope/surface bindings. These constraints trade automation for an honest first release; they must not be described as today's runtime behavior.
+
+D1-D5 amendments do not imply shipped public schema files, implemented enforcement or activation. D6-D8 remain later-vNext work. All 18.1 implementation/qualification checkboxes remain open.
+
+#### 18.1 Current-Runtime Preservation Bridge
+
+First deliverable: one integrated, opt-in guarded full-draft acceptance path with deterministic evidence, rejection, readback and replay. Dependencies: resolve D1-D5. Stage internal commits in the order below, but do not advertise the bridge until the complete acceptance gate passes.
+
+- [ ] Ratify bridge-specific admission and publish the minimal operator-approved `bounded-change-surface-v1` manifest, linked machine inventory and `current-runtime-preservation-bridge-report-v1` schemas with positive/negative fixtures. Validate types, unknown fields, allowed/frozen references, numeric limits, operator evidence, base/inventory binding and scope intersection before Editor invocation; freeze each attempt's contract snapshot and expose it in prompt/context manifests.
+- [ ] Build the versioned structural section/unit inventory and deterministic comparison using heading path, unit type and defined parent position/ordinal. Cover preamble, parent bodies, normative statements, schemas/fields, tables/rows, enums, flags, artifacts, states, scenarios and references, including nesting/overlap. Exclude fenced pseudo-headings, preserve unauthorized units by default, require total base-unit disposition and separately enumerate additions. Ambiguous correspondence remains failure.
+- [ ] Persist raw proposal bytes and materialize separate proposed output through the defined Orchestrator transformations. Bind both exact-byte hashes and the ordered transformation evidence; run preservation on the final materialized bytes before any authoritative writes or accepted history. Keep normalized lineage hashes separately labeled.
+- [ ] Enforce allowed sections/units/types and numeric caps, including source/destination ownership for moves, operator-authorized deletion/weakening, and evidenced supersession. Keep size ratios advisory; preserve current corruption and placeholder checks. Do not mistake clarity, shortening, or reviewer silence for semantic equivalence.
+- [ ] Integrate the same acceptance service into both normal and resumed Editor paths, including vertical consolidated editing and focused/horizontal paths. Reject before authoritative `draft_after.md`, canonical accepted summary/hash, `spec.md`, accepted history/version advancement, stability, Phase 2 or strop can consume failed output. Test the `apply=true, accepted=false` path explicitly.
+- [ ] Persist immutable `full_draft_rewrite_attempt-M.md` and matching attempt report for every completed comparison, pass or fail. Retain raw invalid input under existing attempt policy. Report/attempt persistence or hash-validation failure cannot result in acceptance. Existing generic overwrite helpers cannot silently overwrite attempt evidence.
+- [ ] Bind reporting to the exact attempt and prior authoritative draft: extend run-state/status, validation/terminal reporting and readback with report path/hash, failed categories/units, accepted versus proposed hashes, and the precise supported next action. A passing report alone never means profile-clean or apply-back eligible.
+- [ ] Integrate D5's three-way replay/resume policy: technical failures alone may retry under unchanged frozen inputs; deterministic violations reject without automatic retry; legitimate scope-expansion/weakening choices pause. Changed authorization requires a new validated attempt. Advance attempt numbering without overwriting, reject altered bindings, and never resume from rejected bytes as the accepted base. Interrupted reports and repeated resume must not masquerade as completed acceptance.
+- [ ] Apply the bridge consumption guard at Phase 2 handoff and strop for runs declaring bridge support. Preserve the existing external-source hash check. Historical runs without bridge evidence remain explicitly legacy, not retrospectively verified or silently broken by a new required field.
+
+Likely surfaces: `live.py`, `config.py`, `cli.py`, `prompts.py`, `sections.py`, `hashing.py`, `artifacts.py`, `versioning.py`, `run_state.py`, `status.py`, `reports.py`, `termination.py`, `resume.py`, `live_phase1.py`, `live_phase2.py`, `apply_back.py`, `contracts.py`, the new minimal schemas, and the D1-D5 owning specs/Quickstart. A focused inventory/comparison module is justified; a parallel orchestration framework is not.
+
+Acceptance evidence:
+
+- [ ] Unit/conformance fixtures cover fenced pseudo-headings, duplicate/renamed headings, direct intro content, nested lists, table/enum/field loss, normative weakening, allowed/disallowed changes, ambiguous identity, stale authorization, and boundary counts. Legitimate unchanged/allowed additions and demonstrably preserved changes pass, preventing a reject-everything implementation.
+- [ ] Manifest/inventory fixtures cover frozen and unspecified surfaces, mismatched base/inventory approval, deterministic parent/ordinal identity, nested coverage, and explicit move/rename source/destination authorization. Reviewer fixtures prove an in-scope frozen-surface finding remains visible and cannot expand the active edit surface without operator approval.
+- [ ] Weakening fixtures prove that Editor claims and configuration permission alone fail; an exact valid operator decision yields `operator_authorized_weakened` only for the approved units/effect. Stale or mismatched decisions fail, unrelated loss still fails, and missing equivalence/supersession evidence cannot be replaced with a weakening approval.
+- [ ] Materialization fixtures cover a genuine Orchestrator version stamp, no-transform identity, Editor-authored version edits, tampered raw/materialized bytes or transform parameters, materialization failure, and repeated resume. Final-output preservation must detect any unapproved materialized change, retain exact raw evidence, and prevent post-check mutation or double stamping.
+- [ ] Lifecycle fixtures distinguish transient technical retry, deterministic rejection with zero automatic retries, a legitimate scope/weakening pause, changed authorization producing a separate fully validated attempt, stale-base refusal, and a valid accepted no-op. Prove that paused/rejected output cannot advance via soft budgets, Phase 2, recovery or strop, and that technical resume never refreshes authorization.
+- [ ] Reproduce the motivating destructive bounded-synthesis incident class: a schema-valid full-draft response resolves targeted issues while collapsing unrelated contracts. Use a minimized checked-in fixture with expected lost-unit evidence; padding above size thresholds must not evade rejection. Historical ignored run artifacts may help derive the fixture but cannot be required for tests or committed wholesale.
+- [ ] Integration tests exercise initial/retry/resumed acceptance and vertical consolidated output with scripted clients. Failed proposals leave authoritative files/hashes and downstream eligibility unchanged; passing and failing attempts both persist; storage failures cannot advance authority. A legitimate subsequent retry succeeds without erasing evidence.
+- [ ] CLI-shaped fixture tests cover admission -> comparison -> report -> status -> supported resume -> Phase 2/strop guards, including existing no-op and version-stamping behavior. No real model is needed for this acceptance proof.
+
+Rollout: only explicitly admitted guarded runs after bridge ratification; keep existing full-draft client protocol compatible. Clearly label unguarded/legacy runs. Non-goals: patch proposals, candidate pointers/registration, new semantic-verifier calls, report-only bypass, default-wide scheduler changes, automatic synthesis, context trimming or pressure-based editing.
+
+#### 18.2 Public vNext Contracts And Conformance Foundation
+
+Dependencies: 18.1; resolve D6. This extends, rather than postpones, the bridge's already-shipped minimal contracts.
+
+- [ ] Publish the descriptor-bound contract-suite manifest and every schema listed in the candidate leaf's Public Contract Suite: authorities/ratification/invariants, section identities, decisions, mutation plan, patches, candidate creation/verification/disposition, preservation/semantic reports, promotion/current pointer and terminal report.
+- [ ] Define each schema's field ownership, nullability, unknown-field policy, canonical bytes, exact identity preimages, identifier grammar/collisions, versions and supported migrations. Separate model-input envelopes from Orchestrator-derived persisted fields.
+- [ ] Supply executable cross-artifact validators and positive/negative conformance vectors. Audit the in-repo schema validator's keyword support and add only the semantics the published contracts actually need; never silently ignore a required constraint.
+
+Likely surfaces: `contracts/schemas/`, proposed versioned conformance fixtures under `tests/fixtures/`, `contracts.py`, `hashing.py`, `tests/test_contracts.py`, and candidate/artifact/coordinating specs. Acceptance: identical canonical bytes/IDs for published vectors, rejection of unknown suites, missing fields, altered bindings and collisions; schema-valid but inconsistent artifact graphs fail. Rollout: offline contract validation only. Non-goals: live proposal generation, automatic promotion or historical artifact migration.
+
+#### 18.3 Job Admission And Mode Gates
+
+Dependencies: 18.2; resolve D7, including the processing transition table before scheduler wiring.
+
+- [ ] Admit immutable `job-descriptor-v2` with seed, authority, scope, invariants, algorithms and review configuration. Validate mode/suite support before clients or writes; changed inputs create a new identity.
+- [ ] Implement ratified CLI/config capability negotiation for `reviewer_only`, `proposal_only`, and `verified_promotion`, with unsupported modes rejected. Publish exact operator-facing unavailable/mismatch reasons. Reviewer-only is the vNext default; whole-document replacement is unavailable in all vNext modes.
+- [ ] Persist only the mode's permitted initialization artifacts, including the ordinal-0 seed pointer/history once their contract is implemented. Expose proposed versus available capability in status; refuse promotion until all later gates pass.
+
+Likely surfaces: `cli.py`, `config.py`, `run_state.py`, `status.py`, `prompts.py`, new descriptor admission helpers, corresponding tests, coordinating/candidate/scheduler specs and Quickstart. Acceptance: zero Editor/Verifier calls in reviewer-only, unsupported suite/mode fails before invocation, stale descriptor/ref hashes fail, legacy keys cannot activate a new mode. Rollout: new isolated vNext roots only; proposal mode remains unavailable until 18.5. Non-goals: upgrading an in-flight legacy run or treating file presence as capability support.
+
+#### 18.4 Admitted Mutations And Section-Addressed Proposals
+
+Dependencies: 18.3; D2/D3 bridge lessons must be reconciled with the vNext identity/evidence contracts.
+
+- [ ] Classify findings against authority/scope/invariants, bind operator responses, and admit only editor-fixable derived tasks. Build section-sliced mutation plans whose union is the admitted finding set and whose dependency ordering/overlap is validated.
+- [ ] Implement stable section identities separately from existing canonical review anchors, immutable payload storage, client patch proposals and canonical Orchestrator-owned patch metadata. Enforce declared operations, assertions, predecessor hashes and mutation budgets.
+- [ ] Reject unsupported operations, duplicate/overlapping targets, identity collisions, stale decisions and whole-draft responses. Keep proposal attempts inspectable without making them candidate or draft authority.
+
+Likely surfaces: `scope.py`, `decisions.py`, `identity.py`, `sections.py`, `clients.py`, `protocols.py`, `prompts.py`, dedicated proposal/plan modules, public contracts and focused tests. Acceptance: a bounded admitted correction yields one validated patch set with traceable source findings; a mixed proposal containing an unauthorized deletion is rejected. Rollout: fixture-driven, non-promoting artifacts; public proposal workflow still gated until assembly/registration. Non-goals: prose-to-patch inference, automatic operator decisions, expanding scope to satisfy a Reviewer.
+
+#### 18.5 Candidate Assembly, Validation And Registration
+
+Dependencies: 18.4; resolve D8's registration exclusion/storage protocol before enabling concurrent registration.
+
+- [ ] Assemble deterministically from the immutable base and canonical patch/payload hashes, deriving and binding the candidate section identity map. Check parser, structure, assertions, invariants, inventories and allowed surface with reusable bridge primitives where their contracts match.
+- [ ] Implement candidate identity, immutable candidate directories, initial unverified disposition and run-wide creation-event registration. Select latest through the unique contiguous committed chain; preserve and diagnose incomplete orphans without timestamp/directory heuristics.
+- [ ] Exercise proposal-only from admitted request through inspectable registered candidate and deterministic report while seed authority remains unchanged. Passing deterministic validation must not label a candidate verified.
+
+Likely surfaces: dedicated assembler/candidate-store/registration modules, `artifacts.py`, contracts, section/inventory helpers, `status.py`, and candidate/artifact specs. Acceptance: repeat assembly yields identical bytes/maps/IDs; altered payloads/maps, duplicate registrations, crashes and competing registrations obey the contract. Rollout: opt-in `proposal_only` after its supported subflow qualifies; no promotion intents or pointer advancement. Non-goals: semantic approval, recovering orphan content by guessing, or replacing the legacy scheduler wholesale.
+
+#### 18.6 Independent Semantic Verification And Disposition
+
+Dependencies: 18.5.
+
+- [ ] Add the independent verifier protocol with bounded but sufficient base/candidate context, admitted findings, preservation obligations and authority constraints. Validate all returned evidence and exact input bindings; Editor self-certification is insufficient.
+- [ ] Implement immutable verification attempts, per-finding coverage, candidate decisions, disposition events and atomic candidate-local verification-pointer commit. Distinguish validation pass, candidate verified/rejected, and interrupted unverified state.
+- [ ] Keep retries on the correct immutable base and plan; any proposed reduced patch is a new validated proposal, not an in-place edit of a registered candidate.
+
+Likely surfaces: `clients.py`, `protocols.py`, `prompts.py`, candidate verification modules, `artifacts.py`, `status.py`, decision/report contracts and tests. Acceptance: useful fix plus unrelated regression fails; missing findings, stale hashes, invalid output, timeout and torn decision/event writes cannot verify a candidate. A successful proposal-only verification still leaves the current verified seed untouched. Rollout: proposal-only soak with scripted verification first. Non-goals: verifier quorum, auto-ratification, bypassing deterministic failures or promotion.
+
+#### 18.7 Atomic Promotion, Locking And Recovery
+
+Dependencies: 18.6 and ratified D8.
+
+- [ ] Implement the fenced run-wide lock mutually excluding registration and promotion, then promotion intents, prepared disposition events, ordinal-indexed pointer snapshots and the atomic current-verified replacement commit point.
+- [ ] Implement current committed lineage validation, sole next-ordinal claimant selection and post-commit materialization recovery in the specified order. Materialize `spec.md`, `draft_after.md`, history and state only from the committed authority.
+- [ ] Make lock loss, competing preparation, stale base, missing map, interrupted pointer replacement and failed materialization explicit recoverable/rejecting cases under the storage contract. Read-only status must not repair anything.
+
+Likely surfaces: isolated lock/promotion/recovery modules, `artifacts.py`, `run_state.py`, `status.py`, `resume.py`, storage/conformance fixtures, candidate/artifact specs. Acceptance: fault injection at every prepare/commit/materialization boundary and concurrent processes prove at most one valid next ordinal, no stale-holder writes, and repeatable recovery. Rollout: offline/fixture promotion capability first; public automatic mode remains gated. Non-goals: unsupported distributed storage semantics or manual edits to current pointers.
+
+#### 18.8 Scheduler, Phase 2 And Apply-Back Integration
+
+Dependencies: 18.7; complete the D7 transition table and candidate leaf's Ratification Delta Map across all owning leaves.
+
+- [ ] Integrate the candidate transaction into normal, focused, vertical, retry, budget-extension and supported resume paths without changing profile budgets or cleanliness policy. Keep run terminal state orthogonal to candidate disposition.
+- [ ] Make accepted-draft selection, version lifecycle, review history, declaration regeneration, Phase 2 verification and convergence resolve only the current verified lineage. Candidate existence, a clean Reviewer, or a verified-but-unpromoted candidate cannot advance these consumers.
+- [ ] Bind strop/readback to the current verified pointer, candidate/map/decision/intent evidence, decision gates and external source hash. Ensure legacy manual-recovery flags cannot label unverified material verified or bypass vNext eligibility.
+- [ ] Report prior authority, latest candidate, orphan/rejected evidence, outstanding decisions, next gate and supported resume action on every relevant terminal path. Preserve earlier attempt reports and committed history.
+
+Likely surfaces: `live.py`, `runner.py`, `engine.py`, `live_phase1.py`, `live_phase2.py`, `scheduler.py`, `resume.py`, `evaluation.py`, `declaration.py`, `versioning.py`, `apply_back.py`, `termination.py`, `reports.py`, `status.py`, `run_state.py` and their tests; all ratification-delta leaves and Quickstart. Acceptance: CLI-shaped fixture campaigns exercise both phase boundaries, closeout, budgets, interruptions and strop; no candidate failure advances draft authority or convergence. Rollout: new-root end-to-end qualification, preserving existing legacy behavior through explicit mode dispatch. Non-goals: retroactive verification, in-place legacy conversion, changing convergence criteria to hide incomplete verification.
+
+#### 18.9 Compatibility, Qualification And Controlled Activation
+
+Dependencies: 18.1-18.8, all D1-D8 closed, all family amendments consistent.
+
+- [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.
+- [ ] Run the full regression suite plus process/CLI and fault-injection conformance; demonstrate that legacy runs, reviewer-only audits/sweeps, bridge runs and proposal-only jobs retain their declared behavior. Publish exact tested schema/algorithm/client versions and known limits.
+- [ ] Perform a separately authorized isolated live soak only after deterministic gates pass; inspect both successful and rejected proposals and preservation evidence. No source apply-back is implied by qualification.
+- [ ] Advertise `verified_promotion` only for the supported suite that passed the complete activation gate. Document new-root seed import, unsupported-version refusal, immutable input rules, operator recovery, and how to disable future automatic jobs without rewriting active descriptors or historical artifacts.
+
+Likely surfaces: conformance fixtures/tests, release metadata, coordinating and all amended leaves, Quickstart and examples. Acceptance: every P0 row has reproducible evidence; no advertised mode exceeds qualified support; legacy accepted hashes are never presented as candidate verification proof. Rollout: explicit opt-in promotion, then observation before considering wider defaults. Non-goals: automatic legacy migration, project-wide spec tracking, semantic quorum, UI work or unrelated scheduler optimization.
+
+#### Verification And Next Action
+
+Use the existing `unittest` architecture: pure unit fixtures, injected Reviewer/Editor/Verifier clients, scripted multi-profile scheduler campaigns, fake configured executables for CLI/subprocess boundaries, and filesystem fault injection. The nearest existing tests are `test_live.py`, `test_resume.py`, `test_live_phase1.py`, `test_live_phase2.py`, `test_contracts.py`, `test_sections.py`, `test_artifacts.py`, `test_status.py`, `test_reports.py`, `test_cli.py`, `test_apply_back.py`, `test_runner.py` and `test_engine.py`. Add focused bridge/candidate tests where responsibility warrants them; do not rely on live model consistency for deterministic acceptance.
+
+Next action: bounded reviewer-only audit of the D1-D5 owning-spec amendments described under D1-D5 Readiness, then resolve audit findings before implementing 18.1. No production bridge activation or vNext implementation is authorized by writing this plan. Feature completion means all slice checks have evidence, not that files with proposed names exist.
+
 ## Identity-System Notes
 
 Whetstone uses three identity surfaces:
@@ -1049,7 +1316,7 @@ Known live-build risk areas:
 - [ ] CLI output discipline: clients may emit malformed JSON or schema-near misses
 - [x] Phase 2 hash poisoning: mitigated by Orchestrator-computed oscillation identity fields
 - [x] Section anchor drift: mitigated by canonical section IDs and Phase 2 section validation
-- [ ] Editor mutation safety: editor output can be valid while still producing undesirable draft changes
+- [ ] Editor mutation safety: editor output can be valid while still producing undesirable draft changes; delivery tracked in [18. Safer Editor Pipeline](#18-safer-editor-pipeline)
 - [ ] Prompt snapshot completeness: replay depends on prompt, config, client, model, and rubric hashes
 - [ ] Resume safety: partial artifacts must not be treated as accepted round packets
 - [ ] Live client version capture: configured and observed client versions may diverge

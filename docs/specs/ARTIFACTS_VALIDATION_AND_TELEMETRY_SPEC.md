@@ -98,7 +98,7 @@ draft_after_content: string | null   # required in editor-generated applied revi
 
 `modified_feedback_ids` are feedback items accepted in substance but implemented with materially different wording, structure, or placement than the reviewer recommended.
 
-When an applied live round expects the Editor to generate a revised draft, the Editor response MUST include `draft_after_content` containing the complete revised draft text. The Editor response MAY set `draft_after_hash` to null or an implementation-specific placeholder in this generated-revision input. The Orchestrator MUST treat `draft_after_content` as the input authority for the revised draft, compute `draft_after_hash` from that content, inject the computed hash before persisted artifact validation, write the content to `draft_after.md`, and only then mutate `spec.md`.
+When an applied live round expects the Editor to generate a revised draft, the Editor response MUST include `draft_after_content` containing the complete revised draft text. The Editor response MAY set `draft_after_hash` to null or an implementation-specific placeholder in this generated-revision input. The Orchestrator MUST treat that content as client input, not authority to replace a validated draft. Under legacy behavior it computes and injects `draft_after_hash` from that input before persisted validation, writes validated content to `draft_after.md`, and only then mutates `spec.md`. An explicitly guarded run MUST instead use the materialized bytes and acceptance ordering in the bridge contracts below; no raw proposal may be written as authority merely because its JSON validates.
 
 Persisted `editor_summary.json` MUST contain the Orchestrator-computed `draft_after_hash`. The Editor is not authoritative for derived hashes in editor-generated applied revisions.
 
@@ -110,12 +110,12 @@ The Orchestrator MUST reject destructive Editor-generated draft replacements bef
 - near-empty replacements that are destructively smaller than a large non-empty draft
 - forbidden text-corruption characters in `draft_after_content`
 
-For guarded current-runtime workflows, including bounded synthesis, allowed-surface repair jobs, focused synthesis passes, and any mode that constrains a full-document Editor response, the Orchestrator MUST also run the current-runtime preservation bridge defined by `CANDIDATE_EDITING_AND_PROMOTION_SPEC.md` before accepting `draft_after_content`. The bridge MUST compare the proposed draft against the pre-Editor draft using canonical section IDs and inventoried preservation units, not only line counts or character ratios.
+For runs explicitly admitted with supported `preservation_bridge.mode = enforce`, the Orchestrator MUST also run the current-runtime preservation bridge defined by [Candidate Editing And Promotion](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge). Compare materialized output against the exact pre-Editor base using the versioned bridge inventory, not only line counts, character ratios or legacy review section IDs. This is a specified capability pending implementation/qualification, not an assertion that current full-draft runs are guarded.
 
 The bridge MUST classify base units with the preservation disposition vocabulary:
 
 ```text
-preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | operator_authorized_weakened | unauthorized_deleted | ambiguous
 ```
 
 The Orchestrator MUST reject automatic draft acceptance when bridge comparison finds an `unauthorized_deleted` or `ambiguous` protected unit, unauthorized weakening, disallowed change outside the bounded change surface, unauthenticated supersession, or replacement of concrete contracts with summaries, ellipses, placeholders, or "unchanged" references. Reviewer silence and a schema-valid `editor_summary.json` do not satisfy this preservation check.
@@ -130,50 +130,132 @@ When `draft_after.md` is supplied by an external fixture or explicit Orchestrato
 
 When a `declined_feedback` item has `decline_reason = deferred_to_later_round`, `target_profile` and `target_round_or_phase` MUST be non-null strings. For every other decline reason, they MAY be null.
 
+### Current-Runtime Preservation Bridge Contracts
+
+These are public specification contracts for the pending `preservation-bridge-v1` capability, not implemented schema files. They are independent of the vNext contract suite. The capability MUST NOT be advertised until equivalent closed schemas, validators and conformance fixtures ship. All declared fields are required unless explicitly optional; unknown fields fail, arrays are ordered and duplicate-free, integers exclude booleans, and hashes are 64 lowercase hexadecimal SHA-256 characters. `Ref` means exactly `{path: string, sha256: sha256}` over persisted bytes. Paths MUST be relative to the run root, resolve within it without symlink escape, and identify regular files. Missing files, changed bytes or unsupported schema/algorithm versions fail closed. Client output never owns these hashes.
+
+#### Approved Change Surface
+
+```yaml
+schema_version: bounded-change-surface-v1
+base_draft: Ref
+inventory: Ref
+scope_contract: Ref
+finding_sources:
+  - artifact: Ref
+    feedback_ids: [string]
+allowed_sections: [string]
+allowed_unit_ids: [string]
+frozen_sections: [string]
+frozen_unit_ids: [string]
+allowed_change_types: [add | clarify | strengthen | move | rename | reword | supersede | delete | weaken]
+relocations:
+  - source_unit_ids: [string]
+    destination_section: string
+    change_type: move | rename
+deletion_allowed: boolean
+weakening_allowed: boolean
+authorized_deletion_unit_ids: [string]
+authorized_supersession_unit_ids: [string]
+max_changed_sections: integer | null
+max_changed_normative_units: integer | null
+approval:
+  approved: true
+  approved_by: string
+  approved_at: RFC3339 UTC timestamp
+```
+
+The inventory's exact base MUST match `base_draft`; all existing IDs/sections MUST resolve there. New allowed destination sections use the parser's canonical path syntax and MUST NOT collide with existing IDs. Empty lists allow nothing; null limits mean no numeric cap, otherwise limits are non-negative. Deletion/supersession lists are subsets of allowed units; allowed/frozen conflicts, impossible relocations and orphan permission flags fail admission. Scope approval requires `status = approved`, `approval.approved = true` and a nonempty operator identity. Finding artifacts MUST be validated persisted Reviewer feedback for the exact base (their normalized hash is checked against the exact base), with every named ID present and in scope. Source identity is the pair of artifact SHA-256 and feedback ID, not bare ID alone.
+
+Create the manifest's transitive inputs as immutable run-local files before operator approval, including an exact base snapshot rather than mutable `spec.md`, and a scope snapshot rather than a replaceable intake file. Inventory references the immutable base; manifest references that inventory and immutable scope/findings. Admission may make byte-identical context copies but MUST NOT rewrite internal paths or recompute approval over changed artifact bytes. Original referenced snapshots must remain available for later chain validation. The same rule applies to evidence. An imported `predecessor_report` is an opaque, hash-checked historical reference, not part of the new root's acceptance chain; retain the original root for inspecting its transitive references and do not rewrite them to resolve against new artifacts. Snapshot storage is authorized local Orchestrator work, never an Editor-write surface.
+
+`finding_sources = []` permits an unchanged no-op but no client mutation. New Reviewer findings do not automatically join this list. A later finding or base change requires a newly approved surface. The operator approval asserts that the listed finding/action surfaces fit the pinned scope; Whetstone validates IDs, scope status and the approval rather than pretending to mechanically infer arbitrary prose intent. Scope and manifest both remain visible to review.
+
+#### Inventory And Parser
+
+`bridge-inventory-v1` has `schema_version`, `parser_version = bridge-lines-v1`, `base_draft: Ref`, `sections`, and `units`. The Orchestrator produces it; approval references it but cannot change parser output. Recompute it to validate it, rather than trust supplied IDs.
+
+The parser consumes strict UTF-8 with no replacement decoding. Recognize physical lines using LF, CRLF or CR, retaining each exact byte slice and terminator. A final unterminated line is a line; a final terminator does not invent an additional empty line. Every byte belongs to exactly one line unit, including separators and a UTF-8 BOM when present. Non-UTF-8 input is invalid, not normalized away.
+
+Only ATX headings of one through six `#` characters followed by space/tab or end of line, with at most three leading spaces, create sections. Fences begin with at least three identical backticks or tildes after at most three leading spaces and end with the same character at equal-or-greater length and only trailing whitespace. No heading is recognized inside a fence; an unclosed fence consumes the remaining lines. Setext and indented headings remain body content in this version, not guessed hierarchy. Heading parents are the nearest preceding shallower heading; missing levels are legal. Root/preamble is a section with path `[]`.
+
+Canonical section paths are compact JSON arrays of `[heading_text, same_text_sibling_ordinal]` segments from the root. Strip heading markers, optional closing markers preceded by whitespace, and outer space/tab from the title; preserve case, Unicode and internal whitespace without slugging. Ordinals are one-based among equal titles under that exact parent. `section_id` is this serialized path string. Section records contain `section_id`, nullable `parent_section_id`, `heading_unit_id` (null only for root), and ordered `direct_unit_ids`; descendants are not duplicated into that list.
+
+Every line unit contains `unit_id`, `section_id`, `kind`, `ordinal`, `byte_start`, `byte_end`, `content_sha256`, and `normative`. Spans are zero-based half-open byte ranges over the exact base, collectively partitioning all bytes. Kinds, in priority order, are `heading`, `fence_delimiter`, `fence_body`, `separator` (space/tab only without terminator), and `body`. Ordinal is one-based among the same kind directly owned by that section. A heading belongs to its new section, including its own heading unit. All other lines belong to the most recent section, so Markdown does not invent parent ownership for prose after a child's heading. Parent intro and child trailing text are never omitted.
+
+Unit IDs are `u_` plus the full SHA-256 of UTF-8 canonical JSON `["bridge-lines-v1", base_sha256, section_id, kind, ordinal]`, using compact separators and unescaped Unicode. `content_sha256` hashes the exact line bytes. `normative` is true iff the decoded line contains a case-sensitive whole word `MUST`, `SHALL`, `SHOULD`, `MAY`, `REQUIRED`, `RECOMMENDED` or `OPTIONAL`, with word boundaries defined by ASCII letters/digits/underscore. Unmarked lines are still protected. An ID collision or non-partitioning span set is invalid. Materialized inventories use the same algorithm and their own exact draft hash; identities are not cross-draft semantic IDs.
+
+Identical section direct-content sequences match positionally even when duplicates exist. Otherwise correspondence uses exact kind/content matches in that section and is accepted only if the maximum order-preserving matching is unique; multiple matchings are `ambiguous`. There is no similarity threshold. Remaining units require hash-bound operator correspondence evidence or receive removed/added/ambiguous treatment according to the candidate leaf. Container and semantic aggregates are not additional counted units, avoiding overlap/double counting; protection of a contract covers all its lines, including schema fields, table rows and prose enumerations. This conservative physical granularity means reflow alone may need an equivalence attestation; it is not automatic semantic verification.
+
+`max_changed_sections` counts distinct source/destination canonical section paths affected by non-preserved dispositions or additions. `max_changed_normative_units` counts distinct normative base units with non-preserved dispositions plus normative added units; matched successors are not counted again. Moves count source units once and both sections. Attested many-to-one supersession counts each base predecessor once. Trusted version-only spans are exempt only from the transform's exact changes, never from nearby client changes. Empty drafts and absence of recognized headings remain inventoryable; existing destructive-output checks still apply.
+
+#### Attempt Storage And Materialization
+
+Each admitted execution allocates a new positive monotonic `M` within round `N`, including technical retries, supplied fixtures and no-ops. `M` is the bridge attempt number, not necessarily the client retry number; record the latter separately. Never reuse even an incomplete attempt number. Before invocation create `rounds/round-N/preservation/attempt-M/admission.json` and immutable input snapshots beneath that directory. Do not overwrite the old round-level `context/bounded_change_surface.json` to change authorization.
+
+Admission schema `preservation-bridge-admission-v1` contains `schema_version`, `capability_version = preservation-bridge-v1`, `round_number` (positive integer), `attempt_number` (positive integer), `phase` (`phase_1 | phase_2`), `profile` (nonempty string), `origin` (`editor | supplied_revision | orchestrator_noop | phase2_entry`), nullable positive `client_attempt_number`, `base_draft`, `inventory`, `scope_contract`, `allowed_change_surface` (all Refs), `finding_sources` (same records as the manifest), `operator_evidence` (array of Refs), nullable `predecessor_report` (Ref), and `transform_policy_version = bridge-version-transform-v1`. All artifact references point to immutable snapshots. Reviewer contexts remain read-only; Editor contexts additionally identify the admitted surface, exact base and no-expansion instructions. The admission is included by path/hash in context/prompt/attempt manifests.
+
+Persist the original client response through existing attempt storage. Strictly JSON-decode `draft_after_content`; encode that string as UTF-8 without newline, whitespace, Unicode or replacement normalization into `rounds/round-N/full_draft_rewrite_attempt-M.md`. This is the raw draft proposal, not the response envelope. Invalid JSON/Unicode may leave only raw response evidence. Supplied revisions retain exact file bytes; no-op/Phase 2 entry raw proposals equal base bytes.
+
+Persist materialized bytes separately as `rounds/round-N/materialized_draft_attempt-M.md`. The only trusted transform is `version_stamp`, version `bridge-version-transform-v1`, implementing the scheduler's specified round or Phase 2 entry stamp (including its explicitly required `Status: Accepted` demotion). It may replace only selected version/status value spans, preserving all other bytes. Parameters contain exactly `event` (`phase1_revision | phase2_revision | phase2_entry`), `phase` (`phase_1 | phase_2`) and `changes`, an array of `{kind: version | status, base_byte_start: integer, base_byte_end: integer, input_byte_start: integer, input_byte_end: integer, before: string, after: string}`. Ranges are non-negative half-open UTF-8 offsets, ordered, non-overlapping and bound to equal old values in base/raw input; values cannot contain line breaks. Verify new values by the pinned scheduler algorithm, not by trusting parameters. Input/output hashes are separate transformation fields. An ordered transform list is empty for a true no-op or unsupported/absent anchor. Ambiguous anchors fail, as in existing version rules. Editor-altered anchors fail `untrusted_version_edit` before stamping; no automatic restoration is trusted.
+
+For unit correspondence and changed-section counting only, reverse the verified stamp's section-path/title changes to their raw names. The transformation provides the exact line/span mapping, including descendants whose canonical paths include a stamped heading. Materialized inventories and hashes still describe actual final bytes. Treat only recorded version/status value spans as trusted; every other difference on the same line or in descendants remains subject to ordinary preservation. This prevents either rejecting all descendants after a legitimate heading stamp or exempting adjacent Editor changes.
+
+Only a round otherwise eligible for accepted mutation receives a revision stamp. Rejected/unresolved content receives no increment and cannot become authority. A prospective stamp is not an accepted history event. Recompute all transform outputs from immutable inputs under the pinned implementation; do not apply them twice on resume. Materialized inventories, preservation checks and canonical Editor summary hashes are computed only from the final bytes. The compatibility `draft_hash` is separately recorded using the existing normalization algorithm.
+
+Phase 2 entry uses the same contract under `rounds/preservation/phase2-entry/attempt-M/`, with files `admission.json`, `raw_proposal.md`, `materialized_draft.md`, `materialized_inventory.json`, `report.json` and `acceptance.json`, `round_number = null`, `client_attempt_number = null`, and `profile = null`. Its immutable admission inherits the last accepted bridge authorization; it permits ONLY the specified Orchestrator version/status transform over that accepted base, not an Editor call or other content change. This narrowly defined maintenance operation does not rebind an Editor's allowed surface to a new base. Any later editing requires a newly base-bound surface.
+
+An Orchestrator-owned reviewer-only no-op may likewise inherit the accepted marker's prior surface for provenance, with a newly generated inventory of current accepted bytes. In these two maintenance origins only, an older surface/base binding is permitted through the validated acceptance chain, and no mutation except the exact Phase 2 entry stamp is authorized. All other origins require exact current surface/base/inventory equality. Initial seed no-ops without a prior accepted marker require normal admission. Preflight must distinguish a valid maintenance-only path from authorization to invoke an Editor; discovering new findings never converts the former into the latter automatically.
+
 ### Current-Runtime Preservation Bridge Report
 
-For each completed guarded full-draft comparison, the Orchestrator MUST produce `rounds/round-N/preservation_bridge_report_attempt-M.json` and preserve the compared text at `rounds/round-N/full_draft_rewrite_attempt-M.md`. `N` is the absolute round number and `M` is the one-based Editor attempt number within that round. Attempt artifacts are immutable; retries MUST use a new attempt number and MUST NOT overwrite earlier evidence. This report is separate from the vNext candidate-specific `preservation-report-v1`.
-
-The rewrite-attempt artifact is required for both passing and failing comparisons and remains non-authoritative evidence in either case. Only the normal draft-acceptance path, after all required checks pass, may make its bytes the accepted draft; preserving the attempt alone grants no draft authority.
-
-Minimum required fields:
+Every attempt that reaches a terminal outcome MUST persist `rounds/round-N/preservation_bridge_report_attempt-M.json`; incomplete/interrupted attempts retain existing evidence without fabricated outputs. These reports are distinct from vNext `preservation-report-v1` and never confer candidate authority.
 
 ```yaml
 schema_version: current-runtime-preservation-bridge-report-v1
-round_number: integer
-attempt_number: integer
-phase: phase_1 | phase_2
-profile: string
-base_draft_path: string
-base_draft_hash: sha256
-proposed_rewrite_path: string
-proposed_draft_hash: sha256
-bounded_change_surface_path: string
-bounded_change_surface_hash: sha256
+admission: Ref
+stage: admission | client | materialization | comparison | persistence | complete
+raw_response: Ref | null
+raw_proposal: Ref | null
+materialized_draft: Ref | null
+materialized_inventory: Ref | null
+materialized_draft_hash: sha256 | null  # normalized compatibility hash, not exact SHA-256
+transformations:
+  - id: version_stamp
+    version: bridge-version-transform-v1
+    parameters: object  # closed event/phase/changes record defined above
+    input_sha256: sha256
+    output_sha256: sha256
 unit_dispositions:
   - unit_id: string
-    disposition: preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+    disposition: preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | operator_authorized_weakened | unauthorized_deleted | ambiguous
     successor_unit_ids: [string]
-    finding_ids: [string]
-    evidence_refs:
-      - path: string
-        hash: sha256
+    finding_refs: [{artifact_sha256: sha256, feedback_id: string}]
+    evidence_refs: [Ref]
     rationale: string
 added_unit_ids: [string]
 failures:
-  - category: unauthorized_deleted | ambiguous | disallowed_weakening | allowed_surface_overrun | unauthenticated_supersession | contract_collapse
+  - category: invalid_binding | invalid_artifact | unauthorized_deleted | ambiguous | disallowed_weakening | allowed_surface_overrun | unauthenticated_supersession | contract_collapse | untrusted_version_edit | unsupported_transform | client_timeout | transient_client_failure | persistence_failure
     affected_unit_ids: [string]
     reason: string
-validation_result: pass | fail
+validation_result: pass | fail | not_completed
+outcome: eligible | rejected | paused | technical_failure
+next_action: none | technical_resume | new_authorized_attempt | inspect_and_repair
 ```
 
-All paths MUST be run-root-relative and resolve inside the run root. The Orchestrator owns every hash and MUST compute SHA-256 over the exact persisted artifact bytes; Editor-supplied hashes are not authoritative. `base_draft_path` MUST resolve to that round's immutable `draft_before.md`, whose hash matches the prior validated draft. `proposed_rewrite_path` MUST resolve to that attempt's preserved full draft, and `bounded_change_surface_path` to the validated pre-Editor contract snapshot. Evidence references MUST resolve to immutable artifacts, including any relied-upon findings, operator decisions, and equivalence/supersession evidence, with the bindings required by the candidate-editing leaf's bridge rules.
+For a completed comparison, require both text Refs, the materialized inventory and compatibility hash, exactly one disposition for every base unit, and separate added-unit enumeration. Successors MUST exist; duplicate claims fail unless attested supersession permits them. Every changed/added unit has admitted finding attribution, except exact trusted transform spans. Authorized weakening/deletion and every equivalence/supersession claim MUST name admissible operator evidence. `unauthorized_deleted`/`ambiguous` require matching failures. Include every failed check, not only the first. Empty affected IDs are permitted only for non-unit failures or impossible identity resolution with an explicit reason.
 
-The report MUST contain exactly one disposition per inventoried base unit, without duplicates or omissions. `added_unit_ids` lists proposed units absent from the base; successor IDs MUST resolve in the proposed inventory. Supersession requires at least one successor and supporting evidence. Authorized deletion and weakening require their operator authorization evidence. Unauthorized deletion or ambiguous disposition MUST have a corresponding failure. The failure list MUST include every failed authorization, preservation, and surface check; affected IDs identify base or added units as applicable. An empty affected-ID list is permitted only when identity cannot be resolved, with the reason recorded and the comparison failed as `ambiguous`.
+Every added unit also requires `attest_addition` evidence; changed meaning of text retained verbatim must use its actual authorized disposition. `added_unit_ids` is not an evidence loophole. Output unit coverage MUST account for the entire materialized inventory as either a matched successor or an explicitly listed addition, never both.
 
-`validation_result = pass` if and only if all bridge checks pass and `failures` is empty. The scheduler's draft-acceptance path MUST validate report schema, hashes, inventory coverage, evidence bindings, and result consistency before it can accept the proposed draft. A missing, malformed, unwritable, or hash-inconsistent report MUST fail artifact validation and preserve the prior draft as authoritative. A bridge pass does not bypass other draft validation or establish profile cleanliness, convergence, or apply-back eligibility.
+`pass` requires completed comparison and zero failures; `eligible` is possible only with `pass` and does not itself mean accepted. `paused` requires only the scope/weakening authorization failures allowed by the scheduler, while `rejected` means deterministic failure. `not_completed` means comparison could not finish and cannot claim total dispositions or pass; nullable outputs reflect only actually available evidence. A deterministic pre-comparison error is still rejected without retry, not reclassified as transient because comparison did not finish. Invalid/missing report persistence prevents acceptance even if the comparison would pass.
 
-Terminal/validation reporting and operator inspection consume the attempt report by path and hash; they MUST NOT infer its result from directory order or the mere presence of proposed bytes. Rejected-attempt reporting MUST retain the original failure evidence even if a later attempt succeeds.
+Before authoritative writes, validate schema, references, inventory reproduction/coverage, transforms, disposition/evidence consistency, outcome and compatibility hash. Persist a separate immutable `acceptance.json` beside `admission.json` only after all normal round gates also pass. Schema `preservation-bridge-acceptance-v1` contains `schema_version`, `admission: Ref`, `report: Ref`, `materialized_draft: Ref`, `materialized_draft_hash: sha256` (normalized), `accepted_noop: boolean`, and `previous_acceptance: Ref | null`. Phase 2 entry uses the same marker in its special directory. The first accepted guarded attempt uses null only for the explicitly recorded original seed. No mutation after validation is permitted.
+
+A failure after a completed report was persisted MUST NOT rewrite it. If storage permits, write `terminal_failure.json` beside admission with schema `preservation-bridge-terminal-failure-v1` and fields `schema_version`, `admission: Ref`, `report: Ref | null`, `category` (`persistence_failure | invalid_binding`), `reason: string`, and `acceptance: Ref | null`. The ordinary terminal report references that artifact. A null acceptance means no commit; a valid non-null acceptance permits only the checked mirror-repair path. If even failure reporting cannot be persisted, return the technical error directly and refuse acceptance; absence of a report is never success.
+
+The marker is the bridge acceptance commit point, not a vNext promotion pointer. Enforce the current single-writer run assumption and atomic create-if-absent for each immutable artifact; interrupted temporary writes never count as artifacts. Identical replay can reuse a completed marker; different bytes at an occupied immutable path halt as `invalid_binding`. An interruption while updating normal mirrors/history after a valid marker is repaired from that marker's checked bytes, without another stamp or duplicated history event. A proposed/report-only file without the marker cannot drive that repair.
+
+Run state/status/terminal reporting MUST include `preservation_bridge` with `mode` (`enforce | legacy_unguarded`), nullable `capability_version`, nullable `latest_attempt_report: Ref`, nullable `accepted: Ref` (acceptance marker), nullable `pending_outcome`, and `next_action`. Effective config retains the pinned manifest and evidence references separately. Missing/broken evidence in an opted-in run MUST NOT be displayed as legacy. Preserve historical failed reports when later attempts succeed. These fields do not replace ordinary issue counts, profile verification or source-write safeguards.
 
 ### Decision Points
 
@@ -563,6 +645,8 @@ Validation retry policy:
 - retry prompt snapshots MUST include the validation errors that caused the retry
 - validation attempts do not advance the profile schedule and do not count as accepted review cycles
 - the round budget is consumed only after a reviewer artifact validates successfully
+
+Guarded Editor attempts are the exception: deterministic schema/content/preservation/binding failures receive no automatic validation retry. Only explicitly classified transient technical failures may use the remaining technical retry allowance under identical frozen admission inputs; timeouts still do not retry automatically. The [bridge lifecycle](SCHEDULER_STATE_AND_RESUME_SPEC.md#preservation-bridge-lifecycle) owns exact classification, pausing and continuation. Reviewer artifact retry behavior is unchanged; it cannot refresh an already frozen Editor admission.
 
 If the retry validates, the Orchestrator continues with the validated artifact.
 

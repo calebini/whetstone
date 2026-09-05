@@ -15,6 +15,14 @@ Whetstone persists every round under `rounds/`. The run is controlled by `rounds
 
 ## Recommended Defaults
 
+### Preservation Capability Notice
+
+The [current-runtime preservation bridge](specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) is specified but not yet implemented/qualified. Current full-draft editing is **not** made non-destructive by a bounded prompt, scope contract, or the CLI's historical "guarded" wording. For valuable drafts, keep an isolated source copy and use reviewer-only assessment when automatic rewriting is not acceptable.
+
+The reserved `preservation_bridge` configuration in the [coordinating spec](specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation) is not a runnable option today. Once supported, its intended procedure is: inventory the exact base, approve a bounded allowed/frozen surface against scope and findings, opt into enforcement, then inspect raw-versus-materialized attempts and their preservation reports. Technical resume will retain frozen authorization; changed permissions will require explicit new admission in a fresh root. Rejected output will remain evidence, never a seed chosen automatically by resume or strop. These are release requirements, not claims of existing runtime protection or instructions to try unsupported flags.
+
+### Normal Sharpening
+
 Use these defaults for normal spec sharpening:
 
 - workflow: `standard`
