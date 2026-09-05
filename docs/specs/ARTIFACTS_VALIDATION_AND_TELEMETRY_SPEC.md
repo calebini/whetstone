@@ -110,6 +110,18 @@ The Orchestrator MUST reject destructive Editor-generated draft replacements bef
 - near-empty replacements that are destructively smaller than a large non-empty draft
 - forbidden text-corruption characters in `draft_after_content`
 
+For guarded current-runtime workflows, including bounded synthesis, allowed-surface repair jobs, focused synthesis passes, and any mode that constrains a full-document Editor response, the Orchestrator MUST also run the current-runtime preservation bridge defined by `CANDIDATE_EDITING_AND_PROMOTION_SPEC.md` before accepting `draft_after_content`. The bridge MUST compare the proposed draft against the pre-Editor draft using canonical section IDs and inventoried preservation units, not only line counts or character ratios.
+
+The bridge MUST classify base units with the preservation disposition vocabulary:
+
+```text
+preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+```
+
+The Orchestrator MUST reject automatic draft acceptance when bridge comparison finds an `unauthorized_deleted` or `ambiguous` protected unit, unauthorized weakening, disallowed change outside the bounded change surface, unauthenticated supersession, or replacement of concrete contracts with summaries, ellipses, placeholders, or "unchanged" references. Reviewer silence and a schema-valid `editor_summary.json` do not satisfy this preservation check.
+
+When this bridge rejects a proposal, the proposed bytes MUST be persisted as a non-authoritative `full_draft_rewrite_attempt` for operator inspection, but MUST NOT be written as authoritative `draft_after.md`, copied to `spec.md`, used as `last_accepted_draft_hash`, marked profile-clean, advanced to Phase 2, or made apply-back eligible. This diagnostic artifact is not a vNext candidate and does not participate in candidate disposition, indexing, or promotion lineage. The terminal or validation report MUST reference the attempt's current-runtime preservation bridge report, including its failed categories and affected unit IDs.
+
 Forbidden text-corruption characters are Unicode category `Cc` control characters except LF, CR, and TAB, plus `U+FFFD` replacement characters. Such rejection is an artifact validation failure, not an accepted draft mutation. The invalid attempt MUST be persisted and the previous valid draft MUST remain authoritative.
 
 Apply-back preflight MUST run the same text hygiene validation against the final draft before writing to the source spec. A final draft that violates text hygiene MUST NOT be applied, even if the run predates the validation guard or was manually edited after convergence.
@@ -117,6 +129,53 @@ Apply-back preflight MUST run the same text hygiene validation against the final
 When `draft_after.md` is supplied by an external fixture or explicit Orchestrator input, `draft_after_content` MAY be null or omitted.
 
 When a `declined_feedback` item has `decline_reason = deferred_to_later_round`, `target_profile` and `target_round_or_phase` MUST be non-null strings. For every other decline reason, they MAY be null.
+
+### Current-Runtime Preservation Bridge Report
+
+For each completed guarded full-draft comparison, the Orchestrator MUST produce `rounds/round-N/preservation_bridge_report_attempt-M.json` and preserve the compared text at `rounds/round-N/full_draft_rewrite_attempt-M.md`. `N` is the absolute round number and `M` is the one-based Editor attempt number within that round. Attempt artifacts are immutable; retries MUST use a new attempt number and MUST NOT overwrite earlier evidence. This report is separate from the vNext candidate-specific `preservation-report-v1`.
+
+The rewrite-attempt artifact is required for both passing and failing comparisons and remains non-authoritative evidence in either case. Only the normal draft-acceptance path, after all required checks pass, may make its bytes the accepted draft; preserving the attempt alone grants no draft authority.
+
+Minimum required fields:
+
+```yaml
+schema_version: current-runtime-preservation-bridge-report-v1
+round_number: integer
+attempt_number: integer
+phase: phase_1 | phase_2
+profile: string
+base_draft_path: string
+base_draft_hash: sha256
+proposed_rewrite_path: string
+proposed_draft_hash: sha256
+bounded_change_surface_path: string
+bounded_change_surface_hash: sha256
+unit_dispositions:
+  - unit_id: string
+    disposition: preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+    successor_unit_ids: [string]
+    finding_ids: [string]
+    evidence_refs:
+      - path: string
+        hash: sha256
+    rationale: string
+added_unit_ids: [string]
+failures:
+  - category: unauthorized_deleted | ambiguous | disallowed_weakening | allowed_surface_overrun | unauthenticated_supersession | contract_collapse
+    affected_unit_ids: [string]
+    reason: string
+validation_result: pass | fail
+```
+
+All paths MUST be run-root-relative and resolve inside the run root. The Orchestrator owns every hash and MUST compute SHA-256 over the exact persisted artifact bytes; Editor-supplied hashes are not authoritative. `base_draft_path` MUST resolve to that round's immutable `draft_before.md`, whose hash matches the prior validated draft. `proposed_rewrite_path` MUST resolve to that attempt's preserved full draft, and `bounded_change_surface_path` to the validated pre-Editor contract snapshot. Evidence references MUST resolve to immutable artifacts, including any relied-upon findings, operator decisions, and equivalence/supersession evidence, with the bindings required by the candidate-editing leaf's bridge rules.
+
+The report MUST contain exactly one disposition per inventoried base unit, without duplicates or omissions. `added_unit_ids` lists proposed units absent from the base; successor IDs MUST resolve in the proposed inventory. Supersession requires at least one successor and supporting evidence. Authorized deletion and weakening require their operator authorization evidence. Unauthorized deletion or ambiguous disposition MUST have a corresponding failure. The failure list MUST include every failed authorization, preservation, and surface check; affected IDs identify base or added units as applicable. An empty affected-ID list is permitted only when identity cannot be resolved, with the reason recorded and the comparison failed as `ambiguous`.
+
+`validation_result = pass` if and only if all bridge checks pass and `failures` is empty. The scheduler's draft-acceptance path MUST validate report schema, hashes, inventory coverage, evidence bindings, and result consistency before it can accept the proposed draft. A missing, malformed, unwritable, or hash-inconsistent report MUST fail artifact validation and preserve the prior draft as authoritative. A bridge pass does not bypass other draft validation or establish profile cleanliness, convergence, or apply-back eligibility.
+
+Terminal/validation reporting and operator inspection consume the attempt report by path and hash; they MUST NOT infer its result from directory order or the mere presence of proposed bytes. Rejected-attempt reporting MUST retain the original failure evidence even if a later attempt succeeds.
+
+### Decision Points
 
 `decision_points.json` MUST contain:
 

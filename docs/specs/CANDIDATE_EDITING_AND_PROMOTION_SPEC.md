@@ -2,7 +2,7 @@
 
 Status: vNext design draft
 
-Version: `0.1`
+Version: `0.2`
 
 Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
 
@@ -554,9 +554,30 @@ The preservation comparison MUST classify every base unit as:
 unchanged | added | removed | modified | weakened | strengthened | moved | renamed | ambiguous
 ```
 
+The preservation decision layer MUST then assign every base unit one preservation disposition:
+
+```text
+preserved | moved | reworded_equivalent | strengthened | superseded | authorized_deleted | unauthorized_deleted | ambiguous
+```
+
+Disposition semantics:
+
+- `preserved`: the unit remains present with byte-identical or normalization-equivalent content.
+- `moved`: the unit remains present with equivalent semantics under a different valid owning section.
+- `reworded_equivalent`: the unit's wording changed, but deterministic comparison or semantic verification confirms that no normative meaning changed.
+- `strengthened`: the unit remains present and the change makes the requirement stricter or more explicit without changing authority, scope, or product policy.
+- `superseded`: the unit no longer appears as a distinct unit because a new or modified unit covers the same requirement with equal or stronger normative force.
+- `authorized_deleted`: the unit is intentionally removed under a valid operator decision and mutation-plan authorization.
+- `unauthorized_deleted`: the unit is removed, weakened beyond recognition, replaced by a placeholder, or omitted from the candidate without valid authorization.
+- `ambiguous`: the Orchestrator cannot deterministically classify the unit and semantic verification does not provide hash-bound evidence sufficient to resolve it.
+
+`superseded` is permitted only when the report identifies the predecessor unit ID, successor unit ID, admitted finding, allowed mutation surface, and the semantic-verification evidence proving equal or stronger coverage. `superseded` MUST NOT be used to hide broad summarization, section collapse, or deletion of concrete contract details. A superseding unit that changes product policy, authority, lifecycle legality, failure behavior, artifact shape, or acceptance criteria requires an operator decision unless the admitted finding and mutation plan explicitly authorize that exact change.
+
+`unauthorized_deleted` and `ambiguous` are preservation failures for automatic editing. They may produce inspectable candidate artifacts, but they MUST NOT update the current verified draft, mark the candidate verified, satisfy an admitted finding, or permit apply-back.
+
 Character count, line count, document size ratios, and generic similarity scores MAY be advisory signals. They MUST NOT satisfy preservation validation.
 
-Every removed normative unit MUST:
+Every removed normative unit that is not validly classified as `superseded` MUST:
 
 - be identified by stable unit ID;
 - be attributable to at least one admitted finding;
@@ -567,6 +588,8 @@ Every removed normative unit MUST:
 Every modified, weakened, moved, or renamed normative unit MUST be attributable to an admitted finding and allowed mutation surface. Requirement weakening always requires an operator decision.
 
 Replacing concrete contracts with placeholders, summaries, ellipses, statements that sections are unchanged, or vague references to removed material MUST fail preservation validation even if overall document size remains above a configured threshold.
+
+Large rewrites that may be productively useful but fail preservation MUST be quarantined rather than discarded or accepted. The Orchestrator SHOULD preserve the proposed bytes and related reports for operator inspection, with terminal reporting that explains which units were preserved, superseded, authorized for deletion, unauthorized for deletion, or ambiguous. A registered vNext candidate retains its candidate lifecycle and rejection evidence. Current-runtime full-draft output is instead a `full_draft_rewrite_attempt`, as defined below. Neither rejected form is eligible for Phase 1 stability, Phase 2 convergence, resume-as-current, or apply-back; any later authorized revision must pass the applicable validation path anew.
 
 ## Patch Protocol
 
@@ -1440,6 +1463,47 @@ The supported migration posture is:
 - legacy `last_accepted_draft_hash` MUST NOT be treated as proof of candidate verification;
 - legacy full-document Editor responses MUST NOT be converted into section patches by inference and promoted automatically.
 
+## Current-Runtime Preservation Bridge
+
+Until patch-based candidate editing is ratified and operative, any guarded current-runtime workflow that asks an Editor for a complete `draft_after_content` MUST run a deterministic preservation bridge before accepting the generated draft as the next run draft. This bridge applies to bounded synthesis, allowed-surface repair jobs, focused synthesis passes, and any future current-runtime mode that claims to constrain a full-document Editor response.
+
+The bridge MUST inventory `draft_before.md` before the Editor is invoked and inventory the proposed `draft_after_content` before writing it to authoritative `draft_after.md` or mutating `spec.md`. It MUST compare at least headings, section IDs, normative statements, tables and rows, enum members, schema fields, commands and flags, artifact names, terminal states, acceptance scenarios, and explicit cross-references using the content normalization and canonical section ID rules defined by the artifact validation leaf.
+
+A guarded full-draft run MUST persist an allowed-surface contract with:
+
+```yaml
+schema_version: bounded-change-surface-v1
+allowed_sections: [string]
+allowed_unit_ids: [string]
+allowed_change_types: [add | clarify | strengthen | move | rename | reword | supersede | delete | weaken]
+deletion_allowed: boolean
+weakening_allowed: boolean
+authorized_deletion_unit_ids: [string]
+authorized_supersession_unit_ids: [string]
+max_changed_sections: integer | null
+max_changed_normative_units: integer | null
+```
+
+The Orchestrator MUST validate and snapshot this contract at `rounds/round-N/context/bounded_change_surface.json` before invoking the Editor. The snapshot is immutable across that round's retries; revising permissions requires a new round or isolated run, preserving the previous snapshot. All fields are required; empty lists authorize nothing and null limits impose no numeric cap. Non-null limits MUST be non-negative integers. A malformed contract MUST prevent Editor invocation. Contradictory permissions MUST NOT be broadened or repaired by inference.
+
+Authorization is conjunctive and deny-by-default. A change MUST be within `allowed_sections`, use a type in `allowed_change_types`, and satisfy both numeric limits when non-null. Changes to existing units MUST additionally name those units in `allowed_unit_ids`; additions are bounded by their owning allowed section. Moving a unit requires both source and destination sections to be allowed. Sensitive changes also require:
+
+- Deletion: `delete` in `allowed_change_types`, `deletion_allowed = true`, membership in `authorized_deletion_unit_ids`, attribution to an admitted finding, and a persisted operator decision explicitly authorizing deletion of that unit.
+- Weakening: `weaken` in `allowed_change_types`, `weakening_allowed = true`, attribution to an admitted finding, and a persisted operator decision explicitly authorizing the exact weakening of that unit.
+- Supersession: `supersede` in `allowed_change_types`, predecessor membership in `authorized_supersession_unit_ids`, attribution to an admitted finding, a successor unit present in the proposed inventory, and evidence proving equal or stronger coverage. Both predecessor and successor MUST satisfy the allowed surface. Changes to product policy or authority still require the applicable operator decision.
+
+These checks are necessary, not sufficient, for acceptance: preservation validation and evidence requirements still apply. A boolean, list membership, finding, or operator decision cannot override another failed check. Permission lists narrow the allowed surface; they do not expand it. Supersession does not require deletion permission when equal or stronger coverage is established, but MUST NOT be used as a fallback for unauthorized deletion or weakening. Evidence and operator decisions MUST identify the exact units/effects and be bound to the current base draft; supersession evidence MUST additionally bind the proposed draft. Missing, stale, or insufficient evidence fails closed. The bridge MUST NOT infer semantic equivalence from Editor claims or create vNext semantic-verification authority to fill an evidence gap.
+
+The preservation bridge MUST reject automatic draft acceptance when the proposed output removes, weakens, or ambiguously rewrites a protected unit outside the allowed surface; changes an allowed unit using a disallowed change type; deletes a unit without explicit deletion authorization; claims supersession without a successor unit and evidence; collapses a concrete contract into a summary or placeholder; or changes product policy, authority, lifecycle legality, failure behavior, artifact shape, or acceptance criteria without an admitted finding or operator decision authorizing that exact change.
+
+Reviewer silence MUST NOT satisfy preservation safety. A clean Reviewer pass only means the Reviewer found no in-scope profile findings in that pass. It does not prove that unrelated units were preserved, that deleted material was authorized, or that a broad rewrite is safe to accept.
+
+Every completed bridge comparison, whether passing or failing, MUST persist both the current-runtime report and the compared text as a `full_draft_rewrite_attempt` at the paths defined in [Artifacts Validation And Telemetry](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-report). When bridge validation fails, Whetstone MUST leave the prior validated draft authoritative and terminate or pause according to the scheduler's artifact and decision policy. Terminal or validation reporting MUST reference the exact attempt report and its failure categories and affected unit IDs. The operator may then reject the rewrite, authorize specific deletion or supersession unit IDs, extract useful material into a smaller manual patch, or start a new guarded run from the prior validated draft.
+
+A `full_draft_rewrite_attempt` is immutable evidence of proposed full-document output, not a vNext `candidate`. It remains non-authoritative evidence regardless of the comparison result; its bytes may become the accepted draft only through the normal draft-acceptance path after all required checks pass. It has no candidate disposition, candidate registration/index entry, or promotion lineage. Later authorization MUST NOT retroactively turn a failed report into a pass; a new attempt must validate against the then-current base and allowed-surface contract.
+
+This bridge is intentionally narrower than the full vNext candidate architecture. It does not create verified candidates, current verified pointers, promotion intents, run-wide locks, or semantic-verification authority. It exists to prevent current full-document Editor workflows from silently accepting destructive or overly broad rewrites during the migration period.
+
 ## P0 Release Acceptance
 
 Automatic editing MUST remain disabled until all P0 scenarios pass against version-pinned implementations.
@@ -1599,6 +1663,7 @@ The following table is the section-addressed amendment plan for ratification. Ca
 | Proposal-to-promotion scheduling | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-scheduling-algorithm`, `#state-machine-full-transitions` | Replace direct full-document mutation transitions in vNext mode with proposal capture, deterministic validation, semantic verification, candidate decision, run-wide serialized promotion, and atomic authority transitions. |
 | Budgets, retries, resume, and read-only status | `docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-budget-handling`, `#resume-policy` | Bind replay to the immutable descriptor and current verified pointer; preserve incomplete candidates; validate current committed lineage before next-ordinal search; select a no-claimant promotion only from `latest_candidate`; distinguish pre-commit base-current recovery from post-commit materialization; reacquire the promotion lock and reconcile the sole prepared next-ordinal claimant; prohibit retries or resume from unverified bytes. |
 | Public artifacts, locking, and attempt semantics | `docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#artifact-schemas-minimum-required-fields`, `#artifact-validation-policy` | Define and validate the vNext contract suite, mutually exclusive candidate-registration and run-wide promotion-lock critical sections, fencing semantics, immutable raw attempts, canonical `proposals/{proposal_id}/proposed_patch.json`, candidate creation events and identity-map bindings, verification artifacts and pointers, candidate-scoped promotion intents, commit-bound disposition events, ordinal-indexed current-verified history snapshots, current verified pointers, and terminal fields. |
+| Current full-draft preservation bridge | `docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#artifact-schemas-minimum-required-fields`, `#content-normalization-and-hashing` | Before vNext patch-based editing is operative, require guarded full-draft Editor responses to pass deterministic preservation-bridge validation before `draft_after.md`, `spec.md`, `last_accepted_draft_hash`, Phase 1 stability, Phase 2, or apply-back eligibility can consume them. |
 | Versioned normalization and hashing | `docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#content-normalization-and-hashing` | Bind parser, assembler, inventory, normalization, candidate, candidate identity-map, report, pointer, and pointer-history hashes to the immutable job descriptor and exact persisted bytes. |
 | Scope, finding admission, authority, and decisions | `docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#scope-contract`, `#expanding-contract-surface`, `#decision-summary` | Add pre-Editor finding classification, authority and prospective-spec gates, hash-bound decision responses, staleness checks, and candidate-blocking decision status. |
 | Phase 2 and convergence lineage | `docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#phase-2-failure-handling`, `#target-matrix-precedence`, `#convergence-declaration`, `#reproducibility` | Require Phase 2, declaration generation, and reproducibility evidence to resolve and bind the promoted current verified draft rather than an unverified candidate or unverified `spec.md` mirror. |
