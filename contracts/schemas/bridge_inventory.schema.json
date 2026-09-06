@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/bridge_inventory.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "parser_version",
+    "base_draft",
+    "sections",
+    "units"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "bridge-inventory-v1"
+    },
+    "parser_version": {
+      "type": "string",
+      "const": "bridge-lines-v1"
+    },
+    "base_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "section_id",
+          "parent_section_id",
+          "heading_unit_id",
+          "direct_unit_ids"
+        ],
+        "properties": {
+          "section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_section_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heading_unit_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "u_[a-f0-9]{64}"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direct_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_id",
+          "section_id",
+          "kind",
+          "ordinal",
+          "byte_start",
+          "byte_end",
+          "content_sha256",
+          "normative"
+        ],
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "pattern": "u_[a-f0-9]{64}"
+          },
+          "section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "heading",
+              "fence_delimiter",
+              "fence_body",
+              "separator",
+              "body"
+            ]
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "byte_start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byte_end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          },
+          "normative": {
+            "type": "boolean"
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    }
+  }
+}

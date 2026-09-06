@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge_acceptance.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "admission",
+    "report",
+    "proposal",
+    "materialized_draft",
+    "materialized_draft_hash",
+    "accepted_noop",
+    "previous_acceptance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "preservation-bridge-acceptance-v2"
+    },
+    "admission": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "report": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "proposal": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "materialized_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "materialized_draft_hash": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "accepted_noop": {
+      "type": "boolean"
+    },
+    "previous_acceptance": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge_acceptance_admission.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_version",
+    "acceptance_attempt_number",
+    "request",
+    "proposal",
+    "base_draft",
+    "inventory",
+    "scope_contract",
+    "allowed_change_surface",
+    "finding_sources",
+    "operator_evidence",
+    "predecessor_report",
+    "transform_policy_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "preservation-bridge-acceptance-admission-v1"
+    },
+    "capability_version": {
+      "type": "string",
+      "const": "preservation-bridge-v1"
+    },
+    "acceptance_attempt_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "request": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "proposal": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "base_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "inventory": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "scope_contract": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "allowed_change_surface": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "finding_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact",
+          "feedback_ids"
+        ],
+        "properties": {
+          "artifact": {
+            "$ref": "preservation_bridge.schema.json#/$defs/ref"
+          },
+          "feedback_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "operator_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "preservation_bridge.schema.json#/$defs/ref"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "predecessor_report": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transform_policy_version": {
+      "type": "string",
+      "const": "bridge-version-transform-v1"
+    }
+  }
+}

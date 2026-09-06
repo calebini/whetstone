@@ -8,6 +8,17 @@ from whetstone.config import load_config
 
 
 class ConfigTests(unittest.TestCase):
+    def test_unqualified_bridge_configuration_is_never_silently_ignored(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "orchestrator_config.yaml"
+            for block in ("preservation_bridge: {}\n", "preservation_bridge: null\n",
+                          "preservation_bridge:\n  mode: enforce\n  capability_version: preservation-bridge-v1\n",
+                          "preservation_bridge:\n  mode: report_only\n"):
+                with self.subTest(block=block):
+                    path.write_text(block)
+                    with self.assertRaisesRegex(ValueError, "CONFIG_INVALID.*not available"):
+                        load_config(path)
+
     def test_load_config_uses_defaults_when_file_is_absent(self) -> None:
         with TemporaryDirectory() as tmp:
             config = load_config(Path(tmp) / "orchestrator_config.yaml")

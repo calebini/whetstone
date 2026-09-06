@@ -1032,7 +1032,7 @@ Acceptance:
 
 ### 18. Safer Editor Pipeline
 
-Status: specification amendment and bounded consistency audit complete; 18.1 implementation and qualification remain open. Runtime baseline is `1054bb0`; the two-stage bridge amendment at `da074f4` updates owning specifications only. Slice 18.1 implementation inspection identified undefined predecessor/successor pairing before code changes. The revised contracts define explicit correspondence, proposal admission, post-output operator evidence, and immutable same-root acceptance admission. The audit below supports proceeding with implementation; it is neither runtime qualification nor convergence. No unchecked item is a runtime/release claim. Record test names and commit/artifact evidence when each implementation check lands.
+Status: specification amendment and bounded consistency audit complete; the first 18.1 contract/inventory foundation increment is implemented. The guarded runtime transaction and complete qualification remain open. Runtime baseline is `1054bb0`; the two-stage bridge amendment at `da074f4` updates owning specifications only. Slice 18.1 implementation inspection identified undefined predecessor/successor pairing before code changes. The revised contracts define explicit correspondence, proposal admission, post-output operator evidence, and immutable same-root acceptance admission. The audit below supports proceeding with implementation; it is neither runtime qualification nor convergence. No unchecked item is a runtime/release claim. Record test names and commit/artifact evidence when each implementation check lands.
 
 #### Authority And Runtime Map
 
@@ -1050,7 +1050,7 @@ The current acceptance choke points are `LiveRoundRunner.run_round` and `resume_
 
 [sections.py](src/whetstone/sections.py) provides canonical heading-path IDs but no preservation-unit identity and currently recognizes heading-like lines inside fences. [decomposition.py](src/whetstone/decomposition.py) has a separate source-range inventory; reuse compatible mechanics only after parser conformance checks, not its extraction ownership model by assumption. [hashing.py](src/whetstone/hashing.py) distinguishes normalized draft hashing from raw byte hashing. Existing `ArtifactStore` writers overwrite named artifacts and are not immutable-attempt or atomic-promotion primitives.
 
-The schema registry in [contracts.py](src/whetstone/contracts.py) implements a limited JSON Schema subset. No bridge or candidate public schemas currently exist under `contracts/schemas/`. Existing job-descriptor discovery in `run_state.py` is a status pointer, not immutable vNext descriptor admission. Existing scope/checkpoint artifacts are not automatically valid hash-bound mutation authorizations.
+The schema registry in [contracts.py](src/whetstone/contracts.py) implements the JSON Schema subset used locally, including the bridge's array bounds and uniqueness constraints. The ten bridge artifact schemas and shared definitions now exist under `contracts/schemas/`; candidate public schemas remain pending. Existing job-descriptor discovery in `run_state.py` is a status pointer, not immutable vNext descriptor admission. Existing scope/checkpoint artifacts are not automatically valid hash-bound mutation authorizations.
 
 #### Decisions Required Before Implementation
 
@@ -1182,7 +1182,7 @@ The completed audit covered the acyclic reference graph, proposal/acceptance att
 
 Audit evidence: local run `rounds/two-stage-preservation-bridge-audit-001/`, including `source_manifest.json`, `verification.json`, and `change_audit/{audit_manifest.json,change_audit_feedback.json,change_audit_report.json}`. The audit brief hash is `5d9f5a6bc7db3776f749b7e8b7b1c8b07cd1f6ec45e40e3bec26de1827a75ae9`. Run artifacts are ignored local evidence; this record preserves the reviewed commit, scope, client and outcome for the implementation handoff. The pass applies to that bounded source packet, not later edits or unreviewed source sections.
 
-Next: implement 18.1 against the amended leaves, beginning with public contracts and deterministic journey fixtures. No full Phase 1 sharpening run is a prerequisite. Reopen a focused contract review only if implementation exposes a concrete unresolved decision or requires a normative change. No public schema files or runtime enforcement are shipped by this documentation change. D6-D8 remain later-vNext gates. All 18.1 implementation/qualification checks remain open.
+Next: build immutable proposal storage, trusted materialization and preliminary assessment on the foundation increment recorded below. No full Phase 1 sharpening run is a prerequisite. Reopen a focused contract review only if implementation exposes a concrete unresolved decision or requires a normative change. Schema publication does not provide runtime enforcement. D6-D8 remain later-vNext gates; the integrated 18.1 implementation/qualification checks remain open.
 
 #### 18.1 Current-Runtime Preservation Bridge
 
@@ -1192,6 +1192,15 @@ First deliverable: one integrated, opt-in two-stage guarded full-draft path with
 2. Implement immutable proposal admission/storage, frozen normal-round evidence, materialization and preliminary assessment, including pending obligations and hard failures.
 3. Implement the shared acceptance service, marker commit and replay/repair, then the local effect-review/request preparation, explicit acceptance operation and read-only dry-run. Prove the pending-to-accepted journey and stale-base refusal with scripted inputs and zero acceptance-stage model calls.
 4. Route normal, supplied, resumed, focused/vertical and maintenance paths through that service; integrate scheduler/readback and Phase 2/declaration/strop consumers. Complete the positive, negative and fault-injection qualification below before enabling opt-in enforcement.
+
+Foundation increment evidence (2026-09-06; working changes based on `7b6dca1`):
+
+- [x] Publish ten closed bridge artifact schemas plus shared definitions, including origin-specific admission nullability, exact Ref/hash shapes and duplicate-free arrays.
+- [x] Implement the exact-byte `bridge-lines-v1` inventory, fence/section ownership, deterministic identities and conservative matching; publish three independent inventory vectors and an exhaustive small-sequence matching oracle.
+- [x] Implement read-only reference, surface, proposal/evidence-binding, correspondence, supersession, relocation and cap checks. The composed untransformed-proposal check leaves all files unchanged and creates no acceptance marker.
+- [x] Reject unavailable `preservation_bridge` configuration with `CONFIG_INVALID`; preserve exact toy-spec checkout bytes with local Git attributes.
+
+Validation: `tests/test_preservation_inventory.py`, `tests/test_preservation_contracts.py` and `ConfigTests.test_unqualified_bridge_configuration_is_never_silently_ignored`; 30 focused preservation tests and 329 tests in the full suite pass. See [contract foundation guide](contracts/PRESERVATION_BRIDGE.md) for exact APIs and limits. These are foundation checks, not completed transaction/operator-journey qualification: transformed proposals, maintenance inheritance, final report/marker validation, runtime integration and replay remain pending. The broader checks below stay open until their integrated behavior has evidence.
 
 Implementation checks:
 
@@ -1313,7 +1322,7 @@ Likely surfaces: conformance fixtures/tests, release metadata, coordinating and 
 
 Use the existing `unittest` architecture: pure unit fixtures, injected Reviewer/Editor/Verifier clients, scripted multi-profile scheduler campaigns, fake configured executables for CLI/subprocess boundaries, and filesystem fault injection. The nearest existing tests are `test_live.py`, `test_resume.py`, `test_live_phase1.py`, `test_live_phase2.py`, `test_contracts.py`, `test_sections.py`, `test_artifacts.py`, `test_status.py`, `test_reports.py`, `test_cli.py`, `test_apply_back.py`, `test_runner.py` and `test_engine.py`. Add focused bridge/candidate tests where responsibility warrants them; do not rely on live model consistency for deterministic acceptance.
 
-Next action: begin 18.1 with the revised schemas, cross-artifact validators and deterministic fixtures for clarification with post-output evidence, explicit duplicate/reflow correspondence, authorized weakening, stale-base refusal, no-op/Phase 2 maintenance and commit recovery. The bounded audit is complete; do not add a full Phase 1 run as an implementation prerequisite. If a fixture reveals an unresolved contract decision, pause the affected part, amend its owning leaf and use a focused review of that delta while independent work continues. Any additional nested live-client audit or usability trial requires its own payload authorization. Production bridge activation remains gated on complete 18.1 qualification; D6-D8 and later vNext work retain their own prerequisites. Feature completion means all slice checks have executable evidence, not that files with proposed names exist.
+Next action: continue 18.1 with immutable proposal admission/storage, pre-execution effective-config capture, trusted version/status materialization and preliminary pending-versus-hard-failure assessment. Extend the completed foundation tests into the same-root acceptance, no-op/Phase 2 maintenance and commit-recovery journeys, then wire the shared service through the runtime paths. The bounded audit is complete; do not add a full Phase 1 run as an implementation prerequisite. If a fixture reveals an unresolved contract decision, pause the affected part, amend its owning leaf and use a focused review of that delta while independent work continues. Any additional nested live-client audit or usability trial requires its own payload authorization. Production bridge activation remains gated on complete 18.1 qualification; D6-D8 and later vNext work retain their own prerequisites. Feature completion means all slice checks have executable evidence, not that files with proposed names exist.
 
 ## Identity-System Notes
 

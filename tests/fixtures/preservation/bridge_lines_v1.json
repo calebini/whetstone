@@ -1,0 +1,195 @@
+[
+  {
+    "name": "empty",
+    "input_hex": "",
+    "inventory": {
+      "schema_version": "bridge-inventory-v1",
+      "parser_version": "bridge-lines-v1",
+      "base_draft": {
+        "path": "seed.md",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sections": [
+        {
+          "section_id": "[]",
+          "parent_section_id": null,
+          "heading_unit_id": null,
+          "direct_unit_ids": []
+        }
+      ],
+      "units": []
+    }
+  },
+  {
+    "name": "preamble_and_skipped_level",
+    "input_hex": "507265616d626c650d0a2320410a0a23232320420d4d5553542073746179",
+    "inventory": {
+      "schema_version": "bridge-inventory-v1",
+      "parser_version": "bridge-lines-v1",
+      "base_draft": {
+        "path": "seed.md",
+        "sha256": "fd317ea0cb1467adbfe16144a5ff0a72219b6530d1afaab66aa4893a7381d229"
+      },
+      "sections": [
+        {
+          "section_id": "[]",
+          "parent_section_id": null,
+          "heading_unit_id": null,
+          "direct_unit_ids": [
+            "u_4a5bdeb37efe7f6c2dabe08856460dc8bc1e51edb90a755dd934afb1187c4d2a"
+          ]
+        },
+        {
+          "section_id": "[[\"A\",1]]",
+          "parent_section_id": "[]",
+          "heading_unit_id": "u_fd82bb4b196a1f967f090aa311eb20281e3d327202313a0ef3ce19981d1567c2",
+          "direct_unit_ids": [
+            "u_fd82bb4b196a1f967f090aa311eb20281e3d327202313a0ef3ce19981d1567c2",
+            "u_aa2e82c1159f365c1c0ceeea577a3673667e4016b5b68c036521e5ff22169719"
+          ]
+        },
+        {
+          "section_id": "[[\"A\",1],[\"B\",1]]",
+          "parent_section_id": "[[\"A\",1]]",
+          "heading_unit_id": "u_674fa1398df19c4100fb413fb13c45acde598722aeeb28e50c456d40802c150d",
+          "direct_unit_ids": [
+            "u_674fa1398df19c4100fb413fb13c45acde598722aeeb28e50c456d40802c150d",
+            "u_328217e8d6daf03af20c5014434ef3bfbed31d90e2f00c0c7fad5254b485a828"
+          ]
+        }
+      ],
+      "units": [
+        {
+          "unit_id": "u_4a5bdeb37efe7f6c2dabe08856460dc8bc1e51edb90a755dd934afb1187c4d2a",
+          "section_id": "[]",
+          "kind": "body",
+          "ordinal": 1,
+          "byte_start": 0,
+          "byte_end": 10,
+          "content_sha256": "25fc896fcb60a8653b91f8cebd10c7d6ab58c01c828d4187ca21e1d5a9eb83b2",
+          "normative": false
+        },
+        {
+          "unit_id": "u_fd82bb4b196a1f967f090aa311eb20281e3d327202313a0ef3ce19981d1567c2",
+          "section_id": "[[\"A\",1]]",
+          "kind": "heading",
+          "ordinal": 1,
+          "byte_start": 10,
+          "byte_end": 14,
+          "content_sha256": "aa1237b773c38dbddef583c4868aaea7a44c5237ea7923aecca5513764b42d80",
+          "normative": false
+        },
+        {
+          "unit_id": "u_aa2e82c1159f365c1c0ceeea577a3673667e4016b5b68c036521e5ff22169719",
+          "section_id": "[[\"A\",1]]",
+          "kind": "separator",
+          "ordinal": 1,
+          "byte_start": 14,
+          "byte_end": 15,
+          "content_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "normative": false
+        },
+        {
+          "unit_id": "u_674fa1398df19c4100fb413fb13c45acde598722aeeb28e50c456d40802c150d",
+          "section_id": "[[\"A\",1],[\"B\",1]]",
+          "kind": "heading",
+          "ordinal": 1,
+          "byte_start": 15,
+          "byte_end": 21,
+          "content_sha256": "7f525f87232c4991a4ab15c9bc3e3bd9c9be84d5e999a63401a272de43d331d7",
+          "normative": false
+        },
+        {
+          "unit_id": "u_328217e8d6daf03af20c5014434ef3bfbed31d90e2f00c0c7fad5254b485a828",
+          "section_id": "[[\"A\",1],[\"B\",1]]",
+          "kind": "body",
+          "ordinal": 1,
+          "byte_start": 21,
+          "byte_end": 30,
+          "content_sha256": "ab71be1ebb48d8432acc272951bcfce9e5ae68f0be56e9dddc9a2c144097540f",
+          "normative": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "unicode_duplicate_siblings",
+    "input_hex": "2320436166c3a90ac3a94d555354c3a90a2320436166c3a90a4d5553545f4e4f54",
+    "inventory": {
+      "schema_version": "bridge-inventory-v1",
+      "parser_version": "bridge-lines-v1",
+      "base_draft": {
+        "path": "seed.md",
+        "sha256": "2f187665a1a70e8b0b39baf7a6a2fab036d2b64e0f6bd46763d19ad718240bca"
+      },
+      "sections": [
+        {
+          "section_id": "[]",
+          "parent_section_id": null,
+          "heading_unit_id": null,
+          "direct_unit_ids": []
+        },
+        {
+          "section_id": "[[\"Café\",1]]",
+          "parent_section_id": "[]",
+          "heading_unit_id": "u_46f4d5a02edae3da443bc74be0534748f9f0abd0c5dcc209e6eadecbe74c59ed",
+          "direct_unit_ids": [
+            "u_46f4d5a02edae3da443bc74be0534748f9f0abd0c5dcc209e6eadecbe74c59ed",
+            "u_cedca2ea3e6c7c1f7f263cda7f073e0837fc547ad6a74851e4682e9de86d4432"
+          ]
+        },
+        {
+          "section_id": "[[\"Café\",2]]",
+          "parent_section_id": "[]",
+          "heading_unit_id": "u_204f3af0caf8bfa8d35b1d2c95eb568fc34ecd193821504838be37b42d7d23d0",
+          "direct_unit_ids": [
+            "u_204f3af0caf8bfa8d35b1d2c95eb568fc34ecd193821504838be37b42d7d23d0",
+            "u_299231ddcfb8ba6fdd500470bd1b788e7093a1e88e8a894672d0c27d5e41bc81"
+          ]
+        }
+      ],
+      "units": [
+        {
+          "unit_id": "u_46f4d5a02edae3da443bc74be0534748f9f0abd0c5dcc209e6eadecbe74c59ed",
+          "section_id": "[[\"Café\",1]]",
+          "kind": "heading",
+          "ordinal": 1,
+          "byte_start": 0,
+          "byte_end": 8,
+          "content_sha256": "a7fce7803cb6e09745b8d309bf01a98852591aec067859855ea2f031b5e27777",
+          "normative": false
+        },
+        {
+          "unit_id": "u_cedca2ea3e6c7c1f7f263cda7f073e0837fc547ad6a74851e4682e9de86d4432",
+          "section_id": "[[\"Café\",1]]",
+          "kind": "body",
+          "ordinal": 1,
+          "byte_start": 8,
+          "byte_end": 17,
+          "content_sha256": "a229c2266e94e27beccd9278541c65791bce90a08f9e8c403df8473f9944c86d",
+          "normative": true
+        },
+        {
+          "unit_id": "u_204f3af0caf8bfa8d35b1d2c95eb568fc34ecd193821504838be37b42d7d23d0",
+          "section_id": "[[\"Café\",2]]",
+          "kind": "heading",
+          "ordinal": 1,
+          "byte_start": 17,
+          "byte_end": 25,
+          "content_sha256": "a7fce7803cb6e09745b8d309bf01a98852591aec067859855ea2f031b5e27777",
+          "normative": false
+        },
+        {
+          "unit_id": "u_299231ddcfb8ba6fdd500470bd1b788e7093a1e88e8a894672d0c27d5e41bc81",
+          "section_id": "[[\"Café\",2]]",
+          "kind": "body",
+          "ordinal": 1,
+          "byte_start": 25,
+          "byte_end": 33,
+          "content_sha256": "5fb69465778884bb9fce3adb742940259ca9f6b719ad06101f4b4f8a30d30605",
+          "normative": false
+        }
+      ]
+    }
+  }
+]

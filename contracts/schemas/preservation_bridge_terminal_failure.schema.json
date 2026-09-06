@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge_terminal_failure.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "admission",
+    "report",
+    "category",
+    "reason",
+    "acceptance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "preservation-bridge-terminal-failure-v1"
+    },
+    "admission": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "report": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "persistence_failure",
+        "invalid_binding"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acceptance": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

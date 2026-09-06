@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/bridge_operator_evidence.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "proposal",
+    "base_draft_sha256",
+    "base_inventory_sha256",
+    "scope_contract_sha256",
+    "allowed_change_surface_sha256",
+    "raw_proposal_sha256",
+    "materialized_draft_sha256",
+    "transformations_sha256",
+    "correspondence",
+    "added_unit_ids",
+    "change_types",
+    "finding_refs",
+    "effect",
+    "rationale",
+    "approval"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "bridge-operator-evidence-v2"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "authorize_deletion",
+        "authorize_weakening",
+        "attest_addition",
+        "attest_equivalence",
+        "attest_strengthening",
+        "attest_supersession",
+        "authorize_scope_expansion"
+      ]
+    },
+    "proposal": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "base_draft_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "base_inventory_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "scope_contract_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "allowed_change_surface_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "raw_proposal_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "materialized_draft_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "transformations_sha256": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "correspondence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base_unit_id",
+          "successor_unit_ids",
+          "disposition"
+        ],
+        "properties": {
+          "base_unit_id": {
+            "type": "string",
+            "pattern": "u_[a-f0-9]{64}"
+          },
+          "successor_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "preserved",
+              "moved",
+              "reworded_equivalent",
+              "strengthened",
+              "superseded",
+              "authorized_deleted",
+              "operator_authorized_weakened"
+            ]
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "added_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "change_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "add",
+          "clarify",
+          "strengthen",
+          "move",
+          "rename",
+          "reword",
+          "supersede",
+          "delete",
+          "weaken"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "finding_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_sha256",
+          "feedback_id"
+        ],
+        "properties": {
+          "artifact_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          },
+          "feedback_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "effect": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved",
+        "approved_by",
+        "approved_at"
+      ],
+      "properties": {
+        "approved": {
+          "type": "boolean",
+          "const": true
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+        }
+      }
+    }
+  }
+}

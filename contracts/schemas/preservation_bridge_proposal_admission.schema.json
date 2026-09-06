@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge_proposal_admission.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_version",
+    "round_number",
+    "attempt_number",
+    "phase",
+    "profile",
+    "origin",
+    "client_attempt_number",
+    "base_draft",
+    "inventory",
+    "scope_contract",
+    "allowed_change_surface",
+    "finding_sources",
+    "predecessor_report",
+    "transform_policy_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "preservation-bridge-proposal-admission-v1"
+    },
+    "capability_version": {
+      "type": "string",
+      "const": "preservation-bridge-v1"
+    },
+    "round_number": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "attempt_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "phase_1",
+        "phase_2"
+      ]
+    },
+    "profile": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "editor",
+        "supplied_revision",
+        "orchestrator_noop",
+        "phase2_entry"
+      ]
+    },
+    "client_attempt_number": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "base_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "inventory": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "scope_contract": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "allowed_change_surface": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "finding_sources": {
+      "type": "array",
+      "items": {
+        "$ref": "preservation_bridge.schema.json#/$defs/finding_source"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "predecessor_report": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transform_policy_version": {
+      "type": "string",
+      "const": "bridge-version-transform-v1"
+    }
+  },
+  "allOf": [
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "origin": {
+              "type": "string",
+              "const": "phase2_entry"
+            },
+            "phase": {
+              "type": "string",
+              "const": "phase_2"
+            },
+            "round_number": {
+              "type": "null"
+            },
+            "profile": {
+              "type": "null"
+            },
+            "client_attempt_number": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "origin": {
+              "type": "string",
+              "enum": [
+                "editor",
+                "supplied_revision",
+                "orchestrator_noop"
+              ]
+            },
+            "round_number": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "profile": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "origin": {
+              "type": "string",
+              "const": "editor"
+            },
+            "client_attempt_number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "origin": {
+              "type": "string",
+              "enum": [
+                "supplied_revision",
+                "orchestrator_noop",
+                "phase2_entry"
+              ]
+            },
+            "client_attempt_number": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

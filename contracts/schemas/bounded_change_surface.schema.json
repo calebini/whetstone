@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/bounded_change_surface.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "base_draft",
+    "inventory",
+    "scope_contract",
+    "finding_sources",
+    "allowed_sections",
+    "allowed_unit_ids",
+    "frozen_sections",
+    "frozen_unit_ids",
+    "allowed_change_types",
+    "relocations",
+    "deletion_allowed",
+    "weakening_allowed",
+    "authorized_deletion_unit_ids",
+    "authorized_supersession_unit_ids",
+    "max_changed_sections",
+    "max_changed_normative_units",
+    "approval"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "bounded-change-surface-v1"
+    },
+    "base_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "inventory": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "scope_contract": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "finding_sources": {
+      "type": "array",
+      "items": {
+        "$ref": "preservation_bridge.schema.json#/$defs/finding_source"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "allowed_sections": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "allowed_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "frozen_sections": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "frozen_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "allowed_change_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "add",
+          "clarify",
+          "strengthen",
+          "move",
+          "rename",
+          "reword",
+          "supersede",
+          "delete",
+          "weaken"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "relocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_unit_ids",
+          "destination_section",
+          "change_type"
+        ],
+        "properties": {
+          "source_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          },
+          "destination_section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "change_type": {
+            "type": "string",
+            "enum": [
+              "move",
+              "rename"
+            ]
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "deletion_allowed": {
+      "type": "boolean"
+    },
+    "weakening_allowed": {
+      "type": "boolean"
+    },
+    "authorized_deletion_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "authorized_supersession_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "max_changed_sections": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_changed_normative_units": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved",
+        "approved_by",
+        "approved_at"
+      ],
+      "properties": {
+        "approved": {
+          "type": "boolean",
+          "const": true
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+        }
+      }
+    }
+  }
+}

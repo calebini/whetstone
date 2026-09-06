@@ -93,9 +93,21 @@ class SchemaRegistry:
             if instance < schema["minimum"]:
                 raise SchemaValidationError(path, f"integer is below minimum {schema['minimum']}")
 
-        if isinstance(instance, list) and "items" in schema:
-            for index, item in enumerate(instance):
-                self._validate(item, schema["items"], f"{path}[{index}]")
+        if isinstance(instance, list):
+            if len(instance) < schema.get("minItems", 0):
+                raise SchemaValidationError(path, "array is shorter than minItems")
+            if "maxItems" in schema and len(instance) > schema["maxItems"]:
+                raise SchemaValidationError(path, "array is longer than maxItems")
+            if schema.get("uniqueItems"):
+                seen: set[Any] = set()
+                for index, item in enumerate(instance):
+                    key = self._json_key(item)
+                    if key in seen:
+                        raise SchemaValidationError(f"{path}[{index}]", "duplicate array item")
+                    seen.add(key)
+            if "items" in schema:
+                for index, item in enumerate(instance):
+                    self._validate(item, schema["items"], f"{path}[{index}]")
 
         if isinstance(instance, dict):
             required = schema.get("required", [])
@@ -116,6 +128,20 @@ class SchemaRegistry:
         except SchemaValidationError:
             return False
         return True
+
+    @staticmethod
+    def _json_key(value: Any) -> Any:
+        # Keep uniqueness linear for all-line inventories. JSON numbers compare
+        # numerically; booleans are distinct, and object key order is irrelevant.
+        if isinstance(value, bool):
+            return ("boolean", value)
+        if isinstance(value, int | float):
+            return ("number", value)
+        if isinstance(value, dict):
+            return ("object", frozenset((key, SchemaRegistry._json_key(item)) for key, item in value.items()))
+        if isinstance(value, list):
+            return ("array", tuple(SchemaRegistry._json_key(item) for item in value))
+        return (type(value).__name__, value)
 
     @staticmethod
     def _validate_type(instance: Any, expected: str, path: str) -> None:

@@ -143,6 +143,11 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     if not config_path.exists():
         return OrchestratorConfig.default(root)
     parsed = _parse_simple_yaml(config_path.read_text(encoding="utf-8"))
+    if "preservation_bridge" in parsed:
+        raise ValueError(
+            "CONFIG_INVALID: preservation-bridge-v1 is not available; "
+            "contract foundations do not provide qualified runtime enforcement"
+        )
     default = OrchestratorConfig.default(root)
 
     clients = parsed.get("clients", {})

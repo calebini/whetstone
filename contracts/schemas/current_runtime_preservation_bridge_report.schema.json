@@ -1,0 +1,452 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/current_runtime_preservation_bridge_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessment",
+    "admission",
+    "proposal",
+    "stage",
+    "raw_response",
+    "raw_proposal",
+    "materialized_draft",
+    "materialized_inventory",
+    "materialized_draft_hash",
+    "transformations",
+    "unit_dispositions",
+    "added_unit_ids",
+    "unmapped_output_unit_ids",
+    "pending_obligations",
+    "failures",
+    "validation_result",
+    "outcome",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "current-runtime-preservation-bridge-report-v2"
+    },
+    "assessment": {
+      "type": "string",
+      "enum": [
+        "proposal",
+        "acceptance"
+      ]
+    },
+    "admission": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "proposal": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "admission",
+        "client",
+        "materialization",
+        "comparison",
+        "persistence",
+        "complete"
+      ]
+    },
+    "raw_response": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "raw_proposal": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "materialized_draft": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "materialized_inventory": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "materialized_draft_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transformations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version",
+          "parameters",
+          "input_sha256",
+          "output_sha256"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "const": "version_stamp"
+          },
+          "version": {
+            "type": "string",
+            "const": "bridge-version-transform-v1"
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event",
+              "phase",
+              "changes"
+            ],
+            "properties": {
+              "event": {
+                "type": "string",
+                "enum": [
+                  "phase1_revision",
+                  "phase2_revision",
+                  "phase2_entry"
+                ]
+              },
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "phase_1",
+                  "phase_2"
+                ]
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "base_byte_start",
+                    "base_byte_end",
+                    "input_byte_start",
+                    "input_byte_end",
+                    "before",
+                    "after"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "version",
+                        "status"
+                      ]
+                    },
+                    "base_byte_start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "base_byte_end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "input_byte_start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "input_byte_end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "before": {
+                      "type": "string",
+                      "pattern": "[^\\r\\n]*"
+                    },
+                    "after": {
+                      "type": "string",
+                      "pattern": "[^\\r\\n]*"
+                    }
+                  }
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              }
+            }
+          },
+          "input_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "unit_dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base_unit_id",
+          "disposition",
+          "successor_unit_ids",
+          "finding_refs",
+          "evidence_refs",
+          "rationale"
+        ],
+        "properties": {
+          "base_unit_id": {
+            "type": "string",
+            "pattern": "u_[a-f0-9]{64}"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "preserved",
+              "moved",
+              "reworded_equivalent",
+              "strengthened",
+              "superseded",
+              "authorized_deleted",
+              "operator_authorized_weakened",
+              "unauthorized_deleted",
+              "ambiguous"
+            ]
+          },
+          "successor_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "finding_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifact_sha256",
+                "feedback_id"
+              ],
+              "properties": {
+                "artifact_sha256": {
+                  "type": "string",
+                  "pattern": "[a-f0-9]{64}"
+                },
+                "feedback_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "$ref": "preservation_bridge.schema.json#/$defs/ref"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "added_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "unmapped_output_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "u_[a-f0-9]{64}"
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "pending_obligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "base_unit_ids",
+          "output_unit_ids",
+          "reason"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "correspondence",
+              "deletion",
+              "weakening",
+              "addition",
+              "equivalence",
+              "strengthening",
+              "supersession"
+            ]
+          },
+          "base_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "output_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "affected_unit_ids",
+          "reason"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "invalid_binding",
+              "invalid_artifact",
+              "unauthorized_deleted",
+              "ambiguous",
+              "disallowed_weakening",
+              "allowed_surface_overrun",
+              "unauthenticated_supersession",
+              "contract_collapse",
+              "untrusted_version_edit",
+              "unsupported_transform",
+              "client_timeout",
+              "transient_client_failure",
+              "persistence_failure"
+            ]
+          },
+          "affected_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "u_[a-f0-9]{64}"
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "validation_result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "pending",
+        "not_completed"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "eligible",
+        "awaiting_operator_evidence",
+        "rejected",
+        "technical_failure"
+      ]
+    },
+    "next_action": {
+      "type": "string",
+      "enum": [
+        "none",
+        "review_proposal",
+        "submit_acceptance_request",
+        "technical_resume",
+        "new_authorized_attempt",
+        "inspect_and_repair"
+      ]
+    }
+  }
+}

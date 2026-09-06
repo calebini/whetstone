@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge_proposal.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "admission",
+    "raw_response",
+    "raw_proposal",
+    "materialized_draft",
+    "materialized_inventory",
+    "materialized_draft_hash",
+    "transformations",
+    "normal_round_evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "preservation-bridge-proposal-v1"
+    },
+    "admission": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "raw_response": {
+      "anyOf": [
+        {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "raw_proposal": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "materialized_draft": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "materialized_inventory": {
+      "$ref": "preservation_bridge.schema.json#/$defs/ref"
+    },
+    "materialized_draft_hash": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "transformations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version",
+          "parameters",
+          "input_sha256",
+          "output_sha256"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "const": "version_stamp"
+          },
+          "version": {
+            "type": "string",
+            "const": "bridge-version-transform-v1"
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event",
+              "phase",
+              "changes"
+            ],
+            "properties": {
+              "event": {
+                "type": "string",
+                "enum": [
+                  "phase1_revision",
+                  "phase2_revision",
+                  "phase2_entry"
+                ]
+              },
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "phase_1",
+                  "phase_2"
+                ]
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "base_byte_start",
+                    "base_byte_end",
+                    "input_byte_start",
+                    "input_byte_end",
+                    "before",
+                    "after"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "version",
+                        "status"
+                      ]
+                    },
+                    "base_byte_start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "base_byte_end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "input_byte_start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "input_byte_end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "before": {
+                      "type": "string",
+                      "pattern": "[^\\r\\n]*"
+                    },
+                    "after": {
+                      "type": "string",
+                      "pattern": "[^\\r\\n]*"
+                    }
+                  }
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              }
+            }
+          },
+          "input_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "[a-f0-9]{64}"
+          }
+        }
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "normal_round_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effective_config",
+        "reviewer_feedback",
+        "editor_summary"
+      ],
+      "properties": {
+        "effective_config": {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        "reviewer_feedback": {
+          "type": "array",
+          "items": {
+            "$ref": "preservation_bridge.schema.json#/$defs/ref"
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "editor_summary": {
+          "anyOf": [
+            {
+              "$ref": "preservation_bridge.schema.json#/$defs/ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

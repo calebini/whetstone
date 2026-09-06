@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cortext.local/whetstone/contracts/schemas/preservation_bridge.schema.json",
+  "title": "Shared definitions for the unavailable preservation bridge capability",
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        }
+      }
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "[a-f0-9]{64}"
+    },
+    "unit_id": {
+      "type": "string",
+      "pattern": "u_[a-f0-9]{64}"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved",
+        "approved_by",
+        "approved_at"
+      ],
+      "properties": {
+        "approved": {
+          "type": "boolean",
+          "const": true
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+        }
+      }
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "add",
+        "clarify",
+        "strengthen",
+        "move",
+        "rename",
+        "reword",
+        "supersede",
+        "delete",
+        "weaken"
+      ]
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "preserved",
+        "moved",
+        "reworded_equivalent",
+        "strengthened",
+        "superseded",
+        "authorized_deleted",
+        "operator_authorized_weakened"
+      ]
+    },
+    "correspondence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_unit_id",
+        "successor_unit_ids",
+        "disposition"
+      ],
+      "properties": {
+        "base_unit_id": {
+          "type": "string",
+          "pattern": "u_[a-f0-9]{64}"
+        },
+        "successor_unit_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "u_[a-f0-9]{64}"
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "preserved",
+            "moved",
+            "reworded_equivalent",
+            "strengthened",
+            "superseded",
+            "authorized_deleted",
+            "operator_authorized_weakened"
+          ]
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_sha256",
+        "feedback_id"
+      ],
+      "properties": {
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        },
+        "feedback_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "finding_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact",
+        "feedback_ids"
+      ],
+      "properties": {
+        "artifact": {
+          "$ref": "preservation_bridge.schema.json#/$defs/ref"
+        },
+        "feedback_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "parameters",
+        "input_sha256",
+        "output_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "const": "version_stamp"
+        },
+        "version": {
+          "type": "string",
+          "const": "bridge-version-transform-v1"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "phase",
+            "changes"
+          ],
+          "properties": {
+            "event": {
+              "type": "string",
+              "enum": [
+                "phase1_revision",
+                "phase2_revision",
+                "phase2_entry"
+              ]
+            },
+            "phase": {
+              "type": "string",
+              "enum": [
+                "phase_1",
+                "phase_2"
+              ]
+            },
+            "changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "base_byte_start",
+                  "base_byte_end",
+                  "input_byte_start",
+                  "input_byte_end",
+                  "before",
+                  "after"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "version",
+                      "status"
+                    ]
+                  },
+                  "base_byte_start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "base_byte_end": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "input_byte_start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "input_byte_end": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "before": {
+                    "type": "string",
+                    "pattern": "[^\\r\\n]*"
+                  },
+                  "after": {
+                    "type": "string",
+                    "pattern": "[^\\r\\n]*"
+                  }
+                }
+              },
+              "uniqueItems": true,
+              "minItems": 0
+            }
+          }
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        },
+        "output_sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        }
+      }
+    }
+  }
+}
