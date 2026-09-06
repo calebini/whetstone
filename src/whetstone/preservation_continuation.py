@@ -41,7 +41,7 @@ def read_review(root, directory):
             'supplied','attempt','predecessor','base','prompt','config'}, 'invalid review input shape')
     require(type(packet['round_number']) is int and packet['round_number'] > 0 and type(packet['attempt']) is int and packet['attempt'] > 0,
             'invalid review counters')
-    require(packet['kind'] in {'review_editor','review_only','vertical_source','vertical_closeout'} and packet['phase'] == 'phase_1', 'invalid review operation')
+    require(packet['kind'] in {'review_editor','review_only','vertical_source','vertical_closeout'} and packet['phase'] in {'phase_1','phase_2'}, 'invalid review operation')
     require(packet['version'] == 'bridge-review-v1', 'unsupported review record')
     require(directory == Path(root)/f"rounds/round-{packet['round_number']}/preservation/reviewer-attempt-{packet['attempt']}", 'review identity/path mismatch')
     for key in ('base', 'config', 'prompt'):
@@ -56,7 +56,7 @@ def read_review(root, directory):
     frozen = decode_json(read_ref(root, packet['config']))
     require(isinstance(frozen, dict) and {'phase','profile','resolved_config','runtime','scope_contract_packet','reviewer_timeout_seconds'} <= set(frozen),
             'incomplete frozen review configuration')
-    require(frozen['phase'] == 'phase_1' and frozen['profile'] == packet['profile'], 'review configuration binding mismatch')
+    require(frozen['phase'] == packet['phase'] and frozen['profile'] == packet['profile'], 'review configuration binding mismatch')
     require(isinstance(frozen['runtime'], dict) and isinstance(frozen['runtime'].get('state_before'), dict)
             and isinstance(frozen['resolved_config'], dict) and isinstance(frozen['resolved_config'].get('decision_points'), dict),
             'invalid frozen review runtime')
@@ -82,7 +82,7 @@ def read_review(root, directory):
             feedback = decode_json(read_ref(root, result['feedback']))
             from whetstone.live import _validate_reviewer_feedback
             _validate_reviewer_feedback(feedback, round_number=packet['round_number'], profile=packet['profile'],
-                                       draft_hash_value=draft_hash(read_ref(root, packet['base']).decode()), schema_name='reviewer_feedback')
+                                       draft_hash_value=draft_hash(read_ref(root, packet['base']).decode()), schema_name='phase2_reviewer_feedback' if packet['phase']=='phase_2' else 'reviewer_feedback')
         else:
             require(result['feedback'] is None and isinstance(result['error'], str), 'invalid failed review result')
     return packet, frozen, result
@@ -103,7 +103,7 @@ def pending_review(root, *, accepted_round=0, proposal_round=0):
     packet, frozen, result = read_review(Path(root), directory)
     outcome = result['outcome'] if result else 'incomplete'
     return {'directory': directory, 'round_number': number, 'input': packet, 'frozen': frozen, 'result': result,
-            'outcome': outcome, 'next_action': 'technical_resume' if outcome in {'client_timeout', 'complete'} else 'inspect_and_repair'}
+            'outcome': outcome, 'next_action': 'technical_resume' if packet['phase']=='phase_1' and outcome in {'client_timeout', 'complete'} else 'inspect_and_repair'}
 
 
 def validate_review_retry(root, config, pending):
@@ -142,9 +142,9 @@ def guarded_review(runner, **kwargs):
     rt = _runtime()
     root = runner.root.resolve()
     service = rt.acceptance_service(root)
-    number, profile = kwargs['round_number'], kwargs['profile']
+    number, profile, phase = kwargs['round_number'], kwargs['profile'], kwargs['phase']
     kind = decode_json((root/f'rounds/round-{number}/profile_used.yaml').read_bytes())['round_kind']
-    if runner.config.review_mode == 'vertical':
+    if phase == 'phase_1' and runner.config.review_mode == 'vertical':
         require(kind == 'review_only', 'unsupported vertical Reviewer operation')
         kind = runner._preservation_review_kind
     with service._lock():
@@ -165,10 +165,10 @@ def guarded_review(runner, **kwargs):
         else:
             prompt, base = kwargs['prompt'], runner.config.spec_path.read_bytes()
             state = rt.state_packet(root)
-            state.update(current_round=number, phase='phase_1', active_profile=profile, current_draft_hash=draft_hash(base.decode()))
+            state.update(current_round=number, phase=phase, active_profile=profile, current_draft_hash=draft_hash(base.decode()))
             state.setdefault('last_accepted_draft_hash', None)
             service._replace('rounds/run_state.json', json_bytes(state))
-            frozen = rt.config_snapshot(runner.config, phase='phase_1', profile=profile, state=state)
+            frozen = rt.config_snapshot(runner.config, phase=phase, profile=profile, state=state)
             frozen['reviewer_timeout_seconds'] = runner._timeout_for_role('reviewer')
         attempt = max((item[1] for item in attempts), default=0)+1
         relative = f'rounds/round-{number}/preservation/reviewer-attempt-{attempt}'
@@ -183,7 +183,7 @@ def guarded_review(runner, **kwargs):
                 context.append(service.reference(str(path.resolve().relative_to(root))))
             supplied = getattr(runner, '_preservation_supplied', None)
             supplied_ref = service._write(f'{relative}/supplied.md', supplied if isinstance(supplied, bytes) else supplied.encode()) if supplied is not None else None
-            packet = {'version': 'bridge-review-v1', 'round_number': number, 'phase': 'phase_1', 'profile': profile, 'kind': kind,
+            packet = {'version': 'bridge-review-v1', 'round_number': number, 'phase': phase, 'profile': profile, 'kind': kind,
                       'accepted': chain[-1][0] if chain else None, 'context': context, 'supplied': supplied_ref}
         packet = {**packet, 'attempt': attempt, 'predecessor': previous,
                   'base': service._write(f'{relative}/base.md', base), 'prompt': service._write(f'{relative}/prompt.txt', prompt.encode()),
@@ -204,17 +204,17 @@ def guarded_review(runner, **kwargs):
         except Exception as exc:
             result.update(outcome='client_error', error=f'{type(exc).__name__}: {exc}')
         finally:
-            runner._write_client_telemetry(round_number=number, phase='phase_1', profile=profile, client_role='reviewer',
+            runner._write_client_telemetry(round_number=number, phase=phase, profile=profile, client_role='reviewer',
                 client_config=runner.config.reviewer, artifact_name='preservation-review', attempt_number=attempt, call=kwargs['call'])
         result_ref = service._write(f'{relative}/result.json', json_bytes(result))
         if result['outcome'] == 'complete':
             return feedback
         terminal = 'HALTED_CLIENT_TIMEOUT' if result['outcome'] == 'client_timeout' else 'HALTED_ARTIFACT_INVALID'
         state = rt.state_packet(root)
-        state.update(terminal_state=terminal, ready_for_phase_2=False, resumable=terminal == 'HALTED_CLIENT_TIMEOUT')
+        state.update(terminal_state=terminal, ready_for_phase_2=False, resumable=phase == 'phase_1' and terminal == 'HALTED_CLIENT_TIMEOUT')
         service._replace('rounds/run_state.json', json_bytes(state))
         service._replace('rounds/artifact_validation_error.json', json_bytes({
-            'terminal_state': terminal, 'round_number': number, 'phase': 'phase_1', 'profile': profile, 'client_role': 'reviewer',
+            'terminal_state': terminal, 'round_number': number, 'phase': phase, 'profile': profile, 'client_role': 'reviewer',
             'failure_type': result['outcome'], 'last_valid_draft_hash': draft_hash(base.decode()),
             'last_valid_draft_path': './spec.md', 'review_result': result_ref, 'automatic_retries': 0}))
         raise rt.BridgeHalt(terminal, result_ref)
@@ -484,6 +484,7 @@ def resume_review(root, config, pending, *, continue_run, reviewer_client, edito
 
 
 def plan_continuation(root, config, *, continue_run):
+    require(_runtime().state_packet(root).get('phase','phase_1') == 'phase_1', 'generic Phase 2 resume is unsupported')
     from whetstone.resume import ResumePlan
     rt = _runtime()
     root = Path(root)

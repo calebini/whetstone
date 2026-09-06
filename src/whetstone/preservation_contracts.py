@@ -238,10 +238,9 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
     """Check immutable identity and reproduce prospective transforms, not acceptance."""
     proposal = read_artifact(root, reference, "preservation_bridge_proposal")
     admission = read_artifact(root, proposal["admission"], "preservation_bridge_proposal_admission")
-    approved = validate_surface_bindings(root, admission["allowed_change_surface"])
-    for key in ("base_draft", "inventory", "scope_contract", "finding_sources"):
-        require(admission[key] == approved.surface[key],
-                "proposal admission/surface mismatch; inherited maintenance authority requires later acceptance-chain validation")
+    from whetstone.preservation_maintenance import proposal_context
+    frozen = decode_json(read_ref(root,proposal['normal_round_evidence']['effective_config']))
+    proposal_context(root,admission,frozen)
     base = read_ref(root, admission["base_draft"])
     inventory = read_artifact(root, admission["inventory"], "bridge_inventory")
     require(inventory["base_draft"] == admission["base_draft"], "proposal admission inventory/base mismatch")
@@ -282,7 +281,7 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
         summary = read_artifact(root, normal["editor_summary"], "editor_summary")
         require(summary["round_number"] == admission["round_number"], "summary round mismatch")
         require(summary["draft_before_hash"] == draft_hash(base.decode("utf-8")), "summary base mismatch")
-    vertical = config.get('resolved_config', {}).get('review_mode') == 'vertical'
+    vertical = admission['phase'] == 'phase_1' and admission['profile'] == 'vertical' and config.get('resolved_config', {}).get('review_mode') == 'vertical'
     if vertical:
         from whetstone.preservation_vertical import verify_sources
         verify_sources(root, config, admission['round_number'], normal['reviewer_feedback'])
@@ -297,8 +296,9 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
     from whetstone.preservation_round_evidence import validate_round_evidence
 
     retained_feedback = [read_artifact(root, ref, "reviewer_feedback") for ref in normal["reviewer_feedback"]]
-    require({source["artifact"]["sha256"] for source in admission["finding_sources"]}
-            <= {ref["sha256"] for ref in normal["reviewer_feedback"]}, "admitted findings missing from retained evidence")
+    if not frozen.get('runtime',{}).get('maintenance_parent'):
+        require({source["artifact"]["sha256"] for source in admission["finding_sources"]}
+                <= {ref["sha256"] for ref in normal["reviewer_feedback"]}, "admitted findings missing from retained evidence")
     eligible = validate_round_evidence(base, raw, admission, retained_feedback,
                                       None if normal["editor_summary"] is None else summary)
     if admission["origin"] == "editor":

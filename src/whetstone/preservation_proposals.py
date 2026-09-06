@@ -1,8 +1,7 @@
 """Immutable proposal attempts for the bridge's pre-acceptance stage.
 
 This library has no installation, acceptance, scheduler or model-client adapter.
-A ticket is single-use; interrupted attempts consume their number. Recovery and
-maintenance inheritance belong to the subsequent acceptance/runtime increment.
+A ticket is single-use; interrupted attempts consume their number. Maintenance inheritance is validated through the runtime acceptance chain.
 """
 from __future__ import annotations
 
@@ -130,13 +129,14 @@ class ProposalStore:
               reviewer_feedback_refs: list[dict[str, str]], round_number: int,
               profile: str, phase: str = "phase_1", origin: str = "editor",
               client_attempt_number: int | None = 1, predecessor_report: dict[str, str] | None = None,
-              current_draft: str = "spec.md") -> ProposalTicket:
+              current_draft: str = "spec.md", maintenance_parent=None) -> ProposalTicket:
         """Validate and persist inputs before any callback. No effect evidence needed."""
         with self._lock():
             from whetstone.preservation_runtime import active, guard_admission
             if active(self.root):
-                guard_admission(self.root, round_number=round_number, phase=phase, predecessor_report=predecessor_report)
-            require(origin != "phase2_entry", "Phase 2 entry admission requires the later accepted-chain service")
+                guard_admission(self.root, round_number=round_number, phase=phase, predecessor_report=predecessor_report, origin=origin)
+            require(origin != "phase2_entry" or active(self.root), "Phase 2 entry requires the runtime adapter")
+            chain = []
             if any(self.root.glob("rounds/round-*/preservation/attempt-*/acceptance-attempt-*/acceptance.json")):
                 from whetstone.preservation_runtime import acceptance_service
                 accepted = acceptance_service(self.root)
@@ -146,7 +146,19 @@ class ProposalStore:
                     require(round_number == len(chain) + 1, "proposal must follow the last accepted round")
             context = validate_surface_bindings(self.root, surface_ref)
             validate_reference_graph(self.root, surface_ref, "bounded_change_surface")
-            require(self._path(current_draft).read_bytes() == context.base, "current authoritative base differs")
+            if maintenance_parent is not None:
+                require(origin in {'orchestrator_noop','phase2_entry'} and chain and chain[-1][0] == maintenance_parent,
+                        'maintenance requires the current validated acceptance')
+                prior = read_artifact(self.root,chain[-1][1]['admission'],'preservation_bridge_acceptance_admission')
+                require(surface_ref == prior['allowed_change_surface'], 'maintenance cannot refresh inherited authorization')
+                effective_config = decode_json(json_bytes(effective_config))
+                effective_config['runtime']['maintenance_parent'] = maintenance_parent
+                base_ref = chain[-1][1]['materialized_draft']
+                current_base = read_ref(self.root,base_ref)
+            else:
+                require(origin != 'phase2_entry', 'Phase 2 entry requires maintenance parent')
+                current_base = context.base
+            require(self._path(current_draft).read_bytes() == current_base, "current authoritative base differs")
             require(not os.path.samefile(self._path(current_draft), self.root / context.surface["base_draft"]["path"]),
                     "base Ref must identify an immutable snapshot, not the authoritative draft")
             require(isinstance(effective_config, dict), "effective config must be an object")
@@ -154,20 +166,21 @@ class ProposalStore:
                     "effective config phase/profile must match admission")
             config_bytes = json_bytes(effective_config)
             feedback_refs = decode_json(json_bytes(reviewer_feedback_refs))
-            vertical = effective_config.get('resolved_config', {}).get('review_mode') == 'vertical'
+            vertical = phase == 'phase_1' and profile == 'vertical' and effective_config.get('resolved_config', {}).get('review_mode') == 'vertical'
             if vertical:
                 from whetstone.preservation_vertical import verify_sources
                 verify_sources(self.root, effective_config, round_number, feedback_refs)
             for ref in feedback_refs:
                 artifact = read_artifact(self.root, ref, "reviewer_feedback")
-                require((vertical or artifact["round_number"] == round_number) and artifact["draft_hash"] == draft_hash(context.base.decode()),
+                require((vertical or artifact["round_number"] == round_number) and artifact["draft_hash"] == draft_hash(current_base.decode()),
                         "retained feedback round/base mismatch")
             require(len({ref["sha256"] for ref in feedback_refs}) == len(feedback_refs), "duplicate retained feedback")
-            require({s["artifact"]["sha256"] for s in context.surface["finding_sources"]}
-                    <= {ref["sha256"] for ref in feedback_refs}, "admitted findings must be retained before execution")
+            if maintenance_parent is None:
+                require({s["artifact"]["sha256"] for s in context.surface["finding_sources"]}
+                        <= {ref["sha256"] for ref in feedback_refs}, "admitted findings must be retained before execution")
             if predecessor_report:
                 validate_reference_graph(self.root, predecessor_report, "current_runtime_preservation_bridge_report")
-            parent = f"rounds/round-{round_number}/preservation"
+            parent = "rounds/preservation/phase2-entry" if origin == "phase2_entry" else f"rounds/round-{round_number}/preservation"
             # Validate the public shape before allocating any attempt directory.
             admission = {"schema_version": "preservation-bridge-proposal-admission-v1",
                 "capability_version": "preservation-bridge-v1", "round_number": round_number, "attempt_number": 1,
@@ -183,12 +196,16 @@ class ProposalStore:
             admission["attempt_number"] = number
             directory = f"{parent}/attempt-{number}"
             self._mkdir(directory)
+            if maintenance_parent is not None:
+                admission['base_draft'] = base_ref
+                admission['inventory'] = self._artifact(f'{directory}/base_inventory.json',build_inventory(current_base,path=base_ref['path']),'bridge_inventory')
             admission_ref = self._artifact(f"{directory}/admission.json", admission, "preservation_bridge_proposal_admission")
             try:
                 config_ref = self._write(f"{directory}/effective_config.json", config_bytes)
                 # Byte-identical mirrors retain approval/context evidence without
                 # rewriting any internal Ref. Originals stay available and pinned.
-                refs = [surface_ref, context.surface["base_draft"], context.surface["inventory"], context.surface["scope_contract"], *feedback_refs]
+                refs = [surface_ref, admission["base_draft"], admission["inventory"], context.surface["scope_contract"], *feedback_refs]
+                if maintenance_parent is not None: refs.append(maintenance_parent)
                 if predecessor_report:
                     refs.append(predecessor_report)
                 snapshots = []
@@ -207,11 +224,10 @@ class ProposalStore:
     def _inputs(self, ticket: ProposalTicket) -> ProposalInputs:
         require(ticket.root == str(self.root), "ticket belongs to another run root")
         admission = read_artifact(self.root, ticket.admission_ref, "preservation_bridge_proposal_admission")
-        require(ticket.directory == f"rounds/round-{admission['round_number']}/preservation/attempt-{admission['attempt_number']}",
-                "ticket directory differs from admission")
-        context = validate_surface_bindings(self.root, admission["allowed_change_surface"])
-        for key in ("base_draft", "inventory", "scope_contract", "finding_sources"):
-            require(admission[key] == context.surface[key], "frozen admission/surface mismatch")
+        from whetstone.preservation_maintenance import operation_directory, proposal_context
+        require(ticket.directory == operation_directory(admission), "ticket directory differs from admission")
+        frozen = decode_json(read_ref(self.root,decode_json(ticket.config_ref_json)))
+        context = proposal_context(self.root,admission,frozen)
         for mirror in decode_json(ticket.snapshots_json):
             require(read_ref(self.root, mirror["source"]) == read_ref(self.root, mirror["snapshot"]), "snapshot differs")
         require(self._path(ticket.current_draft).read_bytes() == context.base, "current authoritative base differs")
@@ -230,6 +246,9 @@ class ProposalStore:
 
     def capture_revision(self, ticket: ProposalTicket, raw: bytes, summary: dict[str, Any]) -> dict[str, str]:
         return self._execute(ticket, revision=(raw, decode_json(json_bytes(summary))))
+
+    def capture_maintenance(self, ticket):
+        return self._execute(ticket, maintenance=True)
 
     def run_supplied(self, ticket: ProposalTicket, raw: bytes, editor: Callable[[ProposalInputs], bytes]):
         """Retain supplied bytes before the single summary call, under exclusion."""
@@ -257,7 +276,7 @@ class ProposalStore:
             "report": report_ref, "category": "persistence_failure" if isinstance(exc, OSError) else "invalid_binding",
             "reason": f"Non-unit persistence/binding failure: {exc}", "acceptance": None}, "preservation_bridge_terminal_failure")
 
-    def _execute(self, ticket, *, editor=None, revision=None, supplied=None):
+    def _execute(self, ticket, *, editor=None, revision=None, supplied=None, maintenance=False):
         with self._lock():
             require(ticket.root == str(self.root), "ticket belongs to another root")
             directory = ticket.directory
@@ -283,7 +302,10 @@ class ProposalStore:
                     inputs = self._inputs(ticket)
                     admission = decode_json(inputs.admission_json)
                     report["stage"] = "client"
-                    if supplied is not None:
+                    if maintenance:
+                        require(admission['origin'] == 'phase2_entry', 'maintenance execution requires Phase 2 entry')
+                        raw, summary = inputs.base, None
+                    elif supplied is not None:
                         require(admission["origin"] == "supplied_revision", "supplied revision origin mismatch")
                         raw, callback = supplied
                         require(isinstance(raw, bytes), "supplied revision must contain exact bytes")
@@ -322,12 +344,12 @@ class ProposalStore:
                         require(isinstance(raw, bytes), "supplied revision must contain exact bytes")
                     round_dir = f"rounds/round-{admission['round_number']}"
                     number = admission["attempt_number"]
-                    report["raw_proposal"] = self._write(f"{round_dir}/full_draft_rewrite_attempt-{number}.md", raw)
+                    report["raw_proposal"] = self._write(f"{directory}/raw_proposal.md" if maintenance else f"{round_dir}/full_draft_rewrite_attempt-{number}.md", raw)
                     report["stage"] = "materialization"
                     raw_text = raw.decode("utf-8", errors="strict")
                     # Existing Editor protocol recomputes this value; the original
                     # response is retained separately, including its claimed hash.
-                    summary = {**summary, "draft_after_hash": draft_hash(raw_text)}
+                    summary = None if summary is None else {**summary, "draft_after_hash": draft_hash(raw_text)}
                     feedback = [decode_json(data) for data in inputs.reviewer_feedback_json]
                     eligible = validate_round_evidence(inputs.base, raw, admission, feedback, summary)
                     hygiene = []
@@ -341,13 +363,13 @@ class ProposalStore:
                         hygiene.append({"category": "contract_collapse", "affected_unit_ids": [],
                                         "reason": "Non-unit empty or abbreviated/blocked placeholder draft."})
                     report["failures"].extend(hygiene)
-                    summary_ref = self._artifact(f"{directory}/editor_summary.json", summary, "editor_summary")
+                    summary_ref = None if summary is None else self._artifact(f"{directory}/editor_summary.json", summary, "editor_summary")
                     # Size ratios are advisory; exact protected-unit checks below
                     # determine losses, including small deletions in large drafts.
                     materialized = materialize_proposal(inputs.base, raw, phase=admission["phase"],
                                                         origin=admission["origin"], ordinary_eligible=eligible)
                     report["transformations"] = materialized.transformations
-                    report["materialized_draft"] = self._write(f"{round_dir}/materialized_draft_attempt-{number}.md", materialized.content)
+                    report["materialized_draft"] = self._write(f"{directory}/materialized_draft.md" if maintenance else f"{round_dir}/materialized_draft_attempt-{number}.md", materialized.content)
                     inventory = build_inventory(materialized.content, path=report["materialized_draft"]["path"])
                     report["materialized_inventory"] = self._artifact(f"{directory}/materialized_inventory.json", inventory, "bridge_inventory")
                     report["materialized_draft_hash"] = draft_hash(materialized.content.decode())
@@ -362,7 +384,8 @@ class ProposalStore:
                     report["proposal"] = self._artifact(f"{directory}/proposal.json", proposal, "preservation_bridge_proposal")
                     validate_proposal_bindings(self.root, report["proposal"])
                     report["stage"] = "comparison"
-                    context = validate_surface_bindings(self.root, admission["allowed_change_surface"])
+                    from whetstone.preservation_maintenance import proposal_context
+                    context = proposal_context(self.root,admission,decode_json(inputs.effective_config_json))
                     report.update(assess_proposal(context, comparison_inventory(raw, inventory)))
                     report["failures"].extend(hygiene)
                     report["stage"] = "complete"
@@ -373,7 +396,8 @@ class ProposalStore:
                     else:
                         report.update(validation_result="pass", outcome="eligible", next_action="submit_acceptance_request")
                 except TimeoutError as exc:
-                    report.update(validation_result="not_completed", outcome="technical_failure", next_action="technical_resume")
+                    report.update(validation_result="not_completed", outcome="technical_failure",
+                                  next_action="technical_resume" if admission['phase']=='phase_1' else "inspect_and_repair")
                     report["failures"].append({"category": "client_timeout", "affected_unit_ids": [], "reason": f"Non-unit client timeout: {exc}"})
                 except ProposalClientFailure as exc:
                     report.update(validation_result="not_completed", outcome="technical_failure", next_action="inspect_and_repair")

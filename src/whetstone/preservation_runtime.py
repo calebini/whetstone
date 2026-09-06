@@ -94,12 +94,17 @@ def readback(root: Path, config: OrchestratorConfig | None = None, *, include_re
     for directory in root.glob('rounds/round-*/preservation/attempt-*'):
         match=re.fullmatch(r'rounds/round-([1-9][0-9]*)/preservation/attempt-([1-9][0-9]*)',str(directory.relative_to(root)))
         if match: directories.append((int(match[1]),int(match[2]),directory))
+    for directory in root.glob('rounds/preservation/phase2-entry/attempt-*'):
+        if directory.name.removeprefix('attempt-').isdigit():
+            config_path=directory/'effective_config.json'
+            bound=decode_json(config_path.read_bytes())['runtime']['state_before']['current_round'] if config_path.exists() else state_packet(root).get('current_round',0)
+            directories.append((bound+0.5,int(directory.name.removeprefix('attempt-')),directory))
     if directories and not (max(directories)[2]/'admission.json').is_file():
         result.update(pending_outcome='technical_failure', next_action='inspect_and_repair')
         return result
-    for path in root.glob('rounds/round-*/preservation/attempt-*/admission.json'):
+    for path in list(root.glob('rounds/round-*/preservation/attempt-*/admission.json')) + list(root.glob('rounds/preservation/phase2-entry/attempt-*/admission.json')):
         ref=service.reference(str(path.relative_to(root)));admission=read_artifact(root,ref,'preservation_bridge_proposal_admission')
-        attempts.append((admission['round_number'],admission['attempt_number'],path.parent,ref))
+        attempts.append((service.operation_order(admission),admission['attempt_number'],path.parent,ref))
     if attempts:
         _,_,directory,admission_ref=max(attempts)
         proposal_path=directory/'proposal.json'
@@ -132,7 +137,7 @@ def readback(root: Path, config: OrchestratorConfig | None = None, *, include_re
         accepted_round = 0
         if chain:
             _, _, original = service._proposal_directory(chain[-1][1]['proposal'])
-            accepted_round = original['round_number']
+            accepted_round = service.operation_order(original)
         pending = pending_review(root, accepted_round=accepted_round, proposal_round=max((a[0] for a in attempts), default=0))
         if pending:
             result.update(pending_outcome='technical_failure', next_action=pending['next_action'])
@@ -157,14 +162,23 @@ def acceptance_service(root: Path):
     return AcceptanceService(root)
 
 
-def guard_operation(root, config, *, phase, round_number, technical_resume=False):
+def guard_operation(root, config, *, phase, round_number, technical_resume=False, after_review=False):
     """Refuse a new Editor until all earlier authority and scheduler repair is complete."""
-    require(phase == 'phase_1', 'CONFIG_INVALID: guarded Phase 2 and maintenance are not yet qualified')
+    require(phase in {'phase_1','phase_2'} and not (technical_resume and phase == 'phase_2'), 'generic Phase 2 resume is unsupported')
     surface = validate_surface_bindings(Path(root), config.preservation_bridge.allowed_change_surface)
     require((Path(root)/'spec.md').read_bytes() == surface.base, 'new round requires authorization for the current base')
     require(config.scope_contract.path.is_file() and config.scope_contract.path.read_bytes() == read_ref(Path(root), surface.surface['scope_contract']),
             'CONFIG_INVALID: runtime scope must match the admitted approved scope')
-    status = readback(root, config)
+    status = readback(root, config, include_reviews=not after_review)
+    if after_review:
+        from whetstone.preservation_continuation import pending_review, read_review
+        pending=pending_review(root)
+        require(pending and pending['round_number']==round_number, 'Editor requires its completed review')
+        packet,frozen,result=read_review(Path(root),pending['directory'])
+        require(result and result['outcome']=='complete' and packet['phase']==phase and packet['accepted']==status['accepted'],
+                'Editor review is incomplete or has changed lineage')
+        require(frozen['resolved_config']==_jsonable(asdict(config)), 'Editor cannot change the reviewed configuration')
+        require(read_ref(Path(root),packet['base'])==(Path(root)/'spec.md').read_bytes(), 'Editor review base changed')
     if technical_resume:
         require(status['pending_outcome'] == 'technical_failure' and status['next_action'] == 'technical_resume',
                 'technical continuation requires a retained typed timeout')
@@ -172,7 +186,7 @@ def guard_operation(root, config, *, phase, round_number, technical_resume=False
         service = acceptance_service(root)
         service.verify_runtime_completion(service._chain())
         _, _, previous = service._proposal_directory(read_artifact(root, status['accepted'], 'preservation_bridge_acceptance')['proposal'])
-        require(round_number > previous['round_number'], 'round already accepted; use local acceptance replay')
+        require(round_number > service.operation_order(previous), 'round already accepted; use local acceptance replay')
     if status['pending_outcome']:
         require(technical_resume and status['next_action'] == 'technical_resume',
                 'pending/rejected proposal requires its local preservation operation')
@@ -209,14 +223,23 @@ class RuntimeAcceptanceService(AcceptanceService):
 
     runtime = True
 
+    def operation_order(self, original):
+        if original['round_number'] is not None:
+            return original['round_number']
+        from whetstone.preservation_maintenance import operation_directory
+        frozen=decode_json((self.root/operation_directory(original)/'effective_config.json').read_bytes())
+        return frozen['runtime']['state_before']['current_round']+0.5
+
     def _check_round(self, original, chain):
-        require(original['phase'] == 'phase_1' and original['origin'] != 'phase2_entry',
-                'CONFIG_INVALID: guarded Phase 2 and maintenance are not yet qualified')
-        previous_rounds=[]
-        for _, marker, _ in chain:
-            _, _, before=self._proposal_directory(marker['proposal'])
-            if before['round_number'] is not None:previous_rounds.append(before['round_number'])
-        require(original['round_number'] > max(previous_rounds,default=0), 'runtime round already committed or out of order')
+        from whetstone.preservation_maintenance import verify_parent
+        verify_parent(self,original,chain)
+        if original['origin'] == 'phase2_entry': return
+        previous=[self._proposal_directory(marker['proposal'])[2] for _,marker,_ in chain]
+        if original['phase'] == 'phase_2':
+            require(any(p['origin']=='phase2_entry' for p in previous), 'Phase 2 requires accepted entry maintenance')
+        else:
+            require(all(p['phase']=='phase_1' for p in previous), 'Phase 1 cannot follow Phase 2 authority')
+        require(original['round_number'] > max((self.operation_order(p) for p in previous),default=0), 'runtime round already committed or out of order')
 
     def _ordinary(self, proposal, admission, previous_issues):
         normal=proposal['normal_round_evidence']
@@ -224,19 +247,21 @@ class RuntimeAcceptanceService(AcceptanceService):
         runtime=config.get('runtime')
         require(isinstance(runtime,dict) and runtime.get('version')=='bridge-runtime-v1','missing frozen runtime context')
         state=runtime['state_before']
-        require(state.get('phase',admission['phase'])==admission['phase'], 'frozen scheduler phase mismatch')
-        require(state.get('current_round',admission['round_number'])==admission['round_number'], 'frozen scheduler round mismatch')
-        require(state.get('active_profile',admission['profile'])==admission['profile'], 'frozen scheduler profile mismatch')
+        require(state.get('phase',admission['phase']) == ('phase_1' if admission['origin']=='phase2_entry' else admission['phase']), 'frozen scheduler phase mismatch')
+        if admission['origin'] != 'phase2_entry':
+            require(state.get('current_round',admission['round_number'])==admission['round_number'], 'frozen scheduler round mismatch')
+            require(state.get('active_profile',admission['profile'])==admission['profile'], 'frozen scheduler profile mismatch')
         require(config['resolved_config']['review_mode'] in {'horizontal','vertical'}, 'unsupported frozen review mode')
         from whetstone.preservation_continuation import verify_review_receipt
         previous_issues = list(previous_issues)
         for path in self.root.glob('rounds/round-*/preservation/review_complete.json'):
             number = int(path.parent.parent.name.removeprefix('round-'))
-            if number < admission['round_number']:
+            if number < self.operation_order(admission):
                 packet, _, _, _, review_issues = verify_review_receipt(self.root, number)
                 if packet['kind'] in {'review_only','vertical_closeout'} and packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
                     previous_issues.extend(review_issues)
         eligible, issues = super()._ordinary(proposal,admission,previous_issues)
+        if admission['origin']=='phase2_entry': return eligible, issues
         decisions = self._decisions(proposal, admission)
         eligible = eligible and not any(p['orchestrator_action'] == 'pause_for_input' for p in decisions['decision_points'])
         return eligible, issues
@@ -261,6 +286,7 @@ class RuntimeAcceptanceService(AcceptanceService):
         mirrors = super()._mirrors(chain, initial=initial)
         for _, marker, _ in chain:
             _, proposal, original = self._proposal_directory(marker['proposal'])
+            if original['origin']=='phase2_entry': continue
             prefix = f"rounds/round-{original['round_number']}"
             normal = proposal['normal_round_evidence']
             frozen = decode_json(read_ref(self.root, normal['effective_config']))
@@ -277,17 +303,19 @@ class RuntimeAcceptanceService(AcceptanceService):
         _,proposal,original=self._proposal_directory(marker['proposal'])
         config=decode_json(read_ref(self.root,proposal['normal_round_evidence']['effective_config']))
         state=deepcopy(config['runtime']['state_before'])
-        number=original['round_number']
+        number=state['current_round'] if original['origin']=='phase2_entry' else original['round_number']
         hashes=list(state.get('seen_draft_hashes',[]))
         if not hashes or hashes[-1]!=marker['materialized_draft_hash']:hashes.append(marker['materialized_draft_hash'])
         state.update(current_round=number,current_absolute_round=number,phase=original['phase'],active_profile=original['profile'],
                      current_draft_hash=marker['materialized_draft_hash'],last_accepted_draft_hash=marker['materialized_draft_hash'],
-                     seen_draft_hashes=hashes,terminal_state=None,ready_for_phase_2=False,resumable=True,
+                     seen_draft_hashes=hashes,terminal_state=None,ready_for_phase_2=False,resumable=original['phase']=='phase_1',
                      preservation_bridge={'mode':'enforce','capability_version':'preservation-bridge-v1',
                          'latest_proposal':marker['proposal'],'latest_attempt_report':marker['report'],
                          'pending_acceptance_admission':None,'accepted':ref,'pending_outcome':None,'next_action':'ordinary_review'})
         if original['phase']=='phase_1':state['phase_1_rounds_completed']=number
         else:state['phase_2_rounds_completed']=number-int(state.get('phase_1_rounds_completed',0))
+        if original['origin']=='phase2_entry':
+            state.update(phase_1_rounds_completed=number,phase_2_rounds_completed=0,resumable=False)
         state['effective_run_config']=config['effective_run_config']
         return state
 
@@ -319,6 +347,8 @@ class RuntimeAcceptanceService(AcceptanceService):
     def _completion(self, chain):
         ref, marker, issues = chain[-1]
         _, proposal, original = self._proposal_directory(marker['proposal'])
+        if original['origin']=='phase2_entry':
+            return {'acceptance':ref,'round_number':None,'profile':None,'reviewer_counts':None,'unresolved_issues':issues,'spec_mutated':not marker['accepted_noop']}
         feedback = read_artifact(self.root, proposal['normal_round_evidence']['reviewer_feedback'][0], 'reviewer_feedback')
         # Scheduler cleanliness uses Reviewer findings, never Editor resolution claims.
         counts = {severity: sum(i['normalized_severity'] == severity and i['in_scope'] for i in feedback['feedback'])
@@ -336,7 +366,7 @@ class RuntimeAcceptanceService(AcceptanceService):
             number = int(path.parent.parent.name.removeprefix('round-'))
             packet, _, _, _, _ = verify_review_receipt(self.root, number)
             prior = [(ref, marker) for ref, marker, _ in chain
-                     if self._proposal_directory(marker['proposal'])[2]['round_number'] < number]
+                     if self.operation_order(self._proposal_directory(marker['proposal'])[2]) < number]
             if packet['kind'] == 'vertical_source' and packet['accepted'] is None:
                 require(not prior, 'seed source cannot observe later authority')
                 continue
@@ -424,15 +454,18 @@ def run_proposal(runner, *, round_number, profile, phase, prompt, feedback, edit
         earlier = decode_json(read_ref(root, execution['effective_config']))
         require(frozen['editor_timeout_seconds'] == earlier['editor_timeout_seconds'], 'technical retry cannot change the resolved timeout')
     feedback_refs = [feedback_ref]
-    if config.review_mode == 'vertical':
+    if phase == 'phase_1' and profile == 'vertical' and config.review_mode == 'vertical':
         from whetstone.preservation_vertical import source_bindings
         receipts, source_refs = source_bindings(root, config, round_number)
         frozen['vertical_review_sources'] = receipts
         feedback_refs.extend(source_refs)
     origin='supplied_revision' if supplied is not None else ('editor' if feedback.get('feedback') else 'orchestrator_noop')
+    chain=acceptance_service(root)._chain()
+    maintenance_parent=(chain[-1][0] if origin=='orchestrator_noop' and chain and
+        read_artifact(root,chain[-1][1]['admission'],'preservation_bridge_acceptance_admission')['allowed_change_surface']==config.preservation_bridge.allowed_change_surface else None)
     ticket=store.admit(surface_ref=config.preservation_bridge.allowed_change_surface,effective_config=frozen,
                        reviewer_feedback_refs=feedback_refs,round_number=round_number,profile=profile,phase=phase,origin=origin,
-                       client_attempt_number=client_attempt_number if origin=='editor' else None,predecessor_report=config.preservation_bridge.predecessor_report)
+                       client_attempt_number=client_attempt_number if origin=='editor' else None,predecessor_report=config.preservation_bridge.predecessor_report,maintenance_parent=maintenance_parent)
     if origin=='orchestrator_noop':
         from whetstone.live import _no_op_editor_summary
         base=read_ref(root,decode_json(ticket.admission_json)['base_draft'])
@@ -473,7 +506,7 @@ def run_proposal(runner, *, round_number, profile, phase, prompt, feedback, edit
               'latest_attempt_report':report_ref,'pending_acceptance_admission':None,'accepted':chain[-1][0] if chain else None,
               'pending_outcome':report['outcome'],'next_action':report['next_action']}
     current.update(current_round=round_number,phase=phase,active_profile=profile,current_draft_hash=draft_hash((root/'spec.md').read_bytes().decode()),
-                   terminal_state=terminal,ready_for_phase_2=False,resumable=terminal=='HALTED_CLIENT_TIMEOUT',preservation_bridge=pointers)
+                   terminal_state=terminal,ready_for_phase_2=False,resumable=phase=='phase_1' and terminal=='HALTED_CLIENT_TIMEOUT',preservation_bridge=pointers)
     service._replace('rounds/run_state.json',json_bytes(current))
     # Pending evidence is an operator pause, never a validation retry trigger.
     if terminal!='PAUSED_DECISION':
@@ -522,6 +555,7 @@ def resume_operation(root, config, *, continue_run=False, reviewer_client=None, 
     from whetstone.resume import ResumeResult
     # Local acceptance remains separate; only --continue requests more rounds.
     from whetstone.preservation_continuation import resume_review, pending_review, continue_phase1
+    require(state_packet(root).get('phase','phase_1') == 'phase_1', 'generic Phase 2 resume is unsupported')
     review = pending_review(Path(root))
     # Proposal attempts take precedence over their already completed Reviewer stage.
     if review and list((Path(root)/f"rounds/round-{review['round_number']}/preservation").glob('attempt-*/admission.json')):
@@ -558,19 +592,20 @@ def resume_operation(root, config, *, continue_run=False, reviewer_client=None, 
                         state['current_draft_hash'], state.get('last_accepted_draft_hash'), False)
 
 
-def guard_admission(root, *, round_number, phase, predecessor_report):
+def guard_admission(root, *, round_number, phase, predecessor_report, origin="editor"):
     service = acceptance_service(root)
     service._boundary()
-    require(phase == 'phase_1', 'CONFIG_INVALID: guarded Phase 2 admission is not yet qualified')
+    require(phase in {'phase_1','phase_2'}, 'unsupported preservation phase')
     chain = service._chain()
     if chain:
         service._verify_mirrors(chain)
         service.verify_runtime_completion(chain)
         _, _, previous = service._proposal_directory(chain[-1][1]['proposal'])
-        require(round_number > previous['round_number'], 'runtime round already committed')
+        if origin!='phase2_entry':
+            require(round_number > service.operation_order(previous), 'runtime round already committed')
     status = readback(root, include_reviews=False)
     if status['pending_outcome']:
-        require(status['next_action'] == 'technical_resume' and predecessor_report == status['latest_attempt_report'],
+        require(phase == 'phase_1' and status['next_action'] == 'technical_resume' and predecessor_report == status['latest_attempt_report'],
                 'pending operation must be completed before a new admission')
         report = read_artifact(root, predecessor_report, 'current_runtime_preservation_bridge_report')
         admission = read_artifact(root, report['admission'], 'preservation_bridge_proposal_admission')

@@ -1,6 +1,6 @@
 # Preservation runtime and continuation checkpoints
 
-This checkpoint connects the two-stage bridge to ordinary and focused horizontal Phase 1 rounds, scheduler continuation and Reviewer-only verification, plus vertical cycles, continuation and closeout recovery. It is a deterministic developer integration checkpoint within step 4 of slice 18.1. Public `preservation_bridge` configuration remains unavailable until the remaining runtime paths and full qualification pass. There is no new activation flag, and this document does not authorize a live model run.
+This checkpoint connects the two-stage bridge to ordinary and focused horizontal Phase 1 rounds, scheduler continuation and Reviewer-only verification, plus vertical cycles, continuation and closeout recovery, Phase 2 entry maintenance and guarded Phase 2 rounds. It is a deterministic developer integration checkpoint within step 4 of slice 18.1. Public `preservation_bridge` configuration remains unavailable until the remaining runtime paths and full qualification pass. There is no new activation flag, and this document does not authorize a live model run.
 
 ## Implemented behavior
 
@@ -26,7 +26,7 @@ After local acceptance, `resume --dry-run --continue` reconstructs the original 
 
 Reviewer-only closeout records exact input/output hashes, a compatibility no-op summary and an immutable `review_complete.json` receipt. It creates no new acceptance marker, accepted-history entry or Editor call. Serious findings prevent stability. Recovery validates each receipt's acceptance parent and deterministic outputs, keeps earlier closeout findings, and resumes only profiles that have not already completed their closeout. Completed continuation is read-only and does not charge another round. Budget/settings changes and unsolicited review-only rounds are refused; guarded budget extensions remain unavailable. Status and dry-run resume validate scheduler evidence before reporting readiness or resumability.
 
-Phase 2 entry, direct version promotion and declaration creation check preservation authority before consumption. Phase 2 entry remains unavailable because its dedicated maintenance admission is not yet integrated. Pending, rejected, corrupt or incompletely repaired output cannot pass dry or live strop even with non-convergence/source-hash overrides. Guarded dry strop creates no files; its returned review paths are prospective locations. Live strop retains writer exclusion and the existing external-source hash check.
+Phase 2 entry, direct version promotion and declaration creation check preservation authority before consumption. Phase 2 entry uses the dedicated maintenance acceptance described below. Pending, rejected, corrupt or incompletely repaired output cannot pass dry or live strop even with non-convergence/source-hash overrides. Guarded dry strop creates no files; its returned review paths are prospective locations. Live strop retains writer exclusion and the existing external-source hash check.
 
 ## Vertical cycles and recovery
 
@@ -42,16 +42,28 @@ An all-empty sweep commits unchanged output through normal no-op admission. It c
 
 Vertical source and closeout timeouts retry only their frozen operation. Completed feedback is reused if canonical output or receipt persistence was interrupted; a committed receipt is reused if the scheduler stopped before advancing. Closeout retains earlier serious findings while recovering remaining profiles, never rewrites acceptance history, and never invokes an Editor. Clean closeout completes Phase 1; serious residuals produce `TARGET_NOT_REACHED`. Repeating a completed stable or exhausted continuation is read-only. Changed settings, scope, timeout, prompt or receipt bytes block recovery rather than resetting the schedule. Budget extensions and generic Phase 2 technical resume remain unavailable.
 
+## Phase 2 maintenance and inherited authorization
+
+The developer runtime now enters Phase 2 through `rounds/preservation/phase2-entry/attempt-M/`. It retains the accepted base, a fresh inventory, frozen configuration and handoff evidence, raw and materialized output, the trusted version transform, proposal/report, and an empty-evidence request followed by acceptance. Round, profile and client-attempt fields are null; feedback is empty and the Editor summary is null. Entry does not allocate a numbered round or consume a review budget. Unversioned entry commits an unchanged no-op. Versioned entry changes only the pinned algorithm's permitted value spans and preserves exact line endings.
+
+Entry eligibility is reconstructed from the validated Phase 1 acceptance chain and completed profile reviews. A mutable `PHASE_1_STABLE` flag alone cannot grant the handoff. Pending or corrupt artifacts, unverified accepted bytes, focused-only completion and serious residual findings block entry. The complete proposal, acceptance and completion evidence remain part of downstream declaration and strop checks.
+
+Only `phase2_entry` and Reviewer-only `orchestrator_noop` proposals may inherit the immediately preceding acceptance's authorization. They bind that accepted output Ref and a newly generated inventory; their comparison surface permits no content change. The inherited surface is provenance, not a fresh edit approval. Initial seed no-ops still need ordinary admission. Editor and supplied-revision proposals cannot inherit older authorization, even if they claim unchanged output.
+
+The existing Phase 2 runner can consume accepted entry and complete clean convergence rounds through inherited no-op acceptance, without Editor calls. A finding that requires editing instead requires an approved surface for the exact current base before the Editor runs. Its output follows ordinary proposal assessment and local acceptance, including trusted Phase 2 revision stamping. Local acceptance completes only that operation; it does not invoke another Reviewer or Editor.
+
+Entry can finish a complete retained proposal after a request-write interruption, resume an identical local acceptance before the marker, or repair committed mirrors/completion after the marker. Repeating the completed operation is read-only and never stamps or records history twice. Partial proposal execution still requires inspection rather than overwriting its attempt. `preservation-accept --dry-run` remains read-only. Generic Phase 2 technical retry/continuation, guarded `closeout-existing`, and guarded budget extensions remain unavailable. A Phase 2 timeout reports inspection as its next action.
+
 ## Qualification and remaining work
 
 Run the scripted checks without live clients:
 
 ```sh
-PYTHONPATH=src:tests python3 -m unittest test_preservation_runtime test_preservation_clients test_preservation_continuation test_preservation_vertical test_preservation_vertical_recovery -q
+PYTHONPATH=src:tests python3 -m unittest test_preservation_runtime test_preservation_clients test_preservation_continuation test_preservation_vertical test_preservation_vertical_recovery test_preservation_maintenance -q
 PYTHONPATH=src:tests python3 -m unittest discover -s tests -q
 ```
 
-Validation at this checkpoint: **464 tests pass**, including **165 preservation tests** and ten new vertical continuation/recovery journeys. No live model calls.
+Validation: all 478 full-suite tests pass, including 179 preservation tests and 14 new scripted maintenance and Phase 2 journeys in `tests/test_preservation_maintenance.py`. The focused maintenance suite also passes after the final exact-parent/bound-configuration tightening. No live model calls.
 
 The new tests cover pending-to-local-acceptance, malformed raw bodies, frozen contract loss with `apply=True`, supplied revisions, focused runs, a complete three-profile unchanged Phase 1 run, typed timeout retry, altered retry inputs/configuration, stale scheduler state, interrupted scheduler repair, downgrade, and read-only downstream guards.
 
@@ -65,4 +77,6 @@ The vertical tests cover exact CRLF byte preservation, the first sweep, source/m
 
 Retained recovery evidence: `rounds/preservation-vertical-recovery-checkpoint-001/RESULTS.md` records a closeout interrupted after a serious finding, exact retry of the next profile, and terminal residuals with no repeated completed reviews or Editor calls.
 
-Step 4 remains open for guarded budget extensions, Phase 2's dedicated maintenance/inherited-authorization path, and full cross-path qualification. These paths fail explicitly rather than falling back to unguarded execution. Do not enable `PRESERVATION_BRIDGE_QUALIFIED` until those paths and the complete acceptance criteria in the implementation plan have evidence.
+Retained maintenance evidence: `rounds/preservation-maintenance-checkpoint-001/RESULTS.md` records clean Phase 2 convergence with no Editor calls and recovery after the entry marker was committed. Its `results.json` retains accepted Refs and review/acceptance counts.
+
+Step 4 remains open for guarded budget extensions, guarded Phase 2 `closeout-existing`, and full cross-path qualification. These paths fail explicitly rather than falling back to unguarded execution. Do not enable `PRESERVATION_BRIDGE_QUALIFIED` until those paths and the complete acceptance criteria in the implementation plan have evidence.

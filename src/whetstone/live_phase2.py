@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
-from whetstone.preservation_runtime import active as bridge_active, guard_consumer
+from whetstone.preservation_runtime import active as bridge_active, guard_consumer, BridgeHalt, preserve_state_fields
 from whetstone.artifacts import ArtifactStore
 from whetstone.config import OrchestratorConfig
 from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection, read_conflict_state
@@ -69,20 +69,24 @@ class LivePhase2Runner:
 
     def run(self, *, overwrite: bool = False, closeout_existing: bool = False) -> LivePhase2Result:
         if bridge_active(self.root, self.config):
-            guard_consumer(self.root, self.config)
-            raise ValueError("CONFIG_INVALID: guarded Phase 2 maintenance is not yet qualified")
+            from whetstone.preservation_contracts import require
+            from whetstone.preservation_maintenance import phase2_start_state
+            require(not overwrite and not closeout_existing, 'guarded Phase 2 overwrite/closeout-existing is not yet qualified')
+            state = phase2_start_state(self.root,self.config)
         if closeout_existing:
             return self.run_closeout_existing(overwrite=overwrite)
 
-        state = _read_phase1_handoff(self.config.rounds_dir)
+        if not bridge_active(self.root,self.config):
+            state = _read_phase1_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("current_round", 0))
         start_round = int(state.get("current_round", 0)) + 1
-        self.rubric_manifest = write_rubric_manifest(self.config)
         promotion = promote_spec_file_for_phase2(
             spec_path=self.config.spec_path,
             history_path=self.config.history_path,
             rounds_dir=self.config.rounds_dir,
+            config=self.config,
         )
+        self.rubric_manifest = write_rubric_manifest(self.config)
         write_context_pressure_report(root=self.root, config=self.config, phase="phase_2", round_number=start_round)
         current_hash = promotion.after_hash
         last_accepted_draft_hash: str | None = current_hash
@@ -138,7 +142,7 @@ class LivePhase2Runner:
             )
 
             try:
-                draft_before_content = self.config.spec_path.read_text(encoding="utf-8")
+                draft_before_content = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root,self.config) else self.config.spec_path.read_text(encoding="utf-8"))
                 draft_after_content = (
                     self.draft_after_provider(round_number, profile, draft_before_content)
                     if self.draft_after_provider is not None
@@ -158,12 +162,17 @@ class LivePhase2Runner:
                     apply=True,
                     overwrite=overwrite,
                 )
+            except BridgeHalt as exc:
+                from whetstone.preservation_runtime import state_packet
+                held=state_packet(self.root)
+                return LivePhase2Result(exc.terminal_state,round_number,held['current_draft_hash'],
+                                        held.get('last_accepted_draft_hash'),declaration_path,self.root/exc.report_ref['path'])
             except ValueError:
                 artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                 if artifact_error.exists():
                     error_packet = _read_json(artifact_error)
                     terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
-                    current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                    current_hash = draft_hash((self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root,self.config) else self.config.spec_path.read_text(encoding="utf-8")))
                     self._write_state(
                         current_round=round_number,
                         active_profile=profile,
@@ -480,14 +489,13 @@ class LivePhase2Runner:
 
     def run_closeout_existing(self, *, overwrite: bool = False) -> LivePhase2Result:
         """Resume a Phase 2 budget stop with Reviewer-only closeout checks."""
-        if bridge_active(self.root, self.config):
-            guard_consumer(self.root, self.config)
-            raise ValueError("CONFIG_INVALID: guarded Phase 2 maintenance is not yet qualified")
+        if bridge_active(self.root,self.config):
+            raise ValueError('guarded Phase 2 closeout-existing is not yet qualified')
 
         state = _read_phase2_closeout_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("phase_1_rounds_completed", 0))
         self.rubric_manifest = write_rubric_manifest(self.config)
-        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        current_hash = draft_hash((self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root,self.config) else self.config.spec_path.read_text(encoding="utf-8")))
         state_hash = state.get("current_draft_hash")
         if isinstance(state_hash, str) and state_hash != current_hash:
             raise ValueError("Phase 2 closeout requires current spec hash to match run_state current_draft_hash")
@@ -941,6 +949,13 @@ class LivePhase2Runner:
             "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT",
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
+        if bridge_active(self.root,self.config):
+            from whetstone.preservation_runtime import state_packet
+            previous=state_packet(self.root)
+            packet['review_round_budget']=previous.get('review_round_budget',packet['review_round_budget'])
+            packet['total_absolute_round_budget']=packet['review_round_budget']+packet['convergence_round_budget']
+            packet['resumable']=False  # Generic Phase 2 technical resume is unsupported.
+        packet=preserve_state_fields(self.root,self.config,packet)
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     def _write_decision_register(self, terminal_state: str) -> None:
@@ -962,6 +977,7 @@ class LivePhase2Runner:
         major_count: int,
         terminal_state: str | None,
     ) -> None:
+        if bridge_active(self.root,self.config): return
         terminal = f", terminal_state={terminal_state}" if terminal_state else ""
         entry = (
             f"- Live Phase 2 round {round_number}: profile `{profile}`, "

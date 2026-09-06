@@ -76,10 +76,11 @@ class AcceptanceService(ProposalStore):
 
     def _proposal_directory(self, proposal_ref):
         proposal, admission = validate_proposal_bindings(self.root, proposal_ref)
-        require(admission["origin"] != "phase2_entry", "maintenance lineage requires the runtime adapter")
+        require(admission["origin"] != "phase2_entry" or getattr(self,"runtime",False), "maintenance lineage requires the runtime adapter")
         if not getattr(self, "runtime", False):
             require(admission["phase"] == "phase_1", "Phase 2 acceptance requires the runtime handoff adapter")
-        directory = f"rounds/round-{admission['round_number']}/preservation/attempt-{admission['attempt_number']}"
+        from whetstone.preservation_maintenance import operation_directory
+        directory = operation_directory(admission)
         require(proposal_ref["path"] == f"{directory}/proposal.json", "proposal must occupy its admitted immutable attempt path")
         require(proposal["admission"]["path"] == f"{directory}/admission.json", "proposal admission path mismatch")
         return directory, proposal, admission
@@ -113,9 +114,16 @@ class AcceptanceService(ProposalStore):
         validate_artifact(request, "preservation_bridge_acceptance_request")
         directory, proposal, admission = self._proposal_directory(request["proposal"])
         validate_reference_graph(self.root, request["proposal"], "preservation_bridge_proposal")
-        context = validate_surface_bindings(self.root, request["allowed_change_surface"])
-        require(context.surface["base_draft"] == admission["base_draft"] and context.surface["inventory"] == admission["inventory"],
-                "acceptance must retain the exact proposal base and inventory")
+        frozen = decode_json(read_ref(self.root,proposal['normal_round_evidence']['effective_config']))
+        if frozen.get('runtime',{}).get('maintenance_parent'):
+            from whetstone.preservation_maintenance import proposal_context
+            require(request['allowed_change_surface'] == admission['allowed_change_surface'] and not request['operator_evidence'],
+                    'maintenance cannot refresh authorization or add effect evidence')
+            context = proposal_context(self.root,admission,frozen)
+        else:
+            context = validate_surface_bindings(self.root, request["allowed_change_surface"])
+            require(context.surface["base_draft"] == admission["base_draft"] and context.surface["inventory"] == admission["inventory"],
+                    "acceptance must retain the exact proposal base and inventory")
         for key in ("scope_contract", "finding_sources"):
             require(request[key] == context.surface[key], f"request/surface {key} mismatch")
         for ref in request["operator_evidence"]:
@@ -145,7 +153,10 @@ class AcceptanceService(ProposalStore):
         normal = proposal["normal_round_evidence"]
         base, raw = read_ref(self.root, admission["base_draft"]), read_ref(self.root, proposal["raw_proposal"])
         feedback = [read_artifact(self.root, ref, "reviewer_feedback") for ref in normal["reviewer_feedback"]]
-        summary = read_artifact(self.root, normal["editor_summary"], "editor_summary")
+        summary = None if normal['editor_summary'] is None else read_artifact(self.root, normal["editor_summary"], "editor_summary")
+        if admission['origin'] == 'phase2_entry':
+            validate_round_evidence(base,raw,admission,feedback,summary)
+            return accepted_draft(previous_issues), deepcopy(previous_issues)
         eligible = validate_round_evidence(base, raw, admission, feedback, summary)
         from whetstone.preservation_vertical import ordinary_feedback
         feedback = ordinary_feedback(admission, feedback)
@@ -228,7 +239,9 @@ class AcceptanceService(ProposalStore):
     def _chain(self):
         """Discover immutable markers; every node is independently reproduced."""
         markers = {}
-        for path in self.root.glob("rounds/round-*/preservation/attempt-*/acceptance-attempt-*/acceptance.json"):
+        paths = list(self.root.glob("rounds/round-*/preservation/attempt-*/acceptance-attempt-*/acceptance.json"))
+        paths += list(self.root.glob("rounds/preservation/phase2-entry/attempt-*/acceptance-attempt-*/acceptance.json"))
+        for path in paths:
             ref = self.reference(str(path.relative_to(self.root)))
             marker = read_artifact(self.root, ref, "preservation_bridge_acceptance")
             require(ref["sha256"] not in markers, "duplicate acceptance marker")
@@ -279,6 +292,11 @@ class AcceptanceService(ProposalStore):
             number = original["round_number"];prefix = f"rounds/round-{number}"
             content = read_ref(self.root, marker["materialized_draft"])
             base = read_ref(self.root, original["base_draft"])
+            if original['origin'] == 'phase2_entry':
+                if history and not history.endswith(b'\n'): history += b'\n'
+                history += (f"- Preservation Phase 2 entry: marker `{ref['sha256']}`, before `{draft_hash(base.decode())}`, "
+                            f"after `{marker['materialized_draft_hash']}`, noop `{str(marker['accepted_noop']).lower()}`.\n").encode()
+                continue
             summary = read_artifact(self.root, proposal["normal_round_evidence"]["editor_summary"], "editor_summary")
             summary = {**summary, "draft_after_hash": marker["materialized_draft_hash"], "draft_after_content": content.decode()}
             validate_artifact(summary, "editor_summary")

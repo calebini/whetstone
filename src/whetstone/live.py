@@ -90,12 +90,15 @@ class LiveRoundRunner:
         start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
         if bridge_active(self.root, self.config):
-            if self.config.review_mode == 'vertical':
+            if phase == 'phase_1' and self.config.review_mode == 'vertical':
                 raise ValueError('guarded vertical editing requires source reviews and a consolidated round')
             initialize_bridge(self.root, self.config, overwrite=overwrite)
             if reuse_existing_round:
                 from whetstone.preservation_continuation import pending_review, validate_review_retry
                 validate_review_retry(self.root, self.config, pending_review(self.root))
+            elif phase == 'phase_2':
+                from whetstone.preservation_maintenance import guard_phase2_review
+                guard_phase2_review(self.root,self.config,round_number)
             else:
                 guard_operation(self.root, self.config, phase=phase, round_number=round_number)
         invalid_fields = validate_live_config(self.config)
@@ -342,6 +345,8 @@ class LiveRoundRunner:
             reviewer_feedback=reviewer_feedback,
         )
 
+        if bridge_active(self.root,self.config) and phase == 'phase_2':
+            guard_operation(self.root,self.config,phase=phase,round_number=round_number,after_review=True)
         editor = self.editor_client or create_editor_client(
             self.config.editor,
             cwd=self.root,
@@ -2161,6 +2166,8 @@ def _try_stamp_spec_text_for_round(content: str, *, phase: str) -> Any | None:
 
 
 def _maybe_promote_phase2_version(config: OrchestratorConfig) -> None:
+    if bridge_active(config.rounds_dir.parent,config):
+        return  # The dedicated entry acceptance owns guarded promotion.
     state_path = config.rounds_dir / "run_state.json"
     if not state_path.exists():
         return
