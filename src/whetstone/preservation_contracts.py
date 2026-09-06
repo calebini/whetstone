@@ -1,8 +1,8 @@
-"""Read-only bridge contract checks; no acceptance, stamping or persistence.
+"""Read-only bridge contract checks; no acceptance or persistence.
 
 These validators establish artifact bindings and structural correspondence.
 They are building blocks, NOT the live acceptance service: ordinary round gates,
-trusted materialization, commit/replay and downstream integration are still required.
+commit/replay and downstream integration are still required.
 """
 
 from __future__ import annotations
@@ -235,7 +235,7 @@ def validate_surface_bindings(root: Path, reference: dict[str, str]) -> SurfaceC
 
 
 def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Check immutable proposal identity only, not transform/round eligibility."""
+    """Check immutable identity and reproduce prospective transforms, not acceptance."""
     proposal = read_artifact(root, reference, "preservation_bridge_proposal")
     admission = read_artifact(root, proposal["admission"], "preservation_bridge_proposal_admission")
     approved = validate_surface_bindings(root, admission["allowed_change_surface"])
@@ -273,6 +273,8 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
     normal = proposal["normal_round_evidence"]
     config = decode_json(read_ref(root, normal["effective_config"]))
     require(isinstance(config, dict), "effective config must be an object")
+    require(config.get("phase") == admission["phase"] and config.get("profile") == admission["profile"],
+            "retained effective config phase/profile mismatch")
     if admission["origin"] == "phase2_entry":
         require(normal["reviewer_feedback"] == [] and normal["editor_summary"] is None, "Phase 2 entry has fabricated round evidence")
     else:
@@ -285,6 +287,21 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
         require(feedback["round_number"] == admission["round_number"], "feedback round mismatch")
         # Vertical editing may retain different review profiles in one round.
         require(feedback["draft_hash"] == draft_hash(base.decode("utf-8")), "retained feedback base mismatch")
+    # Imports are local to keep the pure evidence helper composable with these
+    # shared Ref/contract checks without a module import cycle.
+    from whetstone.preservation_materialization import verify_materialization
+    from whetstone.preservation_round_evidence import validate_round_evidence
+
+    retained_feedback = [read_artifact(root, ref, "reviewer_feedback") for ref in normal["reviewer_feedback"]]
+    require({source["artifact"]["sha256"] for source in admission["finding_sources"]}
+            <= {ref["sha256"] for ref in normal["reviewer_feedback"]}, "admitted findings missing from retained evidence")
+    eligible = validate_round_evidence(base, raw, admission, retained_feedback,
+                                      None if normal["editor_summary"] is None else summary)
+    if admission["origin"] == "editor":
+        expected_summary = {**response, "draft_after_hash": draft_hash(raw.decode("utf-8"))}
+        require(summary == expected_summary, "retained summary differs from decoded Editor response")
+    verify_materialization(base, raw, output, proposal["transformations"], phase=admission["phase"],
+                           origin=admission["origin"], ordinary_eligible=eligible)
     return proposal, admission
 
 

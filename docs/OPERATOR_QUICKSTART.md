@@ -17,9 +17,9 @@ Whetstone persists every round under `rounds/`. The run is controlled by `rounds
 
 ### Preservation Capability Notice
 
-The [current-runtime preservation bridge](specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) has implemented schema/inventory foundations but no qualified runtime enforcement yet. Current full-draft editing is **not** made non-destructive by a bounded prompt, scope contract, or the CLI's historical "guarded" wording. For valuable drafts, keep an isolated source copy and use reviewer-only assessment when automatic rewriting is not acceptable.
+The [current-runtime preservation bridge](specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) has implemented schema/inventory foundations and developer components for proposal capture and preliminary assessment, but no qualified runtime enforcement yet. Current full-draft editing is **not** made non-destructive by a bounded prompt, scope contract, or the CLI's historical "guarded" wording. For valuable drafts, keep an isolated source copy and use reviewer-only assessment when automatic rewriting is not acceptable.
 
-The reserved `preservation_bridge` configuration in the [coordinating spec](specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation) is not a runnable option today; supplying it fails configuration loading with `CONFIG_INVALID`. The [foundation guide](../contracts/PRESERVATION_BRIDGE.md) describes the available read-only developer checks. Once qualified, the intended workflow is:
+The reserved `preservation_bridge` configuration in the [coordinating spec](specs/WHETSTONE_COORDINATING_SPEC.md#preservation-bridge-activation) is not a runnable option today; supplying it fails configuration loading with `CONFIG_INVALID`. The [developer guide](../contracts/PRESERVATION_BRIDGE.md) describes the available contract checks and proposal-capture library; it does not expose a live acceptance command. Once qualified, the intended workflow is:
 
 1. Inventory the exact authoritative base and approve the scope, findings and allowed/frozen proposal surface.
 2. Generate an isolated proposal and inspect its raw/materialized diff, preservation assessment and outstanding evidence needs. This cannot change the authoritative draft.
