@@ -495,7 +495,58 @@ def main(argv: list[str] | None = None) -> int:
     _add_apply_back_parser(subparsers, "strop", preferred=True)
     _add_apply_back_parser(subparsers, "apply-back", preferred=False)
 
+    bridge_review = subparsers.add_parser("preservation-review", help="inspect an isolated developer proposal and exact line identities")
+    bridge_adopt = subparsers.add_parser("preservation-attest", help="explicitly adopt one grouped effect in an isolated developer root")
+    bridge_request = subparsers.add_parser("preservation-request", help="prepare an immutable local acceptance request")
+    bridge_accept = subparsers.add_parser("preservation-accept", help="validate/accept or repair an isolated developer proposal; no model calls")
+    for command in (bridge_review, bridge_adopt, bridge_request, bridge_accept):
+        command.add_argument("--root", required=True, help="isolated developer proposal root; live scheduler roots are unsupported")
+    for command in (bridge_review, bridge_adopt, bridge_request):
+        command.add_argument("--proposal", required=True, help="proposal JSON path relative to root")
+    for command in (bridge_adopt, bridge_request):
+        command.add_argument("--surface", help="explicit same-base approved acceptance surface path")
+        command.add_argument("--output", required=True, help="new immutable root-relative artifact path")
+    bridge_request.add_argument("--evidence", action="append", default=[], help="adopted evidence path; repeat for multiple effects")
+    bridge_adopt.add_argument("--kind", required=True, choices=["attest_equivalence", "attest_strengthening", "attest_supersession", "attest_addition", "authorize_deletion", "authorize_weakening", "authorize_scope_expansion"])
+    bridge_adopt.add_argument("--base-lines", default="", help="comma-separated one-based predecessor lines")
+    bridge_adopt.add_argument("--output-lines", default="", help="comma-separated final output lines shared by the selected predecessors")
+    bridge_adopt.add_argument("--disposition", choices=["preserved", "moved", "reworded_equivalent", "strengthened", "superseded", "authorized_deleted", "operator_authorized_weakened"])
+    bridge_adopt.add_argument("--change-type", action="append", default=[])
+    bridge_adopt.add_argument("--finding", action="append", default=[], help="admitted feedback ID, or source-path::feedback-ID to disambiguate")
+    bridge_adopt.add_argument("--effect", required=True)
+    bridge_adopt.add_argument("--rationale", required=True)
+    bridge_adopt.add_argument("--operator", required=True)
+    bridge_adopt.add_argument("--approve", action="store_true", help="explicitly adopt the stated exact effect")
+    bridge_accept.add_argument("--request", required=True, help="immutable acceptance request path relative to root")
+    bridge_accept.add_argument("--dry-run", action="store_true", help="read-only validation; creates no admission, marker or lock file")
+
     args = parser.parse_args(argv)
+    if args.command.startswith("preservation-"):
+        from dataclasses import asdict
+        from whetstone.preservation_acceptance import AcceptanceService
+        from whetstone.preservation_review import adopt_effect, review_proposal
+        try:
+            service = AcceptanceService(Path(args.root))
+            if args.command == "preservation-review":
+                result = review_proposal(service, service.reference(args.proposal))
+            elif args.command == "preservation-attest":
+                lines = lambda text: [int(n.strip()) for n in text.split(",") if n.strip()]
+                result = adopt_effect(service, proposal_ref=service.reference(args.proposal),
+                    surface_ref=service.reference(args.surface) if args.surface else None, output=args.output,
+                    kind=args.kind, base_lines=lines(args.base_lines), output_lines=lines(args.output_lines), disposition=args.disposition,
+                    change_types=args.change_type, finding_ids=args.finding, effect=args.effect, rationale=args.rationale,
+                    operator=args.operator, approve=args.approve)
+            elif args.command == "preservation-request":
+                result = service.prepare_request(proposal_ref=service.reference(args.proposal),
+                    surface_ref=service.reference(args.surface) if args.surface else None,
+                    evidence_refs=[service.reference(path) for path in args.evidence], output=args.output)
+            else:
+                result = asdict(service.accept(service.reference(args.request), dry_run=args.dry_run))
+            print(json.dumps(result))
+            return 2 if result.get("outcome") == "rejected" else 0
+        except (OSError, ValueError) as exc:
+            print(json.dumps({"error": str(exc), "accepted": False}))
+            return 2
     if args.command == "fixture-round":
         root = Path(args.root)
         config = load_config(root / args.config)

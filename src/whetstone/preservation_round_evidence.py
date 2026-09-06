@@ -44,5 +44,5 @@ def validate_round_evidence(base: bytes, raw: bytes, admission: dict[str, Any],
     if raw == base:
         # A claimed resolution alone never clears serious findings on a no-op.
         resolved = set()
-    return not summary["created_conflict_ids"] and not any(uid not in resolved and f["in_scope"] and f["normalized_severity"] in {"major", "blocker"}
+    return not summary["created_conflict_ids"] and not any(uid not in resolved and f["normalized_severity"] in {"major", "blocker"}
                    for uid, findings in issues.items() for f in findings)

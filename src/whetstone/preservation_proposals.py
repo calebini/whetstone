@@ -81,7 +81,7 @@ class ProposalStore:
         path = self._path(".preservation.lock")
         fd = os.open(path, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
         try:
-            fcntl.flock(fd, fcntl.LOCK_EX)
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             yield
         finally:
             os.close(fd)
@@ -134,6 +134,12 @@ class ProposalStore:
         """Validate and persist inputs before any callback. No effect evidence needed."""
         with self._lock():
             require(origin != "phase2_entry", "Phase 2 entry admission requires the later accepted-chain service")
+            if any(self.root.glob("rounds/round-*/preservation/attempt-*/acceptance-attempt-*/acceptance.json")):
+                from whetstone.preservation_acceptance import AcceptanceService
+                accepted = AcceptanceService(self.root)
+                chain = accepted._chain()
+                accepted._verify_mirrors(chain)
+                require(round_number == len(chain) + 1, "proposal must follow the last accepted round")
             context = validate_surface_bindings(self.root, surface_ref)
             validate_reference_graph(self.root, surface_ref, "bounded_change_surface")
             require(self._path(current_draft).read_bytes() == context.base, "current authoritative base differs")

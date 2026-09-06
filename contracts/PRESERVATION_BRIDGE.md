@@ -1,6 +1,6 @@
 # Preservation bridge developer components
 
-The `preservation-bridge-v1` runtime capability remains unavailable. The first two implementation increments provide public contracts, structural checks, immutable proposal capture, trusted materialization and preliminary assessment. Acceptance and runtime integration are still pending. A `preservation_bridge` configuration block now fails preflight with `CONFIG_INVALID` rather than silently selecting legacy editing.
+The `preservation-bridge-v1` runtime capability remains unavailable. The first three implementation increments provide public contracts, structural checks, immutable proposal capture, trusted materialization, preliminary assessment and isolated local acceptance/repair. Runtime integration and qualification are still pending. A `preservation_bridge` configuration block now fails preflight with `CONFIG_INVALID` rather than silently selecting legacy editing.
 
 ## Implemented
 
@@ -34,11 +34,17 @@ Writes use create-if-absent atomic links with file/directory synchronization und
 
 [Preliminary assessment](../src/whetstone/preservation_assessment.py) gives every base unit a disposition and covers every output unit as a mechanical successor, known addition or unmapped output. Missing correspondence/effect evidence stays pending without inventing a semantic claim. Frozen/unlisted content loss, forbidden concrete relocation/addition, provable limit overruns and corruption remain hard failures even alongside pending work. Duplicate multiplicity loss is checked without pretending to know which identical predecessor disappeared. The store preserves text-corruption and placeholder checks; size ratios do not decide preservation.
 
-A preliminary `pass` means structural preservation is eligible for acceptance review. It does not clear residual issues, install a draft, emit an acceptance marker, advance version/history, or change scheduler state. The library does not resume interrupted execution; replay/repair and scheduler transitions are the next increments. Phase 2 entry's pure transform is tested, but its admission and inherited maintenance authority require the later accepted-chain service.
+A preliminary `pass` means structural preservation is eligible for acceptance review. It does not clear residual issues, install a draft, emit an acceptance marker, advance version/history, or change scheduler state. Proposal client execution is not replayed by this library. The acceptance service can resume an identical incomplete local acceptance or repair a committed result; scheduler transitions remain the next increment. Phase 2 entry's pure transform is tested, but its admission and inherited maintenance authority require the later accepted-chain service.
+
+## Isolated acceptance and recovery
+
+[AcceptanceService](../src/whetstone/preservation_acceptance.py) admits explicit requests, adopts validated effect evidence, recomputes complete correspondence and materialization, enforces permissions/limits and ordinary global issue/conflict gates, then creates an immutable acceptance marker before installation. Accepted-chain residuals are retained. Replay and repair use immutable inputs and the marker; old committed proposals never reinstall after authority advances. No acceptance call invokes a model.
+
+[Review/adoption helpers](../src/whetstone/preservation_review.py) and four local CLI commands provide exact line/effect review, explicit adoption, request preparation and read-only dry-run. The [developer acceptance guide](../docs/PRESERVATION_ACCEPTANCE_DEVELOPER.md) documents the commands, persistence ordering and recovery. This service supports isolated contiguous Phase 1 proposal rounds; configured/live scheduler roots and Phase 2 are refused pending their adapter. It writes canonical draft/summary/unresolved/history artifacts, but no scheduler state or convergence result.
 
 ## Still required for slice 18.1
 
-Acceptance admission and storage; local effect adoption and acceptance request/dry-run commands; ordinary-round gates; commit-time current-base recheck; single-writer commit and idempotent recovery; maintenance authorization inheritance; live/resumed/supplied/vertical integration; and Phase 2/declaration/strop consumption guards.
+Runtime scheduler/profile/budget/residual adapters and idempotent scheduler completion/readback; maintenance authorization inheritance; live/resumed/supplied/vertical integration; and Phase 2/declaration/strop consumption guards and complete qualification.
 
 In particular, `validate_untransformed_change` refuses transformed proposals. The foundation proposal-binding checker also refuses inherited maintenance surfaces whose base/inventory differs; accepting that case requires the later validated acceptance-chain service. These are explicit implementation boundaries, not restrictions on the final owning specification.
 
@@ -51,6 +57,6 @@ PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_preservation*.py' 
 PYTHONPATH=src python3 -m unittest discover -s tests -q
 ```
 
-The foundation tests use the [toy corpus](../examples/fixtures/preservation_bridge/README.md), [fixed inventory vectors](../tests/fixtures/preservation/bridge_lines_v1.json), and an exhaustive small-sequence matching oracle. They cover accepted structural/evidence combinations and deliberate frozen losses, ambiguous/conflicting mappings, transitive supersession, relocation/caps, exact-byte tampering and invalid bindings. These tests do not run live models or qualify the entire bridge. The 60 focused preservation tests include proposal journeys and pure Phase 2 stamping; the full suite passes 359 tests. Commit crashes, maintenance lineage, acceptance and runtime operator journeys remain future integration tests. No live models were invoked.
+The foundation tests use the [toy corpus](../examples/fixtures/preservation_bridge/README.md), [fixed inventory vectors](../tests/fixtures/preservation/bridge_lines_v1.json), and an exhaustive small-sequence matching oracle. They cover accepted structural/evidence combinations and deliberate frozen losses, ambiguous/conflicting mappings, transitive supersession, relocation/caps, exact-byte tampering and invalid bindings. These tests do not run live models or qualify the entire bridge. The 90 focused preservation tests include proposal/acceptance journeys, commit/repair faults and pure Phase 2 stamping; the full suite passes 389 tests. Maintenance lineage and runtime operator journeys remain future integration tests. No live models were invoked.
 
 Normative owners remain the [artifact](../docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts), [scope](../docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#bridge-operator-authority), [candidate](../docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) and [scheduler](../docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#preservation-bridge-lifecycle) leaves. Publishing these foundations does not activate the reserved capability or vNext editing.
