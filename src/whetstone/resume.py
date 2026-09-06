@@ -555,14 +555,16 @@ def plan_resume_halted_run(
     """Validate a resumable halt without invoking clients."""
 
     if bridge_active(Path(root), config):
-        if continue_run:
-            raise ValueError("CONFIG_INVALID: guarded scheduler continuation is not yet qualified")
+        from whetstone.preservation_continuation import plan_continuation
+        planned = plan_continuation(Path(root), config, continue_run=continue_run)
+        if planned is not None:
+            return planned
         _, admission, _ = resume_context(Path(root), config)
         current_hash = draft_hash(config.spec_path.read_bytes().decode())
         return ResumePlan(True, 'HALTED_CLIENT_TIMEOUT', 'client_timeout', 'phase_1', 'editor',
                           admission['round_number'], admission['profile'], current_hash, current_hash,
-                          (admission['client_attempt_number'] or 0)+1, False, None,
-                          'Retry one typed Editor timeout with frozen preservation bindings; stop after this operation')
+                          (admission['client_attempt_number'] or 0)+1, continue_run, None,
+                          'Retry one typed Editor timeout with frozen preservation bindings; continue only if requested and accepted')
     _ = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
     next_round_number = None

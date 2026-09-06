@@ -158,10 +158,13 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
     if active(root, config):
         preservation = packet['preservation_bridge']
         packet['next_action'] = preservation['next_action']
-        if preservation['pending_outcome'] is not None:
-            packet['ready_for_phase_2'] = False
-            packet['resumable'] = preservation['next_action'] == 'technical_resume'
-            packet['resume']['eligible'] = packet['resumable']
+        packet['resumable'] = bool(packet['resume']['eligible'])
+        verified_complete = bool(packet['resume'].get('verified_complete'))
+        packet['ready_for_phase_2'] = verified_complete and packet['terminal_state'] == 'PHASE_1_STABLE'
+        if preservation['pending_outcome'] == 'technical_failure' and not packet['resumable']:
+            packet['next_action'] = 'inspect_and_repair'
+        if preservation['pending_outcome'] is None and packet['terminal_state'] in {'PHASE_1_STABLE', 'FOCUSED_PROFILE_STABLE'} and verified_complete:
+            packet['next_action'] = 'none'
     return packet
 
 
@@ -683,6 +686,20 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
         "failure_type": None,
     }
     if not run_state:
+        return packet
+    from whetstone.preservation_runtime import active
+    if active(root, config):
+        from whetstone.resume import plan_resume_halted_run
+        try:
+            plan = plan_resume_halted_run(root, config, continue_run=True)
+            command = f"whetstone resume --root {shlex.quote(str(root))}"
+            packet.update(verified_complete=not plan.resumable and plan.terminal_state in {'PHASE_1_STABLE','FOCUSED_PROFILE_STABLE'},
+                          eligible=plan.resumable, reason=plan.reason, round_number=plan.round_number,
+                          profile=plan.profile, client_role=plan.client_role, failure_type=plan.failure_type,
+                          command=(command + ' --continue' if plan.client_role == 'orchestrator' else command) if plan.resumable else None,
+                          continue_command=command + ' --continue' if plan.resumable else None)
+        except (ValueError, OSError) as exc:
+            packet.update(eligible=False, reason=str(exc))
         return packet
     terminal_state = run_state.get("terminal_state")
     if terminal_state in {"TARGET_NOT_REACHED", "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"} and run_state.get("phase") == "phase_1":

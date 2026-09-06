@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -78,10 +78,18 @@ class LivePhase1Runner:
         self.timeout_seconds = timeout_seconds
         self.report_writer = ReportWriter(self.root, config=self.config)
 
-    def run(self, *, overwrite: bool = False) -> LivePhase1Result:
+    def run(self, *, overwrite: bool = False, continuation: bool = False) -> LivePhase1Result:
+        context = None
+        if continuation:
+            from whetstone.preservation_continuation import continuation_context
+            context = continuation_context(self.root, self.config)
+            self.run_mode = context['run_mode']
+            self.state_review_profile_budgets = context['budgets']
+            self.completion_terminal_state = context['terminal']
+            self.completion_ready_for_phase_2 = context['ready']
         if bridge_active(self.root, self.config):
             initialize_bridge(self.root, self.config, overwrite=overwrite)
-            if state_packet(self.root):
+            if state_packet(self.root) and not continuation:
                 raise ValueError("guarded run already started; use its preservation operation or resume")
         if self.config.review_mode == "vertical" and self.scheduler_factory is None:
             return self._run_vertical(overwrite=overwrite)
@@ -98,8 +106,24 @@ class LivePhase1Runner:
         last_unresolved: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
 
+        start_round = 1
+        if context is not None:
+            scheduler = context['scheduler']
+            seen_hashes = context['seen_hashes']
+            last_accepted_draft_hash = context['last_accepted_draft_hash']
+            last_unresolved = context['last_unresolved']
+            last_reviewer_findings = context['last_reviewer_findings']
+            start_round = context['round_number'] + 1
+            if scheduler.phase_complete(accepted_draft=True):
+                state = state_packet(self.root)
+                if state.get('terminal_state') == self.completion_terminal_state:
+                    return LivePhase1Result(self.completion_terminal_state, start_round-1, seen_hashes[-1],
+                                            last_accepted_draft_hash, self.completion_ready_for_phase_2)
+                return self._complete(round_number=start_round-1, current_draft_hash=seen_hashes[-1],
+                                      last_accepted_draft_hash=last_accepted_draft_hash, seen_draft_hashes=seen_hashes)
+        self.state_scheduler_steps = [{**asdict(step), 'focus': sorted(step.focus)} for step in scheduler.steps]
         self._write_state(
-            current_round=0,
+            current_round=start_round-1,
             active_profile=None,
             current_draft_hash=seen_hashes[-1],
             last_accepted_draft_hash=last_accepted_draft_hash,
@@ -109,7 +133,7 @@ class LivePhase1Runner:
         )
 
         total_round_budget = scheduler.total_round_budget()
-        for round_number in range(1, total_round_budget + 1):
+        for round_number in range(start_round, total_round_budget + 1):
             profile = scheduler.next_profile()
             if profile is None:
                 accepted_current_draft = last_accepted_draft_hash == seen_hashes[-1]
@@ -120,7 +144,7 @@ class LivePhase1Runner:
                         last_accepted_draft_hash=last_accepted_draft_hash,
                         seen_draft_hashes=seen_hashes,
                     )
-                if _soft_budget_policy(self.config) and scheduler.sweep_complete():
+                if _soft_budget_policy(self.config) and scheduler.sweep_complete() and not bridge_active(self.root, self.config):
                     return self._sweep_complete_with_residuals(
                         round_number=round_number - 1,
                         current_draft_hash=seen_hashes[-1],
@@ -405,14 +429,17 @@ class LivePhase1Runner:
 
         current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
         profile_status = scheduler.status()
-        exhausted_round_number = max(1, min(total_round_budget, len(seen_hashes) - 1))
-        if _horizontal_closeout_eligible(
+        exhausted_round_number = max(start_round-1, 1, min(total_round_budget, len(seen_hashes) - 1))
+        continuing_closeout = context is not None and bool(context['reviewed_profiles'])
+        if (continuing_closeout and context['closeout_profiles']) or (not continuing_closeout and _horizontal_closeout_eligible(
             current_hash=current_hash,
             last_accepted_draft_hash=last_accepted_draft_hash,
             last_unresolved=last_unresolved,
             profile_status=profile_status,
-        ):
+        )):
             closeout_result = self._run_horizontal_closeout_check(
+                profiles_to_review=context['closeout_profiles'] if continuing_closeout else None,
+                initial_unresolved=context['review_issues'] if continuing_closeout else None,
                 start_round=exhausted_round_number + 1,
                 profile_status=profile_status,
                 seen_hashes=seen_hashes,
@@ -947,13 +974,15 @@ class LivePhase1Runner:
         seen_hashes: list[str],
         last_accepted_draft_hash: str | None,
         overwrite: bool,
+        profiles_to_review: list[str] | None = None,
+        initial_unresolved: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         round_number = start_round - 1
-        closeout_unresolved: list[dict[str, Any]] = []
+        closeout_unresolved: list[dict[str, Any]] = list(initial_unresolved or [])
         closeout_findings_by_profile: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
         mutable_status = _copy_profile_status(profile_status)
-        for profile in list(profile_status.get("unverified_profiles", [])):
+        for profile in (profiles_to_review if profiles_to_review is not None else list(profile_status.get("unverified_profiles", []))):
             current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
             round_number += 1
             self._write_state(
@@ -978,6 +1007,11 @@ class LivePhase1Runner:
                     phase="phase_1",
                     overwrite=overwrite,
                 )
+            except BridgeHalt as exc:
+                return {'terminal_state': exc.terminal_state, 'round_number': round_number, 'current_hash': current_hash,
+                        'last_accepted_draft_hash': last_accepted_draft_hash, 'profile_status': mutable_status,
+                        'last_unresolved': closeout_unresolved, 'last_reviewer_findings': last_reviewer_findings,
+                        'closeout_findings_by_profile': closeout_findings_by_profile}
             except ValueError:
                 artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                 if artifact_error.exists():
@@ -1216,6 +1250,8 @@ class LivePhase1Runner:
             "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT" or terminal_state in budget_resumable_states,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
+        if bridge_active(self.root, self.config):
+            packet['scheduler_steps'] = getattr(self, 'state_scheduler_steps', (previous_state or {}).get('scheduler_steps'))
         packet = preserve_state_fields(self.root, self.config, packet)
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

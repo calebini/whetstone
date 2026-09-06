@@ -1182,6 +1182,10 @@ def _apply_timeout_overrides(config: object, *, args: object) -> object:
 
 
 def _apply_resume_run_state_config(config: object) -> object:
+    from whetstone.preservation_runtime import active
+    if active(config.rounds_dir.parent, config):
+        # Guarded resume verifies immutable configuration; mutable state cannot replace it.
+        return config
     state_path = config.rounds_dir / "run_state.json"
     if not state_path.exists():
         return config

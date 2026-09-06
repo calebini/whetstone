@@ -90,11 +90,12 @@ class LiveRoundRunner:
         start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
         if bridge_active(self.root, self.config):
-            if reuse_existing_round:
-                raise ValueError("CONFIG_INVALID: guarded Reviewer replay is not yet qualified")
             initialize_bridge(self.root, self.config, overwrite=overwrite)
-            guard_operation(self.root, self.config, phase=phase, round_number=round_number,
-                            technical_resume=reuse_existing_round)
+            if reuse_existing_round:
+                from whetstone.preservation_continuation import pending_review, validate_review_retry
+                validate_review_retry(self.root, self.config, pending_review(self.root))
+            else:
+                guard_operation(self.root, self.config, phase=phase, round_number=round_number)
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:
             _write_config_error(self.config.rounds_dir, invalid_fields)
@@ -112,6 +113,7 @@ class LiveRoundRunner:
         draft_before = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
                         else self.config.spec_path.read_text(encoding="utf-8"))
         draft_before_hash = draft_hash(draft_before)
+        self._preservation_supplied = draft_after
         supplied_bytes = draft_after
         if isinstance(draft_after, bytes):
             draft_after = draft_after.decode("utf-8")
@@ -187,7 +189,7 @@ class LiveRoundRunner:
             section_ids=section_ids,
             timeout_seconds=self._timeout_for_role("reviewer"),
         )
-        reviewer_feedback = self._call_with_validation_retry(
+        reviewer_feedback = self._review_with_preservation(
             round_number=round_number,
             phase=phase,
             profile=profile,
@@ -482,7 +484,9 @@ class LiveRoundRunner:
         """Run and persist an independent reviewer pass without invoking the Editor."""
 
         if bridge_active(self.root, self.config):
-            raise ValueError("CONFIG_INVALID: guarded review-only scheduling is not yet qualified")
+            from whetstone.preservation_continuation import begin_review_only
+            begin_review_only(self.root, self.config, round_number=round_number, profile=profile, phase=phase,
+                              overwrite=overwrite, resume=reuse_existing_round)
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:
             _write_config_error(self.config.rounds_dir, invalid_fields)
@@ -563,7 +567,7 @@ class LiveRoundRunner:
             section_ids=section_ids,
             timeout_seconds=self._timeout_for_role("reviewer"),
         )
-        reviewer_feedback = self._call_with_validation_retry(
+        reviewer_feedback = self._review_with_preservation(
             round_number=round_number,
             phase=phase,
             profile=profile,
@@ -641,6 +645,9 @@ class LiveRoundRunner:
             "reviewer_working_notes.md",
             "Live review-only round; reviewer notes are captured in structured feedback.\n",
         )
+        if bridge_active(self.root, self.config):
+            from whetstone.preservation_continuation import finish_review_only
+            finish_review_only(self, round_number)
         return LiveRoundResult(
             round_number=round_number,
             round_dir=round_dir,
@@ -900,6 +907,12 @@ class LiveRoundRunner:
             packet,
             schema_name="operator_decision_checkpoint",
         )
+
+    def _review_with_preservation(self, **kwargs):
+        if bridge_active(self.root, self.config):
+            from whetstone.preservation_continuation import guarded_review
+            return guarded_review(self, **kwargs)
+        return self._call_with_validation_retry(**kwargs)
 
     def _call_with_validation_retry(
         self,

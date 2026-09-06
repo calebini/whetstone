@@ -75,7 +75,7 @@ def initialize(root: Path, config: OrchestratorConfig, *, overwrite=False):
         store._write('rounds/preservation/runtime.json',json_bytes({"mode":"enforce", "capability_version":"preservation-bridge-v1"}))
 
 
-def readback(root: Path, config: OrchestratorConfig | None = None):
+def readback(root: Path, config: OrchestratorConfig | None = None, *, include_reviews=True):
     root = Path(root)
     guarded = active(root, config)
     result = {"mode": "enforce" if guarded else "legacy_unguarded", "capability_version": "preservation-bridge-v1" if guarded else None,
@@ -127,6 +127,18 @@ def readback(root: Path, config: OrchestratorConfig | None = None):
         elif (directory/'proposal.json').exists():
             admissions=sorted(directory.glob('acceptance-attempt-*/admission.json'),key=lambda p:int(p.parent.name.rsplit('-',1)[1]))
             if admissions:result['pending_acceptance_admission']=service.reference(str(admissions[-1].relative_to(root)))
+    if include_reviews:
+        from whetstone.preservation_continuation import pending_review
+        accepted_round = 0
+        if chain:
+            _, _, original = service._proposal_directory(chain[-1][1]['proposal'])
+            accepted_round = original['round_number']
+        pending = pending_review(root, accepted_round=accepted_round, proposal_round=max((a[0] for a in attempts), default=0))
+        if pending:
+            result.update(pending_outcome='technical_failure', next_action=pending['next_action'])
+            path = pending['directory']/'result.json'
+            if path.exists():
+                result['latest_attempt_report'] = service.reference(str(path.relative_to(root)))
     return result
 
 
@@ -216,6 +228,14 @@ class RuntimeAcceptanceService(AcceptanceService):
         require(state.get('current_round',admission['round_number'])==admission['round_number'], 'frozen scheduler round mismatch')
         require(state.get('active_profile',admission['profile'])==admission['profile'], 'frozen scheduler profile mismatch')
         require(config['resolved_config']['review_mode'] == 'horizontal', 'unsupported frozen review mode')
+        from whetstone.preservation_continuation import verify_review_receipt
+        previous_issues = list(previous_issues)
+        for path in self.root.glob('rounds/round-*/preservation/review_complete.json'):
+            number = int(path.parent.parent.name.removeprefix('round-'))
+            if number < admission['round_number']:
+                packet, _, _, _, review_issues = verify_review_receipt(self.root, number)
+                if packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
+                    previous_issues.extend(review_issues)
         eligible, issues = super()._ordinary(proposal,admission,previous_issues)
         decisions = self._decisions(proposal, admission)
         eligible = eligible and not any(p['orchestrator_action'] == 'pause_for_input' for p in decisions['decision_points'])
@@ -309,6 +329,19 @@ class RuntimeAcceptanceService(AcceptanceService):
         return f"{Path(marker['admission']['path']).parent}/runtime_completed.json"
 
     def verify_runtime_completion(self, chain):
+        from whetstone.preservation_continuation import verify_review_receipt
+        for path in self.root.glob('rounds/round-*/preservation/review_complete.json'):
+            number = int(path.parent.parent.name.removeprefix('round-'))
+            packet, _, _, _, _ = verify_review_receipt(self.root, number)
+            prior = [(ref, marker) for ref, marker, _ in chain
+                     if self._proposal_directory(marker['proposal'])[2]['round_number'] < number]
+            require(prior and prior[-1][0] == packet['accepted'], 'review-only parent is not the preceding acceptance')
+            require(all(self._proposal_directory(marker['proposal'])[2]['round_number'] != number for _, marker, _ in chain),
+                    'review-only round has competing acceptance')
+            parents = [(ref, marker) for ref, marker, _ in chain if ref == packet['accepted']]
+            require(len(parents) == 1, 'review-only acceptance is missing from the chain')
+            require(read_ref(self.root, packet['base']) == read_ref(self.root, parents[0][1]['materialized_draft']),
+                    'review-only base differs from its acceptance')
         for index in range(1, len(chain)+1):
             path = self._path(self._completion_path(chain[index-1][1]))
             require(path.is_file() and path.read_bytes() == json_bytes(self._completion(chain[:index])),
@@ -473,12 +506,22 @@ def resume_context(root: Path, config: OrchestratorConfig):
 
 
 def resume_operation(root, config, *, continue_run=False, reviewer_client=None, editor_client=None, timeout_seconds=None):
-    """Retry only a typed transient, preserving the original round and bindings."""
+    """Recover one frozen operation, then explicitly continue Phase 1 if requested."""
     from whetstone.live import LiveRoundRunner, create_editor_client
     from whetstone.resume import ResumeResult
-    # Scheduler continuation is deliberately not inferred from approval. This
-    # checkpoint completes the selected operation and never starts another round.
-    require(not continue_run, 'CONFIG_INVALID: guarded scheduler continuation is not yet qualified; complete the selected operation locally')
+    # Local acceptance remains separate; only --continue requests more rounds.
+    from whetstone.preservation_continuation import resume_review, pending_review, continue_phase1
+    review = pending_review(Path(root))
+    # Proposal attempts take precedence over their already completed Reviewer stage.
+    if review and list((Path(root)/f"rounds/round-{review['round_number']}/preservation").glob('attempt-*/admission.json')):
+        review = None
+    if review:
+        return resume_review(root, config, review, continue_run=continue_run, reviewer_client=reviewer_client,
+                             editor_client=editor_client, timeout_seconds=timeout_seconds)
+    status = readback(Path(root), config)
+    if status['pending_outcome'] is None and status['accepted'] is not None:
+        require(continue_run, 'accepted operation is complete; use --continue for ordinary review')
+        return continue_phase1(root, config, reviewer_client=reviewer_client, editor_client=editor_client, timeout_seconds=timeout_seconds)
     retry_config, admission, directory = resume_context(root, config)
     runner = LiveRoundRunner(root, retry_config, reviewer_client=reviewer_client,
                              editor_client=editor_client, timeout_seconds=timeout_seconds)
@@ -497,6 +540,8 @@ def resume_operation(root, config, *, continue_run=False, reviewer_client=None, 
         state = state_packet(root)
         return ResumeResult(True, exc.terminal_state, number, 'phase_1', profile,
                             state['current_draft_hash'], state.get('last_accepted_draft_hash'), False)
+    if continue_run:
+        return continue_phase1(root, config, reviewer_client=reviewer_client, editor_client=editor_client, timeout_seconds=timeout_seconds)
     state = state_packet(root)
     return ResumeResult(True, state.get('terminal_state'), number, 'phase_1', profile,
                         state['current_draft_hash'], state.get('last_accepted_draft_hash'), False)
@@ -512,7 +557,7 @@ def guard_admission(root, *, round_number, phase, predecessor_report):
         service.verify_runtime_completion(chain)
         _, _, previous = service._proposal_directory(chain[-1][1]['proposal'])
         require(round_number > previous['round_number'], 'runtime round already committed')
-    status = readback(root)
+    status = readback(root, include_reviews=False)
     if status['pending_outcome']:
         require(status['next_action'] == 'technical_resume' and predecessor_report == status['latest_attempt_report'],
                 'pending operation must be completed before a new admission')
