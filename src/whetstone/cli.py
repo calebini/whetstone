@@ -523,10 +523,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command.startswith("preservation-"):
         from dataclasses import asdict
-        from whetstone.preservation_acceptance import AcceptanceService
+        from whetstone.preservation_runtime import acceptance_service
         from whetstone.preservation_review import adopt_effect, review_proposal
         try:
-            service = AcceptanceService(Path(args.root))
+            service = acceptance_service(Path(args.root))
             if args.command == "preservation-review":
                 result = review_proposal(service, service.reference(args.proposal))
             elif args.command == "preservation-attest":

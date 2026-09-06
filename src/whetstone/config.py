@@ -66,6 +66,51 @@ class ReferenceContextFileConfig:
     required: bool
 
 
+# Remains false until the complete integrated qualification suite passes.
+PRESERVATION_BRIDGE_QUALIFIED = False
+
+
+@dataclass(frozen=True)
+class PreservationBridgeConfig:
+    mode: str
+    capability_version: str
+    allowed_change_surface: dict[str, str]
+    predecessor_report: dict[str, str] | None = None
+
+
+def root_declares_bridge(root: Path) -> bool:
+    """A removed capability marker must not turn an enforced run into legacy."""
+    import json
+    if (root / "rounds/preservation/runtime.json").exists():
+        return True
+    state = root / "rounds/run_state.json"
+    if state.is_file():
+        try:
+            value = json.loads(state.read_bytes())
+            return isinstance(value, dict) and isinstance(value.get("preservation_bridge"), dict) and value["preservation_bridge"].get("mode") == "enforce"
+        except (ValueError, OSError):
+            pass
+    return False
+
+
+def parse_preservation_bridge(value: Any) -> PreservationBridgeConfig:
+    from whetstone.contracts import SchemaRegistry
+    if not isinstance(value, dict) or set(value) - {"mode", "capability_version", "allowed_change_surface", "predecessor_report"}:
+        raise ValueError("CONFIG_INVALID: invalid preservation bridge fields")
+    if value.get("mode") != "enforce" or value.get("capability_version") != "preservation-bridge-v1":
+        raise ValueError("CONFIG_INVALID: unsupported preservation mode/capability")
+    registry = SchemaRegistry()
+    for name in ("allowed_change_surface", "predecessor_report"):
+        ref = value.get(name)
+        if ref is None and name == "predecessor_report":
+            continue
+        registry._validate(ref, {"$ref": "preservation_bridge.schema.json#/$defs/ref"}, "$")
+        path = Path(ref["path"])
+        if path.is_absolute() or ".." in path.parts:
+            raise ValueError("CONFIG_INVALID: bridge references must be confined relative paths")
+    return PreservationBridgeConfig(**value)
+
+
 @dataclass(frozen=True)
 class OrchestratorConfig:
     spec_path: Path
@@ -86,6 +131,7 @@ class OrchestratorConfig:
     contract_surface: ContractSurfaceConfig
     scope_contract: ScopeContractConfig
     reference_context_files: tuple[ReferenceContextFileConfig, ...]
+    preservation_bridge: PreservationBridgeConfig | None = None
 
     @classmethod
     def default(cls, root: Path | str = ".") -> "OrchestratorConfig":
@@ -141,13 +187,19 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     config_path = Path(path)
     root = config_path.parent
     if not config_path.exists():
+        if root_declares_bridge(root):
+            raise ValueError("CONFIG_INVALID: guarded root cannot omit its bridge configuration")
         return OrchestratorConfig.default(root)
     parsed = _parse_simple_yaml(config_path.read_text(encoding="utf-8"))
+    bridge = None
     if "preservation_bridge" in parsed:
-        raise ValueError(
-            "CONFIG_INVALID: preservation-bridge-v1 is not available; "
-            "contract foundations do not provide qualified runtime enforcement"
-        )
+        if not PRESERVATION_BRIDGE_QUALIFIED:
+            raise ValueError("CONFIG_INVALID: preservation-bridge-v1 is not available; runtime qualification is incomplete")
+        if "editing_mode" in parsed or "contract_suite_version" in parsed:
+            raise ValueError("CONFIG_INVALID: bridge cannot mix with vNext editing configuration")
+        bridge = parse_preservation_bridge(parsed["preservation_bridge"])
+    elif root_declares_bridge(root):
+        raise ValueError("CONFIG_INVALID: guarded root cannot downgrade to legacy")
     default = OrchestratorConfig.default(root)
 
     clients = parsed.get("clients", {})
@@ -163,6 +215,7 @@ def load_config(path: Path | str) -> OrchestratorConfig:
     review = parsed.get("review", {})
 
     return OrchestratorConfig(
+        preservation_bridge=bridge,
         spec_path=root / str(parsed.get("spec_path", default.spec_path.name)),
         history_path=root / str(parsed.get("history_path", default.history_path.name)),
         rounds_dir=root / str(parsed.get("rounds_dir", default.rounds_dir.name)),

@@ -39,11 +39,35 @@ def apply_back(
     allow_non_converged: bool = False,
     output_dir: Path | str | None = None,
 ) -> ApplyBackResult:
+    """Review or apply, holding the guarded run's writer exclusion through consumption."""
+    from contextlib import nullcontext
+    from whetstone.preservation_runtime import active, acceptance_service
+    root = Path(run_root)
+    lock = acceptance_service(root)._lock() if apply and active(root) else nullcontext()
+    with lock:
+        return _apply_back(source_path=source_path, run_root=run_root, apply=apply, approve=approve,
+                           expected_source_hash=expected_source_hash, allow_source_hash_mismatch=allow_source_hash_mismatch,
+                           allow_non_converged=allow_non_converged, output_dir=output_dir)
+
+
+def _apply_back(
+    *,
+    source_path: Path | str,
+    run_root: Path | str,
+    apply: bool = False,
+    approve: bool = False,
+    expected_source_hash: str | None = None,
+    allow_source_hash_mismatch: bool = False,
+    allow_non_converged: bool = False,
+    output_dir: Path | str | None = None,
+) -> ApplyBackResult:
     """Create an apply-back review, optionally writing the final draft to the source spec."""
 
     source = Path(source_path)
     root = Path(run_root)
-    final_draft_path = _final_draft_path(root)
+    from whetstone.preservation_runtime import active, guard_consumer
+    guard_consumer(root)
+    final_draft_path = root / "spec.md" if active(root) else _final_draft_path(root)
     if not source.exists():
         raise FileNotFoundError(source)
     if apply and not approve:
@@ -58,7 +82,7 @@ def apply_back(
         )
 
     source_text = source.read_text(encoding="utf-8")
-    final_text = final_draft_path.read_text(encoding="utf-8")
+    final_text = final_draft_path.read_bytes().decode("utf-8") if active(root) else final_draft_path.read_text(encoding="utf-8")
     validate_generated_text(final_text, context="apply-back final draft")
     source_before_hash = draft_hash(source_text)
     final_draft_hash = draft_hash(final_text)
@@ -94,7 +118,8 @@ def apply_back(
 
     source_after_hash = draft_hash(source.read_text(encoding="utf-8"))
     artifact_dir = Path(output_dir) if output_dir is not None else root / "rounds"
-    artifact_dir.mkdir(parents=True, exist_ok=True)
+    if apply or not active(root):
+        artifact_dir.mkdir(parents=True, exist_ok=True)
     review_json_path = artifact_dir / "apply_back_review.json"
     review_markdown_path = artifact_dir / "apply_back_review.md"
     rubric_identity = _read_rubric_identity(root)
@@ -129,8 +154,9 @@ def apply_back(
         "diff_line_count": len(diff_lines),
     }
     validate_artifact(report, "apply_back_report")
-    review_json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    review_markdown_path.write_text(_markdown_report(report, diff_lines), encoding="utf-8")
+    if apply or not active(root):
+        review_json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        review_markdown_path.write_text(_markdown_report(report, diff_lines), encoding="utf-8")
 
     return ApplyBackResult(
         source_path=source,

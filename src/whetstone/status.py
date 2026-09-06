@@ -145,11 +145,29 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         "historical_terminal_reports": historical_terminal_reports,
         "status_warnings": status_warnings,
     }
+    from whetstone.preservation_runtime import readback, active
+    try:
+        packet['preservation_bridge'] = readback(root, config)
+    except (OSError, ValueError) as exc:
+        packet['preservation_bridge'] = {
+            'mode': 'enforce' if active(root, config) else 'legacy_unguarded',
+            'capability_version': 'preservation-bridge-v1' if active(root, config) else None,
+            'latest_proposal': None, 'latest_attempt_report': None, 'pending_acceptance_admission': None,
+            'accepted': None, 'pending_outcome': 'technical_failure', 'next_action': 'inspect_and_repair'}
+        packet['status_warnings'].append(f'Preservation evidence cannot be verified: {exc}')
+    if active(root, config):
+        preservation = packet['preservation_bridge']
+        packet['next_action'] = preservation['next_action']
+        if preservation['pending_outcome'] is not None:
+            packet['ready_for_phase_2'] = False
+            packet['resumable'] = preservation['next_action'] == 'technical_resume'
+            packet['resume']['eligible'] = packet['resumable']
     return packet
 
 
 def render_status_text(status: dict[str, Any]) -> str:
     """Render a compact human-readable status summary."""
+    bridge = status.get('preservation_bridge', {})
     latest_round = status.get("latest_round") or {}
     decision_register = status.get("decision_register") or {}
     decision_summary = status.get("decision_summary") or {}
@@ -236,6 +254,8 @@ def render_status_text(status: dict[str, Any]) -> str:
     if resume_status.get("eligible"):
         lines.append(f"resume_command: {resume_status.get('command')}")
         lines.append(f"resume_continue_command: {resume_status.get('continue_command')}")
+    lines.append(f"Preservation: {bridge.get('mode', 'legacy_unguarded')}; next: {bridge.get('next_action', 'none')}")
+    lines.append(f"Preservation: {bridge.get('mode', 'legacy_unguarded')}; next: {bridge.get('next_action', 'none')}")
     return "\n".join(lines) + "\n"
 
 

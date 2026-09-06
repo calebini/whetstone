@@ -71,10 +71,14 @@ class AcceptanceService(ProposalStore):
             require(not self._path(path).exists(),
                     "live/configured scheduler roots require the step-4 runtime adapter; use an isolated developer proposal root")
 
+    def _check_round(self, original, chain):
+        require(original["round_number"] == len(chain) + 1, "standalone acceptance rounds must be contiguous from the original seed")
+
     def _proposal_directory(self, proposal_ref):
         proposal, admission = validate_proposal_bindings(self.root, proposal_ref)
         require(admission["origin"] != "phase2_entry", "maintenance lineage requires the runtime adapter")
-        require(admission["phase"] == "phase_1", "Phase 2 acceptance requires the runtime handoff adapter")
+        if not getattr(self, "runtime", False):
+            require(admission["phase"] == "phase_1", "Phase 2 acceptance requires the runtime handoff adapter")
         directory = f"rounds/round-{admission['round_number']}/preservation/attempt-{admission['attempt_number']}"
         require(proposal_ref["path"] == f"{directory}/proposal.json", "proposal must occupy its admitted immutable attempt path")
         require(proposal["admission"]["path"] == f"{directory}/admission.json", "proposal admission path mismatch")
@@ -245,7 +249,7 @@ class AcceptanceService(ProposalStore):
             require(marker["admission"]["path"] == f"{operation}/admission.json" and ref["path"] == f"{operation}/acceptance.json", "acceptance marker path mismatch")
             base_ref = seed["base_draft"] if previous is None else chain[-1][1]["materialized_draft"]
             require(read_ref(self.root, original["base_draft"]) == read_ref(self.root, base_ref), "acceptance lineage base mismatch")
-            require(original["round_number"] == len(chain) + 1, "standalone acceptance rounds must be contiguous from the original seed")
+            self._check_round(original, chain)
             expected_report, issues = self._assess(request, marker["admission"], issues)
             require(expected_report["validation_result"] == "pass", "committed acceptance no longer passes validation")
             require(marker["report"]["path"] == f"{operation}/report.json", "acceptance report path mismatch")
@@ -371,7 +375,7 @@ class AcceptanceService(ProposalStore):
         if chain:
             self._verify_mirrors(chain)
         require(self._path("spec.md").read_bytes() == context.base, "current authoritative base is stale for this proposal")
-        require(original["round_number"] == len(chain) + 1, "standalone acceptance must complete the next original round exactly once")
+        self._check_round(original, chain)
         seed = self._seed()
         if seed is not None and not chain:
             require(read_ref(self.root, seed["base_draft"]) == context.base, "proposal differs from recorded original seed")

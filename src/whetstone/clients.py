@@ -33,6 +33,7 @@ SEVERITY_FIELDS = (
 class ClientInvocationResult:
     artifact: dict
     telemetry: dict[str, Any]
+    raw_response: bytes | None = None
 
 
 class ProcessReviewerClient:
@@ -53,6 +54,12 @@ class ProcessEditorClient:
 
     def __init__(self, command: str) -> None:
         self.command = command
+
+    def revise_raw(self, prompt: str) -> bytes:
+        completed = subprocess.run([self.command], input=prompt.encode("utf-8"), capture_output=True, check=False)
+        if completed.returncode != 0:
+            raise RuntimeError(f"{self.command!r} exited {completed.returncode}")
+        return completed.stdout
 
     def revise(self, prompt: str) -> dict:
         artifact = _run_json_command(self.command, prompt)
@@ -174,6 +181,22 @@ class CodexEditorClient:
         self.timeout_seconds = timeout_seconds
         self.last_telemetry: dict[str, Any] | None = None
 
+    def revise_raw(self, prompt: str) -> bytes:
+        """Return the exact structured response without normalization or retry."""
+        try:
+            result = _run_codex_exec(
+                command=self.command, prompt=prompt, cwd=self.cwd,
+                schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
+                model=self.model, timeout_seconds=self.timeout_seconds, raw=True,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        if result.raw_response is None:
+            raise ValueError("Editor transport did not retain raw response bytes")
+        return result.raw_response
+
     def revise(self, prompt: str) -> dict:
         try:
             result = _run_codex_exec(
@@ -210,6 +233,22 @@ class ClaudeCodeEditorClient:
         self.cwd = Path(cwd)
         self.timeout_seconds = timeout_seconds
         self.last_telemetry: dict[str, Any] | None = None
+
+    def revise_raw(self, prompt: str) -> bytes:
+        """Return the exact structured response without normalization or retry."""
+        try:
+            result = _run_claude_print(
+                command=self.command, prompt=prompt, cwd=self.cwd,
+                schema_path=SCHEMA_DIR / "editor_summary.codex.schema.json",
+                model=self.model, timeout_seconds=self.timeout_seconds, raw=True,
+            )
+        except Exception as exc:
+            self.last_telemetry = getattr(exc, "telemetry", None)
+            raise
+        self.last_telemetry = result.telemetry
+        if result.raw_response is None:
+            raise ValueError("Editor transport did not retain raw response bytes")
+        return result.raw_response
 
     def revise(self, prompt: str) -> dict:
         try:
@@ -329,6 +368,7 @@ def _run_codex_exec(
     schema_path: Path,
     model: str | None,
     timeout_seconds: int | None = None,
+    raw: bool = False,
 ) -> ClientInvocationResult:
     with TemporaryDirectory() as tmp:
         output_path = Path(tmp) / "last-message.json"
@@ -362,6 +402,7 @@ def _run_codex_exec(
                 args,
                 input_text=prompt,
                 timeout=timeout_seconds,
+                **({"exact": True} if raw else {}),
             )
         except subprocess.TimeoutExpired as exc:
             telemetry = _base_telemetry(
@@ -380,6 +421,9 @@ def _run_codex_exec(
             error = RuntimeError(f"{command!r} exec exited {completed.returncode}: {completed.stderr.strip()}")
             setattr(error, "telemetry", telemetry)
             raise error
+        if raw:
+            response = output_path.read_bytes() if output_path.exists() else getattr(completed, "stdout_bytes", completed.stdout.encode("utf-8"))
+            return ClientInvocationResult({}, telemetry, response)
         content = output_path.read_text(encoding="utf-8") if output_path.exists() else completed.stdout
         return ClientInvocationResult(_parse_json_object(content, source=f"{command!r} exec"), telemetry)
 
@@ -392,6 +436,7 @@ def _run_claude_print(
     schema_path: Path,
     model: str | None,
     timeout_seconds: int | None = None,
+    raw: bool = False,
 ) -> ClientInvocationResult:
     args = [
         command,
@@ -417,6 +462,7 @@ def _run_claude_print(
             cwd=cwd,
             input_text=None,
             timeout=timeout_seconds,
+                **({"exact": True} if raw else {}),
         )
     except subprocess.TimeoutExpired as exc:
         telemetry = _base_telemetry(
@@ -436,6 +482,8 @@ def _run_claude_print(
         error = RuntimeError(f"{command!r} --print exited {completed.returncode}: {detail}")
         setattr(error, "telemetry", telemetry)
         raise error
+    if raw:
+        return ClientInvocationResult({}, telemetry, _claude_response_bytes(getattr(completed, "stdout_bytes", completed.stdout)))
     artifact = _parse_json_object(completed.stdout, source=f"{command!r} --print")
     structured_output = artifact.get("structured_output")
     if isinstance(structured_output, dict):
@@ -446,12 +494,59 @@ def _run_claude_print(
     return ClientInvocationResult(artifact, telemetry)
 
 
+def _claude_response_bytes(content: str | bytes) -> bytes:
+    """Extract a response body without reserializing structured JSON.
+
+    Claude's transport envelope is not the Editor artifact. Preserve the exact
+    structured_output token span, or decode its result string as the body.
+    Malformed bodies are returned unchanged for the proposal store to retain.
+    """
+    if isinstance(content, bytes):
+        try:
+            content = content.decode("utf-8", errors="strict")
+        except UnicodeDecodeError:
+            return content
+    decoder = json.JSONDecoder()
+    try:
+        from whetstone.preservation_contracts import decode_json
+        decode_json(content.encode("utf-8"))
+        index = len(content) - len(content.lstrip())
+        if content[index] != "{":
+            return content.encode("utf-8")
+        index += 1
+        entries = {}
+        while True:
+            while content[index].isspace(): index += 1
+            if content[index] == "}": break
+            key, index = decoder.raw_decode(content, index)
+            while content[index].isspace(): index += 1
+            if content[index] != ":": raise ValueError("missing colon")
+            index += 1
+            while content[index].isspace(): index += 1
+            start = index
+            value, index = decoder.raw_decode(content, index)
+            if key in entries: raise ValueError("duplicate envelope key")
+            entries[key] = (value, content[start:index])
+            while content[index].isspace(): index += 1
+            if content[index] == "}": break
+            if content[index] != ",": raise ValueError("missing comma")
+            index += 1
+        if isinstance(entries.get("structured_output", (None,))[0], dict):
+            return entries["structured_output"][1].encode("utf-8")
+        if isinstance(entries.get("result", (None,))[0], str):
+            return entries["result"][0].encode("utf-8")
+    except (ValueError, IndexError, TypeError):
+        pass
+    return content.encode("utf-8")
+
+
 def _run_client_process(
     args: list[str],
     *,
     cwd: Path | None = None,
     input_text: str | None,
     timeout: int | None,
+    exact: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     process = subprocess.Popen(
         args,
@@ -459,15 +554,21 @@ def _run_client_process(
         stdin=subprocess.PIPE if input_text is not None else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
+        text=not exact,
         start_new_session=True,
     )
     try:
-        stdout, stderr = process.communicate(input=input_text, timeout=timeout)
+        stdout, stderr = process.communicate(input=input_text.encode("utf-8") if exact and input_text is not None else input_text, timeout=timeout)
     except subprocess.TimeoutExpired:
         _terminate_process_group(process)
         stdout, stderr = process.communicate()
         raise subprocess.TimeoutExpired(args, timeout, output=stdout, stderr=stderr)
+    if exact:
+        completed = subprocess.CompletedProcess(args, process.returncode,
+            stdout.decode("utf-8", errors="replace"), stderr.decode("utf-8", errors="replace"))
+        completed.stdout_bytes = stdout
+        completed.stderr_bytes = stderr
+        return completed
     return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
 
 

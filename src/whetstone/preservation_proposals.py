@@ -133,13 +133,17 @@ class ProposalStore:
               current_draft: str = "spec.md") -> ProposalTicket:
         """Validate and persist inputs before any callback. No effect evidence needed."""
         with self._lock():
+            from whetstone.preservation_runtime import active, guard_admission
+            if active(self.root):
+                guard_admission(self.root, round_number=round_number, phase=phase, predecessor_report=predecessor_report)
             require(origin != "phase2_entry", "Phase 2 entry admission requires the later accepted-chain service")
             if any(self.root.glob("rounds/round-*/preservation/attempt-*/acceptance-attempt-*/acceptance.json")):
-                from whetstone.preservation_acceptance import AcceptanceService
-                accepted = AcceptanceService(self.root)
+                from whetstone.preservation_runtime import acceptance_service
+                accepted = acceptance_service(self.root)
                 chain = accepted._chain()
                 accepted._verify_mirrors(chain)
-                require(round_number == len(chain) + 1, "proposal must follow the last accepted round")
+                if not getattr(accepted, "runtime", False):
+                    require(round_number == len(chain) + 1, "proposal must follow the last accepted round")
             context = validate_surface_bindings(self.root, surface_ref)
             validate_reference_graph(self.root, surface_ref, "bounded_change_surface")
             require(self._path(current_draft).read_bytes() == context.base, "current authoritative base differs")
@@ -223,6 +227,10 @@ class ProposalStore:
     def capture_revision(self, ticket: ProposalTicket, raw: bytes, summary: dict[str, Any]) -> dict[str, str]:
         return self._execute(ticket, revision=(raw, decode_json(json_bytes(summary))))
 
+    def run_supplied(self, ticket: ProposalTicket, raw: bytes, editor: Callable[[ProposalInputs], bytes]):
+        """Retain supplied bytes before the single summary call, under exclusion."""
+        return self._execute(ticket, supplied=(raw, editor))
+
     def report(self, ticket: ProposalTicket) -> dict[str, Any]:
         """Read an existing immutable result. This does not replay an execution."""
         raw = self._path(f"{ticket.directory}/report.json").read_bytes()
@@ -245,7 +253,7 @@ class ProposalStore:
             "report": report_ref, "category": "persistence_failure" if isinstance(exc, OSError) else "invalid_binding",
             "reason": f"Non-unit persistence/binding failure: {exc}", "acceptance": None}, "preservation_bridge_terminal_failure")
 
-    def _execute(self, ticket, *, editor=None, revision=None):
+    def _execute(self, ticket, *, editor=None, revision=None, supplied=None):
         with self._lock():
             require(ticket.root == str(self.root), "ticket belongs to another root")
             directory = ticket.directory
@@ -262,12 +270,32 @@ class ProposalStore:
                 "outcome": "technical_failure", "next_action": "inspect_and_repair"}
             report_ref = None
             try:
-                self._write(started, b"single execution; no automatic replay\n")
+                self._write(started, json_bytes({"admission": ticket.admission_ref,
+                    "effective_config": decode_json(ticket.config_ref_json),
+                    "reviewer_feedback": decode_json(ticket.feedback_refs_json),
+                    "snapshots": decode_json(ticket.snapshots_json),
+                    "supplied_input": {"path": f"{directory}/supplied_input.md", "sha256": sha256_bytes(supplied[0])} if supplied is not None else None}))
                 try:
                     inputs = self._inputs(ticket)
                     admission = decode_json(inputs.admission_json)
                     report["stage"] = "client"
-                    if editor is not None:
+                    if supplied is not None:
+                        require(admission["origin"] == "supplied_revision", "supplied revision origin mismatch")
+                        raw, callback = supplied
+                        require(isinstance(raw, bytes), "supplied revision must contain exact bytes")
+                        self._write(f"{directory}/supplied_input.md", raw)
+                        try:
+                            response = callback(inputs)
+                        except TimeoutError:
+                            raise
+                        except Exception as exc:
+                            raise ProposalClientFailure(f"{type(exc).__name__}: {exc}") from exc
+                        require(isinstance(response, bytes), "summary adapter must return exact response bytes")
+                        self._write(f"{directory}/summary_response.json", response)
+                        summary = decode_json(response)
+                        require(isinstance(summary, dict), "summary response must be an object")
+                        summary = {**summary, "draft_after_content": raw.decode("utf-8")}
+                    elif editor is not None:
                         require(admission["origin"] == "editor", "client requires Editor origin")
                         try:
                             response = editor(inputs)

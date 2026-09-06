@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 from typing import Any
 
+from whetstone.preservation_runtime import active as bridge_active, resume_operation, resume_context, preserve_state_fields
 from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
 from whetstone.context_pressure import write_context_pressure_report
@@ -70,6 +71,9 @@ def resume_halted_run(
     """Resume supported Phase 1 halted paths without replaying prior rounds."""
 
     root = Path(root)
+    if bridge_active(root, config):
+        return resume_operation(root, config, continue_run=continue_run, reviewer_client=reviewer_client,
+                                editor_client=editor_client, timeout_seconds=timeout_seconds)
     context = _validated_resume_context(config, continue_run=continue_run)
     write_context_pressure_report(
         root=root,
@@ -348,6 +352,8 @@ def resume_budget_exhausted_run(
 ) -> ResumeResult:
     """Append Phase 1 rounds after a budget-exhausted terminal state."""
 
+    if bridge_active(Path(root), config):
+        raise ValueError("CONFIG_INVALID: guarded budget continuation is not yet qualified")
     root = Path(root)
     state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
     write_context_pressure_report(
@@ -548,6 +554,15 @@ def plan_resume_halted_run(
 ) -> ResumePlan:
     """Validate a resumable halt without invoking clients."""
 
+    if bridge_active(Path(root), config):
+        if continue_run:
+            raise ValueError("CONFIG_INVALID: guarded scheduler continuation is not yet qualified")
+        _, admission, _ = resume_context(Path(root), config)
+        current_hash = draft_hash(config.spec_path.read_bytes().decode())
+        return ResumePlan(True, 'HALTED_CLIENT_TIMEOUT', 'client_timeout', 'phase_1', 'editor',
+                          admission['round_number'], admission['profile'], current_hash, current_hash,
+                          (admission['client_attempt_number'] or 0)+1, False, None,
+                          'Retry one typed Editor timeout with frozen preservation bindings; stop after this operation')
     _ = Path(root)
     context = _validated_resume_context(config, continue_run=continue_run)
     next_round_number = None
@@ -2221,6 +2236,7 @@ def _write_phase1_state(
         "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT" or terminal_state in BUDGET_EXTENSION_TERMINAL_STATES,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
+    packet = preserve_state_fields(config.rounds_dir.parent, config, packet)
     (config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 

@@ -131,6 +131,10 @@ def promote_spec_text_for_phase2(spec_text: str) -> tuple[str, str, str, bool]:
 
 def promote_spec_file_for_phase2(*, spec_path: Path, history_path: Path, rounds_dir: Path) -> VersionPromotionResult:
     """Promote a spec file after verifying the Phase 1 stable gate in run_state.json."""
+    from whetstone.preservation_runtime import active, guard_consumer
+    if active(Path(rounds_dir).parent):
+        guard_consumer(Path(rounds_dir).parent)
+        raise ValueError("CONFIG_INVALID: guarded Phase 2 maintenance is not yet qualified")
     state_path = rounds_dir / "run_state.json"
     if not state_path.exists():
         raise ValueError("Phase 2 version promotion requires rounds/run_state.json")

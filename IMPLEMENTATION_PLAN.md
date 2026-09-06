@@ -1213,7 +1213,7 @@ Proposal-capture increment evidence (2026-09-06; committed as `9ce0b55`):
 Validation: `tests/test_preservation_proposals.py` adds 30 deterministic tests; 60 focused preservation tests and 359 tests in the full suite pass. No nested model calls. These developer components complete step 2 above. The subsequent increment below implements isolated acceptance/repair; runtime path integration remains open. A preliminary pass never authorizes installation. The broader integrated qualification checks remain unchecked.
 
 
-Isolated acceptance/repair increment evidence (2026-09-06; working changes based on `9ce0b55`):
+Isolated acceptance/repair increment evidence (2026-09-06; committed as `d971aa2`):
 
 - [x] Add shared acceptance request/admission, complete evidence/correspondence and trusted-materialization revalidation, surface/cap enforcement, global ordinary serious-issue/conflict gates and inherited accepted residuals for isolated Phase 1 proposal roots.
 - [x] Persist immutable final reports and acceptance markers before draft/canonical-summary/history writes. Reproduce complete accepted chains, bind the original seed and previous marker, repair interrupted mirrors and reuse historical commits without duplicate execution, restamping or history.
@@ -1221,6 +1221,18 @@ Isolated acceptance/repair increment evidence (2026-09-06; working changes based
 - [x] Demonstrate pending clarification -> accepted with zero extra Editor calls, missing evidence rejection -> explicit new request acceptance, newly authorized deletion, stale-base refusal, no-op behavior, conflicting mappings, writer exclusion and report/marker/mirror/history fault recovery.
 
 Validation: `tests/test_preservation_acceptance.py` adds 30 deterministic tests; 90 focused preservation tests and 389 full-suite tests pass. See [local acceptance developer guide](docs/PRESERVATION_ACCEPTANCE_DEVELOPER.md) for actual command syntax and boundaries. This completes the isolated service/CLI checkpoint of step 3. Configured/live scheduler roots, Phase 2 and inherited maintenance admission are explicitly refused until step 4 supplies their gates and state adapters. Canonical draft/summary/unresolved/history artifacts are handled; scheduler/profile/budget completion and downstream readback/consumers remain open. No live models were invoked and bridge activation remains unavailable.
+
+Horizontal runtime checkpoint (2026-09-06; working changes based on `d971aa2`):
+
+- [x] Route ordinary/focused horizontal Phase 1, supplied revisions and unchanged output through immutable proposal capture and the shared runtime acceptance adapter. Preserve exact raw client bodies and reject/hold before authoritative output, including `apply=true` and soft-budget cases.
+- [x] Freeze actual scope, settings, prompt, timeout, Reviewer evidence and scheduler context. Complete local acceptance without another model call or review-budget charge; keep Reviewer counts distinct from Editor resolutions.
+- [x] Reconcile canonical artifacts, accepted history, scheduler pointers and completion records from the marker. Block new admissions and consumers while repair is incomplete; refuse conflicting state and downgrade/overwrite.
+- [x] Add exact-attempt readback, typed Phase 1 Editor/supplied-summary timeout retry with unchanged bindings, and Phase 2/declaration/dry-live strop guards. Demonstrate three clean no-op profiles reaching Phase 1 stability through three acceptance markers.
+- [ ] Finish vertical consolidated/source-review integration, Reviewer timeout continuation, review-only closeout/verification and scheduler continuation after local acceptance.
+- [ ] Finish dedicated Phase 2 entry maintenance and inherited authorization, then the full cross-path qualification before enabling runtime configuration.
+
+Validation: 30 new runtime/client/configuration tests, 120 preservation tests and 419 full-suite tests pass. See the [runtime developer checkpoint](docs/PRESERVATION_RUNTIME_DEVELOPER.md) and `tests/test_preservation_runtime.py` / `tests/test_preservation_clients.py`. This is the horizontal checkpoint within step 4, not completed slice 18.1 qualification. Public activation remains unavailable and the integrated checks below stay open until all supported paths have evidence. No live model calls.
+
 
 Implementation checks:
 

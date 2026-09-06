@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 from typing import Any, Callable
 
+from whetstone.preservation_runtime import BridgeHalt, active as bridge_active, initialize as initialize_bridge, preserve_state_fields, state_packet
 from whetstone.config import OrchestratorConfig
 from whetstone.contract_surface import ContractSurfacePolicy, maybe_write_contract_surface_report, update_contract_surface_lifecycle
 from whetstone.context_pressure import write_context_pressure_report
@@ -78,6 +79,10 @@ class LivePhase1Runner:
         self.report_writer = ReportWriter(self.root, config=self.config)
 
     def run(self, *, overwrite: bool = False) -> LivePhase1Result:
+        if bridge_active(self.root, self.config):
+            initialize_bridge(self.root, self.config, overwrite=overwrite)
+            if state_packet(self.root):
+                raise ValueError("guarded run already started; use its preservation operation or resume")
         if self.config.review_mode == "vertical" and self.scheduler_factory is None:
             return self._run_vertical(overwrite=overwrite)
         if overwrite:
@@ -158,6 +163,11 @@ class LivePhase1Runner:
                     apply=True,
                     overwrite=overwrite,
                 )
+            except BridgeHalt as exc:
+                state = state_packet(self.root)
+                return LivePhase1Result(exc.terminal_state, round_number, state["current_draft_hash"],
+                                        state.get("last_accepted_draft_hash"), False,
+                                        self.root / exc.report_ref["path"])
             except ValueError:
                 artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                 if artifact_error.exists():
@@ -1206,6 +1216,7 @@ class LivePhase1Runner:
             "resumable": terminal_state == "HALTED_CLIENT_TIMEOUT" or terminal_state in budget_resumable_states,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
+        packet = preserve_state_fields(self.root, self.config, packet)
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     def _append_history(
@@ -1219,6 +1230,8 @@ class LivePhase1Runner:
         blocker_count: int,
         major_count: int,
     ) -> None:
+        if bridge_active(self.root, self.config):
+            return
         entry = (
             f"- Live Phase 1 round {round_number}: profile `{profile}`, "
             f"before `{before_hash}`, after `{after_hash}`, "

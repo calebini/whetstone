@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Protocol
 
+from whetstone.preservation_runtime import active as bridge_active, initialize as initialize_bridge, run_proposal, guard_operation
 from whetstone.artifacts import ArtifactStore
 from whetstone.clients import ClaudeCodeEditorClient, ClaudeCodeReviewerClient, CodexEditorClient, CodexReviewerClient
 from whetstone.config import ClientConfig, OrchestratorConfig
@@ -82,12 +83,18 @@ class LiveRoundRunner:
         round_number: int,
         profile: str,
         phase: str = "phase_1",
-        draft_after: str | None = None,
+        draft_after: str | bytes | None = None,
         apply: bool = False,
         overwrite: bool = False,
         reuse_existing_round: bool = False,
         start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
+        if bridge_active(self.root, self.config):
+            if reuse_existing_round:
+                raise ValueError("CONFIG_INVALID: guarded Reviewer replay is not yet qualified")
+            initialize_bridge(self.root, self.config, overwrite=overwrite)
+            guard_operation(self.root, self.config, phase=phase, round_number=round_number,
+                            technical_resume=reuse_existing_round)
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:
             _write_config_error(self.config.rounds_dir, invalid_fields)
@@ -102,8 +109,12 @@ class LiveRoundRunner:
                 raise ValueError(f"round-{round_number} does not exist")
         else:
             round_dir = self.store.begin_round(round_number, overwrite=overwrite)
-        draft_before = self.config.spec_path.read_text(encoding="utf-8")
+        draft_before = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
+                        else self.config.spec_path.read_text(encoding="utf-8"))
         draft_before_hash = draft_hash(draft_before)
+        supplied_bytes = draft_after
+        if isinstance(draft_after, bytes):
+            draft_after = draft_after.decode("utf-8")
         explicit_draft_after = draft_after is not None
         draft_after_content = draft_after if draft_after is not None else draft_before
         draft_after_hash = draft_hash(draft_after_content)
@@ -197,6 +208,9 @@ class LiveRoundRunner:
             context_files=reviewer_context_files,
         )
         self.store.write_round_json(round_number, "reviewer_feedback.json", reviewer_feedback)
+        if bridge_active(self.root, self.config) and not reviewer_feedback.get("feedback") and not explicit_draft_after:
+            return run_proposal(self, round_number=round_number, profile=profile, phase=phase,
+                                prompt="", feedback=reviewer_feedback, apply=apply)
         if not reviewer_feedback.get("feedback") and not explicit_draft_after:
             editor_summary = _no_op_editor_summary(
                 round_number=round_number,
@@ -329,6 +343,10 @@ class LiveRoundRunner:
             cwd=self.root,
             timeout_seconds=self._timeout_for_role("editor"),
         )
+        if bridge_active(self.root, self.config):
+            return run_proposal(self, round_number=round_number, profile=profile, phase=phase,
+                                prompt=editor_prompt, feedback=reviewer_feedback, editor=editor,
+                                supplied=supplied_bytes, apply=apply)
         editor_summary = self._call_with_validation_retry(
             round_number=round_number,
             phase=phase,
@@ -463,6 +481,8 @@ class LiveRoundRunner:
     ) -> LiveRoundResult:
         """Run and persist an independent reviewer pass without invoking the Editor."""
 
+        if bridge_active(self.root, self.config):
+            raise ValueError("CONFIG_INVALID: guarded review-only scheduling is not yet qualified")
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:
             _write_config_error(self.config.rounds_dir, invalid_fields)
@@ -473,7 +493,8 @@ class LiveRoundRunner:
                 raise ValueError(f"round-{round_number} does not exist")
         else:
             round_dir = self.store.begin_round(round_number, overwrite=overwrite)
-        draft_before = self.config.spec_path.read_text(encoding="utf-8")
+        draft_before = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
+                        else self.config.spec_path.read_text(encoding="utf-8"))
         draft_before_hash = draft_hash(draft_before)
         rubric = read_rubric_text(self.config)
         rubric_hash = rubric_content_hash(rubric) if rubric is not None else "0" * 64
@@ -641,10 +662,14 @@ class LiveRoundRunner:
     ) -> LiveRoundResult:
         """Resume a round that already has validated reviewer feedback."""
 
+        if bridge_active(self.root, self.config):
+            initialize_bridge(self.root, self.config)
+            guard_operation(self.root, self.config, phase=phase, round_number=round_number, technical_resume=True)
         round_dir = self.store.round_dir(round_number)
         if not round_dir.exists():
             raise ValueError(f"round-{round_number} does not exist")
-        draft_before = round_dir.joinpath("draft_before.md").read_text(encoding="utf-8")
+        draft_before = (round_dir.joinpath("draft_before.md").read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
+                        else round_dir.joinpath("draft_before.md").read_text(encoding="utf-8"))
         draft_before_hash = draft_hash(draft_before)
         reviewer_feedback = json.loads(round_dir.joinpath("reviewer_feedback.json").read_text(encoding="utf-8"))
         _validate_reviewer_feedback(
@@ -733,6 +758,10 @@ class LiveRoundRunner:
             cwd=self.root,
             timeout_seconds=self._timeout_for_role("editor"),
         )
+        if bridge_active(self.root, self.config):
+            return run_proposal(self, round_number=round_number, profile=profile, phase=phase,
+                                prompt=editor_prompt, feedback=reviewer_feedback, editor=editor, apply=apply,
+                                client_attempt_number=start_attempt_number)
         editor_summary = self._call_with_validation_retry(
             round_number=round_number,
             phase=phase,
@@ -1194,7 +1223,8 @@ class LiveRoundRunner:
         round_kind: str,
     ) -> None:
         self.store.write_round_text(round_number, "draft_before.md", draft_before)
-        self.store.write_round_text(round_number, "draft_after.md", draft_after)
+        if not bridge_active(self.root, self.config) or round_kind == "review_only":
+            self.store.write_round_text(round_number, "draft_after.md", draft_after)
         self.store.write_round_json(round_number, "profile_used.yaml", {"profile": profile, "round_kind": round_kind})
         self.store.write_round_json(round_number, "prompt_snapshot.json", prompt_snapshot)
 

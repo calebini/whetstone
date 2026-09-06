@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
+from whetstone.preservation_runtime import active as bridge_active, guard_consumer
 from whetstone.artifacts import ArtifactStore
 from whetstone.config import OrchestratorConfig
 from whetstone.conflicts import ConflictTracker, conflict_from_oscillation_detection, read_conflict_state
@@ -67,6 +68,9 @@ class LivePhase2Runner:
         self.phase_1_rounds_completed = 0
 
     def run(self, *, overwrite: bool = False, closeout_existing: bool = False) -> LivePhase2Result:
+        if bridge_active(self.root, self.config):
+            guard_consumer(self.root, self.config)
+            raise ValueError("CONFIG_INVALID: guarded Phase 2 maintenance is not yet qualified")
         if closeout_existing:
             return self.run_closeout_existing(overwrite=overwrite)
 
@@ -476,6 +480,9 @@ class LivePhase2Runner:
 
     def run_closeout_existing(self, *, overwrite: bool = False) -> LivePhase2Result:
         """Resume a Phase 2 budget stop with Reviewer-only closeout checks."""
+        if bridge_active(self.root, self.config):
+            guard_consumer(self.root, self.config)
+            raise ValueError("CONFIG_INVALID: guarded Phase 2 maintenance is not yet qualified")
 
         state = _read_phase2_closeout_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("phase_1_rounds_completed", 0))
@@ -799,6 +806,7 @@ class LivePhase2Runner:
         major_count: int,
         rubric_gap_count: int,
     ) -> Path:
+        guard_consumer(self.root, self.config)
         rubric_hash_value = _rubric_hash(self.config)
         manifest_identity = _manifest_identity(self.rubric_manifest)
         declaration = render_convergence_declaration(
