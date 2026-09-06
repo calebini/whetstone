@@ -44,7 +44,7 @@ A preliminary `pass` means structural preservation is eligible for acceptance re
 
 ## Still required for slice 18.1
 
-Runtime scheduler/profile/budget/residual adapters and idempotent scheduler completion/readback; maintenance authorization inheritance; live/resumed/supplied/vertical integration; and Phase 2/declaration/strop consumption guards and complete qualification.
+The separate [runtime developer adapter](../docs/PRESERVATION_RUNTIME_DEVELOPER.md) now supplies horizontal/focused continuation, supplied revisions, idempotent completion/readback, consumer guards and the first vertical source/consolidation cycle. Vertical proposals retain the deterministic merged Reviewer artifact followed by the original source reviews; frozen configuration binds ordered source completion receipts. Source round numbers remain unchanged and every source must observe the same base. Later vertical cycles and Reviewer recovery/closeout, maintenance authorization inheritance, Phase 2 integration and complete qualification remain open.
 
 In particular, `validate_untransformed_change` refuses transformed proposals. The foundation proposal-binding checker also refuses inherited maintenance surfaces whose base/inventory differs; accepting that case requires the later validated acceptance-chain service. These are explicit implementation boundaries, not restrictions on the final owning specification.
 

@@ -26,6 +26,8 @@ def validate_round_evidence(base: bytes, raw: bytes, admission: dict[str, Any],
     require(summary["draft_after_hash"] == draft_hash(raw.decode()), "summary raw output mismatch")
     if "draft_after_content" in summary:
         require(summary["draft_after_content"].encode() == raw, "summary content differs from raw proposal")
+    from whetstone.preservation_vertical import ordinary_feedback
+    feedback = ordinary_feedback(admission, feedback)
     issues, feedback_ids = {}, set()
     for artifact in feedback:
         validate_artifact(artifact, "reviewer_feedback")

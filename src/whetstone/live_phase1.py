@@ -88,6 +88,8 @@ class LivePhase1Runner:
             self.completion_terminal_state = context['terminal']
             self.completion_ready_for_phase_2 = context['ready']
         if bridge_active(self.root, self.config):
+            if self.config.review_mode == 'vertical' and (self.scheduler_factory is not None or self.draft_after_provider is not None):
+                raise ValueError('guarded vertical mode requires the standard source-review scheduler')
             initialize_bridge(self.root, self.config, overwrite=overwrite)
             if state_packet(self.root) and not continuation:
                 raise ValueError("guarded run already started; use its preservation operation or resume")
@@ -635,7 +637,7 @@ class LivePhase1Runner:
                     major_count=major_count,
                 )
 
-            if cycle_clean and not merged_feedback:
+            if cycle_clean and not merged_feedback and not bridge_active(self.root, self.config):
                 current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
                 last_accepted_draft_hash = current_hash
                 return self._complete(
@@ -645,10 +647,11 @@ class LivePhase1Runner:
                     seen_draft_hashes=seen_hashes,
                 )
 
-            if merged_feedback:
+            if merged_feedback or bridge_active(self.root, self.config):
                 round_number += 1
                 editor_profile = "vertical"
-                draft_before = self.config.spec_path.read_text(encoding="utf-8")
+                draft_before = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
+                                else self.config.spec_path.read_text(encoding="utf-8"))
                 draft_before_hash = draft_hash(draft_before)
                 synthetic_feedback = {
                     "round_number": round_number,
@@ -657,14 +660,19 @@ class LivePhase1Runner:
                     "draft_hash": draft_before_hash,
                     "feedback": merged_feedback,
                 }
-                round_dir = LiveRoundRunner(self.root, self.config).store.begin_round(round_number, overwrite=overwrite)
-                round_dir.joinpath("draft_before.md").write_text(draft_before, encoding="utf-8")
-                round_dir.joinpath("draft_after.md").write_text(draft_before, encoding="utf-8")
-                round_dir.joinpath("profile_used.yaml").write_text(
-                    json.dumps({"profile": editor_profile, "round_kind": "consolidated_editor"}, indent=2, sort_keys=True) + "\n",
-                    encoding="utf-8",
-                )
-                round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                if bridge_active(self.root, self.config):
+                    from whetstone.preservation_vertical import prepare_consolidated
+                    round_dir = prepare_consolidated(LiveRoundRunner(self.root, self.config), round_number,
+                                                     synthetic_feedback, draft_before)
+                else:
+                    round_dir = LiveRoundRunner(self.root, self.config).store.begin_round(round_number, overwrite=overwrite)
+                    round_dir.joinpath("draft_before.md").write_text(draft_before, encoding="utf-8")
+                    round_dir.joinpath("draft_after.md").write_text(draft_before, encoding="utf-8")
+                    round_dir.joinpath("profile_used.yaml").write_text(
+                        json.dumps({"profile": editor_profile, "round_kind": "consolidated_editor"}, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+                    round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
                 try:
                     result = LiveRoundRunner(
                         self.root,
@@ -673,6 +681,10 @@ class LivePhase1Runner:
                         editor_client=self.editor_client,
                         timeout_seconds=self.timeout_seconds,
                     ).resume_editor_round(round_number=round_number, profile=editor_profile, phase="phase_1", apply=True, start_attempt_number=1)
+                except BridgeHalt as exc:
+                    current = state_packet(self.root)
+                    return LivePhase1Result(exc.terminal_state, round_number, current['current_draft_hash'],
+                                            current.get('last_accepted_draft_hash'), False)
                 except ValueError:
                     artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                     if artifact_error.exists():
@@ -714,6 +726,10 @@ class LivePhase1Runner:
                         update_contract_surface_lifecycle(rounds_dir=self.config.rounds_dir, terminal=True)
                         return LivePhase1Result(terminal_state, round_number, current_hash, last_accepted_draft_hash, False, report_path)
                     raise
+                if bridge_active(self.root, self.config) and not merged_feedback:
+                    return self._complete(round_number=round_number, current_draft_hash=result.draft_after_hash,
+                                          last_accepted_draft_hash=result.draft_after_hash,
+                                          seen_draft_hashes=seen_hashes + [result.draft_after_hash])
                 editor_summary = _read_json(round_dir / "editor_summary.json")
                 last_unresolved = _unresolved_issues(synthetic_feedback, editor_summary)
                 if result.accepted:
@@ -769,9 +785,12 @@ class LivePhase1Runner:
                     ready_for_phase_2=False,
                 )
 
+            if bridge_active(self.root, self.config):
+                break  # This checkpoint completes one consolidated operation.
+
         current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
         profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
-        if _vertical_closeout_eligible(
+        if not bridge_active(self.root, self.config) and _vertical_closeout_eligible(
             current_hash=current_hash,
             last_accepted_draft_hash=last_accepted_draft_hash,
             last_unresolved=last_unresolved,

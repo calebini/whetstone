@@ -282,9 +282,13 @@ def validate_proposal_bindings(root: Path, reference: dict[str, str]) -> tuple[d
         summary = read_artifact(root, normal["editor_summary"], "editor_summary")
         require(summary["round_number"] == admission["round_number"], "summary round mismatch")
         require(summary["draft_before_hash"] == draft_hash(base.decode("utf-8")), "summary base mismatch")
+    vertical = config.get('resolved_config', {}).get('review_mode') == 'vertical'
+    if vertical:
+        from whetstone.preservation_vertical import verify_sources
+        verify_sources(root, config, admission['round_number'], normal['reviewer_feedback'])
     for feedback_ref in normal["reviewer_feedback"]:
         feedback = read_artifact(root, feedback_ref, "reviewer_feedback")
-        require(feedback["round_number"] == admission["round_number"], "feedback round mismatch")
+        require(vertical or feedback["round_number"] == admission["round_number"], "feedback round mismatch")
         # Vertical editing may retain different review profiles in one round.
         require(feedback["draft_hash"] == draft_hash(base.decode("utf-8")), "retained feedback base mismatch")
     # Imports are local to keep the pure evidence helper composable with these

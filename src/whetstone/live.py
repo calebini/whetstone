@@ -90,6 +90,8 @@ class LiveRoundRunner:
         start_reviewer_attempt_number: int = 1,
     ) -> LiveRoundResult:
         if bridge_active(self.root, self.config):
+            if self.config.review_mode == 'vertical':
+                raise ValueError('guarded vertical editing requires source reviews and a consolidated round')
             initialize_bridge(self.root, self.config, overwrite=overwrite)
             if reuse_existing_round:
                 from whetstone.preservation_continuation import pending_review, validate_review_retry
@@ -671,7 +673,8 @@ class LiveRoundRunner:
 
         if bridge_active(self.root, self.config):
             initialize_bridge(self.root, self.config)
-            guard_operation(self.root, self.config, phase=phase, round_number=round_number, technical_resume=True)
+            guard_operation(self.root, self.config, phase=phase, round_number=round_number,
+                            technical_resume=not (self.config.review_mode == 'vertical' and start_attempt_number == 1))
         round_dir = self.store.round_dir(round_number)
         if not round_dir.exists():
             raise ValueError(f"round-{round_number} does not exist")

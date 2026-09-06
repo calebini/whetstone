@@ -147,6 +147,8 @@ class AcceptanceService(ProposalStore):
         feedback = [read_artifact(self.root, ref, "reviewer_feedback") for ref in normal["reviewer_feedback"]]
         summary = read_artifact(self.root, normal["editor_summary"], "editor_summary")
         eligible = validate_round_evidence(base, raw, admission, feedback, summary)
+        from whetstone.preservation_vertical import ordinary_feedback
+        feedback = ordinary_feedback(admission, feedback)
         resolved = set(summary["resolved_issue_ids"]) if raw != base else set()
         issues = {i["issue_id"]: deepcopy(i) for i in previous_issues if i["issue_id"] not in resolved}
         # Retain every unresolved finding; a selective unresolved-ID list is not

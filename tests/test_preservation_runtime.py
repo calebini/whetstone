@@ -267,11 +267,10 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(BridgeContractError):guard_consumer(self.root,self.config)
         self.assertEqual(snapshot,self.snapshot())
 
-    def test_vertical_and_overwrite_refuse_before_any_call(self):
+    def test_overwrite_refuses_before_any_call(self):
         self.setup_run();snapshot=self.snapshot()
-        for config, overwrite in ((replace(self.config,review_mode='vertical'),False),(self.config,True)):
-            with self.assertRaises(BridgeContractError):
-                LivePhase1Runner(self.root,config,reviewer_client=self.reviewer,editor_client=self.editor).run(overwrite=overwrite)
+        with self.assertRaises(BridgeContractError):
+            LivePhase1Runner(self.root,self.config,reviewer_client=self.reviewer,editor_client=self.editor).run(overwrite=True)
         self.assertEqual(snapshot,self.snapshot());self.assertEqual(self.reviewer.calls,0)
 
     def test_phase1_focused_pending_is_same_guarded_path(self):

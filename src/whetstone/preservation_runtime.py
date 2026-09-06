@@ -54,7 +54,7 @@ def config_snapshot(config, *, phase, profile, state):
 def initialize(root: Path, config: OrchestratorConfig, *, overwrite=False):
     require(config.preservation_bridge is not None, "CONFIG_INVALID: guarded root cannot downgrade to legacy")
     require(not overwrite, "CONFIG_INVALID: guarded evidence cannot be overwritten")
-    require(config.review_mode == "horizontal", "CONFIG_INVALID: vertical bridge scheduling is not yet qualified")
+    require(config.review_mode in {"horizontal", "vertical"}, "CONFIG_INVALID: unsupported bridge review mode")
     from whetstone.config import parse_preservation_bridge
     parse_preservation_bridge(asdict(config.preservation_bridge))
     root = Path(root).resolve();store = ProposalStore(root)
@@ -192,7 +192,7 @@ def guard_operation(root, config, *, phase, round_number, technical_resume=False
             require(read_ref(Path(root), mirror['source']) == read_ref(Path(root), mirror['snapshot']), 'retry input snapshot changed')
         if execution.get('supplied_input') is not None:
             read_ref(Path(root), execution['supplied_input'])
-        require(len(execution['reviewer_feedback']) == 1, 'unsupported retry Reviewer topology')
+        require(len(execution['reviewer_feedback']) == 1 or frozen['resolved_config']['review_mode'] == 'vertical', 'unsupported retry Reviewer topology')
         feedback = decode_json((Path(root)/f"rounds/round-{round_number}/reviewer_feedback.json").read_bytes())
         require(feedback == decode_json(read_ref(Path(root), execution['reviewer_feedback'][0])), 'retry Reviewer evidence changed')
         require(frozen['resolved_config'] == _jsonable(asdict(config)) | {'preservation_bridge': frozen['resolved_config']['preservation_bridge']},
@@ -227,14 +227,14 @@ class RuntimeAcceptanceService(AcceptanceService):
         require(state.get('phase',admission['phase'])==admission['phase'], 'frozen scheduler phase mismatch')
         require(state.get('current_round',admission['round_number'])==admission['round_number'], 'frozen scheduler round mismatch')
         require(state.get('active_profile',admission['profile'])==admission['profile'], 'frozen scheduler profile mismatch')
-        require(config['resolved_config']['review_mode'] == 'horizontal', 'unsupported frozen review mode')
+        require(config['resolved_config']['review_mode'] in {'horizontal','vertical'}, 'unsupported frozen review mode')
         from whetstone.preservation_continuation import verify_review_receipt
         previous_issues = list(previous_issues)
         for path in self.root.glob('rounds/round-*/preservation/review_complete.json'):
             number = int(path.parent.parent.name.removeprefix('round-'))
             if number < admission['round_number']:
                 packet, _, _, _, review_issues = verify_review_receipt(self.root, number)
-                if packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
+                if packet['kind'] == 'review_only' and packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
                     previous_issues.extend(review_issues)
         eligible, issues = super()._ordinary(proposal,admission,previous_issues)
         decisions = self._decisions(proposal, admission)
@@ -263,7 +263,9 @@ class RuntimeAcceptanceService(AcceptanceService):
             _, proposal, original = self._proposal_directory(marker['proposal'])
             prefix = f"rounds/round-{original['round_number']}"
             normal = proposal['normal_round_evidence']
-            require(len(normal['reviewer_feedback']) == 1, 'horizontal proposal must retain one Reviewer artifact')
+            frozen = decode_json(read_ref(self.root, normal['effective_config']))
+            require(len(normal['reviewer_feedback']) == 1 or frozen['resolved_config']['review_mode'] == 'vertical',
+                    'horizontal proposal must retain one Reviewer artifact')
             feedback = read_artifact(self.root, normal['reviewer_feedback'][0], 'reviewer_feedback')
             mirrors[f'{prefix}/reviewer_feedback.json'] = (json.dumps(feedback, indent=2, sort_keys=True)+'\n').encode()
             mirrors[f'{prefix}/decision_points.json'] = json_bytes(self._decisions(proposal, original))
@@ -335,6 +337,9 @@ class RuntimeAcceptanceService(AcceptanceService):
             packet, _, _, _, _ = verify_review_receipt(self.root, number)
             prior = [(ref, marker) for ref, marker, _ in chain
                      if self._proposal_directory(marker['proposal'])[2]['round_number'] < number]
+            if packet['kind'] == 'vertical_source':
+                require(not prior and packet['accepted'] is None, 'vertical source review cannot observe later authority')
+                continue
             require(prior and prior[-1][0] == packet['accepted'], 'review-only parent is not the preceding acceptance')
             require(all(self._proposal_directory(marker['proposal'])[2]['round_number'] != number for _, marker, _ in chain),
                     'review-only round has competing acceptance')
@@ -418,9 +423,15 @@ def run_proposal(runner, *, round_number, profile, phase, prompt, feedback, edit
         execution = decode_json((root/previous['admission']['path']).with_name('execution_started').read_bytes())
         earlier = decode_json(read_ref(root, execution['effective_config']))
         require(frozen['editor_timeout_seconds'] == earlier['editor_timeout_seconds'], 'technical retry cannot change the resolved timeout')
+    feedback_refs = [feedback_ref]
+    if config.review_mode == 'vertical':
+        from whetstone.preservation_vertical import source_bindings
+        receipts, source_refs = source_bindings(root, config, round_number)
+        frozen['vertical_review_sources'] = receipts
+        feedback_refs.extend(source_refs)
     origin='supplied_revision' if supplied is not None else ('editor' if feedback.get('feedback') else 'orchestrator_noop')
     ticket=store.admit(surface_ref=config.preservation_bridge.allowed_change_surface,effective_config=frozen,
-                       reviewer_feedback_refs=[feedback_ref],round_number=round_number,profile=profile,phase=phase,origin=origin,
+                       reviewer_feedback_refs=feedback_refs,round_number=round_number,profile=profile,phase=phase,origin=origin,
                        client_attempt_number=client_attempt_number if origin=='editor' else None,predecessor_report=config.preservation_bridge.predecessor_report)
     if origin=='orchestrator_noop':
         from whetstone.live import _no_op_editor_summary
@@ -496,7 +507,7 @@ def resume_context(root: Path, config: OrchestratorConfig):
     for mirror in execution['snapshots']:
         require(read_ref(Path(root), mirror['source']) == read_ref(Path(root), mirror['snapshot']), 'retry input snapshot changed')
     # Mutable canonical Reviewer storage cannot supply replacement resolution evidence.
-    require(len(execution['reviewer_feedback']) == 1, 'unsupported retry Reviewer topology')
+    require(len(execution['reviewer_feedback']) == 1 or frozen['resolved_config']['review_mode'] == 'vertical', 'unsupported retry Reviewer topology')
     feedback = decode_json((Path(root)/f"rounds/round-{admission['round_number']}/reviewer_feedback.json").read_bytes())
     require(feedback == decode_json(read_ref(Path(root), execution['reviewer_feedback'][0])), 'retry Reviewer evidence changed')
     retry_config = replace(config, preservation_bridge=replace(config.preservation_bridge,

@@ -154,9 +154,13 @@ class ProposalStore:
                     "effective config phase/profile must match admission")
             config_bytes = json_bytes(effective_config)
             feedback_refs = decode_json(json_bytes(reviewer_feedback_refs))
+            vertical = effective_config.get('resolved_config', {}).get('review_mode') == 'vertical'
+            if vertical:
+                from whetstone.preservation_vertical import verify_sources
+                verify_sources(self.root, effective_config, round_number, feedback_refs)
             for ref in feedback_refs:
                 artifact = read_artifact(self.root, ref, "reviewer_feedback")
-                require(artifact["round_number"] == round_number and artifact["draft_hash"] == draft_hash(context.base.decode()),
+                require((vertical or artifact["round_number"] == round_number) and artifact["draft_hash"] == draft_hash(context.base.decode()),
                         "retained feedback round/base mismatch")
             require(len({ref["sha256"] for ref in feedback_refs}) == len(feedback_refs), "duplicate retained feedback")
             require({s["artifact"]["sha256"] for s in context.surface["finding_sources"]}
