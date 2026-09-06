@@ -1,0 +1,424 @@
+{
+  "fixture_catalog_version": 1,
+  "purpose": "Authoring and test-design data; NOT a Whetstone runtime contract or admission/evidence artifact.",
+  "source_spec_commit": "da074f401889beaeb098dc8c7504847b4a16afe5",
+  "interpretation": "Line references are one-based human locators, not bridge unit IDs. Resolve them against generated inventories and final materialized bytes. Relations show the intentional changed subset; all other units still require total coverage. Hashes identify repository fixture bytes, not operator approval.",
+  "cases": [
+    {
+      "id": "01_clarification",
+      "title": "Useful clarification and exact no-op",
+      "base": {
+        "path": "01_clarification/base.md",
+        "sha256": "8bfb63aabd639bf9279fea8befea725b739eaf526011e4418c5f3ad525cbf6be",
+        "bytes": 384
+      },
+      "setup": [
+        "Admit one finding asking for equivalent wording of the minimum retry delay. Allow only the first Delivery requirement, with clarify/reword; freeze Storage and the other Delivery requirement. No delete, weaken, move or add permission.",
+        "Use an ordinary otherwise-eligible Phase 1 round. This spec has no version anchor, so the trusted transform list is empty."
+      ],
+      "variants": {
+        "clarified": {
+          "path": "01_clarification/clarified.md",
+          "sha256": "c1ad7cd711b68de8fd9bbc9c4ab5c023895f6d470ac54fc8018157ac179830a7",
+          "bytes": 385
+        }
+      },
+      "checks": [
+        {
+          "id": "C01",
+          "proposal": "clarified",
+          "exercise": "Equivalent one-to-one rewrite",
+          "expected": "Proposal waits for equivalence/correspondence evidence. Exact adopted equivalence plus all ordinary gates allows same-root acceptance with zero further Editor calls.",
+          "relation": [
+            {
+              "base_line": 9,
+              "successor_lines": [
+                9
+              ],
+              "disposition": "reworded_equivalent"
+            }
+          ]
+        },
+        {
+          "id": "C02",
+          "proposal": "base",
+          "exercise": "Byte-identical no-op",
+          "expected": "Use a separate valid no-op admission with no serious residuals and no mutating findings. Empty evidence can pass; no version increment. Replay the committed result without another acceptance or history entry. Also test the same bytes with an unresolved serious finding: no-op handling must not fabricate its resolution."
+        }
+      ]
+    },
+    {
+      "id": "02_contract_loss",
+      "title": "Small hidden losses in a large mostly-preserved response",
+      "base": {
+        "path": "02_contract_loss/base.md",
+        "sha256": "6bdaab8fe05c2996ed5672c1dad46b23799a01a0cdd6a2ca360219825eb3467e",
+        "bytes": 1447
+      },
+      "setup": [
+        "Admit only equivalent wording of the first Delivery requirement. Freeze Record Schema, States, Failure Codes, Recovery and all other units. Allow clarify/reword, with no deletion.",
+        "The negative proposals retain most bytes and include the requested clarification. Do not use size ratio or claimed finding resolution as preservation evidence."
+      ],
+      "variants": {
+        "clarified": {
+          "path": "02_contract_loss/clarified.md",
+          "sha256": "964788ae7afe8b95c0d4849e42a27c71e8d728398ec290d157a72d1add8449b1",
+          "bytes": 1451
+        },
+        "missing_field": {
+          "path": "02_contract_loss/missing_field.md",
+          "sha256": "7eb947e6b9336646d12356eb8d0777541a66f81c56e8196460dd284a70b6163b",
+          "bytes": 1392
+        },
+        "missing_state": {
+          "path": "02_contract_loss/missing_state.md",
+          "sha256": "a34c2d3e94e7163325e6152cdcf3b1b49f65b800ee9a15c0cf314444c5cdad15",
+          "bytes": 1397
+        },
+        "missing_enum": {
+          "path": "02_contract_loss/missing_enum.md",
+          "sha256": "7f1442e1137e8c44bafa314e19d2d52b7bda901091e6fbc8e975ecc9f1a86f14",
+          "bytes": 1385
+        }
+      },
+      "checks": [
+        {
+          "id": "C03",
+          "proposal": "clarified",
+          "exercise": "Positive control",
+          "expected": "Pending equivalence; valid exact evidence and ordinary eligibility can pass."
+        },
+        {
+          "id": "C04",
+          "proposal": "missing_field",
+          "exercise": "Delete a fenced schema field",
+          "expected": "Reject during proposal assessment for a known frozen-surface loss; missing clarification evidence must not downgrade the hard failure to a harmless pause. Submitted acceptance under the same surface also rejects. Authoritative bytes and residuals remain unchanged."
+        },
+        {
+          "id": "C05",
+          "proposal": "missing_state",
+          "exercise": "Delete a table row",
+          "expected": "Reject during proposal assessment for a known frozen-surface loss; missing clarification evidence must not downgrade the hard failure to a harmless pause. Submitted acceptance under the same surface also rejects. Authoritative bytes and residuals remain unchanged."
+        },
+        {
+          "id": "C06",
+          "proposal": "missing_enum",
+          "exercise": "Delete an enum-like failure code",
+          "expected": "Reject during proposal assessment for a known frozen-surface loss; missing clarification evidence must not downgrade the hard failure to a harmless pause. Submitted acceptance under the same surface also rejects. Authoritative bytes and residuals remain unchanged."
+        }
+      ]
+    },
+    {
+      "id": "03_correspondence",
+      "title": "Duplicate matching and one-to-many reflow",
+      "base": {
+        "path": "03_correspondence/base.md",
+        "sha256": "eef05a5ac05840f77c2dc6f7ce9d6f2244f0b2fbdddb1b2e23371b5bd3024045",
+        "bytes": 337
+      },
+      "setup": [
+        "For C07 allow reword of the combined Retry Policy line only, with max_changed_normative_units=1. Preserve both duplicate lines and Audit. The two successor lines must be accounted for as successors, not additions.",
+        "For C08/C09 use a separate surface permitting delete for both duplicate candidates (deletion_allowed and both IDs in authorized_deletion_unit_ids), but require the operator to select the exact removed predecessor after output exists. Other lines remain preserved."
+      ],
+      "variants": {
+        "reflowed": {
+          "path": "03_correspondence/reflowed.md",
+          "sha256": "b23052ce926ab0f77bfea80581bff083f9c8c8875fbb3f01116a7b0761239cdb",
+          "bytes": 342
+        },
+        "one_duplicate_removed": {
+          "path": "03_correspondence/one_duplicate_removed.md",
+          "sha256": "74dde43b7a20e61664a7563b84b89b68aaaa727fae52c5a34fd4b084bfb7d430",
+          "bytes": 271
+        }
+      },
+      "checks": [
+        {
+          "id": "C07",
+          "proposal": "reflowed",
+          "exercise": "One predecessor to two equivalent successor lines",
+          "expected": "Pending without equivalence; pass with the complete one-to-many attestation and ordinary gates. The normative cap counts the one changed base unit once, not both matched successors.",
+          "relation": [
+            {
+              "base_line": 7,
+              "successor_lines": [
+                7,
+                8
+              ],
+              "disposition": "reworded_equivalent"
+            }
+          ]
+        },
+        {
+          "id": "C08",
+          "proposal": "one_duplicate_removed",
+          "exercise": "Ambiguous duplicate removal resolved explicitly",
+          "expected": "The edited direct-content sequence has two possible maximum order-preserving matches for the remaining duplicate. Proposal records pending correspondence/deletion, never guesses. Explicitly preserve the first predecessor and authorize deletion of the second; separate valid evidence kinds can then pass.",
+          "relation": [
+            {
+              "base_line": 5,
+              "successor_lines": [
+                5
+              ],
+              "disposition": "preserved"
+            },
+            {
+              "base_line": 6,
+              "successor_lines": [],
+              "disposition": "authorized_deleted"
+            }
+          ]
+        },
+        {
+          "id": "C09",
+          "proposal": "one_duplicate_removed",
+          "exercise": "Conflicting evidence over the same output",
+          "expected": "Supply C08 evidence plus a second record claiming the second predecessor is preserved to that same successor. Acceptance rejects the conflicting relation/unauthorized successor sharing. Do not infer a pairing from independent ID arrays."
+        }
+      ]
+    },
+    {
+      "id": "04_semantic_effects",
+      "title": "Additions and weakening without deleting the old words",
+      "base": {
+        "path": "04_semantic_effects/base.md",
+        "sha256": "5cce483889aa806e716eeefbd6d3f148d18e1efd4024bb0c7c1ed110d92f63ae",
+        "bytes": 227
+      },
+      "setup": [
+        "For C10 admit an observability finding. For C11/C12 instead admit a finding asking to make maintenance acknowledgment behavior explicit; retain its original round evidence throughout. Initially allow add only in Operations and keep Acknowledgment frozen. Bind evidence only after inspecting exact output. The new C12 authorization must still satisfy the original ordinary-round findings.",
+        "For C13 approve a separate retention-policy finding and surface permitting weaken on the retention requirement, with weakening_allowed=true. No other requirement is editable.",
+        "These cases exercise accountable semantic attestation. The bridge validates records; it cannot prove a dishonest assertion about arbitrary prose false."
+      ],
+      "variants": {
+        "harmless_addition": {
+          "path": "04_semantic_effects/harmless_addition.md",
+          "sha256": "ec0b62883516dfd0646c8dc8aa98780f0cf65bb6b49dc1c730393da688d48b49",
+          "bytes": 296
+        },
+        "maintenance_exception": {
+          "path": "04_semantic_effects/maintenance_exception.md",
+          "sha256": "44e53e885c9ade4b6489ba22f42d5326b1fcedab58e1efdb9520035996140e0e",
+          "bytes": 386
+        },
+        "weakened_retention": {
+          "path": "04_semantic_effects/weakened_retention.md",
+          "sha256": "0f521e0478ebbca1b70669645ab2ee965268dc892dc652e83d8de91229f07a60",
+          "bytes": 229
+        }
+      },
+      "checks": [
+        {
+          "id": "C10",
+          "proposal": "harmless_addition",
+          "exercise": "A genuinely additive observability requirement",
+          "expected": "Proposal awaits addition evidence. Truthful exact attest_addition with valid finding attribution can pass without weakening any base requirement."
+        },
+        {
+          "id": "C11",
+          "proposal": "maintenance_exception",
+          "exercise": "Exception weakens a verbatim retained obligation",
+          "expected": "With no evidence, withhold acceptance. On honest effect review, identify weakening of the storage-before-acknowledgment base unit. The original add-only/frozen authorization cannot accept it; addition approval alone is insufficient. Do not require a semantic detector to infer the exception mechanically."
+        },
+        {
+          "id": "C12",
+          "proposal": "maintenance_exception",
+          "exercise": "Deliberately approve the exception in a new acceptance attempt",
+          "expected": "Prepare newly approved same-base scope, findings and surface permitting the exact addition and weakening; remove the affected freeze. Use truthful addition evidence that discloses the separately authorized weakening plus an authorize_weakening record for the retained obligation. Complete checks may pass in the same root, preserving earlier reports.",
+          "relation": [
+            {
+              "base_line": 5,
+              "successor_lines": [
+                5
+              ],
+              "disposition": "operator_authorized_weakened"
+            }
+          ],
+          "addition_lines": [
+            11
+          ]
+        },
+        {
+          "id": "C13",
+          "proposal": "weakened_retention",
+          "exercise": "MUST becomes SHOULD",
+          "expected": "With permitted weakening but no exact effect evidence, proposal remains pending and submitted acceptance rejects. Exact authorize_weakening and complete correspondence can pass. A configuration permission or Editor claim alone cannot pass."
+        }
+      ]
+    },
+    {
+      "id": "05_relocation",
+      "title": "Moving unchanged words across section ownership",
+      "base": {
+        "path": "05_relocation/base.md",
+        "sha256": "b5562883bdf50df4415ae210b5b324ee94eef2ecea9e63caf2b00439ae12e9f7",
+        "bytes": 293
+      },
+      "setup": [
+        "Keep headings, separators, timestamps, access checks and Operations unchanged. The move takes the encryption line from Archive Rules to Retrieval Rules without changing its text.",
+        "C14 uses a valid generic delete/add surface: both sections allowed, the source unit allowed for delete with explicit deletion permissions, add allowed at destination, no relocation mapping. C15 instead permits move with an exact source-unit/destination-section relocation; cap changed sections at 2 and normative units at 1."
+      ],
+      "variants": {
+        "moved": {
+          "path": "05_relocation/moved.md",
+          "sha256": "753300314f1e08f61cdfa28e2d864cf93e4457a56ab7237580465b16cfc0a118",
+          "bytes": 293
+        }
+      },
+      "checks": [
+        {
+          "id": "C14",
+          "proposal": "moved",
+          "exercise": "Delete/add permissions cannot launder a move",
+          "expected": "The same line disappears from one section and appears in another with changed ownership. Reject known unauthorized relocation; where a matcher cannot decide, require explicit correspondence and still refuse acceptance without relocation authority. Delete plus add approvals are not a substitute."
+        },
+        {
+          "id": "C15",
+          "proposal": "moved",
+          "exercise": "Explicitly authorized relocation",
+          "expected": "Pending movement/equivalence evidence, then pass with exact relocation mapping, adopted moved correspondence and ordinary gates. Count both sections and one normative base unit.",
+          "relation": [
+            {
+              "base_line": 5,
+              "successor_lines": [
+                9
+              ],
+              "disposition": "moved"
+            }
+          ]
+        },
+        {
+          "id": "C16",
+          "proposal": "moved",
+          "exercise": "Evidence does not waive numeric caps",
+          "expected": "Use the complete C15 mapping/evidence but a separately approved max_changed_sections=1 surface. Reject for exceeding the two affected section paths."
+        }
+      ]
+    },
+    {
+      "id": "06_parser_and_versions",
+      "title": "All-line inventory, exact bytes, and trusted version boundaries",
+      "base": {
+        "path": "06_parser_and_versions/base.md",
+        "sha256": "b4163d4ee174d73ab72031530e96c839ec110e225cb25fce9db78edff5bd799a",
+        "bytes": 569
+      },
+      "setup": [
+        "Inventory all physical lines, including preamble, separators, both kinds of fences, duplicate heading ordinals, setext-like body, indented pseudo-heading, Unicode and trailing child content. Only the real root, Payload and two Notes headings create named sections.",
+        "For C18 hold the entire content frozen and use a legitimate otherwise-eligible Phase 2 entry maintenance operation from a prior accepted bridge marker. C17, C19 and C20 are separate Editor proposals under a valid nonempty finding set and surface permitting only a Notes clarification; Payload and parent content are frozen.",
+        "phase2_materialized.md is expected trusted output, not an Editor input. editor_version_change.md deliberately has identical bytes but a different provenance."
+      ],
+      "variants": {
+        "editor_version_change": {
+          "path": "06_parser_and_versions/editor_version_change.md",
+          "sha256": "06c8c03a506fa104133a57d44f1ddfd8c764985cfba852f6ae271b1a32ea88c7",
+          "bytes": 568
+        },
+        "phase2_materialized": {
+          "path": "06_parser_and_versions/phase2_materialized.md",
+          "sha256": "06c8c03a506fa104133a57d44f1ddfd8c764985cfba852f6ae271b1a32ea88c7",
+          "bytes": 568
+        },
+        "fenced_field_loss": {
+          "path": "06_parser_and_versions/fenced_field_loss.md",
+          "sha256": "e3a248551cfa92759e2d0fcfee90d3e2f101976c1af346e901adfc214dc2a79f",
+          "bytes": 546
+        },
+        "raw_adjacent_edit": {
+          "path": "06_parser_and_versions/raw_adjacent_edit.md",
+          "sha256": "d52c031cdc85e13e3496317333106564d2dae1ca763be39b1e2ee5a7468c47c2",
+          "bytes": 566
+        }
+      },
+      "checks": [
+        {
+          "id": "C17",
+          "proposal": "editor_version_change",
+          "exercise": "Editor changes the visible version",
+          "expected": "Reject untrusted_version_edit. Do not restore the anchor and claim the edit was trusted."
+        },
+        {
+          "id": "C18",
+          "proposal": "base",
+          "expected_materialized": "phase2_materialized",
+          "exercise": "Legitimate Phase 2 entry stamp",
+          "expected": "With prior accepted lineage and Phase 1 handoff eligibility, trusted 0.17 -> 1.0 materialization may pass with empty semantic evidence. Reverse only the verified title span for correspondence; descendant path changes are not user changes. No fabricated numbered round or review-budget charge."
+        },
+        {
+          "id": "C19",
+          "proposal": "fenced_field_loss",
+          "exercise": "A heading-like fence comment must not hide a schema field",
+          "expected": "Removing the required_token line from frozen Payload rejects; it remains a covered fence_body unit, not an unowned fragment."
+        },
+        {
+          "id": "C20",
+          "proposal": "raw_adjacent_edit",
+          "exercise": "A trusted heading stamp cannot exempt parent content",
+          "expected": "Reject the changed frozen parent requirement even if a prospective version stamp also changes the root and descendant paths. Trusted spans do not authorize adjacent prose."
+        }
+      ],
+      "parser_probe": {
+        "path": "06_parser_and_versions/mixed_endings.md",
+        "sha256": "e96ff1ba312b8bf4a92300560015e7a009ebbf8e14228273930e9d60fd6a7467",
+        "bytes": 99
+      },
+      "parser_probe_expectation": "Seven physical line units partition all 99 bytes including BOM and mixed terminators; last line is unterminated. Do not normalize this specimen before inventorying it. Byte count is bound by its catalog asset record."
+    },
+    {
+      "id": "07_supersession",
+      "title": "Consolidation requires a complete shared-successor group",
+      "base": {
+        "path": "07_supersession/base.md",
+        "sha256": "5957517b3168fdf7227db6ded9b6f54d1a25063e43f3efb69f9e15d3c09bb0ea",
+        "bytes": 231
+      },
+      "setup": [
+        "Admit a finding requesting consolidation without loss. Allow supersede for both Access predecessor units, list both authorized_supersession_unit_ids, allow the successor location, and cap changed normative units at 2. Do not grant delete permission. Freeze Audit.",
+        "Both obligations remain in the consolidated line. The expected success is explicitly operator-attested equal coverage, not machine-proven equivalence."
+      ],
+      "variants": {
+        "consolidated": {
+          "path": "07_supersession/consolidated.md",
+          "sha256": "a4b2348231d9edb56a108468eedf3041dcccee6ea0568bbd15327ef0cade38d3",
+          "bytes": 235
+        }
+      },
+      "checks": [
+        {
+          "id": "C21",
+          "proposal": "consolidated",
+          "exercise": "Two predecessors to one successor",
+          "expected": "Pending without supersession evidence. One complete equal-or-stronger attestation containing both predecessors and the shared successor can pass without deletion permission. Count two changed normative base units.",
+          "relation": [
+            {
+              "base_line": 5,
+              "successor_lines": [
+                5
+              ],
+              "disposition": "superseded"
+            },
+            {
+              "base_line": 6,
+              "successor_lines": [
+                5
+              ],
+              "disposition": "superseded"
+            }
+          ]
+        },
+        {
+          "id": "C22",
+          "proposal": "consolidated",
+          "exercise": "Split or incomplete group approval",
+          "expected": "Submit only one predecessor, or two separate supersession records each approving half the group. Acceptance rejects incomplete shared-group evidence; it cannot combine fragments to manufacture a complete attestation."
+        },
+        {
+          "id": "C23",
+          "proposal": "consolidated",
+          "exercise": "Every output unit has exactly one role",
+          "expected": "Start with the complete C21 relation, then also list its shared successor as an addition. Acceptance rejects successor/addition overlap even though all IDs resolve."
+        }
+      ]
+    }
+  ]
+}
