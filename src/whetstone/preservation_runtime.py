@@ -234,7 +234,7 @@ class RuntimeAcceptanceService(AcceptanceService):
             number = int(path.parent.parent.name.removeprefix('round-'))
             if number < admission['round_number']:
                 packet, _, _, _, review_issues = verify_review_receipt(self.root, number)
-                if packet['kind'] == 'review_only' and packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
+                if packet['kind'] in {'review_only','vertical_closeout'} and packet['accepted'] == (state.get('preservation_bridge') or {}).get('accepted'):
                     previous_issues.extend(review_issues)
         eligible, issues = super()._ordinary(proposal,admission,previous_issues)
         decisions = self._decisions(proposal, admission)
@@ -337,8 +337,8 @@ class RuntimeAcceptanceService(AcceptanceService):
             packet, _, _, _, _ = verify_review_receipt(self.root, number)
             prior = [(ref, marker) for ref, marker, _ in chain
                      if self._proposal_directory(marker['proposal'])[2]['round_number'] < number]
-            if packet['kind'] == 'vertical_source':
-                require(not prior and packet['accepted'] is None, 'vertical source review cannot observe later authority')
+            if packet['kind'] == 'vertical_source' and packet['accepted'] is None:
+                require(not prior, 'seed source cannot observe later authority')
                 continue
             require(prior and prior[-1][0] == packet['accepted'], 'review-only parent is not the preceding acceptance')
             require(all(self._proposal_directory(marker['proposal'])[2]['round_number'] != number for _, marker, _ in chain),
@@ -530,7 +530,7 @@ def resume_operation(root, config, *, continue_run=False, reviewer_client=None, 
         return resume_review(root, config, review, continue_run=continue_run, reviewer_client=reviewer_client,
                              editor_client=editor_client, timeout_seconds=timeout_seconds)
     status = readback(Path(root), config)
-    if status['pending_outcome'] is None and status['accepted'] is not None:
+    if status['pending_outcome'] is None and (status['accepted'] is not None or config.review_mode == 'vertical'):
         require(continue_run, 'accepted operation is complete; use --continue for ordinary review')
         return continue_phase1(root, config, reviewer_client=reviewer_client, editor_client=editor_client, timeout_seconds=timeout_seconds)
     retry_config, admission, directory = resume_context(root, config)

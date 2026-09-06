@@ -56,8 +56,8 @@ class VerticalTests(unittest.TestCase):
         guard_consumer(self.root,self.config)
         self.assertFalse(read_status(root=self.root,config=self.config)['ready_for_phase_2'])
         before=self.snapshot()
-        with self.assertRaisesRegex(BridgeContractError,'vertical scheduler continuation'):
-            resume_halted_run(self.root,self.config,continue_run=True)
+        plan=plan_resume_halted_run(self.root,self.config,continue_run=True)
+        self.assertTrue(plan.resumable);self.assertEqual(plan.next_round_number,5)
         self.assertEqual(before,self.snapshot())
 
     def test_empty_sweep_commits_seed_noop_before_stability(self):
@@ -106,15 +106,15 @@ class VerticalTests(unittest.TestCase):
         with self.assertRaises(BridgeContractError):self.approve()
         self.assertEqual(before,self.snapshot());self.assertEqual(self.editor.calls,1)
 
-    def test_reviewer_timeout_stops_without_editor_or_unsupported_retry(self):
+    def test_reviewer_timeout_recovers_same_source_without_editor(self):
         self.setup_run()
         self.reviewer.events[1]=TimeoutError('scripted source timeout')
         result=self.runner.run()
         self.assertEqual(result.terminal_state,'HALTED_CLIENT_TIMEOUT');self.assertEqual(self.editor.calls,0)
-        before=self.snapshot()
-        with self.assertRaisesRegex(BridgeContractError,'vertical Reviewer recovery'):
-            resume_halted_run(self.root,self.config,reviewer_client=self.reviewer,editor_client=self.editor)
-        self.assertEqual(before,self.snapshot());self.assertEqual(self.reviewer.calls,2)
+        self.reviewer.events.insert(0,(2,'determinism',[]))
+        result=resume_halted_run(self.root,self.config,reviewer_client=self.reviewer,editor_client=self.editor)
+        self.assertIsNone(result.terminal_state);self.assertEqual(result.round_number,2)
+        self.assertEqual(self.reviewer.calls,3);self.assertEqual(self.editor.calls,0)
 
     def test_unscheduled_source_and_direct_editor_paths_are_refused(self):
         self.setup_run();initialize(self.root,self.config)
@@ -191,17 +191,23 @@ class VerticalTests(unittest.TestCase):
         self.assertFalse(status['ready_for_phase_2']);self.assertEqual(status['next_action'],'inspect_and_repair')
         self.assertEqual(before,self.snapshot())
 
-    def test_unchanged_minor_output_stops_after_one_consolidated_operation(self):
+    def test_unchanged_minor_output_continues_into_next_vertical_cycle(self):
         self.setup_run()
         summary=decode_json(self.editor.response)
         summary.update(draft_after_content=self.p.raw.decode(),draft_after_hash=summary['draft_before_hash'])
         self.editor.response=json_bytes(summary)
-        self.config=replace(self.config,review_profile_budgets={'structural_integrity':2,'determinism':2,'operability':2})
+        # This fixture authorizes unchanged output across cycles without binding
+        # the surface to findings that belong only to the first sweep.
+        surface={**self.p.surface,'finding_sources':[]}
+        surface_ref=self.p.save('cycle-surface.json',surface)
+        self.config=replace(self.config,review_profile_budgets={'structural_integrity':2,'determinism':2,'operability':2},
+                            preservation_bridge=replace(self.config.preservation_bridge,allowed_change_surface=surface_ref))
         self.runner.config=self.config
+        self.reviewer.events.extend([(5,'structural_integrity',[]),(6,'determinism',[]),(7,'operability',[])])
         result=self.runner.run()
-        self.assertEqual(result.terminal_state,'TARGET_NOT_REACHED');self.assertEqual(result.round_number,4)
-        self.assertEqual(self.reviewer.calls,3);self.assertEqual(self.editor.calls,1)
-        self.assertEqual(len(list(self.root.rglob('acceptance.json'))),1)
+        self.assertEqual(result.terminal_state,'PHASE_1_STABLE');self.assertEqual(result.round_number,8)
+        self.assertEqual(self.reviewer.calls,6);self.assertEqual(self.editor.calls,1)
+        self.assertEqual(len(list(self.root.rglob('acceptance.json'))),2)
 
     def test_empty_vertical_sweep_preserves_crlf_bytes(self):
         self.setup_run(clean=True)

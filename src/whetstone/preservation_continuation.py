@@ -41,7 +41,7 @@ def read_review(root, directory):
             'supplied','attempt','predecessor','base','prompt','config'}, 'invalid review input shape')
     require(type(packet['round_number']) is int and packet['round_number'] > 0 and type(packet['attempt']) is int and packet['attempt'] > 0,
             'invalid review counters')
-    require(packet['kind'] in {'review_editor','review_only','vertical_source'} and packet['phase'] == 'phase_1', 'invalid review operation')
+    require(packet['kind'] in {'review_editor','review_only','vertical_source','vertical_closeout'} and packet['phase'] == 'phase_1', 'invalid review operation')
     require(packet['version'] == 'bridge-review-v1', 'unsupported review record')
     require(directory == Path(root)/f"rounds/round-{packet['round_number']}/preservation/reviewer-attempt-{packet['attempt']}", 'review identity/path mismatch')
     for key in ('base', 'config', 'prompt'):
@@ -110,8 +110,10 @@ def validate_review_retry(root, config, pending):
     require(pending and pending['next_action'] == 'technical_resume', 'review execution is not resumable')
     rt = _runtime()
     packet, frozen, result = read_review(Path(root), pending['directory'])
-    require(packet['kind'] != 'vertical_source', 'vertical Reviewer recovery is not yet qualified')
     require(packet['phase'] == 'phase_1', 'generic Phase 2 resume is unsupported')
+    if packet['kind'] in {'vertical_source','vertical_closeout'}:
+        from whetstone.preservation_vertical import verify_seed_review
+        verify_seed_review(root,packet,frozen)
     require(rt._jsonable(asdict(config)) == frozen['resolved_config'], 'review retry cannot change frozen settings or authorization')
     require((Path(root)/'spec.md').read_bytes() == read_ref(root, packet['base']), 'review retry base changed')
     rt.verify_frozen_round_state(rt.state_packet(root), frozen['runtime']['state_before'])
@@ -119,7 +121,7 @@ def validate_review_retry(root, config, pending):
     require((prefix/'draft_before.md').read_bytes() == read_ref(root, packet['base']), 'review base mirror changed')
     if result['outcome'] == 'complete':
         feedback = decode_json(read_ref(root, result['feedback']))
-        if packet['kind'] == 'review_only':
+        if packet['kind'] in {'review_only','vertical_source','vertical_closeout'}:
             for name, expected in expected_review_files(root, packet, frozen, feedback).items():
                 path = prefix/name
                 require(not path.exists() or path.read_bytes() == expected, f'conflicting review recovery artifact: {name}')
@@ -144,7 +146,7 @@ def guarded_review(runner, **kwargs):
     kind = decode_json((root/f'rounds/round-{number}/profile_used.yaml').read_bytes())['round_kind']
     if runner.config.review_mode == 'vertical':
         require(kind == 'review_only', 'unsupported vertical Reviewer operation')
-        kind = 'vertical_source'
+        kind = runner._preservation_review_kind
     with service._lock():
         attempts = [item for item in _attempts(root) if item[0] == number]
         previous = None
@@ -228,10 +230,10 @@ def finish_review_only(runner, number):
     with service._lock():
         directory = [item[2] for item in _attempts(runner.root) if item[0] == number][-1]
         packet, _, result = read_review(runner.root, directory)
-        require(packet['kind'] in {'review_only','vertical_source'} and result['outcome'] == 'complete', 'missing completed review')
+        require(packet['kind'] in {'review_only','vertical_source','vertical_closeout'} and result['outcome'] == 'complete', 'missing completed review')
         chain = service._chain()
-        if packet['kind'] == 'vertical_source':
-            require(not chain and packet['accepted'] is None, 'source review lineage changed')
+        if packet['kind'] in {'vertical_source','vertical_closeout'}:
+            require(packet['accepted'] == (chain[-1][0] if chain else None), 'vertical review lineage changed')
         else:
             require(chain and packet['accepted'] == chain[-1][0], 'review-only lineage changed')
         if chain:
@@ -255,9 +257,9 @@ def verify_review_receipt(root, number, *, receipt=None):
     result = decode_json(read_ref(root, receipt['result']))
     require(isinstance(result, dict) and set(result) == {'input','outcome','feedback','error'}, 'invalid review result shape')
     packet, frozen, expected = read_review(root, root/Path(receipt['result']['path']).parent)
-    require(result == expected and result['outcome'] == 'complete' and packet['kind'] in {'review_only','vertical_source'}, 'invalid completed review')
+    require(result == expected and result['outcome'] == 'complete' and packet['kind'] in {'review_only','vertical_source','vertical_closeout'}, 'invalid completed review')
     require(packet['round_number'] == number, 'review completion round mismatch')
-    if packet['kind'] == 'vertical_source':
+    if packet['kind'] in {'vertical_source','vertical_closeout'}:
         from whetstone.preservation_vertical import verify_seed_review
         verify_seed_review(root, packet, frozen)
     for name, ref in receipt['files'].items():
@@ -428,11 +430,8 @@ def begin_review_only(root, config, *, round_number, profile, phase, overwrite, 
 def continue_phase1(root, config, *, reviewer_client=None, editor_client=None, timeout_seconds=None):
     rt = _runtime()
     if config.review_mode == 'vertical':
-        from whetstone.preservation_vertical import completed_cycle_plan
-        from whetstone.resume import ResumeResult
-        plan = completed_cycle_plan(root, config)
-        return ResumeResult(False, plan.terminal_state, plan.round_number, 'phase_1', '',
-                            plan.current_draft_hash, plan.current_draft_hash, True)
+        from whetstone.preservation_vertical import continue_run as continue_vertical
+        return continue_vertical(root,config,reviewer_client=reviewer_client,editor_client=editor_client,timeout_seconds=timeout_seconds)
     context = continuation_context(root, config)
     terminal = rt.state_packet(root).get('terminal_state')
     complete = context['scheduler'].phase_complete(accepted_draft=True)
@@ -463,7 +462,7 @@ def resume_review(root, config, pending, *, continue_run, reviewer_client, edito
     number, profile = packet['round_number'], packet['profile']
     require(runner._timeout_for_role('reviewer') == frozen['reviewer_timeout_seconds'], 'review retry timeout changed')
     try:
-        if packet['kind'] == 'review_only':
+        if packet['kind'] in {'review_only','vertical_source','vertical_closeout'}:
             runner.run_review_only_round(round_number=number, profile=profile, phase='phase_1', reuse_existing_round=True,
                                          start_reviewer_attempt_number=packet['attempt']+1)
             state = rt.state_packet(root)
@@ -496,12 +495,13 @@ def plan_continuation(root, config, *, continue_run):
                           draft_hash(read_ref(root, packet['base']).decode()), packet['attempt']+1, continue_run, None,
                           'Resume the frozen Reviewer operation; reuse already complete feedback')
     status = rt.readback(root, config)
+    if config.review_mode == 'vertical' and status['pending_outcome'] is None:
+        require(continue_run, 'completed review requires --continue for vertical scheduling')
+        from whetstone.preservation_vertical import plan
+        return plan(root,config)
     if status['pending_outcome'] is not None or status['accepted'] is None:
         return None
     require(continue_run, 'accepted operation is complete; use --continue for ordinary review')
-    if config.review_mode == 'vertical':
-        from whetstone.preservation_vertical import completed_cycle_plan
-        return completed_cycle_plan(root, config)
     context = continuation_context(root, config)
     profile = context['scheduler'].next_profile()
     if profile is not None:

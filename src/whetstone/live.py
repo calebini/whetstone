@@ -487,7 +487,7 @@ class LiveRoundRunner:
 
         if bridge_active(self.root, self.config):
             from whetstone.preservation_continuation import begin_review_only
-            begin_review_only(self.root, self.config, round_number=round_number, profile=profile, phase=phase,
+            self._preservation_review_kind = begin_review_only(self.root, self.config, round_number=round_number, profile=profile, phase=phase,
                               overwrite=overwrite, resume=reuse_existing_round)
         invalid_fields = validate_live_config(self.config)
         if invalid_fields:

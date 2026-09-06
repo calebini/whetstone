@@ -80,7 +80,10 @@ class LivePhase1Runner:
 
     def run(self, *, overwrite: bool = False, continuation: bool = False) -> LivePhase1Result:
         context = None
-        if continuation:
+        if continuation and self.config.review_mode == 'vertical':
+            from whetstone.preservation_vertical import context as vertical_context
+            self._vertical_context = vertical_context(self.root,self.config)
+        if continuation and self.config.review_mode != 'vertical':
             from whetstone.preservation_continuation import continuation_context
             context = continuation_context(self.root, self.config)
             self.run_mode = context['run_mode']
@@ -506,7 +509,17 @@ class LivePhase1Runner:
         )
         return LivePhase1Result(terminal_state, exhausted_round_number, current_hash, last_accepted_draft_hash, False, report_path)
 
+    def _vertical_spec_text(self) -> str:
+        # Guarded identity follows exact accepted bytes, including line endings.
+        if bridge_active(self.root, self.config):
+            return self.config.spec_path.read_bytes().decode("utf-8")
+        return self.config.spec_path.read_text(encoding="utf-8")
+
     def _run_vertical(self, *, overwrite: bool = False) -> LivePhase1Result:
+        from whetstone.preservation_vertical import replay_result
+        replay = getattr(self,'_vertical_context',{})
+        records = replay.get('records',{})
+        self._vertical_records = records
         if overwrite:
             _clear_top_level_run_artifacts(self.config.rounds_dir)
         write_context_pressure_report(root=self.root, config=self.config, phase="phase_1", round_number=0)
@@ -530,7 +543,7 @@ class LivePhase1Runner:
             }
             for profile in profiles
         }
-        seen_hashes: list[str] = [draft_hash(self.config.spec_path.read_text(encoding="utf-8"))]
+        seen_hashes: list[str] = [draft_hash(replay['seed'].decode()) if replay else draft_hash(self._vertical_spec_text())]
         last_accepted_draft_hash: str | None = None
         last_unresolved: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
@@ -550,7 +563,7 @@ class LivePhase1Runner:
             merged_feedback_id_counts: dict[str, int] = {}
             reviewer_packets: list[dict[str, Any]] = []
             cycle_clean = True
-            draft_hash_at_cycle_start = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+            draft_hash_at_cycle_start = seen_hashes[-1]
 
             for profile in profiles:
                 if profile_state[profile]["rounds_used"] >= profile_state[profile]["round_budget"]:
@@ -566,7 +579,7 @@ class LivePhase1Runner:
                     ready_for_phase_2=False,
                 )
                 try:
-                    review_result = LiveRoundRunner(
+                    review_result = replay_result(self.root,round_number,profile,'vertical_source',records) or LiveRoundRunner(
                         self.root,
                         self.config,
                         reviewer_client=self.reviewer_client,
@@ -583,7 +596,7 @@ class LivePhase1Runner:
                     if artifact_error.exists():
                         error_packet = _read_json(artifact_error)
                         terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
-                        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                        current_hash = draft_hash(self._vertical_spec_text())
                         self._write_state(
                             current_round=round_number,
                             active_profile=profile,
@@ -638,7 +651,7 @@ class LivePhase1Runner:
                 )
 
             if cycle_clean and not merged_feedback and not bridge_active(self.root, self.config):
-                current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                current_hash = draft_hash(self._vertical_spec_text())
                 last_accepted_draft_hash = current_hash
                 return self._complete(
                     round_number=round_number,
@@ -650,8 +663,8 @@ class LivePhase1Runner:
             if merged_feedback or bridge_active(self.root, self.config):
                 round_number += 1
                 editor_profile = "vertical"
-                draft_before = (self.config.spec_path.read_bytes().decode("utf-8") if bridge_active(self.root, self.config)
-                                else self.config.spec_path.read_text(encoding="utf-8"))
+                draft_before = (records[round_number]['base'].decode() if round_number in records else
+                                self._vertical_spec_text())
                 draft_before_hash = draft_hash(draft_before)
                 synthetic_feedback = {
                     "round_number": round_number,
@@ -660,7 +673,9 @@ class LivePhase1Runner:
                     "draft_hash": draft_before_hash,
                     "feedback": merged_feedback,
                 }
-                if bridge_active(self.root, self.config):
+                if round_number in records:
+                    round_dir = self.config.rounds_dir/f'round-{round_number}'
+                elif bridge_active(self.root, self.config):
                     from whetstone.preservation_vertical import prepare_consolidated
                     round_dir = prepare_consolidated(LiveRoundRunner(self.root, self.config), round_number,
                                                      synthetic_feedback, draft_before)
@@ -674,7 +689,7 @@ class LivePhase1Runner:
                     )
                     round_dir.joinpath("reviewer_feedback.json").write_text(json.dumps(synthetic_feedback, indent=2, sort_keys=True) + "\n", encoding="utf-8")
                 try:
-                    result = LiveRoundRunner(
+                    result = replay_result(self.root,round_number,'vertical','consolidated_editor',records) or LiveRoundRunner(
                         self.root,
                         self.config,
                         reviewer_client=self.reviewer_client,
@@ -690,7 +705,7 @@ class LivePhase1Runner:
                     if artifact_error.exists():
                         error_packet = _read_json(artifact_error)
                         terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
-                        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                        current_hash = draft_hash(self._vertical_spec_text())
                         report_path = self.report_writer.write_technical_failure_report(
                             round_number=round_number,
                             final_draft_path=str(error_packet.get("last_valid_draft_path", "./spec.md")),
@@ -726,7 +741,8 @@ class LivePhase1Runner:
                         update_contract_surface_lifecycle(rounds_dir=self.config.rounds_dir, terminal=True)
                         return LivePhase1Result(terminal_state, round_number, current_hash, last_accepted_draft_hash, False, report_path)
                     raise
-                if bridge_active(self.root, self.config) and not merged_feedback:
+                if bridge_active(self.root, self.config) and not merged_feedback and not _vertical_profile_status(
+                        profile_state,current_draft_hash=result.draft_after_hash)['unverified_profiles']:
                     return self._complete(round_number=round_number, current_draft_hash=result.draft_after_hash,
                                           last_accepted_draft_hash=result.draft_after_hash,
                                           seen_draft_hashes=seen_hashes + [result.draft_after_hash])
@@ -785,12 +801,10 @@ class LivePhase1Runner:
                     ready_for_phase_2=False,
                 )
 
-            if bridge_active(self.root, self.config):
-                break  # This checkpoint completes one consolidated operation.
 
-        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        current_hash = draft_hash(self._vertical_spec_text())
         profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
-        if not bridge_active(self.root, self.config) and _vertical_closeout_eligible(
+        if _vertical_closeout_eligible(
             current_hash=current_hash,
             last_accepted_draft_hash=last_accepted_draft_hash,
             last_unresolved=last_unresolved,
@@ -869,13 +883,15 @@ class LivePhase1Runner:
         last_accepted_draft_hash: str | None,
         overwrite: bool,
     ) -> dict[str, Any]:
+        from whetstone.preservation_vertical import replay_result
+        records = getattr(self,'_vertical_records',{})
         profiles = list(profile_state.keys())
         round_number = start_round - 1
         closeout_unresolved: list[dict[str, Any]] = []
         closeout_findings_by_profile: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
         for profile in profiles:
-            current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+            current_hash = draft_hash(self._vertical_spec_text())
             round_number += 1
             self._write_state(
                 current_round=round_number,
@@ -887,7 +903,7 @@ class LivePhase1Runner:
                 ready_for_phase_2=False,
             )
             try:
-                review_result = LiveRoundRunner(
+                review_result = replay_result(self.root,round_number,profile,'vertical_closeout',records) or LiveRoundRunner(
                     self.root,
                     self.config,
                     reviewer_client=self.reviewer_client,
@@ -904,7 +920,7 @@ class LivePhase1Runner:
                 if artifact_error.exists():
                     error_packet = _read_json(artifact_error)
                     terminal_state = str(error_packet.get("terminal_state", "HALTED_ARTIFACT_INVALID"))
-                    current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+                    current_hash = draft_hash(self._vertical_spec_text())
                     self._write_state(
                         current_round=round_number,
                         active_profile=profile,
@@ -964,7 +980,7 @@ class LivePhase1Runner:
                 blocker_count=blocker_count,
                 major_count=major_count,
             )
-        current_hash = draft_hash(self.config.spec_path.read_text(encoding="utf-8"))
+        current_hash = draft_hash(self._vertical_spec_text())
         profile_status = _vertical_profile_status(profile_state, current_draft_hash=current_hash)
         terminal_state = None
         if (
@@ -1209,6 +1225,9 @@ class LivePhase1Runner:
         terminal_state: str | None,
         ready_for_phase_2: bool,
     ) -> None:
+        if (getattr(self,'_vertical_context',None) and current_round <= self._vertical_context['completed']
+                and terminal_state is None and not ready_for_phase_2):
+            return
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
         convergence_round_budget = default_phase_2_scheduler(
             self.config.convergence_profile_budgets,
