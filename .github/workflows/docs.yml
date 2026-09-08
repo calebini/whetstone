@@ -1,0 +1,47 @@
+name: Publish Whetstone field guide
+
+# Manual only. First publication requires content-owner approval of this revision.
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_revision:
+        description: 'Full commit SHA whose public documentation content the owner approved'
+        required: true
+        type: string
+      public_content_approved:
+        description: 'The owner confirmed this reviewed content is appropriate to publish'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && inputs.public_content_approved && inputs.reviewed_revision == github.sha
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify allowlist and immutable source links
+        run: node --test docs/site/build-pages.test.mjs
+      - name: Package public documentation only
+        run: node docs/site/build-pages.mjs "$RUNNER_TEMP/whetstone-pages"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/whetstone-pages
+      - name: Deploy reviewed documentation
+        id: deployment
+        uses: actions/deploy-pages@v4
