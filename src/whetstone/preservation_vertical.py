@@ -43,14 +43,21 @@ def verify_sources(root, frozen, number, feedback_refs):
     profiles = profile_names_for_phase(resolved['review_profile_set'], 'phase_1')
     require(refs and len(refs) <= len(profiles) and len(feedback_refs) == len(refs)+1, 'incomplete vertical source topology')
     start = number-len(refs)
+    from whetstone.preservation_budget import grants
+    extensions = [p for p in grants(root,check_mirror=False) if p['event']['previous_current_round'] < start]
+    boundary = extensions[-1]['event']['previous_current_round'] if extensions else 0
     counts = {p:0 for p in profiles}
     for earlier in range(1,start):
         if (root/f'rounds/round-{earlier}/preservation/review_complete.json').exists():
             earlier_packet, _, _, _, _ = verify_review_receipt(root, earlier)
-            require(earlier_packet['kind'] == 'vertical_source', 'consolidation cannot follow closeout')
+            require(earlier_packet['kind'] == 'vertical_source' or
+                    (earlier_packet['kind'] == 'vertical_closeout' and earlier <= boundary),
+                    'consolidation cannot follow closeout without a budget grant')
             counts[earlier_packet['profile']] += 1
     from whetstone.scheduler import resolved_phase_1_profile_budgets
     budgets = resolved_phase_1_profile_budgets(resolved['review_profile_budgets'],profile_set=resolved['review_profile_set'])
+    if extensions:
+        budgets = extensions[-1]['event']['new_review_profile_budgets']
     profiles = [p for p in profiles if counts[p] < budgets[p]]
     require(len(refs) == len(profiles), 'vertical source sweep omitted a profile')
     packets = []
@@ -68,7 +75,8 @@ def verify_sources(root, frozen, number, feedback_refs):
             marker = read_artifact(root,packet['accepted'],'preservation_bridge_acceptance')
             proposal = read_artifact(root,marker['proposal'],'preservation_bridge_proposal')
             admission = read_artifact(root,proposal['admission'],'preservation_bridge_proposal_admission')
-            require(admission['round_number'] == start-1, 'vertical cycle source parent is not the preceding consolidation')
+            require(admission['round_number'] == start-1 or (start == boundary+1 and packet['accepted'] == extensions[-1]['accepted']),
+                    'vertical cycle source parent is not the preceding consolidation')
         original = deepcopy(config['resolved_config'])
         current = deepcopy(resolved)
         original['preservation_bridge'].pop('predecessor_report', None)
@@ -92,6 +100,9 @@ def source_bindings(root, config, number):
     chain = service._chain()
     prior_numbers = [service._proposal_directory(marker['proposal'])[2]['round_number'] for _,marker,_ in chain]
     start = max((n for n in prior_numbers if n < number), default=0)+1
+    from whetstone.preservation_budget import grants
+    start = max([start] + [p['event']['previous_current_round']+1 for p in grants(root)
+                          if p['event']['previous_current_round'] < number])
     receipts, feedback = [], []
     for index in range(start, number):
         packet, _, _, _, _ = verify_review_receipt(root, index)
@@ -208,6 +219,26 @@ def context(root, config, *, allow_inflight=False):
     seed = base
     number, accepted, issues = 0, None, []
     closeout_issues = []
+    from whetstone.preservation_budget import grants, apply_grant, verify_record
+    extensions = {p['event']['previous_current_round']:p for p in grants(root)}
+    for n, record in records.items():
+        verify_record(root,record['frozen'],n,list(extensions.values()))
+    require(all(n <= len(records) for n in extensions), 'vertical budget grant is ahead of completed evidence')
+    replay_start = None
+    seen = [draft_hash(base.decode())]
+
+    def extend():
+        nonlocal budgets, closeout_issues, replay_start
+        if number not in extensions:
+            return False
+        budgets = apply_grant(extensions[number], budgets=budgets, counts={p:s['rounds_used'] for p,s in states.items()},
+            number=number,accepted=accepted,base_hash=draft_hash(base.decode()))
+        from whetstone.resume import _extend_vertical_profile_state
+        _extend_vertical_profile_state(states,budgets)
+        replay_start = {'round_number':number,'profile_state':deepcopy(states),'seen_hashes':list(seen),
+                        'last_unresolved':list(issues+closeout_issues),'last_accepted_draft_hash':draft_hash(base.decode())}
+        closeout_issues = []
+        return True
 
     def consume(kind, profile):
         nonlocal number
@@ -235,42 +266,52 @@ def context(root, config, *, allow_inflight=False):
         require((root/'spec.md').read_bytes() == base, 'vertical current authority differs from completed evidence')
         require(state.get('current_draft_hash',draft_hash(base.decode())) == draft_hash(base.decode()), 'vertical current hash differs')
         before = original['runtime']['state_before']
+        if extensions:
+            before = {**before, 'review_profile_budgets':budgets,'review_round_budget':sum(budgets.values())+max(budgets.values())}
         for key in ('review_profile_budgets','review_round_budget','run_mode'):
             if key in before:
                 require(state.get(key) == before[key], 'vertical scheduler budget/mode mirror changed')
         return {'records':records,'completed':completed,'seed':seed,'next_kind':next_kind,'next_profile':profile,
                 'next_round':completed+1 if next_kind else None,'terminal':terminal,'profile_state':states,
-                'accepted':accepted,'current_hash':draft_hash(base.decode()),'issues':issues+closeout_issues}
+                'accepted':accepted,'current_hash':draft_hash(base.decode()),'issues':issues+closeout_issues,
+                'budgets':budgets,'replay_start':replay_start}
 
-    for cycle in range(max(budgets.values())):
-        packets, source_numbers = [], []
-        for profile in profiles:
-            if states[profile]['rounds_used'] >= budgets[profile]:
+    while True:
+        for cycle in range(max(budgets.values())):
+            packets, source_numbers = [], []
+            for profile in profiles:
+                if states[profile]['rounds_used'] >= budgets[profile]:
+                    continue
+                record = consume('vertical_source', profile)
+                if record is None:
+                    return finish('vertical_source',profile)
+                packets.append(record['feedback']); source_numbers.append(number)
+            if not packets:
+                break
+            record = consume('consolidated_editor','vertical')
+            if record is None:
+                return finish('consolidated_editor','vertical')
+            require(record['feedback'] == merge_feedback(packets, number, draft_hash(base.decode())), 'vertical cycle merge differs')
+            receipt_paths = [ref['path'] for ref in record['frozen']['vertical_review_sources']]
+            require(receipt_paths == [f'rounds/round-{n}/preservation/review_complete.json' for n in source_numbers], 'vertical cycle source selection differs')
+            base, accepted, issues = record['after'], record['accepted'], record['issues']
+            seen.append(draft_hash(base.decode()))
+            if not record['feedback']['feedback'] and not _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(issues):
+                return finish(terminal='PHASE_1_STABLE')
+        if accepted and _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(issues):
+            for profile in profiles:
+                record = consume('vertical_closeout',profile)
+                if record is None:
+                    return finish('vertical_closeout',profile)
+                closeout_issues.extend(record['issues'])
+            stable = not _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(closeout_issues)
+            if not stable and extend():
                 continue
-            record = consume('vertical_source', profile)
-            if record is None:
-                return finish('vertical_source',profile)
-            packets.append(record['feedback']); source_numbers.append(number)
-        if not packets:
-            break
-        record = consume('consolidated_editor','vertical')
-        if record is None:
-            return finish('consolidated_editor','vertical')
-        require(record['feedback'] == merge_feedback(packets, number, draft_hash(base.decode())), 'vertical cycle merge differs')
-        receipt_paths = [ref['path'] for ref in record['frozen']['vertical_review_sources']]
-        require(receipt_paths == [f'rounds/round-{n}/preservation/review_complete.json' for n in source_numbers], 'vertical cycle source selection differs')
-        base, accepted, issues = record['after'], record['accepted'], record['issues']
-        if not record['feedback']['feedback'] and not _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(issues):
-            return finish(terminal='PHASE_1_STABLE')
-    if accepted and _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(issues):
-        for profile in profiles:
-            record = consume('vertical_closeout',profile)
-            if record is None:
-                return finish('vertical_closeout',profile)
-            closeout_issues.extend(record['issues'])
-        stable = not _vertical_profile_status(states,current_draft_hash=draft_hash(base.decode()))['unverified_profiles'] and not _has_serious_issues(closeout_issues)
-        return finish(terminal='PHASE_1_STABLE' if stable else 'TARGET_NOT_REACHED')
-    return finish(terminal='TARGET_NOT_REACHED')
+            return finish(terminal='PHASE_1_STABLE' if stable else 'TARGET_NOT_REACHED')
+        if extend():
+            continue
+        return finish(terminal='TARGET_NOT_REACHED')
+
 
 
 def plan(root, config, *, preflight=True):

@@ -83,6 +83,7 @@ class LivePhase1Runner:
         if continuation and self.config.review_mode == 'vertical':
             from whetstone.preservation_vertical import context as vertical_context
             self._vertical_context = vertical_context(self.root,self.config)
+            self.state_review_profile_budgets = self._vertical_context['budgets']
         if continuation and self.config.review_mode != 'vertical':
             from whetstone.preservation_continuation import continuation_context
             context = continuation_context(self.root, self.config)
@@ -264,6 +265,9 @@ class LivePhase1Runner:
                 blocker_count=reviewer_blocker_count,
                 major_count=reviewer_major_count + (1 if mutation_requires_verification else 0),
             )
+            if bridge_active(self.root, self.config) and result.spec_mutated:
+                for profile_state in scheduler.states:
+                    profile_state.clean = False
 
             if result.accepted:
                 last_accepted_draft_hash = result.draft_after_hash
@@ -529,6 +533,7 @@ class LivePhase1Runner:
             self.config.review_profile_budgets,
             profile_set=self.config.review_profile_set,
         )
+        budgets = replay.get('budgets', budgets)
         max_cycles = max(budgets.values())
         profile_state = {
             profile: {
@@ -548,6 +553,14 @@ class LivePhase1Runner:
         last_unresolved: list[dict[str, Any]] = []
         last_reviewer_findings: dict[str, Any] | None = None
         round_number = 0
+        if replay.get('replay_start'):
+            from copy import deepcopy
+            start = replay['replay_start']
+            profile_state = deepcopy(start['profile_state'])
+            seen_hashes = list(start['seen_hashes'])
+            last_accepted_draft_hash = start['last_accepted_draft_hash']
+            last_unresolved = list(start['last_unresolved'])
+            round_number = start['round_number']
         self._write_state(
             current_round=0,
             active_profile=None,
@@ -559,6 +572,8 @@ class LivePhase1Runner:
         )
 
         for _cycle in range(1, max_cycles + 1):
+            if all(s['rounds_used'] >= s['round_budget'] for s in profile_state.values()):
+                break
             merged_feedback: list[dict[str, Any]] = []
             merged_feedback_id_counts: dict[str, int] = {}
             reviewer_packets: list[dict[str, Any]] = []
@@ -1290,6 +1305,8 @@ class LivePhase1Runner:
         }
         if bridge_active(self.root, self.config):
             packet['scheduler_steps'] = getattr(self, 'state_scheduler_steps', (previous_state or {}).get('scheduler_steps'))
+            if budget_extensions:
+                packet['effective_run_config']['review_profile_budgets'] = review_profile_budgets
         packet = preserve_state_fields(self.root, self.config, packet)
         (self.config.rounds_dir / "run_state.json").write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

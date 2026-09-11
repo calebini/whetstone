@@ -76,12 +76,16 @@ def _apply_back(
     run_state = _read_json_object(run_state_path)
     terminal_state = _terminal_state(run_state)
     eligible_terminal_state = terminal_state == "CONVERGED"
+    if eligible_terminal_state and active(root):
+        from whetstone.preservation_consumers import verify_convergence
+        verify_convergence(root, declaration_required=True)
     if apply and not eligible_terminal_state and not allow_non_converged:
         raise ValueError(
             "apply-back write requires a CONVERGED run; pass allow_non_converged=True only for manual recovery"
         )
 
-    source_text = source.read_text(encoding="utf-8")
+    source_bytes = source.read_bytes()
+    source_text = source_bytes.decode("utf-8") if active(root) else source.read_text(encoding="utf-8")
     final_text = final_draft_path.read_bytes().decode("utf-8") if active(root) else final_draft_path.read_text(encoding="utf-8")
     validate_generated_text(final_text, context="apply-back final draft")
     source_before_hash = draft_hash(source_text)
@@ -104,7 +108,7 @@ def _apply_back(
             f"source hash mismatch: expected {expected_source_hash}, observed {source_before_hash}"
         )
 
-    changed = source_before_hash != final_draft_hash
+    changed = source_bytes != final_text.encode("utf-8") if active(root) else source_before_hash != final_draft_hash
     diff_lines = _unified_diff(
         source_text=source_text,
         final_text=final_text,
@@ -113,7 +117,12 @@ def _apply_back(
     )
     applied = False
     if apply and changed:
-        source.write_text(final_text, encoding="utf-8")
+        if active(root):
+            if source.read_bytes() != source_bytes:
+                raise ValueError("source changed during apply-back review")
+            source.write_bytes(final_text.encode("utf-8"))
+        else:
+            source.write_text(final_text, encoding="utf-8")
         applied = True
 
     source_after_hash = draft_hash(source.read_text(encoding="utf-8"))

@@ -161,6 +161,16 @@ def read_status(*, root: Path, config: OrchestratorConfig) -> dict[str, Any]:
         packet['resumable'] = bool(packet['resume']['eligible'])
         verified_complete = bool(packet['resume'].get('verified_complete'))
         packet['ready_for_phase_2'] = verified_complete and packet['terminal_state'] == 'PHASE_1_STABLE'
+        packet['apply_back']['available'] = False
+        if packet['terminal_state'] == 'CONVERGED':
+            try:
+                from whetstone.preservation_consumers import verify_convergence
+                verify_convergence(root, declaration_required=True)
+                packet['apply_back']['available'] = True
+                packet['next_action'] = 'none'
+            except (OSError, ValueError) as exc:
+                packet['next_action'] = 'inspect_and_repair'
+                packet['status_warnings'].append(f'Convergence cannot be verified: {exc}')
         if preservation['pending_outcome'] == 'technical_failure' and not packet['resumable']:
             packet['next_action'] = 'inspect_and_repair'
         if preservation['pending_outcome'] is None and packet['terminal_state'] in {'PHASE_1_STABLE', 'FOCUSED_PROFILE_STABLE'} and verified_complete:
@@ -691,6 +701,26 @@ def _resume_status(root: Path, rounds_dir: Path, run_state: dict[str, Any] | Non
     if active(root, config):
         from whetstone.resume import plan_resume_halted_run
         try:
+            command_root = shlex.quote(str(root))
+            if run_state.get('phase') == 'phase_2':
+                from whetstone.preservation_phase2_closeout import plan as plan_closeout
+                eligible, number, _ = plan_closeout(root,config)
+                command = f'whetstone live-phase2 --root {command_root} --closeout-existing'
+                packet.update(eligible=eligible,reason='bounded Phase 2 Reviewer-only closeout',round_number=number,
+                    client_role='reviewer',failure_type='phase2_closeout_required',
+                    command=command if eligible else None,continue_command=command if eligible else None)
+                return packet
+            if run_state.get('terminal_state') in {'TARGET_NOT_REACHED','PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS'}:
+                from whetstone.resume import plan_budget_extension_resume
+                from whetstone.preservation_budget import grants
+                extensions = grants(root,check_mirror=False)
+                amount = (extensions[-1]['event']['added_rounds_per_profile'] if extensions and
+                          extensions[-1]['event']['previous_current_round'] == run_state.get('current_round') else 3)
+                plan = plan_budget_extension_resume(root,config,extend_review_budget=amount)
+                command = f'whetstone resume --root {command_root} --extend-review-budget {amount}'
+                packet.update(eligible=True,reason=plan.reason,round_number=plan.round_number,client_role='orchestrator',
+                    failure_type='budget_exhausted',command=command,continue_command=command)
+                return packet
             plan = plan_resume_halted_run(root, config, continue_run=True)
             command = f"whetstone resume --root {shlex.quote(str(root))}"
             packet.update(verified_complete=not plan.resumable and plan.terminal_state in {'PHASE_1_STABLE','FOCUSED_PROFILE_STABLE'},

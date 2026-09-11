@@ -106,11 +106,16 @@ def pending_review(root, *, accepted_round=0, proposal_round=0):
             'outcome': outcome, 'next_action': 'technical_resume' if packet['phase']=='phase_1' and outcome in {'client_timeout', 'complete'} else 'inspect_and_repair'}
 
 
-def validate_review_retry(root, config, pending):
-    require(pending and pending['next_action'] == 'technical_resume', 'review execution is not resumable')
+def validate_review_retry(root, config, pending, *, closeout=False):
+    require(pending and (pending['next_action'] == 'technical_resume' or
+            (closeout and pending['outcome'] in {'complete','client_timeout'})), 'review execution is not resumable')
     rt = _runtime()
     packet, frozen, result = read_review(Path(root), pending['directory'])
-    require(packet['phase'] == 'phase_1', 'generic Phase 2 resume is unsupported')
+    require(packet['phase'] == 'phase_1' or (closeout and packet['phase'] == 'phase_2' and packet['kind'] == 'review_only'),
+            'generic Phase 2 resume is unsupported')
+    if closeout:
+        from whetstone.preservation_phase2_closeout import verify_review
+        verify_review(root,packet,frozen)
     if packet['kind'] in {'vertical_source','vertical_closeout'}:
         from whetstone.preservation_vertical import verify_seed_review
         verify_seed_review(root,packet,frozen)
@@ -154,7 +159,7 @@ def guarded_review(runner, **kwargs):
             directory = attempts[-1][2]
             pending = pending_review(root)
             require(pending and pending['directory'] == directory, 'review already completed or superseded')
-            packet, frozen, result = validate_review_retry(root, runner.config, pending)
+            packet, frozen, result = validate_review_retry(root, runner.config, pending, closeout=phase == 'phase_2' and kind == 'review_only')
             require(packet['kind'] == kind and packet['profile'] == profile, 'review retry operation changed')
             require(frozen['reviewer_timeout_seconds'] == runner._timeout_for_role('reviewer'), 'review retry timeout changed')
             if result['outcome'] == 'complete':
@@ -170,6 +175,9 @@ def guarded_review(runner, **kwargs):
             service._replace('rounds/run_state.json', json_bytes(state))
             frozen = rt.config_snapshot(runner.config, phase=phase, profile=profile, state=state)
             frozen['reviewer_timeout_seconds'] = runner._timeout_for_role('reviewer')
+            if phase == 'phase_2' and kind == 'review_only':
+                from whetstone.preservation_phase2_closeout import PREFIX
+                frozen['runtime']['phase2_closeout'] = service.reference(f'{PREFIX}/admission.json')
         attempt = max((item[1] for item in attempts), default=0)+1
         relative = f'rounds/round-{number}/preservation/reviewer-attempt-{attempt}'
         service._mkdir(relative)
@@ -259,6 +267,9 @@ def verify_review_receipt(root, number, *, receipt=None):
     packet, frozen, expected = read_review(root, root/Path(receipt['result']['path']).parent)
     require(result == expected and result['outcome'] == 'complete' and packet['kind'] in {'review_only','vertical_source','vertical_closeout'}, 'invalid completed review')
     require(packet['round_number'] == number, 'review completion round mismatch')
+    if packet['phase'] == 'phase_2':
+        from whetstone.preservation_phase2_closeout import verify_review
+        verify_review(root,packet,frozen)
     if packet['kind'] in {'vertical_source','vertical_closeout'}:
         from whetstone.preservation_vertical import verify_seed_review
         verify_seed_review(root, packet, frozen)
@@ -297,7 +308,7 @@ def expected_review_files(root, packet, frozen, feedback):
         'reviewer_feedback.json': feedback, 'editor_summary.json': summary,
         'unresolved_issues.json': {'round_number':number,'draft_hash':hashed,'unresolved_issues':_unresolved_issues(feedback, summary)},
         'decision_points.json': decisions, 'profile_used.yaml': {'profile':profile,'round_kind':'review_only'},
-        'closeout_summary.json': {'round_number':number,'phase':'phase_1','profile':profile,'round_kind':'review_only',
+        'closeout_summary.json': {'round_number':number,'phase':packet['phase'],'profile':profile,'round_kind':'review_only',
             'editor_invoked':False,'draft_before_hash':hashed,'draft_after_hash':hashed,
             'note':'Reviewer-only closeout; editor_summary.json is a compatibility no-op and no Editor client was invoked.'}}
     return {'draft_before.md':base, 'draft_after.md':base,
@@ -357,7 +368,26 @@ def continuation_context(root, config, *, allow_inflight=False):
     from whetstone.resume import _record_horizontal_closeout_result
     seen, prior, accepted = [], None, None
     review_issues, reviewed_profiles = [], []
+    from whetstone.preservation_budget import grants, apply_grant, verify_record
+    from whetstone.resume import _extend_phase1_scheduler_budgets
+    extensions = {p['event']['previous_current_round']:p for p in grants(root)}
+    require(all(n <= max(records) for n in extensions), 'budget grant is ahead of completed evidence')
+
+    def extend(number):
+        nonlocal budgets, reviewed_profiles
+        if number not in extensions:
+            return
+        require(scheduler.next_profile() is None and not scheduler.phase_complete(accepted_draft=True),
+                'budget grant does not follow an exhausted scheduler')
+        budgets = apply_grant(extensions[number], budgets=budgets,
+            counts={s.profile:v.rounds_used for s,v in zip(scheduler.steps,scheduler.states)},
+            number=number,accepted=accepted,base_hash=draft_hash(prior.decode()))
+        _extend_phase1_scheduler_budgets(scheduler,budgets)
+        reviewed_profiles = []
+
     for number, record in sorted(records.items()):
+        extend(number-1)
+        verify_record(root,record['frozen'],number,list(extensions.values()))
         record_config = deepcopy(record['frozen']['resolved_config'])
         record_config.pop('preservation_bridge')
         require(record_config == expected and record['frozen']['scope_contract_packet'] == first['scope_contract_packet'],
@@ -379,6 +409,10 @@ def continuation_context(root, config, *, allow_inflight=False):
             verification = blockers == majors == 0 and _mutation_requires_verification(
                 round_dir=root/f'rounds/round-{number}', editor_summary=record['summary'], spec_mutated=record['mutated'])
             scheduler.record_result(record['profile'], blocker_count=blockers, major_count=majors + int(verification))
+            if record['mutated']:
+                # Every clean observation is bound to the bytes it reviewed.
+                for profile_state in scheduler.states:
+                    profile_state.clean = False
             if draft_hash(record['after'].decode()) in seen and (blockers or majors):
                 require(config.review_budget_exhaustion_policy == 'soft', 'accepted lineage contains an oscillation; automatic continuation is blocked')
                 if scheduler.active_profile() == record['profile']:
@@ -387,6 +421,7 @@ def continuation_context(root, config, *, allow_inflight=False):
             review_issues = []
         prior = record['after']; seen.append(draft_hash(prior.decode()))
         last_findings = _last_reviewer_findings(round_number=number, profile=record['profile'], reviewer_feedback=record['feedback'], blocker_count=blockers, major_count=majors)
+    extend(max(records))
     state = rt.state_packet(root)
     allowed_rounds = {max(records), max(records)+1} if allow_inflight else {max(records)}
     require(state.get('phase') == 'phase_1' and state.get('current_round') in allowed_rounds, 'unfinished or mismatched scheduler round')
@@ -396,7 +431,7 @@ def continuation_context(root, config, *, allow_inflight=False):
     if state.get('review_round_budget') is not None:
         require(state['review_round_budget'] == sum(budgets.values()), 'scheduler budget total changed')
     if seed_state.get('scheduler_steps') is not None:
-        require(state.get('scheduler_steps') == seed_state['scheduler_steps'], 'scheduler recipe mirror changed')
+        require(state.get('scheduler_steps') == [{**asdict(s), 'focus':sorted(s.focus)} for s in scheduler.steps], 'scheduler recipe mirror changed')
     if state.get('review_profile_budgets') is not None:
         require(state['review_profile_budgets'] == budgets, 'scheduler budget mirror changed')
     from whetstone.live_phase1 import _has_serious_issues
@@ -413,6 +448,9 @@ def continuation_context(root, config, *, allow_inflight=False):
 
 def begin_review_only(root, config, *, round_number, profile, phase, overwrite, resume):
     rt = _runtime()
+    if phase == 'phase_2':
+        from whetstone.preservation_phase2_closeout import begin_review
+        return begin_review(root,config,round_number=round_number,profile=profile,overwrite=overwrite,resume=resume)
     if config.review_mode == 'vertical':
         from whetstone.preservation_vertical import guard_source
         return guard_source(root, config, round_number=round_number, profile=profile, phase=phase, overwrite=overwrite, resume=resume)

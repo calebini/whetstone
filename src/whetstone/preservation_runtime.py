@@ -46,9 +46,18 @@ def config_snapshot(config, *, phase, profile, state):
     from whetstone.run_state import effective_run_config
     from whetstone.scope import read_scope_contract
     scope = read_scope_contract(config.scope_contract.path)
-    return {"scope_contract_packet": scope.packet if scope else None, "phase": phase, "profile": profile, "workflow": config.workflow,
-            "effective_run_config": effective_run_config(config), "resolved_config": _jsonable(asdict(config)),
+    effective = effective_run_config(config)
+    if state.get('budget_extensions'):
+        effective['review_profile_budgets'] = state['review_profile_budgets']
+    snapshot = {"scope_contract_packet": scope.packet if scope else None, "phase": phase, "profile": profile, "workflow": config.workflow,
+            "effective_run_config": effective, "resolved_config": _jsonable(asdict(config)),
             "runtime": {"version": "bridge-runtime-v1", "state_before": deepcopy(state)}}
+    manifest = config.rounds_dir/"rubric_manifest.json"
+    if phase == "phase_2":
+        from whetstone.rubrics import build_rubric_manifest
+        snapshot["rubric_manifest_packet"] = (decode_json(manifest.read_bytes()) if manifest.is_file()
+            else build_rubric_manifest(config).packet)
+    return snapshot
 
 
 def initialize(root: Path, config: OrchestratorConfig, *, overwrite=False):
@@ -149,6 +158,8 @@ def readback(root: Path, config: OrchestratorConfig | None = None, *, include_re
 
 def guard_consumer(root: Path, config: OrchestratorConfig | None = None):
     if not active(root,config):return
+    from whetstone.preservation_budget import grants
+    grants(root)
     status=readback(root,config)
     require(status['accepted'] is not None and status['pending_outcome'] is None, 'preservation: pending/rejected/incomplete evidence cannot be consumed')
     service=acceptance_service(root)
@@ -247,6 +258,8 @@ class RuntimeAcceptanceService(AcceptanceService):
         runtime=config.get('runtime')
         require(isinstance(runtime,dict) and runtime.get('version')=='bridge-runtime-v1','missing frozen runtime context')
         state=runtime['state_before']
+        from whetstone.preservation_budget import grants, verify_record
+        verify_record(self.root,config,self.operation_order(admission),grants(self.root,check_mirror=False))
         require(state.get('phase',admission['phase']) == ('phase_1' if admission['origin']=='phase2_entry' else admission['phase']), 'frozen scheduler phase mismatch')
         if admission['origin'] != 'phase2_entry':
             require(state.get('current_round',admission['round_number'])==admission['round_number'], 'frozen scheduler round mismatch')

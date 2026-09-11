@@ -68,14 +68,13 @@ class LivePhase2Runner:
         self.phase_1_rounds_completed = 0
 
     def run(self, *, overwrite: bool = False, closeout_existing: bool = False) -> LivePhase2Result:
+        if closeout_existing:
+            return self.run_closeout_existing(overwrite=overwrite)
         if bridge_active(self.root, self.config):
             from whetstone.preservation_contracts import require
             from whetstone.preservation_maintenance import phase2_start_state
-            require(not overwrite and not closeout_existing, 'guarded Phase 2 overwrite/closeout-existing is not yet qualified')
+            require(not overwrite, 'guarded Phase 2 evidence cannot be overwritten')
             state = phase2_start_state(self.root,self.config)
-        if closeout_existing:
-            return self.run_closeout_existing(overwrite=overwrite)
-
         if not bridge_active(self.root,self.config):
             state = _read_phase1_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("current_round", 0))
@@ -490,7 +489,8 @@ class LivePhase2Runner:
     def run_closeout_existing(self, *, overwrite: bool = False) -> LivePhase2Result:
         """Resume a Phase 2 budget stop with Reviewer-only closeout checks."""
         if bridge_active(self.root,self.config):
-            raise ValueError('guarded Phase 2 closeout-existing is not yet qualified')
+            from whetstone.preservation_phase2_closeout import run
+            return run(self,overwrite=overwrite)
 
         state = _read_phase2_closeout_handoff(self.config.rounds_dir)
         self.phase_1_rounds_completed = int(state.get("phase_1_rounds_completed", 0))
@@ -597,6 +597,14 @@ class LivePhase2Runner:
         return missing
 
     def _run_phase2_closeout(
+        self, **kwargs,
+    ) -> LivePhase2Result:
+        if bridge_active(self.root,self.config):
+            from whetstone.preservation_phase2_closeout import run
+            return run(self,overwrite=kwargs['overwrite'],automatic=kwargs)
+        return self._execute_phase2_closeout(**kwargs)
+
+    def _execute_phase2_closeout(
         self,
         *,
         profiles: list[str],
@@ -624,18 +632,22 @@ class LivePhase2Runner:
                 declaration_path=declaration_path,
             )
             try:
-                result = LiveRoundRunner(
-                    self.root,
-                    self.config,
-                    reviewer_client=self.reviewer_client,
-                    editor_client=self.editor_client,
-                    timeout_seconds=self.timeout_seconds,
-                ).run_review_only_round(
-                    round_number=round_number,
-                    profile=profile,
-                    phase="phase_2",
-                    overwrite=overwrite,
-                )
+                if bridge_active(self.root,self.config):
+                    from whetstone.preservation_phase2_closeout import review_round
+                    result = review_round(self,round_number,profile)
+                else:
+                    result = LiveRoundRunner(
+                        self.root,
+                        self.config,
+                        reviewer_client=self.reviewer_client,
+                        editor_client=self.editor_client,
+                        timeout_seconds=self.timeout_seconds,
+                    ).run_review_only_round(
+                        round_number=round_number,
+                        profile=profile,
+                        phase="phase_2",
+                        overwrite=overwrite,
+                    )
             except ValueError:
                 artifact_error = self.config.rounds_dir / "artifact_validation_error.json"
                 if artifact_error.exists():
@@ -731,7 +743,7 @@ class LivePhase2Runner:
             )
             self._append_history(
                 round_number=round_number,
-                profile=profiles[-1],
+                profile=profiles[-1] if profiles else 'phase_2_closeout',
                 before_hash=current_hash,
                 after_hash=current_hash,
                 accepted=True,
@@ -741,7 +753,7 @@ class LivePhase2Runner:
             )
             self._write_state(
                 current_round=round_number,
-                active_profile=profiles[-1],
+                active_profile=profiles[-1] if profiles else 'phase_2_closeout',
                 current_draft_hash=current_hash,
                 last_accepted_draft_hash=last_accepted_draft_hash,
                 terminal_state="CONVERGED",
@@ -775,7 +787,7 @@ class LivePhase2Runner:
         )
         self._write_state(
             current_round=round_number,
-            active_profile=profiles[-1],
+            active_profile=profiles[-1] if profiles else 'phase_2_closeout',
             current_draft_hash=current_hash,
             last_accepted_draft_hash=last_accepted_draft_hash,
             terminal_state="TARGET_NOT_REACHED",
@@ -847,6 +859,11 @@ class LivePhase2Runner:
             unresolved_rubric_gaps_count=rubric_gap_count,
         ):
             raise ValueError("generated convergence declaration failed validation")
+        if bridge_active(self.root, self.config) and declaration_status == "accepted":
+            from whetstone.preservation_consumers import verify_convergence
+            from whetstone.preservation_contracts import require
+            require(declaration == verify_convergence(self.root),
+                    "accepted declaration differs from verified Phase 2 evidence")
         return write_convergence_declaration(self.config.declaration_path, declaration)
 
     def _write_failure_report(
@@ -898,6 +915,9 @@ class LivePhase2Runner:
         terminal_state: str | None,
         declaration_path: Path | None,
     ) -> None:
+        if (hasattr(self,'_preservation_closeout_completed') and
+                self._preservation_closeout_completed >= current_round and terminal_state is None):
+            return
         self.config.rounds_dir.mkdir(parents=True, exist_ok=True)
         phase_2_rounds_completed = max(0, current_round - self.phase_1_rounds_completed)
         review_round_budget = default_phase_1_scheduler(
@@ -953,6 +973,10 @@ class LivePhase2Runner:
             from whetstone.preservation_runtime import state_packet
             previous=state_packet(self.root)
             packet['review_round_budget']=previous.get('review_round_budget',packet['review_round_budget'])
+            if previous.get('budget_extensions'):
+                packet['budget_extensions']=previous['budget_extensions']
+                packet['review_profile_budgets']=previous['review_profile_budgets']
+                packet['effective_run_config']['review_profile_budgets']=previous['review_profile_budgets']
             packet['total_absolute_round_budget']=packet['review_round_budget']+packet['convergence_round_budget']
             packet['resumable']=False  # Generic Phase 2 technical resume is unsupported.
         packet=preserve_state_fields(self.root,self.config,packet)

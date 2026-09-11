@@ -353,7 +353,9 @@ def resume_budget_exhausted_run(
     """Append Phase 1 rounds after a budget-exhausted terminal state."""
 
     if bridge_active(Path(root), config):
-        raise ValueError("CONFIG_INVALID: guarded budget continuation is not yet qualified")
+        from whetstone.preservation_budget import resume
+        return resume(root, config, extend_review_budget=extend_review_budget,
+                      reviewer_client=reviewer_client, editor_client=editor_client, timeout_seconds=timeout_seconds)
     root = Path(root)
     state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
     write_context_pressure_report(
@@ -613,6 +615,9 @@ def plan_budget_extension_resume(
 ) -> ResumePlan:
     """Validate a budget-extension continuation without invoking clients."""
 
+    if bridge_active(Path(root), config):
+        from whetstone.preservation_budget import plan
+        return plan(root, config, extend_review_budget=extend_review_budget)
     _ = Path(root)
     state = _validated_budget_extension_context(config, extend_review_budget=extend_review_budget)
     current_round = int(state["current_round"])
