@@ -78,7 +78,10 @@ def initialize(root: Path, config: OrchestratorConfig, *, overwrite=False):
         state = root/'rounds/run_state.json'
         require(not state.exists(), "CONFIG_INVALID: legacy runs cannot acquire retrospective bridge coverage")
         require(not list(root.glob('rounds/round-*/preservation/attempt-*/admission.json')), "CONFIG_INVALID: initialize guarded runtime before proposal admission")
-        surface = validate_surface_bindings(root, config.preservation_bridge.allowed_change_surface)
+        try:
+            surface = validate_surface_bindings(root, config.preservation_bridge.allowed_change_surface)
+        except (OSError, ValueError) as exc:
+            raise BridgeContractError(f'CONFIG_INVALID: invalid approved change surface: {exc}') from exc
         require(config.scope_contract.path.is_file() and config.scope_contract.path.read_bytes() == read_ref(root, surface.surface['scope_contract']),
                 'CONFIG_INVALID: runtime scope must match the admitted approved scope')
         store._write('rounds/preservation/runtime.json',json_bytes({"mode":"enforce", "capability_version":"preservation-bridge-v1"}))

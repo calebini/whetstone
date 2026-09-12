@@ -26,7 +26,7 @@ Dense inline SVGs scroll horizontally on small screens. Expanded Fit shows the w
 
 Researched against the local package 0.1.0 working tree on 2026-09-08, with unpublished preservation development explicitly distinguished from the published CLI. Sources include the actual CLI, Operator Quickstart, promoted spec family, contracts, runtime modules, and executable fixture.
 
-The guide explicitly distinguishes implemented public workflows, developer preservation components, inactive candidate-safe design, and exploratory/future ideas. Public preservation bridge activation is unavailable in the publishing revision. The optional source-baseline check in strop requires `--expected-source-hash`; the guide does not present it as automatic.
+The guide distinguishes implemented public workflows, the qualified opt-in preservation bridge, inactive candidate-safe design, and exploratory/future ideas. Preservation availability was updated for the activation release; deployment of the site remains a separate publication action. The optional source-baseline check in strop requires `--expected-source-hash`; the guide does not present it as automatic.
 
 The Spine field guide supplied the interaction and verification foundation, plus reusable SVG primitives. All Whetstone product prose and ten diagram compositions were authored for this system. Surface tokens, typography and five themes follow the Cortext1 brand specification 1.1.0. Diagram relationship colors use darker companion colors in the inverted theme for readability; status tokens retain their canonical values.
 

@@ -13,9 +13,12 @@ from typing import Any
 SCHEMA_DIR = Path(__file__).resolve().parents[2] / "contracts" / "schemas"
 
 
-@dataclass(frozen=True)
+@dataclass
 class SchemaValidationError(ValueError):
-    """Raised when an artifact does not satisfy its schema."""
+    """Raised when an artifact does not satisfy its schema.
+
+    Exceptions must allow Python to update traceback/context attributes.
+    """
 
     path: str
     message: str

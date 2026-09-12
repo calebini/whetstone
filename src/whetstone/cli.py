@@ -495,12 +495,12 @@ def main(argv: list[str] | None = None) -> int:
     _add_apply_back_parser(subparsers, "strop", preferred=True)
     _add_apply_back_parser(subparsers, "apply-back", preferred=False)
 
-    bridge_review = subparsers.add_parser("preservation-review", help="inspect an isolated developer proposal and exact line identities")
-    bridge_adopt = subparsers.add_parser("preservation-attest", help="explicitly adopt one grouped effect in an isolated developer root")
+    bridge_review = subparsers.add_parser("preservation-review", help="inspect a retained proposal and exact line identities")
+    bridge_adopt = subparsers.add_parser("preservation-attest", help="explicitly adopt one grouped preservation effect")
     bridge_request = subparsers.add_parser("preservation-request", help="prepare an immutable local acceptance request")
-    bridge_accept = subparsers.add_parser("preservation-accept", help="validate/accept or repair an isolated developer proposal; no model calls")
+    bridge_accept = subparsers.add_parser("preservation-accept", help="validate/accept or repair a retained proposal; no model calls")
     for command in (bridge_review, bridge_adopt, bridge_request, bridge_accept):
-        command.add_argument("--root", required=True, help="isolated developer proposal root; live scheduler roots are unsupported")
+        command.add_argument("--root", required=True, help="preservation-enforced run root or standalone Phase 1 proposal root")
     for command in (bridge_review, bridge_adopt, bridge_request):
         command.add_argument("--proposal", required=True, help="proposal JSON path relative to root")
     for command in (bridge_adopt, bridge_request):

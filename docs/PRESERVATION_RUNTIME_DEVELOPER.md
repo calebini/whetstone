@@ -1,16 +1,16 @@
 # Preservation runtime and continuation checkpoints
 
-This checkpoint connects the two-stage bridge to ordinary and focused horizontal Phase 1 rounds, scheduler continuation and Reviewer-only verification, plus vertical cycles, continuation and closeout recovery, Phase 2 entry maintenance, guarded Phase 2 rounds, explicit Phase 1 budget extensions and bounded Phase 2 closeout. It completes deterministic cross-path qualification within step 4 of slice 18.1. Public `preservation_bridge` configuration remains unavailable pending a separate opt-in activation change. There is no new activation flag, and this document does not authorize a live model run.
+This checkpoint connects the two-stage bridge to ordinary and focused horizontal Phase 1 rounds, scheduler continuation and Reviewer-only verification, plus vertical cycles, continuation and closeout recovery, Phase 2 entry maintenance, guarded Phase 2 rounds, explicit Phase 1 budget extensions and bounded Phase 2 closeout. It completes deterministic cross-path qualification within step 4 of slice 18.1. Public `preservation_bridge` configuration is enabled by [explicit opt-in](PRESERVATION_ACTIVATION.md) for fresh isolated roots. There is no new activation flag, and this document does not authorize a live model run.
 
 ## Implemented behavior
 
-The runtime adapter initializes a fresh isolated root, checks that its runtime scope matches the approved surface's scope, and records its enforced identity. It refuses legacy conversion, downgrade and overwrite. Fixtures construct `PreservationBridgeConfig` programmatically; production config loading continues to reject the reserved capability.
+The runtime adapter initializes a fresh isolated root, checks that its runtime scope matches the approved surface's scope, and records its enforced identity. It refuses legacy conversion, downgrade and overwrite. Earlier fixtures construct `PreservationBridgeConfig` programmatically; public activation tests additionally load real YAML through the normal CLI, with only client transports scripted.
 
 Before calling the Editor, a round freezes the actual configuration, scheduler context, Editor prompt, resolved timeout and exact Reviewer evidence. The adapter captures the raw Editor body without canonicalizing it or retrying malformed output. Supplied revisions are retained before their summary call, under the same writer exclusion. Trusted materialization and preliminary assessment use the existing proposal service.
 
 A pending proposal produces `PAUSED_DECISION`; a known failure halts. Neither creates authoritative `draft_after.md`, an accepted Editor summary, accepted history, or a changed `spec.md`. Soft budgets and end-of-cycle decision presentation do not override this hold. Unchanged eligible output commits through the same acceptance service, with no Editor invocation for an empty Reviewer result.
 
-The existing local review, effect-adoption, request and acceptance commands select the runtime adapter for a retained developer runtime root. Approval validates the frozen ordinary serious-issue and decision gates as well as preservation. It stops after committing or repairing that operation. It never invokes the next Reviewer/Editor, refreshes resolution claims, or charges another review round. A completion record retains the original Reviewer counts separately from unresolved issues; effect approval cannot turn a serious Reviewer result into a clean profile.
+The existing local review, effect-adoption, request and acceptance commands select the runtime adapter for a retained enforced runtime root. Approval validates the frozen ordinary serious-issue and decision gates as well as preservation. It stops after committing or repairing that operation. It never invokes the next Reviewer/Editor, refreshes resolution claims, or charges another review round. A completion record retains the original Reviewer counts separately from unresolved issues; effect approval cannot turn a serious Reviewer result into a clean profile.
 
 Marker recovery verifies and repairs canonical drafts, summaries, Reviewer evidence, decision output, history, run-state acceptance pointers and completion accounting. Another admission and downstream consumers remain blocked until repair finishes. Conflicting scheduler state is refused rather than overwritten. Replaying acceptance does not duplicate history or round accounting.
 
@@ -30,7 +30,7 @@ Phase 2 entry, direct version promotion and declaration creation check preservat
 
 ## Vertical cycles and recovery
 
-The existing vertical scheduler can now collect profile sweeps in a fresh developer guarded root and continue subsequent cycles within the original profile budgets. Each source review has an immutable `vertical_source` input and completion receipt, observes the cycle’s exact admitted base, and creates no acceptance or accepted-history entry. Original profile names, round numbers, findings and hashes remain intact.
+The existing vertical scheduler can now collect profile sweeps in a fresh guarded root and continue subsequent cycles within the original profile budgets. Each source review has an immutable `vertical_source` input and completion receipt, observes the cycle’s exact admitted base, and creates no acceptance or accepted-history entry. Original profile names, round numbers, findings and hashes remain intact.
 
 Before consolidated Editor execution, the adapter validates every source receipt and recomputes the merged feedback with the scheduler's existing profile-prefixed identifiers. The proposal retains the merged Reviewer artifact first, followed by all original source artifacts; the frozen configuration binds their ordered `vertical_review_sources` receipt Refs. Admission, materialization and acceptance validate this topology. Ordinary issue checks consume the verified merge once, retaining unrelated serious findings without counting the source copies twice. The first consolidated round follows the source rounds, without consuming another profile-review call.
 
@@ -95,6 +95,6 @@ Retained maintenance evidence: `rounds/preservation-maintenance-checkpoint-001/R
 
 Retained budget/closeout evidence: `rounds/preservation-budget-closeout-checkpoint-001/RESULTS.md` and `results.json` record focused extension through corrective acceptance, bounded Phase 2 timeout recovery, and the complete validation accounting. Raw main-run and rerun logs are retained alongside them.
 
-Step 4 cross-path qualification is complete for the developer bridge. The public activation switch remains off for a separate release change; this does not enable generic Phase 2 resume or vNext.
+Step 4 cross-path qualification and public opt-in activation are complete. This does not enable generic Phase 2 resume or vNext.
 
 The [qualification evidence map](PRESERVATION_QUALIFICATION.md) links each integrated criterion to its tests and records the joined operator, CLI, grant and final-consumer journeys. Retained roots and effect displays: `rounds/preservation-qualification-001/RESULTS.md` and `results.json`.

@@ -70,10 +70,11 @@ class RuntimeConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'CONFIG_INVALID'):load_config(self.root/'orchestrator_config.yaml')
         with self.assertRaises(BridgeContractError):guard_consumer(self.root)
 
-    def test_public_config_remains_unavailable_until_full_qualification(self):
+    def test_unqualified_release_refuses_public_config(self):
         config=self.root/'orchestrator_config.yaml'
         config.write_text('preservation_bridge:\n  mode: enforce\n  capability_version: preservation-bridge-v1\n')
-        with self.assertRaisesRegex(ValueError,'qualification is incomplete'):load_config(config)
+        with patch('whetstone.config.PRESERVATION_BRIDGE_QUALIFIED',False):
+            with self.assertRaisesRegex(ValueError,'qualification is incomplete'):load_config(config)
 
 
 if __name__=='__main__':unittest.main()

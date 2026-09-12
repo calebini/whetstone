@@ -66,8 +66,9 @@ class ReferenceContextFileConfig:
     required: bool
 
 
-# Remains false until the complete integrated qualification suite passes.
-PRESERVATION_BRIDGE_QUALIFIED = False
+# Qualified current-runtime paths: docs/PRESERVATION_QUALIFICATION.md.
+# Availability does not enable enforcement without an explicit configuration block.
+PRESERVATION_BRIDGE_QUALIFIED = True
 
 
 @dataclass(frozen=True)
@@ -94,7 +95,7 @@ def root_declares_bridge(root: Path) -> bool:
 
 
 def parse_preservation_bridge(value: Any) -> PreservationBridgeConfig:
-    from whetstone.contracts import SchemaRegistry
+    from whetstone.contracts import SchemaRegistry, SchemaValidationError
     if not isinstance(value, dict) or set(value) - {"mode", "capability_version", "allowed_change_surface", "predecessor_report"}:
         raise ValueError("CONFIG_INVALID: invalid preservation bridge fields")
     if value.get("mode") != "enforce" or value.get("capability_version") != "preservation-bridge-v1":
@@ -104,7 +105,10 @@ def parse_preservation_bridge(value: Any) -> PreservationBridgeConfig:
         ref = value.get(name)
         if ref is None and name == "predecessor_report":
             continue
-        registry._validate(ref, {"$ref": "preservation_bridge.schema.json#/$defs/ref"}, "$")
+        try:
+            registry._validate(ref, {"$ref": "preservation_bridge.schema.json#/$defs/ref"}, "$")
+        except SchemaValidationError as exc:
+            raise ValueError(f"CONFIG_INVALID: invalid {name}: {exc}") from exc
         path = Path(ref["path"])
         if path.is_absolute() or ".." in path.parts:
             raise ValueError("CONFIG_INVALID: bridge references must be confined relative paths")
@@ -326,6 +330,8 @@ def _parse_simple_yaml(text: str) -> dict[str, Any]:
         while stack and indent <= stack[-1][0]:
             stack.pop()
         current = stack[-1][1]
+        if key in current:
+            raise ValueError(f"CONFIG_INVALID: duplicate configuration key: {key}")
         if value.strip() == "":
             child: dict[str, Any] = {}
             current[key] = child
@@ -336,6 +342,8 @@ def _parse_simple_yaml(text: str) -> dict[str, Any]:
 
 
 def _parse_scalar(value: str) -> Any:
+    if value in {"null", "Null", "NULL", "~"}:
+        return None
     if value in {"true", "True"}:
         return True
     if value in {"false", "False"}:

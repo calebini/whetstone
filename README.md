@@ -43,6 +43,7 @@ Whetstone currently supports:
 - Workflow presets for `exploratory`, `mvp`, `standard`, `governance`, and `custom` runs.
 - Review profile sets for stateful systems, lighter MVP utilities, and governance-heavy specs.
 - Horizontal and vertical review modes.
+- [Explicit preservation enforcement](docs/PRESERVATION_ACTIVATION.md) with bounded change surfaces, exact-effect review and local acceptance before draft installation.
 - MVP scope intake with approved `scope_contract.json`.
 - Decision point capture and end-of-cycle decision summaries.
 - Operator decision checkpoint artifacts.

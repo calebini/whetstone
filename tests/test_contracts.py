@@ -13,6 +13,17 @@ CONFLICT_ID = "con_bbbbbbbbbbbbbbbb"
 
 
 class ContractValidationTests(unittest.TestCase):
+    def test_schema_error_survives_context_manager_unwinding(self) -> None:
+        from contextlib import contextmanager
+
+        @contextmanager
+        def operation():
+            yield
+
+        with self.assertRaisesRegex(SchemaValidationError, 'expected const True'):
+            with operation():
+                raise SchemaValidationError('$.approval.approved', 'expected const True')
+
     def test_reviewer_feedback_validates(self) -> None:
         artifact = {
             "round_number": 1,
