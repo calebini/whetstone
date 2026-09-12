@@ -2,11 +2,11 @@
 
 Status: vNext design draft
 
-Version: `0.4`
+Version: `0.5`
 
 Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
 
-The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications. Version `0.4` amends only the bridge to separate proposal/acceptance admission and define explicit correspondence; the vNext protocol remains non-operative.
+The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications. Version `0.4` amended only the bridge to separate proposal/acceptance admission and define explicit correspondence. Version `0.5` closes the vNext D6 job-identity and contract-suite-manifest policy; the vNext protocol remains non-operative.
 
 ## Purpose
 
@@ -245,7 +245,30 @@ source_spec:
   expected_hash: sha256 | null
 ```
 
-`job_id` MUST be deterministic from the canonical job inputs and MUST exclude timestamps. A job descriptor MUST NOT be mutated after the first review attempt. Changed job inputs require a new descriptor and new `job_id`.
+`job_id` MUST equal `job_` plus the full lowercase hexadecimal SHA-256 of the
+UTF-8 bytes of canonical JSON for this ordered array:
+
+```json
+["whetstone-job-id-v1","job-descriptor-v2",editing_mode,contract_suite_version,contract_suite_digest,parser_contract_version,assembler_version,inventory_version,normalization_version,semantic_verifier_policy_version,seed_draft_hash,authority_map_hash,scope_contract_hash_or_null,protected_invariants_hash,review_configuration_hash,source_expected_hash_or_null]
+```
+
+Canonical JSON uses the descriptor-bound normalization version, UTF-8, no BOM,
+compact separators, and unescaped Unicode. The named values are exact scalar
+values or hashes from the descriptor; path strings and `created_at` are excluded.
+`contract_suite_digest` is the validated digest of the suite manifest named by
+`contract_suite_version`. A job descriptor MUST NOT be mutated after the first
+review attempt. Changed canonical job inputs require a new descriptor and new
+`job_id`; changed paths with byte-identical validated content do not.
+
+Every other content-derived public vNext identifier MUST use a schema-owned ASCII
+type prefix followed by `_` and the full 64-character lowercase SHA-256 digest of
+that schema's versioned canonical preimage. Each owning schema MUST publish its
+domain-separation label, ordered preimage and prefix; truncated hashes and
+machine-specific absolute paths are forbidden. Within one job, one identifier
+MUST resolve to one byte-identical canonical preimage and one artifact role. A
+duplicate with an identical preimage is replay; the same identifier with a
+different preimage or role is an identity collision and MUST fail closed before
+authority advances.
 
 The descriptor-bound `parser_contract_version`, `assembler_version`, `inventory_version`, and `normalization_version` are the only versions permitted for section identity, candidate identity, candidate assembly, deterministic validation, and resume or replay within the job. An implementation default, installed latest version, or retry-time override MUST NOT replace a descriptor-bound version.
 
@@ -1420,6 +1443,25 @@ Apply-back is permitted only when:
 Manual recovery flags MUST NOT relabel an unverified candidate as verified. A manual operator may export unverified material for inspection, but such export is not Whetstone apply-back and MUST be clearly reported as outside the verified promotion path.
 
 ## Public Contract Suite
+
+The suite is identified by a closed `whetstone-contract-suite-manifest-v1`
+artifact. Its required fields are `schema_version`, `suite_version`,
+`canonical_json_version`, sorted-unique `schemas`, sorted-unique `algorithms`,
+sorted-unique `fixtures`, and `suite_digest`. Schema entries contain logical
+repo-relative name, contract version, path and SHA-256. Algorithm entries contain
+logical name, version, normative specification path and SHA-256. Fixture entries
+contain logical name, kind (`positive` or `negative`), path, SHA-256 and expected
+result. Paths MUST be relative logical package paths, never host paths.
+
+`suite_digest` is SHA-256 over canonical JSON of the complete manifest with only
+`suite_digest` omitted, using `canonical_json_version`. The supported-suite
+registry MUST bind `suite_version` to exactly one `suite_digest`. Support matching
+requires the version, digest, every transitive file digest, and every required
+positive and negative fixture result to match. An unknown version, digest drift,
+missing or extra required entry, duplicate logical name, unsupported algorithm,
+fixture mismatch, or one version resolving to different bytes MUST fail before a
+vNext job descriptor is admitted. A changed manifest body is a new suite identity
+and cannot be presented under the old version.
 
 Before `verified_promotion` is considered stable, Whetstone MUST publish, version-pin, validate, and contract-test schemas for:
 

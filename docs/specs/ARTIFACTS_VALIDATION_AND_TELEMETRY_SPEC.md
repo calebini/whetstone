@@ -11,6 +11,24 @@ target_spec_role: leaf_spec
 
 ## ARTIFACT SCHEMAS (MINIMUM REQUIRED FIELDS)
 
+### vNext identity and suite-manifest invariant
+
+All public vNext artifacts MUST obey the exact D6 identity rules in the candidate
+leaf. The artifact schema owning an identifier MUST define its ASCII type prefix,
+versioned domain-separation label, ordered canonical preimage and collision role.
+The validator MUST recompute identities rather than trust client-supplied hashes.
+Full 256-bit digests are retained; timestamp fields and machine-specific absolute
+paths MUST NOT enter an identity preimage.
+
+The public contract suite MUST include a closed
+`whetstone-contract-suite-manifest-v1` schema and validators for its schema,
+algorithm and fixture entries. Validation order is: validate the manifest shape;
+recompute its digest; match the supported version-and-digest pair; validate every
+referenced file digest and algorithm version; execute or inspect every required
+conformance vector; then admit descriptor or artifact validation. Schema-valid
+artifacts from an unrecognized or partially matching suite remain unsupported.
+Client output MUST NOT choose, rewrite or weaken the supported-suite registry.
+
 `reviewer_feedback.json` MUST contain:
 
 ```yaml

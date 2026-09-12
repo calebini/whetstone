@@ -23,6 +23,12 @@ Version `0.71` closes the D1-D5 current-runtime preservation bridge contract acr
 
 Version `0.72` revises that pending bridge to separate proposal admission from exact-effect acceptance, define explicit predecessor/successor correspondence, and permit immutable same-root acceptance re-admission. It preserves D1-D5 safety policies while superseding their earlier single-admission/fresh-root workflow. Neither bridge nor vNext is activated by this amendment.
 
+Version `0.73` closes D6 for the still-inactive vNext family: job identity is a
+full digest of an exact canonical, path-independent preimage, public artifact
+identifiers are type-prefixed full digests with schema-owned preimages, and a
+version is supported only through one digest-pinned contract-suite manifest.
+This does not activate a vNext editing mode.
+
 ---
 
 ## Spec Family Map
@@ -144,6 +150,13 @@ Candidate-safe vNext reserves these additional authoritative inputs, but they ar
 - `authority_map.json`
 - `protected_invariants.json`
 - hash-bound scope contracts, operator decisions, and source-spec expectations referenced by the job descriptor
+
+The descriptor's `job_id` and contract-suite binding MUST follow the exact D6
+preimage, grammar, collision and manifest rules in the candidate and artifact
+leaves. Configuration names a supported suite version; it MUST NOT substitute a
+local path, installed-latest alias, or caller-provided digest for the registry's
+single version-and-digest binding. Suite validation and job-ID recomputation occur
+before any client invocation or authoritative write.
 
 ---
 
