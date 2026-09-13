@@ -29,7 +29,7 @@ identifiers are type-prefixed full digests with schema-owned preimages, and a
 version is supported only through one digest-pinned contract-suite manifest.
 This does not activate a vNext editing mode.
 
-The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). D7 is now specified below and awaits its staged consistency audit; runtime admission remains gated on that audit and the later implementation slices.
+The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). D7 is specified below and its [bounded consistency audit](../audits/VNEXT_D7.md) passed with zero findings; runtime admission remains gated on the later implementation slices.
 
 ---
 

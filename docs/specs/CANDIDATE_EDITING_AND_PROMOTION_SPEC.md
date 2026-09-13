@@ -217,7 +217,7 @@ Whole-document replacement MUST be disabled in all three modes. A future manual-
 
 ### D7 Scheduler Binding
 
-Version `0.7` binds these modes to the [coordinating selection/capability contract](WHETSTONE_COORDINATING_SPEC.md#vnext-admission-and-capability-negotiation-d7) and the [scheduler processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7). Those amendments resolve D7's design; their staged audit and implementation gates remain open. This does not modify the frozen `vnext-contracts-1` bytes or activate a mode.
+Version `0.7` binds these modes to the [coordinating selection/capability contract](WHETSTONE_COORDINATING_SPEC.md#vnext-admission-and-capability-negotiation-d7) and the [scheduler processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7). Those amendments resolve D7's design; their [bounded consistency audit](../audits/VNEXT_D7.md) passed with zero findings. Implementation gates remain open. This does not modify the frozen `vnext-contracts-1` bytes or activate a mode.
 
 Reviewer-only admission requires a validated immutable seed, seed section map, ordinal-0 history snapshot and matching current pointer before review. The seed is not a registered candidate and receives no candidate-verification or promotion event. Slice 18.3 must implement/qualify this seed-only initialization subset before advertising R; section transfer, patch assembly and registration remain later slices. All later authority changes follow this leaf's full protocol.
 

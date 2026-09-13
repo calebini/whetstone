@@ -1,6 +1,6 @@
 # D7 consistency audit staging
 
-Status: design resolved in the owning specs; bounded consistency audit **staged, not run**. This is not an audit verdict, runtime qualification or activation of slice 18.3.
+Historical staging record. The bounded consistency audit subsequently **passed with zero findings**; see the [completed audit record](VNEXT_D7.md). The preparation details below describe the packet before execution and do not activate slice 18.3.
 
 The [coordinating amendment](../specs/WHETSTONE_COORDINATING_SPEC.md#vnext-admission-and-capability-negotiation-d7) owns descriptor selection, CLI/config conflict rules, mode availability and diagnostic reasons. The [scheduler amendment](../specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns the processing transition table, failed gates, operator waiting, retry limits and continuation. Candidate, artifact and scope leaves align finality, evidence and decision routing with those rules.
 
