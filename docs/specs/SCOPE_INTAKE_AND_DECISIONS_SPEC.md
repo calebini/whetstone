@@ -68,6 +68,12 @@ approval:
 
 `whetstone intake --template mvp --output scope-notes.md` MUST produce a human-editable scope notes template. `whetstone intake --from-notes scope-notes.md` MUST produce a schema-valid scope contract. Unless `--approve` is supplied, generated contracts MUST remain `status = draft` and MUST NOT satisfy the MVP preflight requirement.
 
+## vNext Decision Routing (D7)
+
+For prospective vNext only, the [D7 processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) routes a concrete unresolved product, scope or authority choice to `PAUSED_DECISION`. The candidate leaf's Operator Decision Response contract owns exact request/response, base, authority and scope bindings; a generic decision checkpoint is not a substitute. Prior to proposal admission, a validated response may enable a new immutable mutation plan. A valid Semantic Verifier operator-decision verdict finally rejects its candidate; later operator input requires a new transaction and both verification layers, never retroactive candidate approval. Invalid/missing verifier output is a technical failure and cannot fabricate an operator choice.
+
+Changed descriptor-bound authority, scope, invariant or review inputs require a new job/root. A same-job decision may authorize a new transaction only while its exact base and other bindings remain valid. Operator silence, declined choices and budget exhaustion do not grant authority. D7 does not change the current-runtime bridge's post-proposal evidence-adoption workflow or activate vNext.
+
 ## Bridge Operator Authority
 
 This section specifies the pending two-stage `preservation-bridge-v1` contract. It does not activate current runtime enforcement or vNext promotion. The [candidate leaf](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#current-runtime-preservation-bridge) owns preservation policy; the [artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#current-runtime-preservation-bridge-contracts) owns admission, proposal, request and report formats.

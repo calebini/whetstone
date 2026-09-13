@@ -2,7 +2,7 @@
 
 Status: vNext design draft
 
-Version: `0.6`
+Version: `0.7`
 
 Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
 
@@ -214,6 +214,14 @@ Whole-document replacement MUST be disabled in all three modes. A future manual-
 - the current verified draft remains unchanged until the replacement passes the same deterministic and semantic gates;
 - the terminal report identifies the recovery path and approving operator;
 - automatic retries cannot select the recovery path.
+
+### D7 Scheduler Binding
+
+Version `0.7` binds these modes to the [coordinating selection/capability contract](WHETSTONE_COORDINATING_SPEC.md#vnext-admission-and-capability-negotiation-d7) and the [scheduler processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7). Those amendments resolve D7's design; their staged audit and implementation gates remain open. This does not modify the frozen `vnext-contracts-1` bytes or activate a mode.
+
+Reviewer-only admission requires a validated immutable seed, seed section map, ordinal-0 history snapshot and matching current pointer before review. The seed is not a registered candidate and receives no candidate-verification or promotion event. Slice 18.3 must implement/qualify this seed-only initialization subset before advertising R; section transfer, patch assembly and registration remain later slices. All later authority changes follow this leaf's full protocol.
+
+Candidate disposition and run terminal state are independent. A valid semantic operator-decision verdict produces a final rejected candidate while the run pauses for the decision. Missing/invalid/timed-out semantic output instead leaves an unverified candidate with no fabricated semantic verdict. Final rejection requires a new transaction; final verification permits only mode-appropriate promotion or inspection. No scheduler transition may reopen a final verification decision.
 
 ## Versioned Job Descriptor
 
@@ -1298,7 +1306,7 @@ Every retry MUST preserve:
 - precise validation or verification feedback;
 - monotonically increasing attempt numbers.
 
-Retry limits MUST be configurable and hard-bounded. Exhaustion MUST stop rather than promote a structurally dubious or semantically uncertain candidate.
+Retry limits MUST be hard-bounded and cannot be raised above the ratified policy by configuration. The initial D7 policy permits at most one automatic client shape-validation retry and zero automatic patch/preservation/semantic repair proposals. Configurable limits may narrow that allowance, never enlarge it. The repair descriptions above constrain explicitly admitted future repair work; they are not authorization for an automatic repair loop. The scheduler's D7 continuation rules distinguish technical attempts, new transactions and changed-job admission. Exhaustion MUST stop rather than promote a structurally dubious or semantically uncertain candidate.
 
 ## Resume And Replay
 

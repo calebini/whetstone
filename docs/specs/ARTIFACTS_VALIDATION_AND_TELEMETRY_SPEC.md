@@ -696,6 +696,10 @@ Validation retry policy:
 
 Guarded Editor attempts are the exception: deterministic schema/content/preservation/binding failures receive no automatic validation retry. Only explicitly classified transient technical failures may use the remaining technical retry allowance under identical frozen admission inputs; timeouts still do not retry automatically. The [bridge lifecycle](SCHEDULER_STATE_AND_RESUME_SPEC.md#preservation-bridge-lifecycle) owns exact classification, pausing and continuation. Reviewer artifact retry behavior is unchanged; it cannot refresh an already frozen Editor admission.
 
+For prospective vNext jobs, the [D7 scheduler contract](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) specializes this policy: at most one shape-validation retry per logical client request across restarts, zero automatic repair proposals for patch/preservation/semantic failures, and zero automatic timeout or transport/persistence retries. Valid semantic rejection and a valid operator-decision verdict are not malformed client output. A missing/invalid semantic result cannot create a final rejected or verified decision. Persist only decisions whose required deterministic evidence exists; derive effective disposition through the candidate leaf's commit bindings. This does not change the current bridge's retry exception.
+
+The [D7 capability diagnostic block](WHETSTONE_COORDINATING_SPEC.md#vnext-admission-and-capability-negotiation-d7) is a separate 18.3 publication obligation, not an extra field permitted in existing frozen descriptor/terminal schemas. Pre-initialization failures emit diagnostics without fabricated seed/current-pointer lineage. After initialization, terminal-report-v2 must validate its bound current authority; read failures are reported explicitly rather than substituting cached paths or unbound candidate evidence.
+
 If the retry validates, the Orchestrator continues with the validated artifact.
 
 If the retry fails, the Orchestrator MUST halt with `HALTED_ARTIFACT_INVALID` and produce `/rounds/artifact_validation_error.json`.

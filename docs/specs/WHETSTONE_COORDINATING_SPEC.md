@@ -29,7 +29,7 @@ identifiers are type-prefixed full digests with schema-owned preimages, and a
 version is supported only through one digest-pinned contract-suite manifest.
 This does not activate a vNext editing mode.
 
-The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). Runtime admission remains gated by D7 and the later implementation slices.
+The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). D7 is now specified below and awaits its staged consistency audit; runtime admission remains gated on that audit and the later implementation slices.
 
 ---
 
@@ -82,6 +82,51 @@ For a particular new job, candidate-safe automatic promotion becomes operative o
 - `verified_promotion` is explicitly selected for a new job whose immutable descriptor binds that supported contract suite.
 
 Until every condition holds, `verified_promotion` MUST be unavailable, a configuration value or artifact that claims otherwise is invalid, current runtime behavior remains governed by the existing operative spec family, and reviewer-only operation remains the safe default for valuable or unfamiliar specifications.
+
+### vNext Admission And Capability Negotiation (D7)
+
+D7 defines the prospective admission and scheduler contract; it does not advertise implemented vNext commands. The [scheduler's processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns transitions, failure outcomes, retries and continuation. Candidate evidence/finality and D6 identity remain owned by the candidate leaf. D8's storage protocol and the full promotion release gate remain separate prerequisites.
+
+The reserved 18.3 selection surface is a closed `vnext` configuration block:
+
+```yaml
+vnext:
+  job_descriptor: {path: inputs/job_descriptor.json, hash: <exact canonical file SHA-256>}
+  review_configuration: {path: inputs/review_configuration.json, hash: <exact canonical file SHA-256>}
+```
+
+Both references are required; unknown or duplicate keys and null blocks reject. The prospective CLI equivalents are `--vnext-job-descriptor PATH` and `--vnext-review-configuration PATH`, supplied together; their exact canonical file hashes are computed locally. If both CLI and config supply a selector, they MUST identify byte-identical files for each role. Neither wins silently; disagreement is `vnext_selection_conflict`. Descriptor locators may differ while resolving to identical bytes. Paths resolve relative to the selected isolated root and obey the published confinement rules. The CLI option names are reserved for 18.3, not commands available in the 18.2 release.
+
+The immutable descriptor alone selects mode, suite and algorithm versions. `reviewer_only` is the default when preparing a new vNext descriptor, never an implicit fill-in for a malformed persisted descriptor; its required `editing_mode` remains explicit. Selection does not rewrite the descriptor. There is no independent mode override or caller-selected suite digest. Changing the descriptor for an existing root is a refusal, even if the replacement happens to derive the same job ID. Switching mode requires a fresh job/root.
+
+Protocol selection and precedence are exact:
+
+1. With no vNext selector, new invocations retain existing legacy/bridge behavior. Existing vNext root markers force vNext validation or explicit refusal; omitting its selector cannot run the legacy writer over it. File presence does not establish a valid or supported vNext capability.
+2. A vNext selector combined with `preservation_bridge`, legacy supplied-revision/full-draft Editor controls, direct-apply controls or an incompatible command is rejected, never merged. Shared transport configuration is permitted only for binding the required clients; client identity must match the pinned review configuration. It cannot enable unused roles.
+3. Explicit shared workflow, review mode, profile set, per-profile budgets, scope or reference-context settings must match the descriptor-bound inputs where those settings are represented. Omitted settings use pinned inputs, not legacy defaults. Additional context requires an authority binding. Legacy controls that change vNext scheduling, convergence, mutation, decisions or recovery and have no ratified vNext binding are rejected as unsupported; they are not silently inherited. Transport timeouts may use explicit operational settings without changing identity or authorization, and are recorded per attempt.
+4. An existing legacy/bridge root cannot be upgraded in place. Fresh-root admission may contain prepared input files but no prior runtime state, committed job or candidate/pointer history. Continued vNext work must match its frozen descriptor and exact input bindings and validate lineage before proceeding.
+5. Resolve the suite through the implementation's exact D6 registry, then check the separate implemented mode/gate matrix. Supporting `vnext-contracts-1` offline does not admit any mode. R requires the complete 18.3 admission/seed/review subflow; P requires qualified 18.5 plus applicable D8 storage support; semantic verification additionally requires 18.6; V requires the full activation gate. An explicit request for an unavailable gate fails, never downgrades. Ordinary P execution may reach its documented bounded inspection endpoint when later gates are unavailable.
+
+Preflight is read-only until all required configuration, contract, input and capability checks pass. It MUST invoke no client, create no seed pointer, or rewrite inputs on failure. A rejected invocation may emit diagnostic output or a diagnostic file in an explicitly selected output location; it must not overwrite an existing run's authority or history. Runtime writes remain gated by exclusive ownership and validated lineage after preflight.
+
+Status and configuration diagnostics expose `protocol` (`legacy`, `preservation_bridge`, or `vnext`) and, for vNext, a derived `vnext` block with: `requested_mode` (nullable until descriptor validation), `contract_suite_version` and `suite_digest` (nullable until suite validation), sorted `available_modes`, sorted `available_gates` for the requested mode, `requested_gate`, `admitted`, `reason_code`, `reason`, and `next_action`. Gate labels are the scheduler's `processing_gate` vocabulary. Availability means implemented release capability; admission additionally requires this root's inputs and lineage. These are diagnostic fields, not additions to the frozen job descriptor or `vnext-contracts-1` schemas. Slice 18.3 must publish the matching diagnostic/config contracts separately, without changing the pinned suite under its existing version.
+
+The first failing check determines `reason_code` in this order; retain the actual field/path and additional diagnostic causes:
+
+| Check | Reason code | Next action |
+|---|---|---|
+| Malformed selectors, duplicate/unknown keys or unsupported controls | `vnext_config_invalid` | `repair_configuration` |
+| Mixed protocols or CLI/config disagreement | `vnext_selection_conflict` | `repair_configuration` |
+| Prior legacy/bridge state or reused initialization root | `vnext_root_incompatible` | `new_isolated_root` |
+| Descriptor schema invalid or a supplied setting contradicts its pinned selection | `vnext_descriptor_invalid` / `vnext_mode_mismatch` | `repair_configuration` for fresh admission; `new_isolated_root` for a changed admitted descriptor |
+| Unknown/drifted suite, unsupported version or failed conformance | `vnext_suite_unsupported` | `use_supported_implementation` |
+| Missing, changed, unapproved or inconsistent bound input | `vnext_input_invalid` | `repair_inputs` before admission; new identity/root if admitted inputs change |
+| Selected mode lacks a qualified subflow | `vnext_mode_unavailable` | `use_supported_implementation` |
+| Requested later gate lacks implementation in that mode | `vnext_gate_unavailable` | `inspect_available_work` |
+| Existing vNext lineage invalid or ownership unavailable | `vnext_lineage_invalid` / `vnext_ownership_unavailable` | `inspect_evidence` / `retry_after_owner_exit` |
+| All applicable checks pass | `none` | `run_requested_gate` |
+
+Fresh-admission failures above use `CONFIG_INVALID`; invalid committed lineage uses `HALTED_ARTIFACT_INVALID`. Ownership refusal is an invocation diagnostic and does not overwrite the active owner's run state. Read-only status reports the failure without choosing guessed authority. Mode/gate support must be checked before attempting to load a nonexistent optional client; an unused Editor/Verifier transport is not a requirement of reviewer-only admission.
 
 ### Preservation Bridge Activation
 
