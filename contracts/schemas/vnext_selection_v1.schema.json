@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-selection-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "job_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "review_configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    }
+  },
+  "required": [
+    "job_descriptor",
+    "review_configuration"
+  ],
+  "x-whetstone": {
+    "producer": "orchestrator",
+    "consumer": "vnext-runtime",
+    "version": "vnext-selection-v1",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate from frozen vnext-contracts-1"
+  }
+}

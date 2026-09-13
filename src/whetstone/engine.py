@@ -41,6 +41,8 @@ class FixtureEngine:
     """Drive Phase 1 and Phase 2 from scripted fixture artifacts."""
 
     def __init__(self, root: Path | str, config: OrchestratorConfig | None = None) -> None:
+        from whetstone.vnext_admission import reject_legacy_writer
+        reject_legacy_writer(root)
         self.root = Path(root)
         self.config = config or OrchestratorConfig.default(self.root)
         self.runner = FixtureRunner(self.root, self.config)

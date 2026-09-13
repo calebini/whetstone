@@ -42,6 +42,8 @@ def apply_back(
     """Review or apply, holding the guarded run's writer exclusion through consumption."""
     from contextlib import nullcontext
     from whetstone.preservation_runtime import active, acceptance_service
+    from whetstone.vnext_admission import reject_legacy_writer
+    reject_legacy_writer(run_root)
     root = Path(run_root)
     lock = acceptance_service(root)._lock() if apply and active(root) else nullcontext()
     with lock:
@@ -64,6 +66,8 @@ def _apply_back(
     """Create an apply-back review, optionally writing the final draft to the source spec."""
 
     source = Path(source_path)
+    from whetstone.vnext_admission import reject_legacy_writer
+    reject_legacy_writer(run_root)
     root = Path(run_root)
     from whetstone.preservation_runtime import active, guard_consumer
     guard_consumer(root)

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-review-receipt-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "serious_issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "path",
+          "hash"
+        ]
+      }
+    },
+    "clean": {
+      "type": "boolean"
+    },
+    "attempt_count": {
+      "enum": [
+        1,
+        2
+      ]
+    }
+  },
+  "required": [
+    "job_id",
+    "round_number",
+    "profile",
+    "base_hash",
+    "feedback",
+    "serious_issue_ids",
+    "decisions",
+    "clean",
+    "attempt_count"
+  ],
+  "x-whetstone": {
+    "producer": "orchestrator",
+    "consumer": "vnext-runtime",
+    "version": "vnext-review-receipt-v1",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate from frozen vnext-contracts-1"
+  }
+}

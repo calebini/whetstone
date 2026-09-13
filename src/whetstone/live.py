@@ -70,6 +70,8 @@ class LiveRoundRunner:
         editor_client: EditorClient | None = None,
         timeout_seconds: int | None = None,
     ) -> None:
+        from whetstone.vnext_admission import reject_legacy_writer
+        reject_legacy_writer(root)
         self.root = Path(root)
         self.config = config
         self.store = ArtifactStore(self.root)

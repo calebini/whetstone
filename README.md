@@ -287,6 +287,7 @@ That artifact trail is the product. It lets a human or another agent ask: what c
 - [Spec Decomposition Manifest](docs/decomposition/decomposition_manifest.json)
 - [Implementation Plan](IMPLEMENTATION_PLAN.md)
 - [Offline vNext Contracts](docs/VNEXT_CONTRACTS.md)
+- [vNext Reviewer-Only Admission](docs/VNEXT_ADMISSION.md)
 - [Future Improvements](notes/future-improvements.md)
 
 ## Repository Map

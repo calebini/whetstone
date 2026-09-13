@@ -65,6 +65,8 @@ class LivePhase1Runner:
         completion_ready_for_phase_2: bool = True,
         timeout_seconds: int | None = None,
     ) -> None:
+        from whetstone.vnext_admission import reject_legacy_writer
+        reject_legacy_writer(root)
         self.root = Path(root)
         self.config = config
         self.reviewer_client = reviewer_client

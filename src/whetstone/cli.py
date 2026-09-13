@@ -520,7 +520,18 @@ def main(argv: list[str] | None = None) -> int:
     bridge_accept.add_argument("--request", required=True, help="immutable acceptance request path relative to root")
     bridge_accept.add_argument("--dry-run", action="store_true", help="read-only validation; creates no admission, marker or lock file")
 
+    vnext_admit = subparsers.add_parser("vnext-admit", help="validate or initialize a qualified isolated vNext job")
+    vnext_admit.add_argument("--root", default=".")
+    vnext_admit.add_argument("--config", default="orchestrator_config.yaml")
+    vnext_admit.add_argument("--dry-run", action="store_true", help="validate without writing initialization artifacts")
+    for child in subparsers.choices.values():
+        child.add_argument("--vnext-job-descriptor", help="immutable vNext descriptor path relative to root")
+        child.add_argument("--vnext-review-configuration", help="immutable vNext review configuration path relative to root")
     args = parser.parse_args(argv)
+    from whetstone.vnext_cli import dispatch
+    handled = dispatch(args)
+    if handled is not None:
+        return handled
     if args.command.startswith("preservation-"):
         from dataclasses import asdict
         from whetstone.preservation_runtime import acceptance_service

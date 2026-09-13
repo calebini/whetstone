@@ -27,6 +27,8 @@ class FixtureRunner:
     """Run one deterministic round from fixture reviewer/editor artifacts."""
 
     def __init__(self, root: Path | str, config: OrchestratorConfig | None = None) -> None:
+        from whetstone.vnext_admission import reject_legacy_writer
+        reject_legacy_writer(root)
         self.root = Path(root)
         self.config = config or OrchestratorConfig.default(self.root)
         self.store = ArtifactStore(self.root)

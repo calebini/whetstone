@@ -85,9 +85,9 @@ Until every condition holds, `verified_promotion` MUST be unavailable, a configu
 
 ### vNext Admission And Capability Negotiation (D7)
 
-D7 defines the prospective admission and scheduler contract; it does not advertise implemented vNext commands. The [scheduler's processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns transitions, failure outcomes, retries and continuation. Candidate evidence/finality and D6 identity remain owned by the candidate leaf. D8's storage protocol and the full promotion release gate remain separate prerequisites.
+D7 defines the admission and scheduler contract. Slice 18.3 implements only the [seed/reviewer-only subflow](../VNEXT_ADMISSION.md); later gates remain unavailable. The [scheduler's processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns transitions, failure outcomes, retries and continuation. Candidate evidence/finality and D6 identity remain owned by the candidate leaf. D8's storage protocol and the full promotion release gate remain separate prerequisites.
 
-The reserved 18.3 selection surface is a closed `vnext` configuration block:
+The 18.3 selection surface is a closed `vnext` configuration block:
 
 ```yaml
 vnext:
@@ -95,7 +95,7 @@ vnext:
   review_configuration: {path: inputs/review_configuration.json, hash: <exact canonical file SHA-256>}
 ```
 
-Both references are required; unknown or duplicate keys and null blocks reject. The prospective CLI equivalents are `--vnext-job-descriptor PATH` and `--vnext-review-configuration PATH`, supplied together; their exact canonical file hashes are computed locally. If both CLI and config supply a selector, they MUST identify byte-identical files for each role. Neither wins silently; disagreement is `vnext_selection_conflict`. Descriptor locators may differ while resolving to identical bytes. Paths resolve relative to the selected isolated root and obey the published confinement rules. The CLI option names are reserved for 18.3, not commands available in the 18.2 release.
+Both references are required; unknown or duplicate keys and null blocks reject. The CLI equivalents are `--vnext-job-descriptor PATH` and `--vnext-review-configuration PATH`, supplied together; their exact canonical file hashes are computed locally. If both CLI and config supply a selector, they MUST identify byte-identical files for each role. Neither wins silently; disagreement is `vnext_selection_conflict`. Descriptor locators may differ while resolving to identical bytes. Paths resolve relative to the selected isolated root and obey the published confinement rules. The selectors are supported on `vnext-admit`, `live-phase1` and `status` for the qualified reviewer-only subflow. Unsupported commands and modes reject before invoking a client or writing authority.
 
 The immutable descriptor alone selects mode, suite and algorithm versions. `reviewer_only` is the default when preparing a new vNext descriptor, never an implicit fill-in for a malformed persisted descriptor; its required `editing_mode` remains explicit. Selection does not rewrite the descriptor. There is no independent mode override or caller-selected suite digest. Changing the descriptor for an existing root is a refusal, even if the replacement happens to derive the same job ID. Switching mode requires a fresh job/root.
 

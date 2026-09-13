@@ -425,6 +425,8 @@ read `rounds/technical_failure_report.json`. The run completed a soft Phase 1 di
 
 ## Run A Lightweight Change Audit
 
+For the separate vNext reviewer-only workflow, see [vNext admission](VNEXT_ADMISSION.md). It uses an immutable descriptor and explicit selectors on `vnext-admit` or `live-phase1`; schema recognition alone does not activate a mode. Proposal and promotion modes remain unavailable in slice 18.3, and the existing preservation-bridge workflow remains separate.
+
 Use `audit-change` when a small feature or boundary update touched multiple specs and you want a reviewer-only sanity check without starting a Whetstone convergence loop.
 
 Create an audit notes file with the intended contract:

@@ -316,7 +316,7 @@ def validate_promotion(pointer, intent, intent_ref, previous, previous_ref, crea
              source_candidate_creation_event_path=creation_ref['path'],source_candidate_creation_event_hash=creation_ref['hash'],candidate_verification_path=decision_ref['path'],candidate_verification_hash=decision_ref['hash'],
              promotion_intent_path=intent_ref['path'],promotion_intent_hash=intent_ref['hash'],promotion_disposition_event_path=event_ref['path'],promotion_disposition_event_hash=event_ref['hash'],
              previous_verified_draft_hash=previous['verified_draft_hash'],previous_verified_pointer_path=previous_ref['path'],previous_verified_pointer_hash=previous_ref['hash'])
-    require(previous_ref['path']==f"rounds/verified_pointer_history/pointer-{previous['promotion_ordinal']}.json",'previous pointer must use its ordinal snapshot path')
+    require(previous_ref['path']==f"rounds/verified_history/current-verified-{previous['promotion_ordinal']}.json",'previous pointer must use its ordinal snapshot path')
 
 
 def validate_seed_pointer(pointer, job, seed_map_ref):
@@ -360,7 +360,7 @@ def validate_ratification_delta(delta, job, authority, target_hash, responses):
 
 def validate_pointer_snapshot(reader, pointer_ref):
     pointer=reader.json(pointer_ref,'current_verified_pointer_v1')
-    path=f"rounds/verified_pointer_history/pointer-{pointer['promotion_ordinal']}.json"
+    path=f"rounds/verified_history/current-verified-{pointer['promotion_ordinal']}.json"
     snapshot=confined_file(reader.root,path).read_bytes()
     require(snapshot==reader.raw(pointer_ref),'current pointer differs from its same-ordinal snapshot')
     return pointer

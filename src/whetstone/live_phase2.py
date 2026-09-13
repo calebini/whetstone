@@ -56,6 +56,8 @@ class LivePhase2Runner:
         draft_after_provider: Callable[[int, str, str], str | None] | None = None,
         timeout_seconds: int | None = None,
     ) -> None:
+        from whetstone.vnext_admission import reject_legacy_writer
+        reject_legacy_writer(root)
         self.root = Path(root)
         self.config = config
         self.reviewer_client = reviewer_client

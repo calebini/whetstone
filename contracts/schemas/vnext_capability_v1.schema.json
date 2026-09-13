@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-capability-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol": {
+      "const": "vnext"
+    },
+    "terminal_state": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "vnext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requested_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "reviewer_only",
+                "proposal_only",
+                "verified_promotion"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_suite_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suite_digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "available_modes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "reviewer_only",
+              "proposal_only",
+              "verified_promotion"
+            ]
+          }
+        },
+        "available_gates": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "admission",
+              "seed_initialization",
+              "review",
+              "finding_admission",
+              "proposal",
+              "assembly",
+              "deterministic_validation",
+              "semantic_verification",
+              "verification_commit",
+              "promotion",
+              "materialization",
+              "complete"
+            ]
+          }
+        },
+        "requested_gate": {
+          "enum": [
+            "admission",
+            "seed_initialization",
+            "review",
+            "finding_admission",
+            "proposal",
+            "assembly",
+            "deterministic_validation",
+            "semantic_verification",
+            "verification_commit",
+            "promotion",
+            "materialization",
+            "complete"
+          ]
+        },
+        "admitted": {
+          "type": "boolean"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "requested_mode",
+        "contract_suite_version",
+        "suite_digest",
+        "available_modes",
+        "available_gates",
+        "requested_gate",
+        "admitted",
+        "reason_code",
+        "reason",
+        "next_action"
+      ]
+    }
+  },
+  "required": [
+    "protocol",
+    "terminal_state",
+    "vnext"
+  ],
+  "x-whetstone": {
+    "producer": "orchestrator",
+    "consumer": "vnext-runtime",
+    "version": "vnext-capability-v1",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate from frozen vnext-contracts-1"
+  }
+}

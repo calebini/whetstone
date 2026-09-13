@@ -221,6 +221,8 @@ Version `0.7` binds these modes to the [coordinating selection/capability contra
 
 Reviewer-only admission requires a validated immutable seed, seed section map, ordinal-0 history snapshot and matching current pointer before review. The seed is not a registered candidate and receives no candidate-verification or promotion event. Slice 18.3 must implement/qualify this seed-only initialization subset before advertising R; section transfer, patch assembly and registration remain later slices. All later authority changes follow this leaf's full protocol.
 
+The [seed initialization supplement](../../contracts/algorithms/vnext_seed_initialization_v1.md) publishes that executable subset and its separately versioned admission/readback schemas. The [18.3 guide](../VNEXT_ADMISSION.md) describes its public selectors and reviewer-only boundary. This does not activate proposal, semantic-verification or promotion services, alter the frozen 18.2 suite, or qualify later scheduler/Phase 2/apply-back integration.
+
 Candidate disposition and run terminal state are independent. A valid semantic operator-decision verdict produces a final rejected candidate while the run pauses for the decision. Missing/invalid/timed-out semantic output instead leaves an unverified candidate with no fabricated semantic verdict. Final rejection requires a new transaction; final verification permits only mode-appropriate promotion or inspection. No scheduler transition may reopen a final verification decision.
 
 ## Versioned Job Descriptor

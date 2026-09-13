@@ -190,11 +190,16 @@ def load_config(path: Path | str) -> OrchestratorConfig:
 
     config_path = Path(path)
     root = config_path.parent
+    from whetstone.vnext_admission import root_declares_vnext
+    if root_declares_vnext(root):
+        raise ValueError("CONFIG_INVALID: vNext root requires explicit vNext dispatch; legacy configuration cannot open it")
     if not config_path.exists():
         if root_declares_bridge(root):
             raise ValueError("CONFIG_INVALID: guarded root cannot omit its bridge configuration")
         return OrchestratorConfig.default(root)
     parsed = _parse_simple_yaml(config_path.read_text(encoding="utf-8"))
+    if "vnext" in parsed:
+        raise ValueError("CONFIG_INVALID: vNext configuration requires explicit vNext dispatch")
     bridge = None
     if "preservation_bridge" in parsed:
         if not PRESERVATION_BRIDGE_QUALIFIED:
