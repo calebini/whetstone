@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "patch-operation-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation_id",
+    "operation_type",
+    "target_stable_section_id",
+    "expected_target_hash",
+    "payload",
+    "addressed_finding_ids",
+    "reason",
+    "normative_change",
+    "preserve_target_identity",
+    "depends_on_operation_ids"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "pattern": "^op_[0-9a-f]{64}$"
+    },
+    "operation_type": {
+      "enum": [
+        "replace_section_body",
+        "replace_section_subtree",
+        "insert_section_before",
+        "insert_section_after",
+        "append_child_section",
+        "delete_section_subtree"
+      ]
+    },
+    "target_stable_section_id": {
+      "type": "string",
+      "pattern": "^sec_[0-9a-f]{64}$"
+    },
+    "expected_target_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "addressed_finding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normative_change": {
+      "enum": [
+        "none",
+        "clarification",
+        "add",
+        "remove",
+        "strengthen",
+        "weaken",
+        "authority_change",
+        "scope_change"
+      ]
+    },
+    "preserve_target_identity": {
+      "type": "boolean"
+    },
+    "depends_on_operation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^op_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    }
+  },
+  "x-whetstone": {
+    "version": "patch-operation-v1",
+    "producer": "editor-proposed; orchestrator derives operation_id",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "operation_id",
+        "prefix": "op",
+        "domain": "whetstone-operation-id-v1",
+        "ordered_arguments": [
+          "transaction_id",
+          "P(operation; operation_id)"
+        ],
+        "collision_role": "op"
+      }
+    ]
+  }
+}

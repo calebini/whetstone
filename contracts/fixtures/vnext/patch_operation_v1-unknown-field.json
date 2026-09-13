@@ -1,0 +1,25 @@
+{
+  "name": "patch_operation_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "patch_operation_v1",
+    "value": {
+      "operation_id": "op_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "operation_type": "replace_section_body",
+      "target_stable_section_id": "sec_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_target_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "payload": {
+        "path": "inputs/example.json",
+        "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "addressed_finding_ids": [],
+      "reason": "example",
+      "normative_change": "none",
+      "preserve_target_identity": false,
+      "depends_on_operation_ids": [],
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

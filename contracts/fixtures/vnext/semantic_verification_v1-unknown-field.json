@@ -1,0 +1,38 @@
+{
+  "name": "semantic_verification_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "semantic_verification_v1",
+    "value": {
+      "schema_version": "semantic-verification-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "transaction_id": "txn_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_id": "can_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "semantic_verifier_policy_version": "example",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_section_identity_map_path": "inputs/example.json",
+      "candidate_section_identity_map_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "patch_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "preservation_report_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verifier": {
+        "name": "example",
+        "version": "example",
+        "model": "example"
+      },
+      "finding_results": [],
+      "unrelated_semantic_change": "none",
+      "lost_or_weakened_semantics": "none",
+      "authority_compliance": "pass",
+      "semantic_assertions": [],
+      "normative_change_assessment": [],
+      "operator_decision_required": false,
+      "uncertainty_resolutions": [],
+      "verdict": "pass",
+      "rationale": "example",
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

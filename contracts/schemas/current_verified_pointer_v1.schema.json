@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "current-verified-pointer-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "promotion_ordinal",
+    "verified_draft_path",
+    "verified_draft_hash",
+    "verified_section_identity_map_path",
+    "verified_section_identity_map_hash",
+    "source_transaction_id",
+    "source_candidate_id",
+    "source_candidate_creation_ordinal",
+    "source_candidate_creation_event_path",
+    "source_candidate_creation_event_hash",
+    "candidate_verification_path",
+    "candidate_verification_hash",
+    "promotion_intent_path",
+    "promotion_intent_hash",
+    "promotion_disposition_event_path",
+    "promotion_disposition_event_hash",
+    "previous_verified_draft_hash",
+    "previous_verified_pointer_path",
+    "previous_verified_pointer_hash",
+    "promoted_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "current-verified-pointer-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "promotion_ordinal": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "verified_draft_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "verified_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "verified_section_identity_map_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "verified_section_identity_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_transaction_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^txn_[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_candidate_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^can_[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_candidate_creation_ordinal": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_candidate_creation_event_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_candidate_creation_event_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "candidate_verification_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "candidate_verification_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promotion_intent_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promotion_intent_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promotion_disposition_event_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promotion_disposition_event_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previous_verified_draft_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previous_verified_pointer_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previous_verified_pointer_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promoted_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "format": "date-time"
+    }
+  },
+  "x-whetstone": {
+    "version": "current-verified-pointer-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

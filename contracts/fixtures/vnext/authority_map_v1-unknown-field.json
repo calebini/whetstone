@@ -1,0 +1,19 @@
+{
+  "name": "authority_map_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "authority_map_v1",
+    "value": {
+      "schema_version": "authority-map-v1",
+      "bindings": [],
+      "precedence": [],
+      "prospective_rules": {
+        "report_ratification_delta": false,
+        "introduce_compatibility_policy": "allow"
+      },
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

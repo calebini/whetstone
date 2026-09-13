@@ -1,0 +1,27 @@
+{
+  "name": "candidate_verification_pointer_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "candidate_verification_pointer_v1",
+    "value": {
+      "schema_version": "candidate-verification-pointer-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "transaction_id": "txn_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_id": "can_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_creation_ordinal": 1,
+      "current_decision_ordinal": 1,
+      "current_decision_path": "inputs/example.json",
+      "current_decision_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "current_disposition_event_path": "inputs/example.json",
+      "current_disposition_event_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_section_identity_map_path": "inputs/example.json",
+      "candidate_section_identity_map_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_disposition": "CANDIDATE_UNVERIFIED",
+      "decision_final": false,
+      "updated_at": "2026-09-13T00:00:00Z",
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

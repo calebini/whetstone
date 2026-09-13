@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "authority-map-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bindings",
+    "precedence",
+    "prospective_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "authority-map-v1"
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "binding_id",
+          "path",
+          "content_hash",
+          "role",
+          "authority_scopes",
+          "effective_horizon",
+          "mutable",
+          "may_introduce_requirements"
+        ],
+        "properties": {
+          "binding_id": {
+            "type": "string",
+            "pattern": "^bind_[0-9a-f]{64}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "role": {
+            "enum": [
+              "mutable_target",
+              "normative_authority",
+              "ratification_target",
+              "implementation_context",
+              "donor_reference",
+              "informational_reference",
+              "excluded"
+            ]
+          },
+          "authority_scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "effective_horizon": {
+            "enum": [
+              "current",
+              "prospective",
+              "downstream_ratification",
+              "informational"
+            ]
+          },
+          "mutable": {
+            "type": "boolean"
+          },
+          "may_introduce_requirements": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "precedence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authority_scope",
+          "ordered_binding_ids",
+          "conflict_policy"
+        ],
+        "properties": {
+          "authority_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ordered_binding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^bind_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "conflict_policy": {
+            "enum": [
+              "pause",
+              "target_wins",
+              "named_authority_wins"
+            ]
+          }
+        }
+      }
+    },
+    "prospective_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report_ratification_delta",
+        "introduce_compatibility_policy"
+      ],
+      "properties": {
+        "report_ratification_delta": {
+          "type": "boolean"
+        },
+        "introduce_compatibility_policy": {
+          "enum": [
+            "allow",
+            "forbid",
+            "operator_decision"
+          ]
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "authority-map-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "bindings[].binding_id",
+        "prefix": "bind",
+        "domain": "whetstone-binding-id-v1",
+        "ordered_arguments": [
+          "P(binding; binding_id, path)"
+        ],
+        "collision_role": "bind"
+      }
+    ]
+  }
+}

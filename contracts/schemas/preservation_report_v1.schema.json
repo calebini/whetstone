@@ -1,0 +1,294 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preservation-report-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "candidate_id",
+    "base_draft_hash",
+    "candidate_hash",
+    "candidate_section_identity_map_path",
+    "candidate_section_identity_map_hash",
+    "patch_set_hash",
+    "parser_contract_version",
+    "assembler_version",
+    "inventory_version",
+    "normalization_version",
+    "reproduced_candidate_hash",
+    "result",
+    "mutation_budget",
+    "unit_changes",
+    "assertion_results",
+    "failures"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "preservation-report-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^can_[0-9a-f]{64}$"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_section_identity_map_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "candidate_section_identity_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "patch_set_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parser_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assembler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalization_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reproduced_candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "mutation_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operations_allowed",
+        "operations_observed",
+        "sections_allowed",
+        "sections_observed",
+        "normative_units_allowed",
+        "normative_units_observed"
+      ],
+      "properties": {
+        "operations_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operations_observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sections_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sections_observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "normative_units_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "normative_units_observed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "unit_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_id",
+          "unit_type",
+          "owning_section_id",
+          "change",
+          "source_finding_ids",
+          "authorized"
+        ],
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "pattern": "^unit_[0-9a-f]{64}$"
+          },
+          "unit_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owning_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "change": {
+            "enum": [
+              "unchanged",
+              "added",
+              "removed",
+              "modified",
+              "weakened",
+              "strengthened",
+              "moved",
+              "renamed",
+              "ambiguous"
+            ]
+          },
+          "source_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "authorized": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "assertion_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string",
+            "pattern": "^assert_[0-9a-f]{64}$"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_applicable"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "operation_ids",
+          "section_ids",
+          "unit_ids",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^op_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^unit_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "preservation-report-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "unit_changes[].unit_id (seed)",
+        "prefix": "unit",
+        "domain": "whetstone-seed-unit-id-v1",
+        "ordered_arguments": [
+          "seed_hash",
+          "stable_section_id",
+          "unit_type",
+          "ordinal"
+        ],
+        "collision_role": "unit"
+      },
+      {
+        "field": "unit_changes[].unit_id (inserted)",
+        "prefix": "unit",
+        "domain": "whetstone-inserted-unit-id-v1",
+        "ordered_arguments": [
+          "transaction_id",
+          "operation_id",
+          "unit_type",
+          "payload_ordinal"
+        ],
+        "collision_role": "unit"
+      }
+    ]
+  }
+}

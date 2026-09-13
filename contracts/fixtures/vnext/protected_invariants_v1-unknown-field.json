@@ -1,0 +1,15 @@
+{
+  "name": "protected_invariants_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "protected_invariants_v1",
+    "value": {
+      "schema_version": "protected-invariants-v1",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "assertions": [],
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

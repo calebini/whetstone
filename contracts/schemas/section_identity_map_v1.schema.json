@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "section-identity-map-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "draft_hash",
+    "parser_contract_version",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "section-identity-map-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parser_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stable_section_id",
+          "canonical_section_id",
+          "parent_stable_section_id",
+          "heading_level",
+          "heading_text",
+          "preorder_ordinal",
+          "section_hash",
+          "direct_body_hash",
+          "status",
+          "created_by_operation_id",
+          "previous_stable_section_id"
+        ],
+        "properties": {
+          "stable_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "canonical_section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_stable_section_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^sec_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heading_level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "heading_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "preorder_ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "section_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "direct_body_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "created_by_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^op_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous_stable_section_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^sec_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "section-identity-map-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "sections[].stable_section_id (seed)",
+        "prefix": "sec",
+        "domain": "whetstone-seed-section-id-v1",
+        "ordered_arguments": [
+          "job_id",
+          "seed_draft_hash",
+          "binding_id",
+          "preorder_ordinal"
+        ],
+        "collision_role": "sec"
+      },
+      {
+        "field": "sections[].stable_section_id (inserted)",
+        "prefix": "sec",
+        "domain": "whetstone-inserted-section-id-v1",
+        "ordered_arguments": [
+          "transaction_id",
+          "operation_id"
+        ],
+        "collision_role": "sec"
+      }
+    ]
+  }
+}

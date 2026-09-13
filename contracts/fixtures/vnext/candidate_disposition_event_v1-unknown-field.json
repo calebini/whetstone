@@ -1,0 +1,25 @@
+{
+  "name": "candidate_disposition_event_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "candidate_disposition_event_v1",
+    "value": {
+      "schema_version": "candidate-disposition-event-v1",
+      "event_id": "event_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_id": "can_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_creation_ordinal": 1,
+      "event_ordinal": 1,
+      "event_kind": "candidate_created",
+      "previous_event_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "previous_disposition": "CANDIDATE_UNVERIFIED",
+      "new_disposition": "CANDIDATE_UNVERIFIED",
+      "source_artifact_path": "inputs/example.json",
+      "source_artifact_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "recorded_at": "2026-09-13T00:00:00Z",
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

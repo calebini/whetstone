@@ -1,0 +1,21 @@
+{
+  "name": "ratification_delta_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "ratification_delta_v1",
+    "value": {
+      "schema_version": "ratification-delta-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mutable_target_binding_id": "bind_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "compared_binding_ids": [],
+      "deltas": [],
+      "compatibility_policy": {
+        "status": "not_needed",
+        "decision_response_id": "resp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

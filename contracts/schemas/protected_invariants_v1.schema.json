@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "protected-invariants-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "base_draft_hash",
+    "assertions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "protected-invariants-v1"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "assertion_type",
+          "target_scope",
+          "matcher",
+          "enforcement",
+          "severity",
+          "rationale",
+          "source_authority_binding_ids"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string",
+            "pattern": "^assert_[0-9a-f]{64}$"
+          },
+          "assertion_type": {
+            "enum": [
+              "heading_present",
+              "heading_absent",
+              "identifier_present",
+              "identifier_absent",
+              "enum_member_present",
+              "table_row_present",
+              "section_unchanged",
+              "concept_required",
+              "concept_forbidden",
+              "max_changed_sections",
+              "max_changed_normative_units",
+              "canonical_model_count"
+            ]
+          },
+          "target_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matcher": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "value"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "exact",
+                  "canonical_id",
+                  "regex",
+                  "inventory_query",
+                  "semantic"
+                ]
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          },
+          "enforcement": {
+            "enum": [
+              "deterministic",
+              "semantic"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "blocking",
+              "warning"
+            ]
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_authority_binding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^bind_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "protected-invariants-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "assertions[].assertion_id",
+        "prefix": "assert",
+        "domain": "whetstone-assertion-id-v1",
+        "ordered_arguments": [
+          "base_draft_hash",
+          "P(assertion; assertion_id)"
+        ],
+        "collision_role": "assert"
+      }
+    ]
+  }
+}

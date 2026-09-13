@@ -28,6 +28,10 @@ referenced file digest and algorithm version; execute or inspect every required
 conformance vector; then admit descriptor or artifact validation. Schema-valid
 artifacts from an unrecognized or partially matching suite remain unsupported.
 Client output MUST NOT choose, rewrite or weaken the supported-suite registry.
+The suite digest used in job identity is derived from that registry. Pre-job
+authority/invariant/scope/review inputs cannot contain job-derived back-references;
+the candidate leaf's acyclic construction and exact canonical byte rules apply.
+Offline contract qualification is separate from admission of vNext runtime modes.
 
 `reviewer_feedback.json` MUST contain:
 

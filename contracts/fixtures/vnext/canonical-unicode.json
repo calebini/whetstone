@@ -1,0 +1,14 @@
+{
+  "name": "canonical-unicode",
+  "operation": "canonical",
+  "input": {
+    "z": [
+      1,
+      true,
+      null
+    ],
+    "a": "café"
+  },
+  "expected_result": "pass",
+  "expected": "7b2261223a22636166c3a9222c227a223a5b312c747275652c6e756c6c5d7d"
+}

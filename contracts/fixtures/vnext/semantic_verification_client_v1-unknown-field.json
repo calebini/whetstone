@@ -1,0 +1,23 @@
+{
+  "name": "semantic_verification_client_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "semantic_verification_client_v1",
+    "value": {
+      "schema_version": "semantic-verification-v1",
+      "finding_results": [],
+      "unrelated_semantic_change": "none",
+      "lost_or_weakened_semantics": "none",
+      "authority_compliance": "pass",
+      "semantic_assertions": [],
+      "normative_change_assessment": [],
+      "operator_decision_required": false,
+      "uncertainty_resolutions": [],
+      "verdict": "pass",
+      "rationale": "example",
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

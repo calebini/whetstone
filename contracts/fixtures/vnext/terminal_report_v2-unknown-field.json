@@ -1,0 +1,38 @@
+{
+  "name": "terminal_report_v2-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "terminal_report_v2",
+    "value": {
+      "schema_version": "terminal-report-v2",
+      "terminal_state": "example",
+      "current_verified_draft_path": "inputs/example.json",
+      "current_verified_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "latest_candidate": {
+        "candidate_id": "can_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "candidate_creation_ordinal": 1,
+        "candidate_creation_event_path": "inputs/example.json",
+        "candidate_creation_event_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "path": "inputs/example.json",
+        "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "disposition": "CANDIDATE_UNVERIFIED",
+        "disposition_event_path": "inputs/example.json",
+        "disposition_event_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verification_decision_path": "inputs/example.json",
+        "verification_decision_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verification_decision_final": false
+      },
+      "rejected_candidate_ids": [],
+      "outstanding_decision_ids": [],
+      "apply_back_permitted": false,
+      "resume": {
+        "permitted": false,
+        "next_gate": "example",
+        "reason": "example"
+      },
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}

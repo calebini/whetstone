@@ -1,0 +1,37 @@
+{
+  "name": "preservation_report_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "preservation_report_v1",
+    "value": {
+      "schema_version": "preservation-report-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "transaction_id": "txn_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_id": "can_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_section_identity_map_path": "inputs/example.json",
+      "candidate_section_identity_map_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "patch_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "parser_contract_version": "example",
+      "assembler_version": "example",
+      "inventory_version": "example",
+      "normalization_version": "example",
+      "reproduced_candidate_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "result": "pass",
+      "mutation_budget": {
+        "operations_allowed": 0,
+        "operations_observed": 0,
+        "sections_allowed": 0,
+        "sections_observed": 0,
+        "normative_units_allowed": 0,
+        "normative_units_observed": 0
+      },
+      "unit_changes": [],
+      "assertion_results": [],
+      "failures": []
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

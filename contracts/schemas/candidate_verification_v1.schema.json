@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "candidate-verification-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "candidate_id",
+    "candidate_creation_ordinal",
+    "decision_ordinal",
+    "previous_decision_hash",
+    "base_draft_hash",
+    "candidate_hash",
+    "candidate_section_identity_map_path",
+    "candidate_section_identity_map_hash",
+    "patch_set_hash",
+    "preservation_report_hash",
+    "semantic_verification_hash",
+    "deterministic_result",
+    "semantic_result",
+    "outstanding_decision_ids",
+    "candidate_disposition",
+    "promotion_permitted",
+    "decision_final",
+    "rejection_codes",
+    "decided_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "candidate-verification-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^can_[0-9a-f]{64}$"
+    },
+    "candidate_creation_ordinal": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "decision_ordinal": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "previous_decision_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_section_identity_map_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "candidate_section_identity_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "patch_set_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "preservation_report_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_verification_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "deterministic_result": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "semantic_result": {
+      "enum": [
+        "pass",
+        "reject",
+        "operator_decision_required",
+        "not_run"
+      ]
+    },
+    "outstanding_decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "candidate_disposition": {
+      "enum": [
+        "CANDIDATE_UNVERIFIED",
+        "CANDIDATE_VERIFIED",
+        "CANDIDATE_REJECTED"
+      ]
+    },
+    "promotion_permitted": {
+      "type": "boolean"
+    },
+    "decision_final": {
+      "type": "boolean"
+    },
+    "rejection_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "decided_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "format": "date-time"
+    }
+  },
+  "x-whetstone": {
+    "version": "candidate-verification-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

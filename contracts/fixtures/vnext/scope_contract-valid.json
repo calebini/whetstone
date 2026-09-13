@@ -1,0 +1,36 @@
+{
+  "name": "scope_contract-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "scope_contract",
+    "value": {
+      "schema_version": "scope-contract-v1",
+      "generated_at": "2026-09-13T00:00:00Z",
+      "status": "draft",
+      "readiness_target": "exploratory",
+      "core_outcome": "example",
+      "primary_actor_or_consumer": "example",
+      "core_flows": [],
+      "scope_surfaces": [],
+      "deferral_rules": [],
+      "acceptance_floor": {
+        "minimum_buildable_result": "example",
+        "must_answer": [],
+        "may_defer": []
+      },
+      "review_pressure_limits": {
+        "max_depth_default": "mention",
+        "expansion_policy": "conservative"
+      },
+      "operator_decisions": [],
+      "source_notes_path": "inputs/example.json",
+      "approval": {
+        "approved": false,
+        "approved_by": "example",
+        "approved_at": "2026-09-13T00:00:00Z"
+      }
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

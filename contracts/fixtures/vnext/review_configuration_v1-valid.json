@@ -1,0 +1,31 @@
+{
+  "name": "review_configuration_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "review_configuration_v1",
+    "value": {
+      "schema_version": "review-configuration-v1",
+      "workflow": "example",
+      "review_mode": "horizontal",
+      "profile_set": "example",
+      "profiles": [],
+      "reviewer": {
+        "name": "example",
+        "version": "example",
+        "model": "example"
+      },
+      "editor": {
+        "name": "example",
+        "version": "example",
+        "model": "example"
+      },
+      "verifier": {
+        "name": "example",
+        "version": "example",
+        "model": "example"
+      }
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

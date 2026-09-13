@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "job-descriptor-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "created_at",
+    "editing_mode",
+    "contract_suite_version",
+    "parser_contract_version",
+    "assembler_version",
+    "inventory_version",
+    "normalization_version",
+    "semantic_verifier_policy_version",
+    "seed_draft",
+    "authority_map_path",
+    "authority_map_hash",
+    "scope_contract_path",
+    "scope_contract_hash",
+    "protected_invariants_path",
+    "protected_invariants_hash",
+    "review_configuration_hash",
+    "source_spec"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "job-descriptor-v2"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "format": "date-time"
+    },
+    "editing_mode": {
+      "enum": [
+        "reviewer_only",
+        "proposal_only",
+        "verified_promotion"
+      ]
+    },
+    "contract_suite_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parser_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assembler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalization_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "semantic_verifier_policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seed_draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "authority_map_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "scope_contract_path": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scope_contract_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "protected_invariants_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protected_invariants_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "review_configuration_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "expected_hash"
+      ],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "job-descriptor-v2",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract.",
+    "identities": [
+      {
+        "field": "job_id",
+        "prefix": "job",
+        "domain": "whetstone-job-id-v1",
+        "ordered_arguments": [
+          "schema_version",
+          "editing_mode",
+          "contract_suite_version",
+          "registry.suite_digest",
+          "parser_contract_version",
+          "assembler_version",
+          "inventory_version",
+          "normalization_version",
+          "semantic_verifier_policy_version",
+          "seed_draft.hash",
+          "authority_map_hash",
+          "scope_contract_hash",
+          "protected_invariants_hash",
+          "review_configuration_hash",
+          "source_spec.expected_hash"
+        ],
+        "collision_role": "job"
+      }
+    ]
+  }
+}

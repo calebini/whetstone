@@ -286,6 +286,7 @@ That artifact trail is the product. It lets a human or another agent ask: what c
 - [Whetstone Coordinating Spec](docs/specs/WHETSTONE_COORDINATING_SPEC.md)
 - [Spec Decomposition Manifest](docs/decomposition/decomposition_manifest.json)
 - [Implementation Plan](IMPLEMENTATION_PLAN.md)
+- [Offline vNext Contracts](docs/VNEXT_CONTRACTS.md)
 - [Future Improvements](notes/future-improvements.md)
 
 ## Repository Map

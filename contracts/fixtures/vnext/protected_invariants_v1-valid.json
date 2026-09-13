@@ -1,0 +1,14 @@
+{
+  "name": "protected_invariants_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "protected_invariants_v1",
+    "value": {
+      "schema_version": "protected-invariants-v1",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "assertions": []
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

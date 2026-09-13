@@ -1,0 +1,538 @@
+{
+  "schema_version": "whetstone-contract-suite-manifest-v1",
+  "suite_version": "vnext-contracts-1",
+  "canonical_json_version": "whetstone-canonical-json-v1",
+  "schemas": [
+    {
+      "name": "authority_map_v1",
+      "version": "authority-map-v1",
+      "path": "schemas/authority_map_v1.schema.json",
+      "sha256": "ba79b1a62efb2e590aa9781bf9fd725025275d916deabaf796ce83e26a37e1dd"
+    },
+    {
+      "name": "candidate_creation_event_v1",
+      "version": "candidate-creation-event-v1",
+      "path": "schemas/candidate_creation_event_v1.schema.json",
+      "sha256": "e66846ebce236f5959997bc5efbb43227865b81c694ceabff99b8e556d063812"
+    },
+    {
+      "name": "candidate_disposition_event_v1",
+      "version": "candidate-disposition-event-v1",
+      "path": "schemas/candidate_disposition_event_v1.schema.json",
+      "sha256": "469e579ccc6a6596a24f6738a2362bbf9bb8a6816c2bd869c55fbb3aa77863d2"
+    },
+    {
+      "name": "candidate_index_v1",
+      "version": "candidate-index-v1",
+      "path": "schemas/candidate_index_v1.schema.json",
+      "sha256": "e864bbd1d2c5acb24b74265e28c4fd10c54eb21003d5e082f3d0bf95a4545fbe"
+    },
+    {
+      "name": "candidate_verification_pointer_v1",
+      "version": "candidate-verification-pointer-v1",
+      "path": "schemas/candidate_verification_pointer_v1.schema.json",
+      "sha256": "45031dfc0d52da4b3c59644e617f75279e06abd72ba37185f937e541d177a241"
+    },
+    {
+      "name": "candidate_verification_v1",
+      "version": "candidate-verification-v1",
+      "path": "schemas/candidate_verification_v1.schema.json",
+      "sha256": "1d455cba70afc1f631bc21ac3ba55e262ab306c954c8ecc922278f790750f7de"
+    },
+    {
+      "name": "common",
+      "version": "common-v1",
+      "path": "schemas/common.schema.json",
+      "sha256": "5f1656901ad3f661d43c33dadbe359f0c93527f950a08f4413514f456b65aa2f"
+    },
+    {
+      "name": "current_verified_pointer_v1",
+      "version": "current-verified-pointer-v1",
+      "path": "schemas/current_verified_pointer_v1.schema.json",
+      "sha256": "87eff90c958cb2006a09733242103d07b4278d6504c697cc92f77a4320adcf07"
+    },
+    {
+      "name": "job_descriptor_v2",
+      "version": "job-descriptor-v2",
+      "path": "schemas/job_descriptor_v2.schema.json",
+      "sha256": "79ac276fd18213ca14970225b022f3043b86a5fa56b59e3765be824f114e50c9"
+    },
+    {
+      "name": "mutation_plan_v1",
+      "version": "mutation-plan-v1",
+      "path": "schemas/mutation_plan_v1.schema.json",
+      "sha256": "036f90868877ff1b75c58fe9fe4ab75dd2027450ca5499cb33ef94618b9f0d27"
+    },
+    {
+      "name": "operator_decision_response_v1",
+      "version": "operator-decision-response-v1",
+      "path": "schemas/operator_decision_response_v1.schema.json",
+      "sha256": "49c576503c9423beca16710c8eb3c619d1e8ccd2e2f026f294fdb44583d99588"
+    },
+    {
+      "name": "patch_operation_v1",
+      "version": "patch-operation-v1",
+      "path": "schemas/patch_operation_v1.schema.json",
+      "sha256": "8156bf29bba57071295c168b87b5f40db2a9cfe89f44b8b8b45d62199034e226"
+    },
+    {
+      "name": "patch_set_client_v1",
+      "version": "patch-set-client-v1",
+      "path": "schemas/patch_set_client_v1.schema.json",
+      "sha256": "864b53c50925b3cec1ae0d708cf0054bf1da7e48464734e61574473cb816cd94"
+    },
+    {
+      "name": "patch_set_v1",
+      "version": "patch-set-v1",
+      "path": "schemas/patch_set_v1.schema.json",
+      "sha256": "50a9c9c5658a71e6d6ccd2a15304cef509fa735f2809ac78b958425b82c23d57"
+    },
+    {
+      "name": "preservation_report_v1",
+      "version": "preservation-report-v1",
+      "path": "schemas/preservation_report_v1.schema.json",
+      "sha256": "302670e33d4d8af5b576e3a4192e877de21c31ca7ead0bf91f2956af32a2872e"
+    },
+    {
+      "name": "promotion_intent_v1",
+      "version": "promotion-intent-v1",
+      "path": "schemas/promotion_intent_v1.schema.json",
+      "sha256": "ef0812f5756f6f5d598f9eb9ac102886923e598a46771910c6bf26bc59e90618"
+    },
+    {
+      "name": "protected_invariants_v1",
+      "version": "protected-invariants-v1",
+      "path": "schemas/protected_invariants_v1.schema.json",
+      "sha256": "737977e56a58d23b99f79647b50f1f5cfadddfeec249ff0e5339d0743299f876"
+    },
+    {
+      "name": "ratification_delta_v1",
+      "version": "ratification-delta-v1",
+      "path": "schemas/ratification_delta_v1.schema.json",
+      "sha256": "ee34c5af1ffd33b0fdeef5a7166c63225c2097285d778e02779d38aa30a6cb8a"
+    },
+    {
+      "name": "review_configuration_v1",
+      "version": "review-configuration-v1",
+      "path": "schemas/review_configuration_v1.schema.json",
+      "sha256": "9fe876e97b8486c4c6853304ef6d5797b79bf23c73081ba7c87fc70643600afd"
+    },
+    {
+      "name": "scope_contract",
+      "version": "scope_contract-v1",
+      "path": "schemas/scope_contract.schema.json",
+      "sha256": "74c19de710aabdc183afc5629aec5efd1779866cfd7005ca0d9a5436d60e839d"
+    },
+    {
+      "name": "section_identity_map_v1",
+      "version": "section-identity-map-v1",
+      "path": "schemas/section_identity_map_v1.schema.json",
+      "sha256": "11009fe1077243a17d3d28fa14a9bf078619fb43b563fc38b3c3434058b8b26f"
+    },
+    {
+      "name": "semantic_verification_client_v1",
+      "version": "semantic-verification-client-v1",
+      "path": "schemas/semantic_verification_client_v1.schema.json",
+      "sha256": "0b731487b0136e58227c1c4c8bce618d9559eddb1161455b4ef5d2a6a1af4f04"
+    },
+    {
+      "name": "semantic_verification_v1",
+      "version": "semantic-verification-v1",
+      "path": "schemas/semantic_verification_v1.schema.json",
+      "sha256": "9096227b4e9fbe9692dcb216262e408953cabba5a07dc2bf207ddf6b54298f26"
+    },
+    {
+      "name": "terminal_report_v2",
+      "version": "terminal-report-v2",
+      "path": "schemas/terminal_report_v2.schema.json",
+      "sha256": "51f406a9691f24d3fe542a8db821aed6d3de2ffba2aae249f9526fc475c63b70"
+    },
+    {
+      "name": "whetstone_contract_suite_manifest_v1",
+      "version": "whetstone-contract-suite-manifest-v1",
+      "path": "schemas/whetstone_contract_suite_manifest_v1.schema.json",
+      "sha256": "297d4fe95fc62d38cff9a20e66f95a30ce73becd4f2747c1c02fc479e67faefb"
+    }
+  ],
+  "algorithms": [
+    {
+      "name": "vnext_contract_invariants_v1",
+      "version": "vnext-contract-invariants-v1",
+      "path": "algorithms/vnext_contract_invariants_v1.md",
+      "sha256": "3bf38d8d18f7b4cfd03ecba6c95f573e829f88d334d4b2a8e79550e514486133"
+    },
+    {
+      "name": "vnext_identity_v1",
+      "version": "vnext-identity-v1",
+      "path": "algorithms/vnext_identity_v1.md",
+      "sha256": "154906a2351a398b6c84b3a554099567c0d6ad875c3f5bd6809e006fd5b2a38d"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "authority_map_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/authority_map_v1-unknown-field.json",
+      "sha256": "912d2a26d92546e205268ed7199ff9c2cc5f6004a76a96b0086a9ce34b1ebab2",
+      "expected_result": "reject"
+    },
+    {
+      "name": "authority_map_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/authority_map_v1-valid.json",
+      "sha256": "1f6d6783cf0cb80274d4770e12c9579dedf6e0f3c8470fa9ac2d288dfd191447",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate-identity-fixed",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate-identity-fixed.json",
+      "sha256": "394584e085efce7109db1ca824a7d14c8074a27c07ba1d8a20599ed71d96a696",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate_creation_event_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/candidate_creation_event_v1-unknown-field.json",
+      "sha256": "3ddb2b8ba22d66447128a63beab63af00a690eb1fad5c29b8713fb75feaf598b",
+      "expected_result": "reject"
+    },
+    {
+      "name": "candidate_creation_event_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate_creation_event_v1-valid.json",
+      "sha256": "1f01681bc4cbcca5efbe95ddca37960992ee408c461ba007b9b8992942f1dae0",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate_disposition_event_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/candidate_disposition_event_v1-unknown-field.json",
+      "sha256": "c9eac4cfb6f494f8524a61cb778b3c85934593a0d7afa92f6d4a7e9f0a17df21",
+      "expected_result": "reject"
+    },
+    {
+      "name": "candidate_disposition_event_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate_disposition_event_v1-valid.json",
+      "sha256": "eeb4467c494cbb1f7f24160c395eb7241ad6fcc272195ad2e978e8da7fc5f56c",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate_index_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/candidate_index_v1-unknown-field.json",
+      "sha256": "3aa3323b9752b9c0046fa1e47841176093dff5dbe37e89b932a8065a6571fbab",
+      "expected_result": "reject"
+    },
+    {
+      "name": "candidate_index_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate_index_v1-valid.json",
+      "sha256": "bd437d28678c50d47ec073580ebe31879ad91df27da655165bac87f279c1ae76",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate_verification_pointer_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/candidate_verification_pointer_v1-unknown-field.json",
+      "sha256": "4e311f8d5a1387f08a8e301c16a5d7b99cb6b028200cb1cf775cd2d75009e476",
+      "expected_result": "reject"
+    },
+    {
+      "name": "candidate_verification_pointer_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate_verification_pointer_v1-valid.json",
+      "sha256": "481d55371b58e751809f030a62f281ec132693eae743d142274a31ae68f22eab",
+      "expected_result": "pass"
+    },
+    {
+      "name": "candidate_verification_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/candidate_verification_v1-unknown-field.json",
+      "sha256": "c2e42715bfc28e0b8e7b88917a4e2336ea24cc3543632ce3aead2ef71dce1567",
+      "expected_result": "reject"
+    },
+    {
+      "name": "candidate_verification_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/candidate_verification_v1-valid.json",
+      "sha256": "6ec756786dc9fd8c80ea050019c7661b53318fa822f7ea79d574177c71c90ccb",
+      "expected_result": "pass"
+    },
+    {
+      "name": "canonical-unicode",
+      "kind": "positive",
+      "path": "fixtures/vnext/canonical-unicode.json",
+      "sha256": "8fdca223a821dae0a11d6f68ca8ad51ff8ab021890bcdbe692f93c4bc48804c2",
+      "expected_result": "pass"
+    },
+    {
+      "name": "current_verified_pointer_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/current_verified_pointer_v1-unknown-field.json",
+      "sha256": "fe1644d19e27c95dd617787f1b8b65f2681a553fa7ada5be23182f1163fbfb46",
+      "expected_result": "reject"
+    },
+    {
+      "name": "current_verified_pointer_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/current_verified_pointer_v1-valid.json",
+      "sha256": "6525535c5b6dbb21ce6d5b42438c166412acda59b11db11ece8c63045dba5595",
+      "expected_result": "pass"
+    },
+    {
+      "name": "dependency-cycle",
+      "kind": "negative",
+      "path": "fixtures/vnext/dependency-cycle.json",
+      "sha256": "49a29239e0876c591612ee701622f9dfe1e6e23bb2a732fe1ef2652e5ff93663",
+      "expected_result": "reject"
+    },
+    {
+      "name": "job_descriptor_v2-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/job_descriptor_v2-unknown-field.json",
+      "sha256": "2015a0889c7da681c9164eea3c258d317a7cf601105a97e927b6738b8c36a823",
+      "expected_result": "reject"
+    },
+    {
+      "name": "job_descriptor_v2-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/job_descriptor_v2-valid.json",
+      "sha256": "257b36ea54b2348db395b4cde5c90f68234b3014584eb34e32dba6138f586460",
+      "expected_result": "pass"
+    },
+    {
+      "name": "mutation_plan_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/mutation_plan_v1-unknown-field.json",
+      "sha256": "931366961393270058cc550ad9d65526ef72b760dc794712744c06c81a27c97f",
+      "expected_result": "reject"
+    },
+    {
+      "name": "mutation_plan_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/mutation_plan_v1-valid.json",
+      "sha256": "e66729cc0d399636326bcca044263a216871a30365f8fb5f1ccd8f5a27c705f9",
+      "expected_result": "pass"
+    },
+    {
+      "name": "operator_decision_response_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/operator_decision_response_v1-unknown-field.json",
+      "sha256": "d531cd157794eaf1d9bbbdd73e3e5f30d3bdd5b782c11042a5b076307fdcddb6",
+      "expected_result": "reject"
+    },
+    {
+      "name": "operator_decision_response_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/operator_decision_response_v1-valid.json",
+      "sha256": "41cdcfd67b72f11908dbadcaa8d0962fb270ff78029e733098a69e1331206268",
+      "expected_result": "pass"
+    },
+    {
+      "name": "patch_operation_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/patch_operation_v1-unknown-field.json",
+      "sha256": "3614700a8328ffde498b6eff773eeb06aa174307a5f5a007fdfc3fd031dbf0d2",
+      "expected_result": "reject"
+    },
+    {
+      "name": "patch_operation_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/patch_operation_v1-valid.json",
+      "sha256": "1eb7d110c807424048dc96b1a5d0aa596f026bd16ee71c31463ad30efc95bae6",
+      "expected_result": "pass"
+    },
+    {
+      "name": "patch_set_client_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/patch_set_client_v1-unknown-field.json",
+      "sha256": "9cbc7e0906501e8d2daa3997bcce436d42507fd292d5a5a5d962bdda822b9eb1",
+      "expected_result": "reject"
+    },
+    {
+      "name": "patch_set_client_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/patch_set_client_v1-valid.json",
+      "sha256": "af1ad05bd0210fca49c70d0b80216b852def53fa62efae024c84992371e79985",
+      "expected_result": "pass"
+    },
+    {
+      "name": "patch_set_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/patch_set_v1-unknown-field.json",
+      "sha256": "460d0e4f0114d79e8e5c44a096a8654b9606a9edd5214ca00a56f58da07e413d",
+      "expected_result": "reject"
+    },
+    {
+      "name": "patch_set_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/patch_set_v1-valid.json",
+      "sha256": "97c3eaf967936c4e978332eefe464d8c183e8508ec7825616dc512ec6d987db4",
+      "expected_result": "pass"
+    },
+    {
+      "name": "preservation_report_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/preservation_report_v1-unknown-field.json",
+      "sha256": "574f886c531c519d41c4f371ee858864d785cf94c92751cd119e0b61012e22dc",
+      "expected_result": "reject"
+    },
+    {
+      "name": "preservation_report_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/preservation_report_v1-valid.json",
+      "sha256": "5eb973bbab2f773dfab31fee6b0080e676d15328d5b1c0a5133301983b2f4d22",
+      "expected_result": "pass"
+    },
+    {
+      "name": "promotion_intent_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/promotion_intent_v1-unknown-field.json",
+      "sha256": "e705780892d5d86d4343da0401473e26dcce03bf7ee94702a8d81f8a8e1b8c20",
+      "expected_result": "reject"
+    },
+    {
+      "name": "promotion_intent_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/promotion_intent_v1-valid.json",
+      "sha256": "85a7eb3f9d573328e0ae7193c7f4f6d5938e72b94d0a6058ca27102686e35f42",
+      "expected_result": "pass"
+    },
+    {
+      "name": "protected_invariants_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/protected_invariants_v1-unknown-field.json",
+      "sha256": "984c70623b29aecd493ac274aba16fe0ea0715ce362dfc6429d85134d7fd8a11",
+      "expected_result": "reject"
+    },
+    {
+      "name": "protected_invariants_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/protected_invariants_v1-valid.json",
+      "sha256": "14c35783de8f0dc67f933b63cf9f58e090bddccca7115a190afd8b6cbde696b7",
+      "expected_result": "pass"
+    },
+    {
+      "name": "ratification_delta_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/ratification_delta_v1-unknown-field.json",
+      "sha256": "d28aabf89624e0bd6cb7a16a03ed78cbe6ae8ad98ad6544afcef40b46ec1971f",
+      "expected_result": "reject"
+    },
+    {
+      "name": "ratification_delta_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/ratification_delta_v1-valid.json",
+      "sha256": "4b61dab83e84ad0d6ee6f0dea64112ef394f76a9449222ec21c604634f878957",
+      "expected_result": "pass"
+    },
+    {
+      "name": "review_configuration_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/review_configuration_v1-unknown-field.json",
+      "sha256": "bb38d19c0fbf4d75c88b25e500e79be9930b7cafc34dff8bd172b6d4c19ae57c",
+      "expected_result": "reject"
+    },
+    {
+      "name": "review_configuration_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/review_configuration_v1-valid.json",
+      "sha256": "c22e08a356529cb684bfd0511eaa8479e9ca598862eecc8d0f0095d0089ff180",
+      "expected_result": "pass"
+    },
+    {
+      "name": "scope_contract-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/scope_contract-unknown-field.json",
+      "sha256": "f348aa6c94f0ef35beb8b36a37d1c23cd3cf48d4aca870c195b1019acf050363",
+      "expected_result": "reject"
+    },
+    {
+      "name": "scope_contract-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/scope_contract-valid.json",
+      "sha256": "7e5a72cd84958e43626ddac22568de56b5c5247cc2cf14f5beed5eff65574afd",
+      "expected_result": "pass"
+    },
+    {
+      "name": "section_identity_map_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/section_identity_map_v1-unknown-field.json",
+      "sha256": "7891bd321a946de8f22b328e57f1c1127fdea7cb088ee3ed70f87928a15f6413",
+      "expected_result": "reject"
+    },
+    {
+      "name": "section_identity_map_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/section_identity_map_v1-valid.json",
+      "sha256": "dbd0aaae8d5bfac662a0ffc352815b27f7b890184d0afd57f5d0d2d1efb040a0",
+      "expected_result": "pass"
+    },
+    {
+      "name": "semantic_verification_client_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/semantic_verification_client_v1-unknown-field.json",
+      "sha256": "1bd24619e8390b42a39a4ae70a087ef513819d06bda1eedbd4b338c23bb95ce5",
+      "expected_result": "reject"
+    },
+    {
+      "name": "semantic_verification_client_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/semantic_verification_client_v1-valid.json",
+      "sha256": "9b72419a8115c53319913eab408e4671008e974c1483de7deae639e050af4d57",
+      "expected_result": "pass"
+    },
+    {
+      "name": "semantic_verification_v1-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/semantic_verification_v1-unknown-field.json",
+      "sha256": "0a30d43e24a6baed074ffc0b91afa5ec9f4bec649ac25cd65397bf0b031521a0",
+      "expected_result": "reject"
+    },
+    {
+      "name": "semantic_verification_v1-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/semantic_verification_v1-valid.json",
+      "sha256": "9f9b36cdb33ca2b6d31e5944098368bd37f579b41caedd5fd831903e834e9621",
+      "expected_result": "pass"
+    },
+    {
+      "name": "terminal_report_v2-unknown-field",
+      "kind": "negative",
+      "path": "fixtures/vnext/terminal_report_v2-unknown-field.json",
+      "sha256": "f51e8c78c5c84ec3de9f66c0ddf26b24a945700a6b931195433481d4aa998c60",
+      "expected_result": "reject"
+    },
+    {
+      "name": "terminal_report_v2-valid",
+      "kind": "positive",
+      "path": "fixtures/vnext/terminal_report_v2-valid.json",
+      "sha256": "abe0d646e71a23676502146024466318389eeda1e9fa422eb220922924c39ae5",
+      "expected_result": "pass"
+    },
+    {
+      "name": "topological-ready-tiebreak",
+      "kind": "positive",
+      "path": "fixtures/vnext/topological-ready-tiebreak.json",
+      "sha256": "eb1af0857909690dcd4bdc6723d78f515d39bc0bd154c6967db5619ad989f6db",
+      "expected_result": "pass"
+    },
+    {
+      "name": "unverified-decision",
+      "kind": "positive",
+      "path": "fixtures/vnext/unverified-decision.json",
+      "sha256": "c89569e9f2350a3fda8ca0ff1a395dc0b5202fb68949ca6e3949a4eb1905817c",
+      "expected_result": "pass"
+    },
+    {
+      "name": "verified-without-semantic-proof",
+      "kind": "negative",
+      "path": "fixtures/vnext/verified-without-semantic-proof.json",
+      "sha256": "dc7679f28cf6db07f7a8cbf9b8e4b2157b6f11fc69ada3f09fa8fa3de5162ee8",
+      "expected_result": "reject"
+    }
+  ],
+  "suite_digest": "69dbe84ce740ccae19126a39514f9bca5bcc036c3152d7a0a623e29bd9214548"
+}

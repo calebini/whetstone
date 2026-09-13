@@ -1,0 +1,13 @@
+{
+  "name": "candidate-identity-fixed",
+  "operation": "candidate_identity",
+  "input": [
+    "txn_1111111111111111111111111111111111111111111111111111111111111111",
+    "2222222222222222222222222222222222222222222222222222222222222222",
+    "3333333333333333333333333333333333333333333333333333333333333333",
+    "patch-assembler-v1",
+    "whetstone-canonical-json-v1"
+  ],
+  "expected_result": "pass",
+  "expected": "can_deec4196f88eaa29aeb2ee040859c4ff4a9dcf691a8c3f88941bc5553c3ed3bd"
+}

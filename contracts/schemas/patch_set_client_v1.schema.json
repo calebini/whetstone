@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "patch-set-client-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "proposal_id",
+    "base_draft_hash",
+    "mutation_plan_hash",
+    "editor",
+    "operations",
+    "declined_findings",
+    "editor_claims"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "patch-set-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "proposal_id": {
+      "type": "null"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mutation_plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "operation_type",
+          "target_stable_section_id",
+          "expected_target_hash",
+          "payload",
+          "addressed_finding_ids",
+          "reason",
+          "normative_change",
+          "preserve_target_identity",
+          "depends_on_operation_ids"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          },
+          "operation_type": {
+            "enum": [
+              "replace_section_body",
+              "replace_section_subtree",
+              "insert_section_before",
+              "insert_section_after",
+              "append_child_section",
+              "delete_section_subtree"
+            ]
+          },
+          "target_stable_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "expected_target_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "hash"
+            ],
+            "properties": {
+              "path": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "hash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "addressed_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "normative_change": {
+            "enum": [
+              "none",
+              "clarification",
+              "add",
+              "remove",
+              "strengthen",
+              "weaken",
+              "authority_change",
+              "scope_change"
+            ]
+          },
+          "preserve_target_identity": {
+            "type": "boolean"
+          },
+          "depends_on_operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "declined_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "source_feedback_ids",
+          "decline_reason",
+          "rationale"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_feedback_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "decline_reason": {
+            "enum": [
+              "architectural_conflict",
+              "ambiguous",
+              "out_of_scope",
+              "deferred_to_later_round"
+            ]
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "editor_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "addressed_finding_ids",
+        "normative_change_summary"
+      ],
+      "properties": {
+        "addressed_finding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "normative_change_summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "patch-set-client-v1",
+    "producer": "editor",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

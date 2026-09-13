@@ -1,0 +1,16 @@
+{
+  "name": "section_identity_map_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "section_identity_map_v1",
+    "value": {
+      "schema_version": "section-identity-map-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "parser_contract_version": "example",
+      "sections": []
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

@@ -1,0 +1,30 @@
+{
+  "name": "topological-ready-tiebreak",
+  "operation": "topology",
+  "input": {
+    "items": [
+      {
+        "id": "z",
+        "deps": []
+      },
+      {
+        "id": "b",
+        "deps": [
+          "a"
+        ]
+      },
+      {
+        "id": "a",
+        "deps": []
+      }
+    ],
+    "key": "id",
+    "dependencies": "deps"
+  },
+  "expected_result": "pass",
+  "expected": [
+    "a",
+    "b",
+    "z"
+  ]
+}

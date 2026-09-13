@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ratification-delta-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "mutable_target_binding_id",
+    "target_draft_hash",
+    "compared_binding_ids",
+    "deltas",
+    "compatibility_policy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ratification-delta-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "mutable_target_binding_id": {
+      "type": "string",
+      "pattern": "^bind_[0-9a-f]{64}$"
+    },
+    "target_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "compared_binding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^bind_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "deltas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authority_scope",
+          "target_section_ids",
+          "reference_binding_id",
+          "delta_type",
+          "description",
+          "source_finding_ids"
+        ],
+        "properties": {
+          "authority_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "reference_binding_id": {
+            "type": "string",
+            "pattern": "^bind_[0-9a-f]{64}$"
+          },
+          "delta_type": {
+            "enum": [
+              "intentional_future_change",
+              "downstream_ratification_required",
+              "current_implementation_mismatch",
+              "unresolved_authority_conflict"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "compatibility_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "decision_response_id"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_needed",
+            "authorized",
+            "forbidden",
+            "operator_decision_required"
+          ]
+        },
+        "decision_response_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^resp_[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "ratification-delta-v1",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "job_descriptor_v2-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "job_descriptor_v2",
+    "value": {
+      "schema_version": "job-descriptor-v2",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-09-13T00:00:00Z",
+      "editing_mode": "reviewer_only",
+      "contract_suite_version": "example",
+      "parser_contract_version": "example",
+      "assembler_version": "example",
+      "inventory_version": "example",
+      "normalization_version": "example",
+      "semantic_verifier_policy_version": "example",
+      "seed_draft": {
+        "path": "inputs/example.json",
+        "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "authority_map_path": "inputs/example.json",
+      "authority_map_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope_contract_path": "inputs/example.json",
+      "scope_contract_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "protected_invariants_path": "inputs/example.json",
+      "protected_invariants_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review_configuration_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_spec": {
+        "path": "inputs/example.json",
+        "expected_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

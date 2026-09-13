@@ -1,0 +1,14 @@
+{
+  "name": "candidate_index_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "candidate_index_v1",
+    "value": {
+      "schema_version": "candidate-index-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "entries": []
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

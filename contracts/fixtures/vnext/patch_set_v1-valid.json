@@ -1,0 +1,28 @@
+{
+  "name": "patch_set_v1-valid",
+  "operation": "schema",
+  "input": {
+    "schema": "patch_set_v1",
+    "value": {
+      "schema_version": "patch-set-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "transaction_id": "txn_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "proposal_id": "pro_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mutation_plan_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "editor": {
+        "name": "example",
+        "version": "example",
+        "model": "example"
+      },
+      "operations": [],
+      "declined_findings": [],
+      "editor_claims": {
+        "addressed_finding_ids": [],
+        "normative_change_summary": "example"
+      }
+    }
+  },
+  "expected_result": "pass",
+  "expected": null
+}

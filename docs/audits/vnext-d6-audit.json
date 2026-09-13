@@ -1,0 +1,193 @@
+{
+  "scope": "D6 identity and contract-suite consistency for offline slice 18.2; not convergence or runtime qualification",
+  "configured_client": {
+    "client": "codex",
+    "model": "gpt-5.5",
+    "version": "0.142.0"
+  },
+  "runs": [
+    {
+      "root": "rounds/vnext-d6-audit-001",
+      "report": {
+        "audit_brief_hash": "ddfaba44c244390932184a1e102ee2db3ef346b2835f0e4230b91e319c561442",
+        "audit_manifest_path": "rounds/vnext-d6-audit-001/change_audit/audit_manifest.json",
+        "boundary_preserved": false,
+        "failure_reason": null,
+        "feedback_counts": {
+          "blocker": 1,
+          "major": 1,
+          "minor": 0,
+          "nit": 0
+        },
+        "generated_at": "2026-09-12T22:52:13.953480+00:00",
+        "in_scope_feedback_ids": [
+          "fb_consistency_001",
+          "fb_consistency_002"
+        ],
+        "out_of_scope_feedback_ids": [],
+        "profile": "consistency",
+        "recommended_next_action": "run_focused_whetstone",
+        "schema_version": "change-audit-report-v1",
+        "source_feedback_path": "rounds/vnext-d6-audit-001/change_audit/change_audit_feedback.json",
+        "verdict": "blocked"
+      },
+      "feedback": {
+        "draft_hash": "ddfaba44c244390932184a1e102ee2db3ef346b2835f0e4230b91e319c561442",
+        "feedback": [
+          {
+            "affected_sections": [
+              "candidate_identity_and_disposition",
+              "patch_protocol",
+              "versioned_job_descriptor"
+            ],
+            "authority_impact": null,
+            "baseline_severity": "blocker",
+            "claim": "The global D6 public identifier rule requires full 64-character SHA-256 identifiers, but later proposal and candidate identity formulas truncate identifiers to 16 hex characters, leaving 18.2 without a consistent identifier grammar to publish in schemas and conformance vectors.",
+            "determinism_impact": "blocker",
+            "evidence": "The Versioned Job Descriptor section states: \"Every other content-derived public vNext identifier MUST use a schema-owned ASCII type prefix followed by `_` and the full 64-character lowercase SHA-256 digest... truncated hashes ... are forbidden.\" The Patch Protocol then defines `proposal_id = \"pro_\" + first_16_hex_chars(SHA256(proposal_identity_bytes))`, and Candidate Identity defines `candidate_id = \"can_\" + first_16_hex_chars(SHA256(canonical_json({...})))`.",
+            "feedback_id": "fb_consistency_001",
+            "in_scope": true,
+            "invariant_violated": "version_lineage",
+            "issue_fingerprint": "ec4ec64b94aea1279095f40feb1d6d57d840c2f2002bb7c781394712cb1b0a1a",
+            "issue_id": "iss_ec4ec64b94aea127",
+            "issue_type": "terminology_consistency",
+            "normalized_severity": "blocker",
+            "oscillation_key": null,
+            "recommended_change": "Align the identifier contract by either changing proposal_id and candidate_id to use the full 64-character digest, or explicitly narrowing the global full-digest rule to exclude the named short aliases while still requiring full digest fields for collision validation. The chosen rule should be reflected in the schema identifier grammar and conformance fixtures.",
+            "rubric_impact": null,
+            "severity_rationale": "This directly blocks deterministic 18.2 schema and fixture publication because the same amendment simultaneously forbids and requires truncated public identifiers."
+          },
+          {
+            "affected_sections": [
+              "public_contract_suite",
+              "versioned_job_descriptor"
+            ],
+            "authority_impact": null,
+            "baseline_severity": "major",
+            "claim": "The job descriptor identity preimage depends on `contract_suite_digest`, but the descriptor's minimum fields do not include that digest, while the text also says the preimage values are exact scalar values or hashes from the descriptor.",
+            "determinism_impact": "major",
+            "evidence": "The Versioned Job Descriptor minimum fields include `contract_suite_version: string` but no `contract_suite_digest`. The `job_id` preimage array includes `contract_suite_digest`, and the following paragraph says: \"The named values are exact scalar values or hashes from the descriptor... `contract_suite_digest` is the validated digest of the suite manifest named by `contract_suite_version`.\" The Public Contract Suite section separately says the supported-suite registry binds `suite_version` to exactly one `suite_digest`.",
+            "feedback_id": "fb_consistency_002",
+            "in_scope": true,
+            "invariant_violated": "artifact_integrity",
+            "issue_fingerprint": "f1b9fd63f7e2a64bd1bf3ce9ca108289f6c0c7634d98f4cc91c070b6db417e8b",
+            "issue_id": "iss_f1b9fd63f7e2a64b",
+            "issue_type": "artifact_reference_consistency",
+            "normalized_severity": "major",
+            "oscillation_key": null,
+            "recommended_change": "Make the source of `contract_suite_digest` consistent: either add `contract_suite_digest: sha256` to `job_descriptor.json` and define validation against the supported-suite registry, or revise the job-id text so `contract_suite_digest` is explicitly registry-derived rather than a descriptor field. Then ensure the 18.2 job descriptor schema and conformance vectors follow that decision.",
+            "rubric_impact": null,
+            "severity_rationale": "This is not a missing implementation detail; it is a contract inconsistency about whether a hash-bearing identity input is persisted in the descriptor or derived from registry state."
+          }
+        ],
+        "profile": "consistency",
+        "reviewer": {
+          "model": "gpt-5",
+          "name": "Codex Whetstone Consistency Reviewer",
+          "version": "1.0.0"
+        },
+        "round_number": 1
+      },
+      "sources": [
+        {
+          "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+          "sha256": "b62266bc70628f8a9d850e1114d0d9e983467c68875828715c1740a6c0e2e14e",
+          "snapshot": "candidate.md",
+          "snapshot_sha256": "ed1d8e4522e06273e85832e8c1e1cc6efb4927a2ff1e72a9c48a97fcf6981fe6"
+        },
+        {
+          "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+          "sha256": "e95c0108a8a1e94a9f91d7c788355599acfbb689aa8af420f042ba06b48fc68d",
+          "snapshot": "artifacts.md",
+          "snapshot_sha256": "dfb2a0b38848d3f3d0b8d303f56f04c3ff2eff03994d2b8d358cee3e1ebb9eb5"
+        },
+        {
+          "source": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+          "sha256": "63c5fabd6602eaebc5f53317d36a65b0c7d0f10498981f1f452d2f2a6b078f4c",
+          "snapshot": "coordinating.md",
+          "snapshot_sha256": "4b14b28b9c43100f0629c6aefe3cbefcedf5f8b70964ac7617211fdca50e7c11"
+        },
+        {
+          "source": "IMPLEMENTATION_PLAN.md",
+          "sha256": "e1dbe55d3ddd27282a0f0615a8892510cd864b5082ee306c9927018f6bd4dd2e",
+          "snapshot": "plan.md",
+          "snapshot_sha256": "3ad73ff4aef51ad6f3f1f6d743872f9a75fe260de4b7cdd145715c33df4b87af"
+        }
+      ],
+      "notes_sha256": "5086c4610a7192cae7ef47deaf9cfa8dfcd8a133a2a7d8b48b97b53eba95a173"
+    },
+    {
+      "root": "rounds/vnext-d6-audit-002",
+      "report": {
+        "audit_brief_hash": "9a2a6e0923b160e575eb7ae92605a3097ae22761313b874e65b04491ec98e5d1",
+        "audit_manifest_path": "rounds/vnext-d6-audit-002/change_audit/audit_manifest.json",
+        "boundary_preserved": true,
+        "failure_reason": null,
+        "feedback_counts": {
+          "blocker": 0,
+          "major": 0,
+          "minor": 0,
+          "nit": 0
+        },
+        "generated_at": "2026-09-12T23:23:56.155243+00:00",
+        "in_scope_feedback_ids": [],
+        "out_of_scope_feedback_ids": [],
+        "profile": "consistency",
+        "recommended_next_action": "none",
+        "schema_version": "change-audit-report-v1",
+        "source_feedback_path": "rounds/vnext-d6-audit-002/change_audit/change_audit_feedback.json",
+        "verdict": "pass"
+      },
+      "feedback": {
+        "draft_hash": "9a2a6e0923b160e575eb7ae92605a3097ae22761313b874e65b04491ec98e5d1",
+        "feedback": [],
+        "profile": "consistency",
+        "reviewer": {
+          "model": "GPT-5",
+          "name": "Codex Whetstone Consistency Reviewer",
+          "version": "1.0.0"
+        },
+        "round_number": 1
+      },
+      "sources": [
+        {
+          "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+          "sha256": "10b8f9085a88b23ea841c313417e2d03d2368ff3069d4dc0894cb9f2da5d4e33",
+          "snapshot": "candidate.md",
+          "snapshot_sha256": "c1f053554ed352afde4ad939dadd59572053adae51cf680664c6c660eba85f9e"
+        },
+        {
+          "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+          "sha256": "2e4b88b44a446218a4d385bea3e466b94c8c53cb8e04624e3e4c916cfd7b7c1f",
+          "snapshot": "artifacts.md",
+          "snapshot_sha256": "966144ae30282baf39e6f171c99f65c1f20ce86199a1cc56b6fc2c8d179e0ed0"
+        },
+        {
+          "source": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+          "sha256": "df769ea82750b47eb172a049d4cdf91da4bb3ae84c4e02a90440e05f07c38f81",
+          "snapshot": "coordinating.md",
+          "snapshot_sha256": "2c9750e55a82d35cc9af7869b315263b92624aa3bb60c71227d1142ce933f84b"
+        },
+        {
+          "source": "IMPLEMENTATION_PLAN.md",
+          "sha256": "e1dbe55d3ddd27282a0f0615a8892510cd864b5082ee306c9927018f6bd4dd2e",
+          "snapshot": "plan.md",
+          "snapshot_sha256": "6c4c2ad8708548c0eabd767b2db14393edbfb33b924595d2782e4828e9381bc8"
+        },
+        {
+          "source": "contracts/algorithms/vnext_identity_v1.md",
+          "sha256": "154906a2351a398b6c84b3a554099567c0d6ad875c3f5bd6809e006fd5b2a38d",
+          "snapshot": "vnext_identity_v1.md",
+          "snapshot_sha256": "154906a2351a398b6c84b3a554099567c0d6ad875c3f5bd6809e006fd5b2a38d"
+        },
+        {
+          "source": "contracts/algorithms/vnext_contract_invariants_v1.md",
+          "sha256": "3bf38d8d18f7b4cfd03ecba6c95f573e829f88d334d4b2a8e79550e514486133",
+          "snapshot": "vnext_contract_invariants_v1.md",
+          "snapshot_sha256": "3bf38d8d18f7b4cfd03ecba6c95f573e829f88d334d4b2a8e79550e514486133"
+        }
+      ],
+      "notes_sha256": "d68cc49699a3efa49539b4c95fa2710c0c590742edb7ecb95b6bde7cba0ea669"
+    }
+  ]
+}

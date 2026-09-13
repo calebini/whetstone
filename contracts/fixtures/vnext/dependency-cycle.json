@@ -1,0 +1,24 @@
+{
+  "name": "dependency-cycle",
+  "operation": "topology",
+  "input": {
+    "items": [
+      {
+        "id": "a",
+        "deps": [
+          "b"
+        ]
+      },
+      {
+        "id": "b",
+        "deps": [
+          "a"
+        ]
+      }
+    ],
+    "key": "id",
+    "dependencies": "deps"
+  },
+  "expected_result": "reject",
+  "expected": null
+}

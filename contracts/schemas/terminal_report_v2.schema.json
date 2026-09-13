@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "terminal-report-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "terminal_state",
+    "current_verified_draft_path",
+    "current_verified_draft_hash",
+    "latest_candidate",
+    "rejected_candidate_ids",
+    "outstanding_decision_ids",
+    "apply_back_permitted",
+    "resume"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "terminal-report-v2"
+    },
+    "terminal_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_verified_draft_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "current_verified_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "latest_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "candidate_creation_ordinal",
+        "candidate_creation_event_path",
+        "candidate_creation_event_hash",
+        "path",
+        "hash",
+        "disposition",
+        "disposition_event_path",
+        "disposition_event_hash",
+        "verification_decision_path",
+        "verification_decision_hash",
+        "verification_decision_final"
+      ],
+      "properties": {
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^can_[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_creation_ordinal": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_creation_event_path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_creation_event_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposition": {
+          "anyOf": [
+            {
+              "const": "CANDIDATE_UNVERIFIED"
+            },
+            {
+              "const": "CANDIDATE_VERIFIED"
+            },
+            {
+              "const": "CANDIDATE_REJECTED"
+            },
+            {
+              "const": "CANDIDATE_PROMOTED"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposition_event_path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposition_event_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_decision_path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_decision_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_decision_final": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "rejected_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^can_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "outstanding_decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "apply_back_permitted": {
+      "type": "boolean"
+    },
+    "resume": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "permitted",
+        "next_gate",
+        "reason"
+      ],
+      "properties": {
+        "permitted": {
+          "type": "boolean"
+        },
+        "next_gate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "terminal-report-v2",
+    "producer": "orchestrator",
+    "consumer": "offline-contract-validator",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

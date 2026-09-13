@@ -2,13 +2,15 @@
 
 Status: vNext design draft
 
-Version: `0.5`
+Version: `0.6`
 
 Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
 
 The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications. Version `0.4` amended only the bridge to separate proposal/acceptance admission and define explicit correspondence. Version `0.5` closes the vNext D6 job-identity and contract-suite-manifest policy; the vNext protocol remains non-operative.
 
 ## Purpose
+
+Version `0.6` resolves the D6 audit findings: proposal and candidate IDs use full digests, the suite digest comes from the supported-suite registry, and immutable pre-job inputs make identity construction acyclic. The published offline foundation does not activate runtime modes.
 
 This leaf defines the safety boundary between model-proposed specification edits and the verified draft that Whetstone may use as authority.
 
@@ -253,8 +255,9 @@ UTF-8 bytes of canonical JSON for this ordered array:
 ```
 
 Canonical JSON uses the descriptor-bound normalization version, UTF-8, no BOM,
-compact separators, and unescaped Unicode. The named values are exact scalar
+compact separators, and unescaped Unicode. All named values except `contract_suite_digest` are exact scalar
 values or hashes from the descriptor; path strings and `created_at` are excluded.
+`contract_suite_digest` is registry-derived, never a caller-selected descriptor field.
 `contract_suite_digest` is the validated digest of the suite manifest named by
 `contract_suite_version`. A job descriptor MUST NOT be mutated after the first
 review attempt. Changed canonical job inputs require a new descriptor and new
@@ -271,6 +274,18 @@ different preimage or role is an identity collision and MUST fail closed before
 authority advances.
 
 The descriptor-bound `parser_contract_version`, `assembler_version`, `inventory_version`, and `normalization_version` are the only versions permitted for section identity, candidate identity, candidate assembly, deterministic validation, and resume or replay within the job. An implementation default, installed latest version, or retry-time override MUST NOT replace a descriptor-bound version.
+
+### Acyclic input construction
+
+The authority map, protected invariants, optional scope contract and review configuration are immutable **pre-job inputs**. They MUST NOT contain `job_id`, transaction/candidate identifiers or hashes of the descriptor. Their binding/assertion identities are computed without a job ID. The authority map is constructed first; invariants may cite its binding IDs. Invariant input scopes and canonical matchers use source names/heading paths, never job-derived stable section IDs. Scope and review inputs likewise MUST NOT refer to artifacts derived from this job. The descriptor binds their canonical bytes by hash; a separate embedded job back-reference is unnecessary and forbidden.
+
+Construct and validate these inputs and their hashes, then resolve the suite digest, compute the job ID, and only then generate seed section identities and later artifacts. Moving the package between hosts MUST preserve relative logical paths inside the inputs; descriptor locator paths may change when the bound bytes remain identical. Path independence means independence from host roots and descriptor locators, not permission to change logical authority bindings without a new job identity. All embedded artifact paths in public vNext inputs/output are confined logical package paths; absolute paths and symlinks are invalid.
+
+Canonical identity bytes use `whetstone-canonical-json-v1`: UTF-8 without BOM, sorted object keys, compact separators, unchanged Unicode, and no trailing newline. Duplicate object keys, invalid Unicode and non-finite numbers are invalid. This first suite uses only integers, not floating-point numbers, in identity-bearing JSON; booleans and integers remain distinct. Timestamps have UTC second precision with trailing `Z`. Omitted fields and explicit null are distinct; required nullable fields MUST be present. Scope path/hash and source path/expected-hash pairs are either both null or both present.
+
+Full-digest rules apply to identifiers minted by vNext. Imported canonical issue IDs, source feedback IDs, named authority scopes, option names and policy rule names retain their owning contracts; they are references, not newly minted vNext identities. Slice and operation IDs are content-derived in dependency order, before their containing transaction/proposal identity. Owning schemas and the versioned identity algorithm specify these preimages.
+
+A suite manifest MUST NOT pin itself or a generated registry containing its own digest. Fixture programs use literal independent inputs or declared symbolic references resolved by the fixed conformance evaluator; their stored bytes MUST NOT embed a digest of the suite that contains them. A manifest pins every transitively used schema, algorithm and vector, while the implementation registry pins the manifest digest externally. Offline contract support does not admit a runtime mode or claim that later assembly, verifier or lock implementations exist.
 
 ## Explicit Authority Model
 
@@ -315,7 +330,6 @@ Minimum fields:
 
 ```yaml
 schema_version: authority-map-v1
-job_id: string
 bindings:
   - binding_id: string
     path: string
@@ -377,7 +391,6 @@ Minimum fields:
 
 ```yaml
 schema_version: protected-invariants-v1
-job_id: string
 base_draft_hash: sha256
 assertions:
   - assertion_id: string
@@ -655,12 +668,10 @@ After client-input validation and payload-hash validation, the Orchestrator MUST
 
 ```text
 proposal_identity_bytes = canonical_json_utf8(
-  persisted_patch_set_fields_with_proposal_id_null
+  ["whetstone-proposal-id-v1", persisted_patch_set_fields_with_proposal_id_null]
 )
 
-proposal_id = "pro_" + first_16_hex_chars(
-  SHA256(proposal_identity_bytes)
-)
+proposal_id = "pro_" + lowercase_hex(SHA256(proposal_identity_bytes))
 ```
 
 The Orchestrator MUST then inject the computed `proposal_id`, serialize the complete persisted patch set as canonical JSON UTF-8 bytes, and write those exact bytes once at `proposals/{proposal_id}/proposed_patch.json`.
@@ -784,13 +795,11 @@ Two conforming implementations applying the same validated patch set, payloads, 
 ### Candidate Identity And Disposition
 
 ```text
-candidate_id = "can_" + first_16_hex_chars(SHA256(canonical_json({
-  "transaction_id": transaction_id,
-  "base_draft_hash": base_draft_hash,
-  "patch_set_hash": patch_set_hash,
-  "assembler_version": job_descriptor.assembler_version,
-  "normalization_version": job_descriptor.normalization_version
-})))
+candidate_id = "can_" + lowercase_hex(SHA256(canonical_json([
+  "whetstone-candidate-id-v1", transaction_id, base_draft_hash,
+  patch_set_hash, job_descriptor.assembler_version,
+  job_descriptor.normalization_version
+])))
 ```
 
 Candidate disposition is separate from run terminal state:
@@ -1443,6 +1452,8 @@ Apply-back is permitted only when:
 Manual recovery flags MUST NOT relabel an unverified candidate as verified. A manual operator may export unverified material for inspection, but such export is not Whetstone apply-back and MUST be clearly reported as outside the verified promotion path.
 
 ## Public Contract Suite
+
+The first offline publication is `vnext-contracts-1`. Its normative supplements are [exact identity algorithms](../../contracts/algorithms/vnext_identity_v1.md) and [cross-artifact validation rules](../../contracts/algorithms/vnext_contract_invariants_v1.md); the [foundation guide](../VNEXT_CONTRACTS.md) records executable coverage and limits. The descriptor pins `review-configuration-v1` by hash; an offline bootstrap caller supplies its locator separately. `candidate-index-v1` is an interchange view of the immutable creation chain, not an additional runtime authority pointer. Client patch and semantic-verifier envelopes are separate from Orchestrator-owned persisted artifacts.
 
 The suite is identified by a closed `whetstone-contract-suite-manifest-v1`
 artifact. Its required fields are `schema_version`, `suite_version`,

@@ -1,0 +1,28 @@
+{
+  "name": "mutation_plan_v1-unknown-field",
+  "operation": "schema",
+  "input": {
+    "schema": "mutation_plan_v1",
+    "value": {
+      "schema_version": "mutation-plan-v1",
+      "job_id": "job_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "transaction_id": "txn_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "base_draft_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority_map_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope_contract_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "protected_invariants_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "finding_dispositions": [],
+      "allowed_section_ids": [],
+      "allowed_operation_types": [],
+      "max_operations": 0,
+      "max_changed_sections": 0,
+      "max_changed_normative_units": 0,
+      "authorized_deletion_unit_ids": [],
+      "required_context_binding_ids": [],
+      "slices": [],
+      "unexpected_field": true
+    }
+  },
+  "expected_result": "reject",
+  "expected": null
+}
