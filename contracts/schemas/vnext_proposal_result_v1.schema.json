@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-proposal-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-proposal-result-v1"
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "mutation_plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "candidate_registered": {
+      "const": false
+    },
+    "verified": {
+      "const": false
+    },
+    "promoted": {
+      "const": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "proposal",
+    "mutation_plan_hash",
+    "base_pointer",
+    "candidate_registered",
+    "verified",
+    "promoted"
+  ],
+  "x-whetstone": {
+    "version": "vnext-proposal-result-v1",
+    "producer": "orchestrator",
+    "consumer": "vnext-proposal-inspection",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate runtime envelope, frozen first suite unchanged"
+  }
+}

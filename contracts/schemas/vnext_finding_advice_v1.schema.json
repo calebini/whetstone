@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-finding-advice-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-finding-advice-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "authority_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "scope_contract_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "protected_invariants_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "feedback_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "enum": [
+              "editor_fixable",
+              "operator_decision_required",
+              "authority_conflict",
+              "scope_change",
+              "deferable"
+            ]
+          },
+          "authority_scope_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "source_authority_binding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "scope_surface_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "compatibility_change": {
+            "enum": [
+              "none",
+              "introduce",
+              "remove"
+            ]
+          },
+          "requested_effects": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "none",
+                "clarification",
+                "add",
+                "remove",
+                "strengthen",
+                "weaken",
+                "authority_change",
+                "scope_change"
+              ]
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "feedback_id",
+          "classification",
+          "authority_scope_ids",
+          "source_authority_binding_ids",
+          "scope_surface_ids",
+          "compatibility_change",
+          "requested_effects"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "base_draft_hash",
+    "feedback",
+    "authority_map_hash",
+    "scope_contract_hash",
+    "protected_invariants_hash",
+    "findings"
+  ],
+  "x-whetstone": {
+    "version": "vnext-finding-advice-v1",
+    "producer": "reviewer-advisory",
+    "consumer": "vnext-classifier",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate runtime envelope, frozen first suite unchanged"
+  }
+}

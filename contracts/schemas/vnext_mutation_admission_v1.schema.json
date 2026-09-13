@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-mutation-admission-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-mutation-admission-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "advice": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "hash"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_feedback_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "classification": {
+            "enum": [
+              "editor_fixable",
+              "operator_decision_required",
+              "authority_conflict",
+              "scope_change",
+              "deferable"
+            ]
+          },
+          "target_section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            }
+          }
+        },
+        "required": [
+          "finding_id",
+          "source_feedback_ids",
+          "classification",
+          "target_section_ids"
+        ]
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "issue_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "feedback_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "hash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "hash"
+              ]
+            }
+          },
+          "source_items": {
+            "type": "array",
+            "items": {
+              "$ref": "reviewer_feedback.schema.json#/properties/feedback/items"
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "requires_new_job": {
+            "type": "boolean"
+          },
+          "advice_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "issue_fingerprint",
+          "feedback_refs",
+          "source_items",
+          "reasons",
+          "requires_new_job",
+          "advice_hash"
+        ]
+      }
+    },
+    "derived_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "issue_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "source_feedback_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "classification": {
+            "const": "editor_fixable"
+          },
+          "admitted_to_editing": {
+            "const": true
+          },
+          "decision_response_id": {
+            "type": "string",
+            "pattern": "^resp_[0-9a-f]{64}$"
+          },
+          "original_finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision_request_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "target_section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            }
+          }
+        },
+        "required": [
+          "finding_id",
+          "issue_fingerprint",
+          "source_feedback_ids",
+          "classification",
+          "admitted_to_editing",
+          "decision_response_id",
+          "original_finding_id",
+          "decision_request_hash",
+          "target_section_ids"
+        ]
+      }
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "hash"
+            ]
+          },
+          "response": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "hash"
+            ]
+          }
+        },
+        "required": [
+          "finding_id",
+          "request",
+          "response"
+        ]
+      }
+    },
+    "mutation_plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "base_pointer",
+    "feedback",
+    "advice",
+    "findings",
+    "evidence",
+    "derived_tasks",
+    "decision_refs",
+    "mutation_plan_hash"
+  ],
+  "x-whetstone": {
+    "version": "vnext-mutation-admission-v1",
+    "producer": "orchestrator",
+    "consumer": "vnext-proposal-inspection",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separate runtime envelope, frozen first suite unchanged"
+  }
+}

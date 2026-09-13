@@ -223,6 +223,8 @@ Reviewer-only admission requires a validated immutable seed, seed section map, o
 
 The [seed initialization supplement](../../contracts/algorithms/vnext_seed_initialization_v1.md) publishes that executable subset and its separately versioned admission/readback schemas. The [18.3 guide](../VNEXT_ADMISSION.md) describes its public selectors and reviewer-only boundary. This does not activate proposal, semantic-verification or promotion services, alter the frozen 18.2 suite, or qualify later scheduler/Phase 2/apply-back integration.
 
+The [mutation preparation supplement](../../contracts/algorithms/vnext_mutation_preparation_v1.md) specifies slice 18.4's seed-only, fixture-driven admission, exact operator-response binding and immutable patch transport. Its [inspection guide](../VNEXT_PROPOSALS.md) identifies the executable evidence and remaining assembly/verification gates. Its separate runtime envelopes do not change the frozen first suite or advertise public proposal mode. Candidate-wide assertion evaluation and actual changed-unit budgets remain assembly/validation obligations; passing proposal preparation is not a preservation or verification verdict.
+
 Candidate disposition and run terminal state are independent. A valid semantic operator-decision verdict produces a final rejected candidate while the run pauses for the decision. Missing/invalid/timed-out semantic output instead leaves an unverified candidate with no fabricated semantic verdict. Final rejection requires a new transaction; final verification permits only mode-appropriate promotion or inspection. No scheduler transition may reopen a final verification decision.
 
 ## Versioned Job Descriptor
