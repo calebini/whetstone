@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewer feedback and advisory classifications",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "feedback",
+    "classifications"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-review-response-v1"
+    },
+    "feedback": {
+      "$ref": "reviewer_feedback.schema.json"
+    },
+    "classifications": {
+      "$ref": "vnext_finding_advice_v1.schema.json#/properties/findings"
+    }
+  }
+}

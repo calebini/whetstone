@@ -1,0 +1,427 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preservation-report-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "candidate_id",
+    "base_draft_hash",
+    "candidate_hash",
+    "candidate_section_identity_map_path",
+    "candidate_section_identity_map_hash",
+    "patch_set_hash",
+    "parser_contract_version",
+    "assembler_version",
+    "inventory_version",
+    "normalization_version",
+    "reproduced_candidate_hash",
+    "result",
+    "mutation_budget",
+    "unit_changes",
+    "assertion_results",
+    "failures",
+    "base_inventory_hash",
+    "candidate_inventory_hash",
+    "protected_invariants_hash",
+    "rules_hash",
+    "metrics_complete",
+    "semantic_assertion_ids",
+    "baseline_diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "preservation-report-v2"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^can_[0-9a-f]{64}$"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_section_identity_map_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+    },
+    "candidate_section_identity_map_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "patch_set_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parser_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assembler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalization_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reproduced_candidate_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "mutation_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operations_allowed",
+        "operations_observed",
+        "sections_allowed",
+        "sections_observed",
+        "normative_units_allowed",
+        "normative_units_observed"
+      ],
+      "properties": {
+        "operations_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operations_observed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sections_observed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "normative_units_allowed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "normative_units_observed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "unit_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_id",
+          "unit_type",
+          "owning_section_id",
+          "change",
+          "source_finding_ids",
+          "authorized",
+          "operation_id",
+          "candidate_unit_ids",
+          "candidate_unit_ordinals",
+          "correspondence_group_id",
+          "semantic_required"
+        ],
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^unit_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owning_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "change": {
+            "enum": [
+              "unchanged",
+              "added",
+              "removed",
+              "modified",
+              "weakened",
+              "strengthened",
+              "moved",
+              "renamed",
+              "ambiguous"
+            ]
+          },
+          "source_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "authorized": {
+            "type": "boolean"
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^op_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidate_unit_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^unit_[0-9a-f]{64}$"
+            }
+          },
+          "candidate_unit_ordinals": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "correspondence_group_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^corr_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semantic_required": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "assertion_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string",
+            "pattern": "^assert_[0-9a-f]{64}$"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_applicable"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "operation_ids",
+          "section_ids",
+          "unit_ids",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^op_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^unit_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "base_inventory_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_inventory_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "protected_invariants_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rules_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "metrics_complete": {
+      "type": "boolean"
+    },
+    "semantic_assertion_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^assert_[0-9a-f]{64}$"
+      }
+    },
+    "baseline_diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "byte_start",
+          "byte_end",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "byte_start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byte_end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "preservation-report-v2",
+    "producer": "orchestrator",
+    "consumer": "candidate-validation-v2",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "unactivated consuming suite; frozen first suite unchanged",
+    "ownership": "All fields orchestrator-owned. A pass covers deterministic checks only, never semantic verification or promotion."
+  }
+}

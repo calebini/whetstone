@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "section-identity-map-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "draft_hash",
+    "parser_contract_version",
+    "sections",
+    "identity_algorithm_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "section-identity-map-v2"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parser_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stable_section_id",
+          "canonical_section_id",
+          "parent_stable_section_id",
+          "heading_level",
+          "heading_text",
+          "preorder_ordinal",
+          "section_hash",
+          "direct_body_hash",
+          "status",
+          "created_by_operation_id",
+          "previous_stable_section_id"
+        ],
+        "properties": {
+          "stable_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "canonical_section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_stable_section_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^sec_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heading_level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "heading_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "preorder_ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "section_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "direct_body_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "created_by_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^op_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous_stable_section_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^sec_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "identity_algorithm_version": {
+      "const": "vnext-section-lineage-v2"
+    }
+  },
+  "x-whetstone": {
+    "version": "section-identity-map-v2",
+    "producer": "orchestrator",
+    "consumer": "candidate-lineage-v2",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "new consuming suite only; vnext-contracts-1 unchanged",
+    "identity_algorithm": "vnext-section-lineage-v2",
+    "ownership": "All identities, transfer and tombstones are Orchestrator-owned."
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-outcome-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-outcome-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "attempt": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "classification": {
+      "enum": [
+        "valid_semantic",
+        "invalid_semantic",
+        "shape_invalid",
+        "timeout",
+        "transport_failure",
+        "interrupted"
+      ]
+    },
+    "response_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "verification_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "attempt",
+    "classification",
+    "response_hash",
+    "verification_hash",
+    "error"
+  ],
+  "x-whetstone": {
+    "version": "vnext-semantic-outcome-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-request",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

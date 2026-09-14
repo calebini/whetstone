@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-invocation-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-invocation-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "attempt": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "context_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "transport": {
+      "$ref": "vnext_semantic_request_transport_v1.schema.json"
+    },
+    "reason": {
+      "enum": [
+        "initial",
+        "shape_retry",
+        "technical_continuation"
+      ]
+    },
+    "previous_outcome_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "attempt",
+    "context_hash",
+    "prompt_hash",
+    "transport",
+    "reason",
+    "previous_outcome_hash"
+  ],
+  "x-whetstone": {
+    "version": "vnext-semantic-invocation-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-request",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

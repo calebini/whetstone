@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read-only selected proposal round status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "round_number",
+    "processing_gate",
+    "request_id",
+    "request_status",
+    "request_attempts",
+    "terminal_report",
+    "terminal_materialization",
+    "resume"
+  ],
+  "properties": {
+    "operator_work": {
+      "$ref": "vnext_operator_work_v1.schema.json"
+    },
+    "schema_version": {
+      "const": "vnext-proposal-status-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "processing_gate": {
+      "enum": [
+        "review",
+        "finding_admission",
+        "proposal",
+        "assembly",
+        "verification_commit",
+        "semantic_verification",
+        "materialization",
+        "complete"
+      ]
+    },
+    "request_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^req_[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "request_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "terminal_report": {
+      "anyOf": [
+        {
+          "$ref": "terminal_report_v2.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "terminal_materialization": {
+      "enum": [
+        "not_applicable",
+        "missing",
+        "present"
+      ]
+    },
+    "resume": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "permitted",
+        "next_gate",
+        "reason"
+      ],
+      "properties": {
+        "permitted": {
+          "type": "boolean"
+        },
+        "next_gate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

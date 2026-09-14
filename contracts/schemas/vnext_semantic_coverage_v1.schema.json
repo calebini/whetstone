@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-coverage-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "obligations_hash",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-coverage-v1"
+    },
+    "obligations_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "obligation_id",
+          "obligation_hash",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^sem_[0-9a-f]{64}$"
+          },
+          "obligation_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "uncertain"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-semantic-coverage-v1",
+    "producer": "semantic-verifier",
+    "consumer": "unactivated-semantic-coverage",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

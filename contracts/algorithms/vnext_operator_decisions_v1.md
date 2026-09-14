@@ -1,0 +1,35 @@
+# Explicit operator decisions (under development)
+
+This private 18.5 consumer connects the candidate leaf's existing request/response and derived-task rules to a retained seed review and the guarded command interface. It does not activate a shipping suite, ratify D8, change authority policy or provide semantic verification. Operator records remain accountable local assertions, not cryptographic authentication.
+
+## Evidence and requests
+
+`vnext-decisions --root RUN` inspects the active finding review without writes or clients. Its `decision_context` contains exact job/round/result and verified-base references, the reproduced full unit inventory and section map, canonical findings, source Reviewer items, classification reasons and whether immutable policy requires a new job. An agent may formulate concrete options from that evidence; neither its prose nor a suggested option can become an answer automatically.
+
+`vnext-operator-options-v1` contains `job_id`, `round_number`, the exact `review_result` reference and a nonempty `choices` array. Each choice names one original canonical `finding_id` and explicit options under the existing v2 request shape. Options supply descriptions, effects and named-unit grants. The Orchestrator derives exact targets, feedback provenance, inventory/input hashes and request identity. Duplicate/unknown findings, blank descriptions, stale results and invalid/out-of-target unit grants refuse before publication. A finding without valid section targets cannot manufacture an addressable request.
+
+`vnext-decisions --options FILE` validates all choices first, repeats source review durability barriers under D8 ownership, and publishes each canonical `vnext-mutation-decision-request-v2` at `rounds/round-N/operator_decisions/decision_ID/request.json`, where `decision_ID` is the full derived `decision_` identifier. `--dry-run` previews the same requests without writing. A fully published request remains inspectable if acknowledgement or later terminal materialization is interrupted.
+
+An interruption may leave only a request directory. Status diagnoses that incomplete evidence without repair. Replaying the exact options command may complete the corresponding immutable request after revalidating seed, review and empty candidate state. This explicit producer path does not require a successful operator-evidence status projection first. It cannot bypass candidate orphans or infer missing options from partial files.
+
+Only a valid request for an active blocking finding permits `PAUSED_DECISION`. An unresolved finding without a concrete bound request remains at finding admission with diagnostic evidence. The pause report is reproduced from current seed authority and validated requests; it creates no candidate. Missing pause materialization remains operator waiting, not a technical model retry. Replaying request publication or ordinary waiting may restore the report without a client call.
+
+## Explicit responses and selection
+
+`vnext-operator-response-input-v1` has the same job/round/result binding and a nonempty `selections` array. Each entry supplies an exact retained request reference, `selected_option_id`, `rationale`, `decided_by` and UTC-second `decided_at`. `vnext-decide --selections FILE` computes the existing `operator-decision-response-v1` artifact and D6 response identity from that explicit choice. It copies effects and deletion-unit IDs from the selected option and validates the complete named-unit binding. The caller cannot provide replacement grant fields. `--dry-run` constructs the same responses and receipt without writes or clients.
+
+Responses use `rounds/round-N/operator_decisions/decision_ID/responses/response_ID.json`, with the complete `resp_` identifier. Timestamps do not participate in response identity, but immutable bytes and their hashes do: the same identity cannot overwrite a different timestamp. Exact replay uses the original explicit input. A different rationale, actor or option has its own response identity. Multiple answers may be retained without implicitly selecting any of them.
+
+After every selected request/response dependency is validated and durably republished, commit the canonical `vnext-operator-selection-v1` receipt last at `rounds/round-N/operator_decisions/selections/selection-HASH.json`. It binds the job/round, exact Reviewer result, verified-base pointer and sorted unique finding/request/response references. Partial responses without this receipt are not a completed selection. Repeating the identical command validates and reuses retained responses; it never creates approval by default.
+
+Operational command JSON may be formatted for readability. Generated evidence artifacts require exact canonical JSON and hashes. Mutating operator commands require an unadmitted current round and cannot rewrite a frozen plan. All requests, responses and receipts are immutable and revalidated when consumed.
+
+## Admission and status
+
+`live-phase1 --vnext-decisions RELATIVE_RECEIPT_PATH` explicitly selects a retained receipt for new round admission. The consumer rechecks its canonical location/bytes, current result/base, every request and exact response, then passes its decisions through existing full unit preflight and immutable admission. A stored receipt cannot select itself by timestamp, directory presence, filename order or recency. Ordinary live reentry without a receipt remains paused. Technical `resume` rejects new decision selection: changed authorization is a new admission, not a retry.
+
+Each admitted derived editor-fixable task preserves original finding and response provenance; the historical classification is unchanged. Empty-effect deferral creates no task and cannot unblock unrelated editing under the same blocking admission. A response cannot override forbidden immutable authority, scope or invariant policy; those cases still require a new job/root. Another receipt cannot replace an already admitted round's decisions, even at a complete candidate endpoint. Later separately admitted transactions remain the scheduler's responsibility.
+
+Read-only selected-round status includes a closed `operator_work` projection: exact review result, blocking findings, findings requiring a new job, retained request/response references and completed selection receipts. Listing is evidence inventory, not authorization selection. Corrupt/missing bound requests, altered responses, invalid identities, duplicate finding selections and unexpected entries refuse rather than falling back to a prior answer. A valid pause is not technically resumable, and submitting responses calls neither Reviewer nor Editor.
+
+An Editor call requires explicit receipt selection and full admission. Deterministic assessment independently enforces grants against actual candidate units: approving weakening of one unit does not approve weakening its neighbor or deleting the selected unit. Deterministic pass still leaves a candidate unverified and the seed authoritative. Semantic verification, promotion, later-transaction scheduling and public release qualification remain separate gates.

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-proposal-request-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-proposal-request-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "role": {
+      "const": "editor"
+    },
+    "phase": {
+      "const": "phase1"
+    },
+    "gate": {
+      "const": "proposal"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inventory_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "transport": {
+      "$ref": "vnext_proposal_request_transport_v1.schema.json"
+    },
+    "maximum_attempts": {
+      "const": 2
+    },
+    "maximum_shape_retries": {
+      "const": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "job_id",
+    "transaction_id",
+    "role",
+    "phase",
+    "gate",
+    "input_hash",
+    "plan_hash",
+    "inventory_hash",
+    "prompt_hash",
+    "base_pointer",
+    "transport",
+    "maximum_attempts",
+    "maximum_shape_retries"
+  ],
+  "x-whetstone": {
+    "status": "unactivated",
+    "identity_domain": "whetstone-logical-client-request-v1",
+    "identity_prefix": "req",
+    "ordered_arguments": [
+      "job_id",
+      "editor",
+      "phase1",
+      "proposal",
+      "transaction_id"
+    ],
+    "ownership": "orchestrator",
+    "canonical_json": "whetstone-canonical-json-v1"
+  }
+}

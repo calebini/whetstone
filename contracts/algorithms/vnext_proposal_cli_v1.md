@@ -1,0 +1,33 @@
+# Proposal command routing (under development)
+
+This private 18.5 supplement describes the package command consumer. It does not register a shipping suite, ratify D8 or activate public proposal mode. `QUALIFIED_PROPOSAL_SUITES` is an implementation-owned exact version/digest map and remains empty. Test fixtures may populate it inside their process; command flags and configuration cannot. Existing reviewer-only and legacy/bridge dispatch retain their original contracts.
+
+## Source selection and fresh destination
+
+`--vnext-input-package PATH` explicitly selects a canonical `vnext-proposal-package-v1` manifest. `--root` selects the genuinely fresh destination, distinct from the read-only source package directory. Manifest references resolve inside that source directory and retain their logical paths and exact hashes. The command flag is an operational host locator, not an authority binding or mode override.
+
+An operational configuration may instead supply a top-level `vnext_input_package` mapping with exactly `path` and `hash`. The path resolves relative to the configuration file's directory; its hash binds the exact canonical manifest bytes. JSON and the existing YAML block-mapping subset are accepted. If both flag and configuration select a package, the manifests must be byte-identical. Explicit null, missing fields, extra fields, malformed manifests and hash mismatches fail before destination creation. The existing `--config` path convention is unchanged; use an external configuration path when the destination does not yet exist.
+
+Optional descriptor/review selectors must both be supplied and match the package's exact descriptor/review hashes. For a fresh run their paths resolve inside the source package; for an admitted run they resolve inside the run. Existing reviewer-only selectors are not reinterpreted as a proposal destination. Workflow, review mode/profiles/budgets, authority/context selectors and role identities must agree with retained immutable inputs. Only supported operational client commands and positive timeout controls are accepted. Bridge configuration, overwrite, apply-back, draft replacement and legacy review-budget extensions cannot alter proposal behavior.
+
+Package preparation distinguishes malformed descriptor, unsupported suite and invalid bound-input failures in capability reason codes. All immutable inputs, operational settings, selectors and exact release qualification validate before the first destination write. A fresh package starts at round 1; invalid or future round selectors cannot leave an initialized root. Both required native transport adapters are preflighted without launching a process. Creation repeats the full package/source checks through `PreparedProposalPackage.create`.
+
+## Commands and bounded endpoint
+
+The consumer handles `vnext-admit`, `live-phase1`, `status`, `resume` and the explicit `vnext-decisions`/`vnext-decide` operator commands. A recognized stored proposal root or package selector cannot fall through to a legacy writer. Unsupported commands refuse explicitly. `vnext-admit` creates only a seed-initialized root; it refuses existing roots. Its `--dry-run`, or `status` with a fresh package, is read-only and creates no authority, lock, client invocation or runtime marker.
+
+Stored roots reopen through their retained proposal input record and physical storage binding. A package selector supplied on reentry must match the retained launch package. `--vnext-round` selects a positive stored round explicitly; absent that flag, the consumer uses a sole staged round or the validated live Reviewer sequence. Multiple staged rounds require an explicit selector. Neither filenames nor timestamps select the active work.
+
+`live-phase1` runs the seed Reviewer sequence through findings or a derived terminal. Safe editor-fixable findings admit an exact round using the retained package's explicit mutation constraints, then execute the Editor through assembly, deterministic assessment, registration, first decision and terminal materialization. Deterministic pass remains `CANDIDATE_UNVERIFIED` with semantic verification unavailable; the seed verified pointer never advances. Clean seed review returns `PHASE_1_STABLE` without invoking the Editor.
+
+Sensitive findings without a concrete request remain at `finding_admission` with `inspect_findings`, no technical continuation and no invented `PAUSED_DECISION` terminal. The [operator decision consumer](vnext_operator_decisions_v1.md) prepares explicitly supplied options, persists exact choices and requires a separately selected receipt before round admission. Only valid bound requests produce a pause; no request/option or answer is fabricated from agent prose. This interaction remains behind the same release gate.
+
+## Inspection and continuation
+
+Stored-run `status` projects validated current request/commit evidence without taking ownership, modifying files, repairing missing artifacts or constructing native client adapters. Fresh-package inspection also preflights the required transport adapters without launching them. Diagnostics retain the D7 capability envelope and add the closed proposal-status projection and its derived terminal report. Available gates exclude semantic verification and promotion. A requested unavailable next gate remains visible; its existence does not advertise support.
+
+Ordinary live invocation refuses resumable interrupted work and directs the caller to `resume --continue`. `resume --dry-run` validates eligibility without writes or invocation. Actual continuation requires `--continue`, reuses the same logical request and obeys its original two-slot allowance and transport binding; only a permitted later invocation's timeout may change. Exhausted/final/historical/unavailable work cannot reopen through continuation.
+
+When current committed evidence is complete but its final terminal report is missing, continuation performs materialization only, returns the reconstructed status and ends. It constructs no Reviewer or Editor adapter and makes no model call. Already materialized complete seed or proposal endpoints are read-only on ordinary reentry. Reports are reconstructed from evidence; a historical content-addressed report never selects authority or active work.
+
+Command exit status is zero for successful admission/inspection, eligible continuation dry-run and `PHASE_1_STABLE`; bounded non-stable proposal endpoints and explicit failures return two. JSON diagnostics distinguish the state and next action. Text status renders the same projection. No command activates Phase 2, promotion or external apply-back.

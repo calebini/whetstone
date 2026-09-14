@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext_review_invocation_v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "attempt",
+    "input_hash",
+    "prompt_hash",
+    "previous_outcome_hash",
+    "reason",
+    "transport"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-review-invocation-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "attempt": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "previous_outcome_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "enum": [
+        "initial",
+        "shape_retry",
+        "technical_continuation"
+      ]
+    },
+    "transport": {
+      "$ref": "vnext_review_request_transport_v1.schema.json"
+    }
+  }
+}

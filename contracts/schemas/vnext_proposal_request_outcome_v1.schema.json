@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-proposal-request-outcome-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-proposal-request-outcome-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "attempt": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "classification": {
+      "enum": [
+        "shape_invalid",
+        "valid_proposal",
+        "invalid_proposal",
+        "timeout",
+        "transport_failure",
+        "interrupted"
+      ]
+    },
+    "response_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "proposal_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "attempt",
+    "classification",
+    "response_hash",
+    "proposal_hash",
+    "error"
+  ]
+}

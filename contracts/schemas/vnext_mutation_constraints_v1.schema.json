@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Explicit proposal mutation constraints",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-mutation-constraints-v1"
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_operation_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "replace_section_body",
+              "replace_section_subtree",
+              "insert_section_before",
+              "insert_section_after",
+              "append_child_section",
+              "delete_section_subtree"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "max_operations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_changed_sections": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_changed_normative_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_context_binding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^bind_[0-9a-f]{64}$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "allowed_operation_types",
+        "max_operations",
+        "max_changed_sections",
+        "max_changed_normative_units",
+        "required_context_binding_ids"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "constraints"
+  ]
+}

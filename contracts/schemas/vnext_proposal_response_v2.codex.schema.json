@@ -1,0 +1,297 @@
+{
+  "title": "Whetstone vNext Unit Proposal Response For Native Clients",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "patch",
+    "payloads"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "vnext-proposal-response-v2"
+      ],
+      "type": "string"
+    },
+    "patch": {
+      "title": "patch-set-client-v2",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "job_id",
+        "transaction_id",
+        "proposal_id",
+        "base_draft_hash",
+        "mutation_plan_hash",
+        "editor",
+        "operations",
+        "declined_findings",
+        "editor_claims"
+      ],
+      "properties": {
+        "schema_version": {
+          "enum": [
+            "patch-set-v2"
+          ],
+          "type": "string"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "null"
+        },
+        "base_draft_hash": {
+          "type": "string"
+        },
+        "mutation_plan_hash": {
+          "type": "string"
+        },
+        "editor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "version",
+            "model"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            }
+          }
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation_id",
+              "operation_type",
+              "target_stable_section_id",
+              "expected_target_hash",
+              "payload",
+              "addressed_finding_ids",
+              "reason",
+              "normative_change",
+              "preserve_target_identity",
+              "depends_on_operation_ids",
+              "unit_correspondence"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string"
+              },
+              "operation_type": {
+                "enum": [
+                  "replace_section_body",
+                  "replace_section_subtree",
+                  "insert_section_before",
+                  "insert_section_after",
+                  "append_child_section",
+                  "delete_section_subtree"
+                ],
+                "type": "string"
+              },
+              "target_stable_section_id": {
+                "type": "string"
+              },
+              "expected_target_hash": {
+                "type": "string"
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "hash"
+                ],
+                "properties": {
+                  "path": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hash": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "addressed_finding_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "reason": {
+                "type": "string"
+              },
+              "normative_change": {
+                "enum": [
+                  "none",
+                  "clarification",
+                  "add",
+                  "remove",
+                  "strengthen",
+                  "weaken",
+                  "authority_change",
+                  "scope_change"
+                ],
+                "type": "string"
+              },
+              "preserve_target_identity": {
+                "type": "boolean"
+              },
+              "depends_on_operation_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "unit_correspondence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "base_unit_ids",
+                    "payload_units"
+                  ],
+                  "properties": {
+                    "base_unit_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "payload_units": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind",
+                          "ordinal",
+                          "content_hash"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "type": "string"
+                          },
+                          "ordinal": {
+                            "type": "integer"
+                          },
+                          "content_hash": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "declined_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "finding_id",
+              "source_feedback_ids",
+              "decline_reason",
+              "rationale"
+            ],
+            "properties": {
+              "finding_id": {
+                "type": "string"
+              },
+              "source_feedback_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "decline_reason": {
+                "enum": [
+                  "architectural_conflict",
+                  "ambiguous",
+                  "out_of_scope",
+                  "deferred_to_later_round"
+                ],
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "editor_claims": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "addressed_finding_ids",
+            "normative_change_summary"
+          ],
+          "properties": {
+            "addressed_finding_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "normative_change_summary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "payloads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

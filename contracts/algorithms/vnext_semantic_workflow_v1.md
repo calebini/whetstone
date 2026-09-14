@@ -1,0 +1,13 @@
+# Complete semantic proposal workflow v1 (unactivated)
+
+The complete semantic workflow is a separately qualified consumer of the existing proposal mode. Public command routing requires both the exact proposal suite qualification and its exact semantic workflow qualification. Both shipping maps remain empty until their release gates pass. Configuration, algorithm file presence, semantic output files and a descriptor policy name cannot supply release qualification.
+
+The selected workflow requires semantic-policy-v2 and exact pinned workflow, round, decision and durable-request algorithms. The context/request consumers also enforce their own complete schema and algorithm closure. Fresh admission preflights Reviewer, Editor and independent Verifier transports without executing them. Stored status and dry-run do not construct adapters or write artifacts.
+
+The workflow uses semantic-aware candidate decision readers for all registered candidates in status and closeout. Original proposal suites retain the initial-decision-only reader and unavailable-semantic endpoint. A malformed semantic chain is not hidden by selecting another round or reading a cached report.
+
+An ordinary live Phase 1 proposal journey runs the admitted Reviewer and Editor gates, then invokes the independent Verifier only after committed deterministic pass. It commits the final semantic decision and returns the D7 P endpoint: verified for inspection, rejected, or paused for a concrete operator request. Deterministic failure never invokes the Verifier. Clean seed review invokes neither editing role. No promotion, debt clearing, Phase 2 or external apply-back is enabled.
+
+The semantic entry point owns technical continuation and no-client raw/decision/terminal recovery. Explicit resume of initial deterministic-decision recovery ends before starting semantic work; recovery of final terminal materialization likewise ends the invocation. Final P/rejected candidates are read-only on ordinary reentry and are not technically resumable. A completed semantic request or prepared decision does not cause another client adapter to be constructed. Timeout configuration may change only as permitted by the immutable request transport policy.
+
+Normal command routing preserves the original proposal qualification gate and adds `semantic_verification` only for the separately qualified semantic suite. Operator response/new-transaction admission remains a separate required integration: reporting a final rejected operator pause never authorizes an answer or reopens that candidate. Public activation remains blocked on D8 and complete qualification.

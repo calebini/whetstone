@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-mutation-decision-request-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-mutation-decision-request-v2"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^decision_[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authority_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "scope_contract_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "protected_invariants_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "finding_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "classification": {
+      "enum": [
+        "operator_decision_required",
+        "authority_conflict",
+        "scope_change",
+        "deferable"
+      ]
+    },
+    "target_section_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^sec_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "feedback_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "path",
+          "hash"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "option_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorized_effects": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "none",
+                "clarification",
+                "add",
+                "remove",
+                "strengthen",
+                "weaken",
+                "authority_change",
+                "scope_change"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "authorized_deletion_unit_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^unit_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "authorized_unit_effects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "unit_id",
+                "effects"
+              ],
+              "properties": {
+                "unit_id": {
+                  "type": "string",
+                  "pattern": "^unit_[0-9a-f]{64}$"
+                },
+                "effects": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "remove",
+                      "weaken"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "option_id",
+          "description",
+          "authorized_effects",
+          "authorized_deletion_unit_ids",
+          "authorized_unit_effects"
+        ]
+      },
+      "minItems": 1
+    },
+    "base_inventory_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "decision_id",
+    "job_id",
+    "base_draft_hash",
+    "authority_map_hash",
+    "scope_contract_hash",
+    "protected_invariants_hash",
+    "finding_id",
+    "source_feedback_ids",
+    "classification",
+    "target_section_ids",
+    "feedback_refs",
+    "options",
+    "base_inventory_hash"
+  ],
+  "x-whetstone": {
+    "version": "vnext-mutation-decision-request-v2",
+    "producer": "orchestrator",
+    "consumer": "candidate-unit-authorization-v2",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "new request envelope; response-v1 binds its exact hash; no old approval upgrade"
+  }
+}

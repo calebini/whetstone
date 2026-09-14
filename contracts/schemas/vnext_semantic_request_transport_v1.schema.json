@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-request-transport-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verifier": {
+      "$ref": "review_configuration_v1.schema.json#/properties/verifier"
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cwd": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "output_schema_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "verifier",
+    "command",
+    "cwd",
+    "timeout_seconds",
+    "output_schema_hash"
+  ],
+  "x-whetstone": {
+    "version": "vnext-semantic-request-transport-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-request",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

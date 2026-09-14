@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-request-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-request-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^can_[0-9a-f]{64}$"
+    },
+    "role": {
+      "const": "verifier"
+    },
+    "phase": {
+      "const": "phase1"
+    },
+    "gate": {
+      "const": "semantic_verification"
+    },
+    "context_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "creation_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "semantic_verification_v2.schema.json#/properties/candidate_section_identity_map_path"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "semantic_verification_v2.schema.json#/properties/candidate_section_identity_map_path"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "prompt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "transport": {
+      "$ref": "vnext_semantic_request_transport_v1.schema.json"
+    },
+    "maximum_attempts": {
+      "const": 2
+    },
+    "maximum_shape_retries": {
+      "const": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "job_id",
+    "transaction_id",
+    "candidate_id",
+    "role",
+    "phase",
+    "gate",
+    "context_hash",
+    "creation_ref",
+    "base_pointer",
+    "prompt_hash",
+    "transport",
+    "maximum_attempts",
+    "maximum_shape_retries"
+  ],
+  "x-whetstone": {
+    "version": "vnext-semantic-request-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-request",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

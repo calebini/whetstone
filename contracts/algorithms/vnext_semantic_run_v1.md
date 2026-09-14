@@ -1,0 +1,13 @@
+# Explicit semantic-round consumer v1 (unactivated)
+
+The stored proposal run exposes `semantic_status` and `verify_round` as explicit internal entry points. Their consumer must be pinned by exact algorithm hash; installed files do not activate semantic handling. Shipping command routing and suite qualification remain gated. The existing initial-decision-only proposal status retains its earlier boundary.
+
+Before status or execution, validate the retained run selectors, admitted inputs, physical seed authority and all candidate decision chains. Select the exact completed Editor request for the caller's round and its registered candidate. Only the latest committed creation can receive semantic work; historical or unregistered proposals and unresolved registration orphans refuse. No candidate ID, timestamp or cached terminal can override this selection.
+
+Status is read-only and uses the committed candidate-local pointer. An incomplete decision package exposes `verification_commit`; valid retained Verifier raw output or a complete receipt also exposes that gate without treating either as a committed decision. A first invocation is eligible only from the non-final deterministic-pass candidate. Technical continuation is explicit and follows the durable request's two-slot limit; timeout and exhaustion preserve their actual causes. Status is an evidence projection, not a claim that an active process is dead. The storage lock controls writer exclusion.
+
+Execution completes the independent request, commits its final semantic decision and materializes a content-addressed terminal report. Final verified P candidates stop for inspection; semantic rejection stops; a bound authority request pauses for an operator with final rejected disposition. None may invoke a new Verifier on reentry or technical resume. Missing final terminal materialization is recoverable without clients. Prior reports remain immutable and are never used as current-state selectors.
+
+Recovery of valid raw evidence or prepared semantic decisions uses no client and retains timestamps and ordinals. Recovery of a missing initial deterministic decision commits that initial package and ends the invocation; a later ordinary invocation may start semantic work. Invalid/exhausted request evidence cannot create another slot. Conflicting evidence refuses rather than repairing it during status or trusting an older terminal report.
+
+This consumer does not promote, clear finding debt, stamp versions, schedule Phase 2, select an operator answer or apply back. Semantic operator response/new-transaction admission, normal command routing and final release qualification remain required before slice completion.

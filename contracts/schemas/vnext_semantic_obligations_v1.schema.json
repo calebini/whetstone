@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-obligations-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bindings",
+    "obligations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-obligations-v1"
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "transaction_id",
+        "candidate_id",
+        "base_draft_hash",
+        "candidate_hash",
+        "candidate_section_identity_map_path",
+        "candidate_section_identity_map_hash",
+        "patch_set_hash",
+        "base_inventory_hash",
+        "candidate_inventory_hash",
+        "preservation_report_hash",
+        "mutation_plan_hash",
+        "job_descriptor_hash"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "pattern": "^job_[0-9a-f]{64}$"
+        },
+        "transaction_id": {
+          "type": "string",
+          "pattern": "^txn_[0-9a-f]{64}$"
+        },
+        "candidate_id": {
+          "type": "string",
+          "pattern": "^can_[0-9a-f]{64}$"
+        },
+        "base_draft_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "candidate_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "candidate_section_identity_map_path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "candidate_section_identity_map_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "patch_set_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "base_inventory_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "candidate_inventory_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "preservation_report_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mutation_plan_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "job_descriptor_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "obligation_id",
+          "kind",
+          "report_rows",
+          "base_units",
+          "candidate_units",
+          "baseline_diagnostics"
+        ],
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^sem_[0-9a-f]{64}$"
+          },
+          "kind": {
+            "enum": [
+              "unit",
+              "correspondence_group",
+              "baseline_diagnostics"
+            ]
+          },
+          "report_rows": {
+            "type": "array",
+            "items": {
+              "$ref": "preservation_report_v2.schema.json#/properties/unit_changes/items"
+            }
+          },
+          "base_units": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "side",
+                "unit",
+                "text"
+              ],
+              "properties": {
+                "side": {
+                  "enum": [
+                    "base",
+                    "candidate"
+                  ]
+                },
+                "unit": {
+                  "$ref": "vnext_preservation_inventory_v2.schema.json#/properties/units/items"
+                },
+                "text": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "candidate_units": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "side",
+                "unit",
+                "text"
+              ],
+              "properties": {
+                "side": {
+                  "enum": [
+                    "base",
+                    "candidate"
+                  ]
+                },
+                "unit": {
+                  "$ref": "vnext_preservation_inventory_v2.schema.json#/properties/units/items"
+                },
+                "text": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "baseline_diagnostics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code",
+                "byte_start",
+                "byte_end",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "byte_start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "byte_end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-semantic-obligations-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-coverage",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

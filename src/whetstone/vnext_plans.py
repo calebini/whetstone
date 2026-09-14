@@ -14,7 +14,7 @@ from whetstone.vnext_validation import validate_plan
 CLASSIFICATIONS = {'editor_fixable','operator_decision_required','authority_conflict','scope_change','deferable'}
 
 
-def build_plan(*, job, authority, section_map, findings, constraints, suite, decisions=()):
+def build_plan(*, job, authority, section_map, findings, constraints, suite, decisions=(), unit_inventory=None):
     """Build a deterministic plan, preserving original non-editable dispositions.
 
     findings contain the canonical finding ID, source feedback IDs, original
@@ -30,7 +30,13 @@ def build_plan(*, job, authority, section_map, findings, constraints, suite, dec
     require(section_map['job_id'] == job['job_id'], 'section map belongs to another job')
     require(sha256_bytes(canonical_json_bytes(authority)) == job['authority_map_hash'], 'authority map changed')
     suite.registry.validate(authority, 'authority_map_v1')
-    suite.registry.validate(section_map, 'section_identity_map_v1')
+    if unit_inventory is not None and section_map.get('schema_version')=='section-identity-map-v2':
+        # Isolated inventory-bound prototype; the frozen v1 entry point still
+        # refuses candidate maps from an unsupported consuming suite.
+        from whetstone.vnext_contracts import VNextSchemaRegistry
+        VNextSchemaRegistry().validate(section_map,'section_identity_map_v2')
+    else:
+        suite.registry.validate(section_map, 'section_identity_map_v1')
     sections = {s['stable_section_id'] for s in section_map['sections'] if s['status'] == 'active'}
     records = {}
     for finding in findings:
@@ -54,9 +60,17 @@ def build_plan(*, job, authority, section_map, findings, constraints, suite, dec
         require(key in records and key not in answered, 'unknown or duplicate finding decision')
         answered.add(key)
         finding = records[key]
-        response, digest = bind_response(decision['response'], decision['request'], job=job,
-            base_hash=section_map['draft_hash'], finding=finding, targets=finding['target_section_ids'],
-            feedback_refs=decision['feedback_refs'], suite=suite)
+        if decision['request'].get('schema_version')=='vnext-mutation-decision-request-v2':
+            from whetstone.vnext_unit_authorization import bind_unit_response
+            require(unit_inventory is not None,'named-unit decisions require the validated base inventory')
+            binding=bind_unit_response(decision['response'],decision['request'],job=job,
+                base_hash=section_map['draft_hash'],finding=finding,targets=finding['target_section_ids'],
+                feedback_refs=decision['feedback_refs'],inventory=unit_inventory,section_map=section_map,suite=suite)
+            response,digest=binding.response,binding.response_hash
+        else:
+            response, digest = bind_response(decision['response'], decision['request'], job=job,
+                base_hash=section_map['draft_hash'], finding=finding, targets=finding['target_section_ids'],
+                feedback_refs=decision['feedback_refs'], suite=suite)
         if not response['authorized_effects']:
             # A deferral remains visible and unresolved, but admits no task and
             # cannot masquerade as an exact authorization response in this plan.

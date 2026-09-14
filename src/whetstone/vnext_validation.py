@@ -8,25 +8,36 @@ import re
 
 from whetstone.vnext_contracts import (
     ValidatedSuite, canonical_json_bytes, confined_file, decode_json, require,
-    sha256_bytes, validate_contract_suite, validate_job_descriptor,
+    sha256_bytes, validate_contract_suite, _validate_descriptor_in_fresh_suite,
 )
 from whetstone import vnext_identity as ids
 
 
 class ArtifactReader:
-    def __init__(self, root, suite):
-        self.root = Path(root).resolve()
+    def __init__(self, root, suite, *, read=None):
+        self.root = Path(root).resolve() if root is not None else None
         self.suite = suite
+        self._read = read
+
+    def _read_path(self, path):
+        """Read through the configured confinement boundary before binding bytes."""
+        # Descriptor locators may be absolute, but local artifacts remain inside the selected root.
+        if isinstance(path, str) and Path(path).is_absolute():
+            require(self.root is not None and Path(path).is_relative_to(self.root), 'artifact locator is outside the run root')
+            path = str(Path(path).relative_to(self.root))
+        if self._read is None:
+            raw = confined_file(self.root, path).read_bytes()
+        else:
+            require(isinstance(path,str) and bool(path) and '\\' not in path and '\x00' not in path
+                    and not Path(path).is_absolute() and '..' not in Path(path).parts
+                    and Path(path).as_posix()==path, 'invalid logical artifact path')
+            raw = self._read(path)
+        return raw
 
     def raw(self, reference):
         require(isinstance(reference, dict) and set(reference) == {'path', 'hash'}, 'invalid artifact reference')
-        path = reference['path']
-        # Descriptor locators may be absolute, but local artifacts remain inside the selected root.
-        if isinstance(path, str) and Path(path).is_absolute():
-            require(Path(path).is_relative_to(self.root), 'artifact locator is outside the run root')
-            path = str(Path(path).relative_to(self.root))
-        raw = confined_file(self.root, path).read_bytes()
-        require(sha256_bytes(raw) == reference['hash'], 'artifact hash mismatch', path)
+        raw = self._read_path(reference['path'])
+        require(sha256_bytes(raw) == reference['hash'], 'artifact hash mismatch', reference['path'])
         return raw
 
     def json(self, reference, schema=None):
@@ -50,17 +61,35 @@ def _binding(packet, **expected):
 
 
 def validate_bootstrap(root, descriptor_ref, suite, *, review_configuration_ref):
+    return validate_bootstrap_reader(ArtifactReader(root,suite),descriptor_ref,
+                                     review_configuration_ref=review_configuration_ref)
+
+
+def validate_bootstrap_reader(reader, descriptor_ref, *, review_configuration_ref):
+    """Same admission checks over a confined store's exact-byte reader."""
     # Re-read pins: a mutable Python object is not a trust capability.
+    suite = reader.suite
     suite = validate_contract_suite(suite.root / 'suites' / (suite.version + '.json'))
-    reader = ArtifactReader(root, suite)
+    reader = ArtifactReader(reader.root, suite, read=reader._read)
+    return _validate_bootstrap_in_fresh_suite(reader, descriptor_ref,
+                                            review_configuration_ref=review_configuration_ref)
+
+
+def _validate_bootstrap_in_fresh_suite(reader, descriptor_ref, *, review_configuration_ref):
+    """Continue this invocation's fresh suite validation without repeating it."""
+    suite = reader.suite
     job = reader.json(descriptor_ref, 'job_descriptor_v2')
-    validate_job_descriptor(job, suite)
+    _validate_descriptor_in_fresh_suite(job, suite)
     require(review_configuration_ref['hash'] == job['review_configuration_hash'], 'review configuration hash mismatch')
     reader.json(review_configuration_ref, 'review_configuration_v1')
     seed = reader.raw(job['seed_draft'])
     require(seed.decode('utf-8').encode('utf-8') == seed, 'invalid UTF-8 seed')
     authority = reader.json({'path': job['authority_map_path'], 'hash': job['authority_map_hash']}, 'authority_map_v1')
-    invariants = reader.json({'path': job['protected_invariants_path'], 'hash': job['protected_invariants_hash']}, 'protected_invariants_v1')
+    # The exact schema must be pinned by this job's validated suite before
+    # version dispatch. Frozen suite 1 still cannot load the new rule envelope.
+    invariants = reader.json({'path': job['protected_invariants_path'], 'hash': job['protected_invariants_hash']})
+    from whetstone.vnext_discovery import discovery_rules
+    discovery_rules(invariants)
     if job['scope_contract_path'] is not None:
         scope = reader.json({'path': job['scope_contract_path'], 'hash': job['scope_contract_hash']}, 'scope_contract')
         require(scope['status'] == 'approved' and scope['approval']['approved'], 'scope must be approved')
@@ -361,6 +390,6 @@ def validate_ratification_delta(delta, job, authority, target_hash, responses):
 def validate_pointer_snapshot(reader, pointer_ref):
     pointer=reader.json(pointer_ref,'current_verified_pointer_v1')
     path=f"rounds/verified_history/current-verified-{pointer['promotion_ordinal']}.json"
-    snapshot=confined_file(reader.root,path).read_bytes()
+    snapshot=reader._read_path(path)
     require(snapshot==reader.raw(pointer_ref),'current pointer differs from its same-ordinal snapshot')
     return pointer

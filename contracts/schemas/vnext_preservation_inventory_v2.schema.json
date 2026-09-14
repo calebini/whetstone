@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-preservation-inventory-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_version",
+    "job_id",
+    "seed_draft_hash",
+    "draft_hash",
+    "section_map_hash",
+    "frontmatter_section_id",
+    "rules_hash",
+    "units",
+    "diagnostics",
+    "base_inventory_hash",
+    "transaction_id",
+    "proposal_hash",
+    "retired_unit_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-preservation-inventory-v2"
+    },
+    "inventory_version": {
+      "const": "preservation-inventory-v2"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "seed_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "section_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "frontmatter_section_id": {
+      "type": "string",
+      "pattern": "^sec_[0-9a-f]{64}$"
+    },
+    "rules_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_id",
+          "kind",
+          "owning_section_id",
+          "byte_start",
+          "byte_end",
+          "content_hash",
+          "canonical_content_hash",
+          "primary",
+          "normative",
+          "normative_sources",
+          "protected",
+          "features",
+          "anchor_line_unit_id"
+        ],
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "pattern": "^unit_[0-9a-f]{64}$"
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owning_section_id": {
+            "type": "string",
+            "pattern": "^sec_[0-9a-f]{64}$"
+          },
+          "byte_start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byte_end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "canonical_content_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "primary": {
+            "type": "boolean"
+          },
+          "normative": {
+            "type": "boolean"
+          },
+          "normative_sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "protected": {
+            "type": "boolean"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "anchor_line_unit_id": {
+            "type": "string",
+            "pattern": "^unit_[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "byte_start",
+          "byte_end",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "byte_start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byte_end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "base_inventory_hash": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "transaction_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^txn_[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "proposal_hash": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "retired_unit_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^unit_[0-9a-f]{64}$"
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-preservation-inventory-v2",
+    "producer": "orchestrator",
+    "consumer": "candidate-validation-v2",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "new consuming suite only; frozen first suite unchanged"
+  }
+}

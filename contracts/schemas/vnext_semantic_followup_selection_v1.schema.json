@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-semantic-followup-selection-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "candidate_id",
+    "transaction_input"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-semantic-followup-selection-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^can_[0-9a-f]{64}$"
+    },
+    "transaction_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-semantic-followup-selection-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-followup-admission",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "new consuming suite only; frozen first suite unchanged"
+  }
+}

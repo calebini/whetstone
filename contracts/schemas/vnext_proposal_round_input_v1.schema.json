@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable proposal round inputs",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "round_number",
+    "base_pointer",
+    "feedback",
+    "advice",
+    "decision_refs",
+    "constraints"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-proposal-round-input-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "advice": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "hash"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "hash"
+            ]
+          },
+          "response": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "hash"
+            ]
+          }
+        },
+        "required": [
+          "finding_id",
+          "request",
+          "response"
+        ]
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_operation_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "replace_section_body",
+              "replace_section_subtree",
+              "insert_section_before",
+              "insert_section_after",
+              "append_child_section",
+              "delete_section_subtree"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "max_operations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_changed_sections": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_changed_normative_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_context_binding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^bind_[0-9a-f]{64}$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "allowed_operation_types",
+        "max_operations",
+        "max_changed_sections",
+        "max_changed_normative_units",
+        "required_context_binding_ids"
+      ]
+    }
+  }
+}

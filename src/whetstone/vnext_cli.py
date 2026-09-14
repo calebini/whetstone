@@ -12,6 +12,9 @@ from whetstone.vnext_review import _client, read_state, run_review
 
 def dispatch(args):
     """Return None for legacy dispatch, otherwise the handled exit status."""
+    from whetstone.vnext_proposal_cli import dispatch_proposal
+    handled=dispatch_proposal(args)
+    if handled is not None:return handled
     root = Path(getattr(args, "run_root", None) or getattr(args, "root", "."))
     path = root / getattr(args, "config", "orchestrator_config.yaml")
     selected = bool(getattr(args, "vnext_job_descriptor", None)

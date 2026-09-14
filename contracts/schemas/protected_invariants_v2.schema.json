@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "protected-invariants-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "base_draft_hash",
+    "assertions",
+    "discovery_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "protected-invariants-v2"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "assertion_type",
+          "target_scope",
+          "matcher",
+          "enforcement",
+          "severity",
+          "rationale",
+          "source_authority_binding_ids"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string",
+            "pattern": "^assert_[0-9a-f]{64}$"
+          },
+          "assertion_type": {
+            "enum": [
+              "heading_present",
+              "heading_absent",
+              "identifier_present",
+              "identifier_absent",
+              "enum_member_present",
+              "table_row_present",
+              "section_unchanged",
+              "concept_required",
+              "concept_forbidden",
+              "max_changed_sections",
+              "max_changed_normative_units",
+              "canonical_model_count"
+            ]
+          },
+          "target_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matcher": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "value"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "exact",
+                  "canonical_id",
+                  "regex",
+                  "inventory_query",
+                  "semantic"
+                ]
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          },
+          "enforcement": {
+            "enum": [
+              "deterministic",
+              "semantic"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "blocking",
+              "warning"
+            ]
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_authority_binding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^bind_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "discovery_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "text",
+          "normative",
+          "kind"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "normative": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "concept",
+              "identifier",
+              "command",
+              "flag",
+              "field",
+              "state",
+              "role",
+              "error_code",
+              "terminal_state",
+              "artifact",
+              "normative_pattern"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "protected-invariants-v2",
+    "producer": "orchestrator",
+    "consumer": "candidate-admission-v2",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "Unactivated consuming suite only. Discovery rules are transitively job-bound through protected_invariants_hash."
+  }
+}

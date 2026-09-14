@@ -1,0 +1,13 @@
+# Semantic operator command consumer v1 (unactivated)
+
+This consumer requires exact proposal, semantic and semantic-follow-up suite qualifications, the pinned follow-up workflow and this algorithm. Configuration, installed files and answer presence cannot enable it. Its three commands require an existing admitted proposal root and an explicit candidate. The candidate must belong to the selected Reviewer round. Normal descriptor, configuration, storage and source validation precede writes.
+
+`vnext-semantic-answers --candidate ID` reads the exact candidate's retained question and answer receipts. It performs no recovery or implicit selection. Historical answers remain inspectable under their original evidence.
+
+`vnext-semantic-answer --candidate ID --input FILE [--dry-run]` validates the closed semantic-answer input, including exact question, candidate verification, selected interpretation or decline, actor, rationale and timestamp. The input candidate must match the command candidate. It delegates to the answer journal's current-candidate gate, immutable publication and exact reentry rules. A dry run writes nothing. Recording an answer does not admit editing, reopen the rejected candidate or grant effects.
+
+`vnext-semantic-followup --candidate ID --answer-receipt PATH --answer-hash SHA256` explicitly admits the exact retained receipt into a fresh transaction. Both locator and digest are supplied by the caller; the command never chooses the latest answer or computes a replacement hash to conceal stale selection. Admission reproduces the complete bound source evidence and retains the original editing scope. It performs no Editor or Verifier work. Subsequent normal execution works on the explicitly committed transaction through the follow-up workflow; technical continuation cannot substitute a different answer.
+
+The prior `vnext-decisions` and `vnext-decide` commands remain pre-proposal Reviewer-choice consumers with their existing unadmitted-round guards. Semantic answers do not enter those mutation-authorization APIs. All semantic operator commands reject the prior `--vnext-decisions` selector, which names a different kind of authority record.
+
+Command output carries the normal capability/status envelope plus the named semantic answer or follow-up result. A post-write validation failure reports an admitted-root artifact failure and does not reuse a stale success projection. These commands never construct model clients, promote candidates, change seed authority or apply back to external sources. Public activation requires the complete qualification gate, including D8; the shipping qualification maps remain empty during development.

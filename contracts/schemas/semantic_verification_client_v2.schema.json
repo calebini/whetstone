@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semantic-verification-client-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_results",
+    "unrelated_semantic_change",
+    "lost_or_weakened_semantics",
+    "authority_compliance",
+    "semantic_assertions",
+    "normative_change_assessment",
+    "operator_decision_required",
+    "uncertainty_resolutions",
+    "verdict",
+    "rationale",
+    "context_hash",
+    "coverage",
+    "authority_choice"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "semantic-verification-v2"
+    },
+    "finding_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "disposition",
+          "evidence"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "disposition": {
+            "enum": [
+              "resolved",
+              "partially_resolved",
+              "not_resolved",
+              "made_worse"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unrelated_semantic_change": {
+      "enum": [
+        "none",
+        "detected",
+        "uncertain"
+      ]
+    },
+    "lost_or_weakened_semantics": {
+      "enum": [
+        "none",
+        "detected",
+        "uncertain"
+      ]
+    },
+    "authority_compliance": {
+      "enum": [
+        "pass",
+        "fail",
+        "uncertain"
+      ]
+    },
+    "semantic_assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string",
+            "pattern": "^assert_[0-9a-f]{64}$"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "uncertain",
+              "not_applicable"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "normative_change_assessment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "editor_claim",
+          "verifier_assessment",
+          "agrees"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^op_[0-9a-f]{64}$"
+          },
+          "editor_claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verifier_assessment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agrees": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "operator_decision_required": {
+      "type": "boolean"
+    },
+    "uncertainty_resolutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field_path",
+          "policy_rule_id",
+          "disposition",
+          "decision_id"
+        ],
+        "properties": {
+          "field_path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+          },
+          "policy_rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "disposition": {
+            "enum": [
+              "reject",
+              "operator_decision_required"
+            ]
+          },
+          "decision_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "reject",
+        "operator_decision_required"
+      ]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "coverage": {
+      "$ref": "vnext_semantic_coverage_v1.schema.json"
+    },
+    "authority_choice": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "question",
+            "authority_scope",
+            "alternatives"
+          ],
+          "properties": {
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "authority_scope": {
+              "type": "string",
+              "minLength": 1
+            },
+            "alternatives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "authority_binding_id",
+                  "interpretation",
+                  "evidence"
+                ],
+                "properties": {
+                  "authority_binding_id": {
+                    "type": "string",
+                    "pattern": "^bind_[0-9a-f]{64}$"
+                  },
+                  "interpretation": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "byte_start",
+                      "byte_end",
+                      "content_hash",
+                      "text"
+                    ],
+                    "properties": {
+                      "byte_start": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "byte_end": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "content_hash": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "x-whetstone": {
+    "version": "semantic-verification-client-v2",
+    "producer": "semantic-verifier",
+    "consumer": "unactivated-semantic-protocol",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new version required for changed bytes or semantics"
+  }
+}

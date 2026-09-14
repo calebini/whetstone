@@ -1,0 +1,307 @@
+{
+  "title": "Whetstone Independent Semantic Verification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_results",
+    "unrelated_semantic_change",
+    "lost_or_weakened_semantics",
+    "authority_compliance",
+    "semantic_assertions",
+    "normative_change_assessment",
+    "operator_decision_required",
+    "uncertainty_resolutions",
+    "verdict",
+    "rationale",
+    "context_hash",
+    "coverage",
+    "authority_choice"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "semantic-verification-v2"
+      ],
+      "type": "string"
+    },
+    "finding_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "disposition",
+          "evidence"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "disposition": {
+            "enum": [
+              "resolved",
+              "partially_resolved",
+              "not_resolved",
+              "made_worse"
+            ],
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unrelated_semantic_change": {
+      "enum": [
+        "none",
+        "detected",
+        "uncertain"
+      ],
+      "type": "string"
+    },
+    "lost_or_weakened_semantics": {
+      "enum": [
+        "none",
+        "detected",
+        "uncertain"
+      ],
+      "type": "string"
+    },
+    "authority_compliance": {
+      "enum": [
+        "pass",
+        "fail",
+        "uncertain"
+      ],
+      "type": "string"
+    },
+    "semantic_assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assertion_id",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "assertion_id": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "uncertain",
+              "not_applicable"
+            ],
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "normative_change_assessment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "editor_claim",
+          "verifier_assessment",
+          "agrees"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "editor_claim": {
+            "type": "string"
+          },
+          "verifier_assessment": {
+            "type": "string"
+          },
+          "agrees": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "operator_decision_required": {
+      "type": "boolean"
+    },
+    "uncertainty_resolutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field_path",
+          "policy_rule_id",
+          "disposition",
+          "decision_id"
+        ],
+        "properties": {
+          "field_path": {
+            "type": "string"
+          },
+          "policy_rule_id": {
+            "type": "string"
+          },
+          "disposition": {
+            "enum": [
+              "reject",
+              "operator_decision_required"
+            ],
+            "type": "string"
+          },
+          "decision_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "reject",
+        "operator_decision_required"
+      ],
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "context_hash": {
+      "type": "string"
+    },
+    "coverage": {
+      "title": "vnext-semantic-coverage-v1",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "obligations_hash",
+        "results"
+      ],
+      "properties": {
+        "schema_version": {
+          "enum": [
+            "vnext-semantic-coverage-v1"
+          ],
+          "type": "string"
+        },
+        "obligations_hash": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "obligation_id",
+              "obligation_hash",
+              "result",
+              "evidence"
+            ],
+            "properties": {
+              "obligation_id": {
+                "type": "string"
+              },
+              "obligation_hash": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "uncertain"
+                ],
+                "type": "string"
+              },
+              "evidence": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "authority_choice": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "question",
+            "authority_scope",
+            "alternatives"
+          ],
+          "properties": {
+            "question": {
+              "type": "string"
+            },
+            "authority_scope": {
+              "type": "string"
+            },
+            "alternatives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "authority_binding_id",
+                  "interpretation",
+                  "evidence"
+                ],
+                "properties": {
+                  "authority_binding_id": {
+                    "type": "string"
+                  },
+                  "interpretation": {
+                    "type": "string"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "byte_start",
+                      "byte_end",
+                      "content_hash",
+                      "text"
+                    ],
+                    "properties": {
+                      "byte_start": {
+                        "type": "integer"
+                      },
+                      "byte_end": {
+                        "type": "integer"
+                      },
+                      "content_hash": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

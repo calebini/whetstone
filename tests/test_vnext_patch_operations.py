@@ -99,9 +99,7 @@ class PatchOperationTests(unittest.TestCase):
             with self.subTest(labels=(first_label,second_label)),self.assertRaisesRegex(ValueError,'duplicate mutation target'):
                 self.prepare(packet)
 
-    def test_eligible_subtree_deletion_needs_all_protected_units_and_exact_operator_effect(self):
-        with self.assertRaisesRegex(ValueError,'unit authorization'):
-            self.prepare(self.packet('delete_section_subtree',None))
+    def authorize_timing_deletion(self):
         self.f.feedback['feedback'][0]['recommended_change']='Delete the Timing subtree and its details.'
         self.f.hint['requested_effects']=['remove'];self.f.rebind()
         a=inspect_admission(self.f.root,**self.inputs());finding=a.findings[0]
@@ -117,7 +115,12 @@ class PatchOperationTests(unittest.TestCase):
             'rationale':'Fictional explicit cleanup approval.','decided_by':'fixture operator','decided_at':STAMP}
         response['response_id']=ids.response_id(response)
         refs=[{'finding_id':finding['finding_id'],'request':self.f.save('inputs/request.json',request),'response':self.f.save('inputs/response.json',response)}]
-        self.refresh(refs);packet=self.packet('delete_section_subtree',None)
+        self.refresh(refs)
+
+    def test_eligible_subtree_deletion_needs_all_protected_units_and_exact_operator_effect(self):
+        with self.assertRaisesRegex(ValueError,'unit authorization'):
+            self.prepare(self.packet('delete_section_subtree',None))
+        self.authorize_timing_deletion();packet=self.packet('delete_section_subtree',None)
         self.prepare(packet)
         mislabeled=deepcopy(packet);mislabeled['operations'][0]['normative_change']='clarification'
         with self.assertRaisesRegex(ValueError,'declare removal'):self.prepare(mislabeled)

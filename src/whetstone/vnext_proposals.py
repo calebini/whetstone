@@ -104,10 +104,17 @@ def prepare_patch(raw_response, *, payload_root, plan, base, section_map, editor
     Slice 18.4 rejects overlapping base mutations: the frozen plan has no field
     that can explicitly authorize overlap. Dependencies alone do not grant it.
     """
+    return _prepare_patch(raw_response,payload_root=payload_root,plan=plan,base=base,section_map=section_map,
+        editor=editor,registry=suite.registry,responses=responses,units=units)
+
+
+def _prepare_patch(raw_response,*,payload_root,plan,base,section_map,editor,registry,responses=(),units=None,
+                   client_schema='patch_set_client_v1',patch_schema='patch_set_v1',
+                   plan_schema='mutation_plan_v1',map_schema='section_identity_map_v1'):
     client = decode_json(raw_response)
-    suite.registry.validate(client, 'patch_set_client_v1')
-    suite.registry.validate(plan, 'mutation_plan_v1')
-    suite.registry.validate(section_map, 'section_identity_map_v1')
+    registry.validate(client, client_schema)
+    registry.validate(plan, plan_schema)
+    registry.validate(section_map, map_schema)
     require(section_map['job_id'] == plan['job_id'], 'section map belongs to another job')
     require(sha256_bytes(base) == plan['base_draft_hash'], 'proposal base is stale')
     targets = _targets(base, section_map)
@@ -201,6 +208,11 @@ def prepare_patch(raw_response, *, payload_root, plan, base, section_map, editor
             payloads[path] = raw
             op['payload'] = {'path': path, 'hash': reference['hash']}
         _effect_authorization(op, plan, responses)
+        if 'unit_correspondence' in op:
+            for group in op['unit_correspondence']:
+                group['base_unit_ids']=sorted(group['base_unit_ids'])
+                group['payload_units']=sorted(group['payload_units'],key=lambda s:(s['ordinal'],s['kind'],s['content_hash']))
+            op['unit_correspondence'].sort(key=canonical_json_bytes)
         op['depends_on_operation_ids'] = sorted(renamed[label] for label in op['depends_on_operation_ids'])
         op['operation_id'] = ids.operation_id(plan['transaction_id'], op)
         require(op['operation_id'] not in renamed.values(), 'operation identity collision')
@@ -209,7 +221,7 @@ def prepare_patch(raw_response, *, payload_root, plan, base, section_map, editor
         mutated.append((op, interval))
     patch['operations'] = ids.topological(prepared, 'operation_id', 'depends_on_operation_ids')
     patch['proposal_id'] = ids.proposal_id(patch)
-    suite.registry.validate(patch, 'patch_set_v1')
+    registry.validate(patch, patch_schema)
     directory = 'proposals/' + patch['proposal_id']
     validate_patch(patch, plan, {key: item for key, (item, _) in targets.items()},
                    _PayloadReader(directory, payloads), proposal_directory=directory)

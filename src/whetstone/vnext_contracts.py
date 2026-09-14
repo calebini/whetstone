@@ -10,18 +10,14 @@ from typing import Any
 
 from whetstone.contracts import SchemaRegistry, SchemaValidationError
 from whetstone.hashing import canonical_json_dumps
+from whetstone.vnext_registry import SUITE_ALGORITHM_VERSIONS
 
 SUITE_SCHEMA_VERSION = 'whetstone-contract-suite-manifest-v1'
 JOB_SCHEMA_VERSION = 'job-descriptor-v2'
 JOB_DOMAIN = 'whetstone-job-id-v1'
 CONTRACT_ROOT = Path(__file__).resolve().parents[2] / 'contracts'
-ALGORITHM_VERSIONS = {
-    'normalization_version': 'whetstone-canonical-json-v1',
-    'parser_contract_version': 'markdown-atx-v1',
-    'assembler_version': 'patch-assembler-v1',
-    'inventory_version': 'preservation-inventory-v1',
-    'semantic_verifier_policy_version': 'semantic-policy-v1',
-}
+# Compatibility name for the first-suite admission path, not global dispatch.
+ALGORITHM_VERSIONS = dict(SUITE_ALGORITHM_VERSIONS['vnext-contracts-1'])
 
 
 @dataclass
@@ -122,11 +118,16 @@ class VNextSchemaRegistry(SchemaRegistry):
         require(Path(filename).name == filename, 'schema reference must name a package schema')
         if filename not in self._schemas:
             raw = confined_file(self.schema_dir, filename).read_bytes()
-            value = decode_json(raw)
-            self._audit(value, filename)
-            self._qualify_refs(value, filename)
-            self._schemas[filename] = value
+            self._load_bytes(filename, raw)
         return self._schemas[filename]
+
+    def _load_bytes(self, filename, raw):
+        """Audit the exact bytes supplied by this invocation's pin check."""
+        value = decode_json(raw)
+        self._audit(value, filename)
+        self._qualify_refs(value, filename)
+        self._schemas[filename] = value
+        return value
 
     def _audit(self, schema, path):
         require(isinstance(schema, dict), 'boolean/invalid schemas are unsupported', path)
@@ -221,6 +222,7 @@ def validate_contract_suite(manifest_path: Path | None = None) -> ValidatedSuite
     require(SUPPORTED_SUITES.get(manifest['suite_version']) == digest, 'unknown suite or registry digest mismatch')
     require(path.name == manifest['suite_version'] + '.json', 'manifest filename/version mismatch')
     all_paths = set()
+    pinned_bytes = {}
     for group in ('schemas', 'algorithms', 'fixtures'):
         entries = manifest[group]
         names = [entry['name'] for entry in entries]
@@ -230,16 +232,21 @@ def validate_contract_suite(manifest_path: Path | None = None) -> ValidatedSuite
             all_paths.add(entry['path'])
             raw = confined_file(root, entry['path']).read_bytes()
             require(sha256_bytes(raw) == entry['sha256'], 'pinned file digest differs', entry['path'])
+            pinned_bytes[entry['path']] = raw
     pinned_schemas = {Path(e['path']).name for e in manifest['schemas']}
     for entry in manifest['schemas']:
         require(entry['path'] == 'schemas/' + Path(entry['path']).name, 'schema must be in schemas directory')
+        registry._load_bytes(Path(entry['path']).name, pinned_bytes[entry['path']])
+    # Preload every pinned schema before resolving references, so none can
+    # silently reread different bytes after its digest was checked.
+    for entry in manifest['schemas']:
         schema = registry.load(Path(entry['path']).name)
         require(set(_refs(schema)) <= pinned_schemas, 'transitive schema reference is not pinned', entry['path'])
         for ref in _refs(schema): registry.load(ref)
     suite = ValidatedSuite(manifest['suite_version'], digest, root, registry, manifest)
     from whetstone.vnext_conformance import check_fixture
     for entry in manifest['fixtures']:
-        packet = decode_json(confined_file(root, entry['path']).read_bytes())
+        packet = decode_json(pinned_bytes[entry['path']])
         require(packet.get('expected_result') == entry['expected_result'], 'fixture expectation differs from manifest')
         require(entry['kind'] == ('positive' if entry['expected_result'] == 'pass' else 'negative'), 'fixture kind/expectation mismatch')
         check_fixture(packet, registry)
@@ -249,9 +256,21 @@ def validate_contract_suite(manifest_path: Path | None = None) -> ValidatedSuite
 def validate_job_descriptor(descriptor: dict[str, Any], suite: ValidatedSuite) -> None:
     require(isinstance(suite, ValidatedSuite), 'a validated supported suite is required, not a caller-provided digest')
     suite = validate_contract_suite(suite.root / 'suites' / (suite.version + '.json'))
+    _validate_descriptor_in_fresh_suite(descriptor, suite)
+
+
+def _validate_descriptor_in_fresh_suite(descriptor, suite):
+    """Internal continuation of a suite validation performed in this call.
+
+    Public entry points must refresh suite files first. This helper is not a
+    capability check for a retained or caller-supplied ValidatedSuite object.
+    """
     suite.registry.validate(descriptor, 'job_descriptor_v2')
     require(descriptor['contract_suite_version'] == suite.version, 'descriptor suite version mismatch')
-    for key, version in ALGORITHM_VERSIONS.items(): require(descriptor[key] == version, 'unsupported algorithm version', key)
+    versions = SUITE_ALGORITHM_VERSIONS.get(suite.version)
+    require(isinstance(versions, dict) and versions.keys() == ALGORITHM_VERSIONS.keys(),
+            'supported suite has no complete implementation algorithm dispatch')
+    for key, version in versions.items(): require(descriptor[key] == version, 'unsupported algorithm version', key)
     for path, digest in [(descriptor['scope_contract_path'], descriptor['scope_contract_hash']),
                          (descriptor['source_spec']['path'], descriptor['source_spec']['expected_hash'])]:
         require((path is None) == (digest is None), 'nullable path/hash must be paired')

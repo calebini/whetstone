@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-proposal-response-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "patch",
+    "payloads"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-proposal-response-v2"
+    },
+    "patch": {
+      "$ref": "patch_set_client_v2.schema.json"
+    },
+    "payloads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-proposal-response-v2",
+    "producer": "editor",
+    "consumer": "vnext-unit-proposal-capture",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "Unactivated consuming suite only; frozen v1 transport remains unchanged."
+  }
+}

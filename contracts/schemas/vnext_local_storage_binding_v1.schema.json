@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-local-storage-binding-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "vnext-local-storage-binding-v1"},
+    "job_id": {"type": "string", "pattern": "^job_[0-9a-f]{64}$"},
+    "root_path": {"type": "string", "pattern": "^/[\\s\\S]+$", "minLength": 2},
+    "root_identity": {"$ref": "#/$defs/inode"},
+    "filesystem": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": {"const": "apfs"},
+        "fsid": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2}
+      },
+      "required": ["type", "fsid"]
+    },
+    "lock_identity": {"$ref": "#/$defs/inode"},
+    "lock_hash": {"$ref": "#/$defs/hash"},
+    "descriptor": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"path": {"type": "string", "minLength": 1}, "hash": {"$ref": "#/$defs/hash"}},
+      "required": ["path", "hash"]
+    }
+  },
+  "required": ["schema_version", "job_id", "root_path", "root_identity", "filesystem", "lock_identity", "lock_hash", "descriptor"],
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inode": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 2, "maxItems": 2}
+  }
+}

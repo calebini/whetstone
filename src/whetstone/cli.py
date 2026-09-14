@@ -212,6 +212,7 @@ def main(argv: list[str] | None = None) -> int:
     live_phase1.add_argument("--timeout-seconds", type=int, help="fallback timeout for both live clients")
     live_phase1.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer subprocess timeout")
     live_phase1.add_argument("--editor-timeout-seconds", type=int, help="override editor subprocess timeout")
+    live_phase1.add_argument("--verifier-timeout-seconds", type=int, help="override the vNext semantic verifier subprocess timeout")
 
     diagnostic_sweep = subparsers.add_parser(
         "diagnostic-sweep",
@@ -304,6 +305,7 @@ def main(argv: list[str] | None = None) -> int:
     resume.add_argument("--timeout-seconds", type=int, help="fallback timeout for the resumed client call")
     resume.add_argument("--reviewer-timeout-seconds", type=int, help="override reviewer timeout for continued rounds")
     resume.add_argument("--editor-timeout-seconds", type=int, help="override editor timeout for resume and continued rounds")
+    resume.add_argument("--verifier-timeout-seconds", type=int, help="override the vNext semantic verifier timeout for continuation")
     resume.add_argument("--continue", dest="continue_run", action="store_true", help="continue Phase 1 after recovering the failed round")
     resume.add_argument(
         "--extend-review-budget",
@@ -524,9 +526,33 @@ def main(argv: list[str] | None = None) -> int:
     vnext_admit.add_argument("--root", default=".")
     vnext_admit.add_argument("--config", default="orchestrator_config.yaml")
     vnext_admit.add_argument("--dry-run", action="store_true", help="validate without writing initialization artifacts")
+    vnext_decisions = subparsers.add_parser("vnext-decisions", help="inspect finding evidence or prepare explicit operator options")
+    vnext_decisions.add_argument("--root", default=".")
+    vnext_decisions.add_argument("--config", default="orchestrator_config.yaml")
+    vnext_decisions.add_argument("--options", help="JSON options input bound to the exact retained review")
+    vnext_decisions.add_argument("--dry-run", action="store_true", help="preview requests without writing")
+    vnext_decide = subparsers.add_parser("vnext-decide", help="record explicit operator selections without invoking clients")
+    vnext_decide.add_argument("--root", default=".")
+    vnext_decide.add_argument("--config", default="orchestrator_config.yaml")
+    vnext_decide.add_argument("--selections", required=True, help="JSON selections with exact requests, actors, rationales and timestamps")
+    vnext_decide.add_argument("--dry-run", action="store_true", help="preview responses without writing")
+    semantic_answers = subparsers.add_parser("vnext-semantic-answers", help="inspect a rejected candidate's interpretation question and answers")
+    semantic_answer = subparsers.add_parser("vnext-semantic-answer", help="record an explicit interpretation answer without starting editing")
+    semantic_followup = subparsers.add_parser("vnext-semantic-followup", help="admit a new transaction from an exact interpretation answer")
+    for child in (semantic_answers, semantic_answer, semantic_followup):
+        child.add_argument("--root", default=".")
+        child.add_argument("--config", default="orchestrator_config.yaml")
+        child.add_argument("--candidate", required=True, help="exact source candidate ID")
+    semantic_answer.add_argument("--input", required=True, help="JSON answer with exact evidence, actor, rationale and timestamp")
+    semantic_answer.add_argument("--dry-run", action="store_true", help="validate the answer without writing")
+    semantic_followup.add_argument("--answer-receipt", required=True, help="exact retained answer receipt path relative to the run root")
+    semantic_followup.add_argument("--answer-hash", required=True, help="expected SHA-256 of the selected receipt")
     for child in subparsers.choices.values():
         child.add_argument("--vnext-job-descriptor", help="immutable vNext descriptor path relative to root")
         child.add_argument("--vnext-review-configuration", help="immutable vNext review configuration path relative to root")
+        child.add_argument("--vnext-input-package", help="staged proposal package manifest; requires a qualified proposal suite")
+        child.add_argument("--vnext-round", type=int, help="explicit stored proposal round for inspection or continuation")
+        child.add_argument("--vnext-decisions", help="explicit retained operator selection receipt, relative to the run root")
     args = parser.parse_args(argv)
     from whetstone.vnext_cli import dispatch
     handled = dispatch(args)

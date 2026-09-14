@@ -56,9 +56,14 @@ def bind_response(response, request, *, job, base_hash, finding, targets, feedba
     """Validate an already canonical operator artifact against its exact request."""
     digest = validate_request(request, job=job, base_hash=base_hash, finding=finding,
                               targets=targets, feedback_refs=feedback_refs)
+    return bind_selected_response(response,request,job=job,base_hash=base_hash,request_hash=digest,suite=suite)
+
+
+def bind_selected_response(response,request,*,job,base_hash,request_hash,suite):
+    """Validate a selection only after the owning request version was validated."""
     suite.registry.validate(response, 'operator_decision_response_v1')
     expected = {'job_id': job['job_id'], 'decision_id': request['decision_id'],
-                'decision_request_hash': digest, 'base_draft_hash': base_hash,
+                'decision_request_hash': request_hash, 'base_draft_hash': base_hash,
                 'authority_map_hash': job['authority_map_hash'], 'scope_contract_hash': job['scope_contract_hash']}
     require(all(response[key] == value for key, value in expected.items()), 'operator response is stale or bound to another request')
     require(response['response_id'] == ids.response_id(response), 'operator response identity differs')

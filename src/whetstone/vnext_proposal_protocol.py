@@ -18,7 +18,7 @@ class PatchProposalClient(Protocol):
         ...
 
 
-def proposal_prompt(*, plan, base, section_map, authority, invariants, context, finding_details, scope=None):
+def _proposal_prompt_packet(*, plan, base, section_map, authority, invariants, context, finding_details, scope=None):
     """Render only admitted targets and declared immutable dependency context.
 
     context maps binding IDs to exact bytes already selected by the orchestrator.
@@ -55,6 +55,11 @@ def proposal_prompt(*, plan, base, section_map, authority, invariants, context, 
             'mutation_plan_hash':sha256_bytes(canonical_json_bytes(plan)),
             'target_sections':sections,'scope_contract':scope,'authority_map':authority,'protected_invariants':invariants,
             'dependency_context':references}
+    return packet
+
+
+def proposal_prompt(**arguments):
+    packet=_proposal_prompt_packet(**arguments)
     return (
         'Produce one JSON object with schema_version = vnext-proposal-response-v1, patch and payloads.\n'
         'The patch follows patch-set-client-v1: proposal_id is null, operation IDs are local labels, '
