@@ -1,6 +1,6 @@
 # Local storage kernel implementation notes
 
-Status: proposed, unactivated implementation supporting slice 18.5. This document and `vnext_local_storage_binding_v1.schema.json` are not part of a registered consuming suite. They do not resolve or qualify D8 by themselves. The prepared D8 audit packet remains unchanged and awaits exact-payload approval. These implementation refinements must be reconciled with the reviewed storage contract before registration or promotion ships.
+Status: unactivated implementation of the [operator-ratified D8 local storage design](../../docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md), recorded on 2026-09-15. The governing contract now incorporates these physical-binding, fresh-root and uncertainty refinements. This document and `vnext_local_storage_binding_v1.schema.json` remain outside a registered shipping consuming suite. Ratification resolves the design choice; the bounded consistency audit and consuming-release qualification remain open. The historical staged D8 audit packet is preserved unchanged and is not evidence that the consolidated contract has been audited.
 
 ## Scope and physical binding
 

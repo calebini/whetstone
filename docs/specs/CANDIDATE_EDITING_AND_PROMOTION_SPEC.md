@@ -231,6 +231,14 @@ The [semantic workflow supplement](../../contracts/algorithms/vnext_semantic_wor
 
 Candidate disposition and run terminal state are independent. A valid semantic operator-decision verdict produces a final rejected candidate while the run pauses for the decision. Missing/invalid/timed-out semantic output instead leaves an unverified candidate with no fabricated semantic verdict. Final rejection requires a new transaction; final verification permits only mode-appropriate promotion or inspection. No scheduler transition may reopen a final verification decision.
 
+## Local Storage Decision (D8)
+
+On 2026-09-15 the operator ratified the single-host, local-filesystem storage design in the [D8 local storage contract](VNEXT_LOCAL_STORAGE_SPEC.md). One retained kernel lock serializes authority mutation by cooperating Whetstone processes on one canonical macOS/local-APFS root. Accidental overlapping mutation attempts are busy; read-only inspection never repairs. Immutable evidence precedes atomic pointer publication, and uncertain publication requires reacquisition and reconciliation rather than rollback or another client call.
+
+The D8 supplement owns acquisition, physical binding, fencing, release/fork behavior, durable publication and supported-filesystem limits. This leaf continues to own registration, finality, claimant selection and promotion ordering. Legacy/bridge paths, the frozen first suite and existing descriptors are unchanged. Distributed writers, active-root relocation and parallel authoritative commits are outside the ratified scope.
+
+The design choice is resolved. Its bounded consistency audit and consuming-suite qualification remain open; ratification does not complete 18.5–18.7 or activate proposal/promotion modes.
+
 ## Versioned Job Descriptor
 
 Every vNext run MUST persist an immutable `job_descriptor.json` before review begins.

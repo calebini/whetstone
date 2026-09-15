@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+Follow-up on 2026-09-15: the operator has now [ratified the D8 storage design](specs/VNEXT_LOCAL_STORAGE_SPEC.md), including the single-host/single-writer scope. That explicit request also authorizes the corresponding local owning-spec and plan updates, which have been recorded. The D8 audit has not run; refreshed exact-payload authorization and release qualification remain open. The reconciliation and approval states below describe the earlier checkpoint and are retained as historical evidence.
+
 This is a checkpoint of existing, unactivated implementation. **18.5, 18.6 and
 18.7 remain incomplete.** It is not a release, a D8 ratification, or evidence
 that a new runtime mode is supported. The current reconciliation supersedes
