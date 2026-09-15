@@ -667,6 +667,329 @@ decision_status_counts: object
 unresolved_human_decision_count: integer
 ```
 
+### Proposed change-audit objective contracts
+
+**Status: proposal for review; not ratified or implemented.** These contracts
+apply only to the proposed `--audit-request` input form defined in the
+[scope leaf](SCOPE_INTAKE_AND_DECISIONS_SPEC.md#proposed-extension-explicit-objectives-and-evidence-backed-coverage).
+The existing v1 shapes above and canonical `reviewer_feedback` remain unchanged.
+The following closed-object type definitions are the proposed machine contract;
+JSON Schema files and validators are implementation deliverables, not published
+runtime support in this amendment.
+
+#### Input packet and reference primitives
+
+Use JSON, following the repository's versioned, closed-schema convention.
+Reject unknown properties, unsupported versions, duplicate JSON object keys,
+non-finite numbers, and wrong types before invocation. In the definitions below,
+all properties are required unless explicitly optional; `?` denotes nullable,
+not omitted. `ID` is a case-sensitive string matching
+`[A-Za-z][A-Za-z0-9_.-]{0,63}`; `SHA` is 64 lowercase hexadecimal characters.
+Descriptive strings MUST contain non-whitespace text.
+
+```text
+ArtifactInput = {
+  id: ID,
+  role: "baseline" | "candidate" | "reference" | "instructions",
+  path: string,
+  sha256: SHA
+}
+Location = {kind: "byte_range", byte_start: integer, byte_end: integer}
+         | {kind: "whole_artifact"}
+EvidenceRef = {artifact_id: ID, sha256: SHA, location: Location}
+PreservationTarget = {
+  baseline_refs: EvidenceRef[1..],
+  candidate_ids: ID[1..]
+}
+Objective = {
+  id: ID,
+  kind: "check" | "preservation",
+  question: string,
+  input_ids: ID[1..],
+  criteria: string,
+  preservation: PreservationTarget?
+}
+AuditRequest = {
+  schema_version: "change-audit-request-v1",
+  inputs: ArtifactInput[2..],
+  objectives: Objective[0..64]
+}
+```
+
+Exactly one input MUST have role `instructions` (the Markdown audit notes), and
+at least one MUST have role `candidate`. Baseline and supporting references are
+optional. The request itself is the objective authority, pinned separately from
+the instructions. Request paths resolve relative to the request file's directory;
+absolute source paths are allowed when explicitly supplied. Paths and filenames
+locate bytes only; roles come exclusively from this packet.
+
+Input IDs MUST be unique. One resolved source file MUST NOT be assigned multiple
+roles or aliases, including symlink/hard-link aliases. Separate baseline and
+candidate snapshots with identical bytes are allowed: unchanged documents are
+legitimate. Every objective `input_ids` entry MUST be distinct and resolve to a
+baseline, candidate, or reference in the packet. Instructions are review guidance,
+not evidence that a document meets an obligation.
+
+For `kind=check`, `preservation` MUST be null. For `kind=preservation`, it MUST
+be non-null: every baseline Ref is a nonempty byte range in a baseline input;
+all candidate IDs resolve to candidate inputs; both sets are included in
+`input_ids`. Candidate IDs and baseline Refs MUST be unique. The baseline spans
+jointly identify one operator-declared obligation. A baseline/candidate swap
+relative to these bindings, an unknown role, or ambiguous multi-role input is
+a preflight contract failure. A consistently but incorrectly operator-labeled
+pair cannot be recognized mechanically from prose; the resolved role/ID/hash
+table MUST be visible in the brief and report. Hashes prove binding, not that the
+operator selected the intended baseline.
+
+For source artifacts, compute SHA-256 over `read_bytes()` and compare with the
+operator-supplied digest before use. Persist those exact bytes as confined,
+audit-relative snapshots. Do not use `draft_hash`, newline conversion, trimming,
+or a parse/reserialize round trip for byte identity. Inputs in this release are
+strict UTF-8 text; unsupported encodings fail preflight. Read once, verify, and
+construct the brief from those same bytes. Re-read original sources before
+publishing success: drift is an infrastructure/input-integrity failure, never
+an excuse to overwrite sources or claim to have audited their new version.
+
+A byte range is zero-based and half-open with
+`0 <= byte_start < byte_end <= len(snapshot_bytes)`; both endpoints MUST be
+UTF-8 character boundaries. A whole-artifact Ref denotes the entire pinned
+artifact, including a valid empty candidate. No URL, arbitrary filesystem path,
+invented heading, normalized-text offset, or generated brief location may
+substitute for an input Ref. All assessment Refs MUST resolve to the objective's
+`input_ids` and their exact hashes. Whole-artifact references support domain-wide
+checks and explanations of absence, not invented successor text. Render readable
+excerpts and line/byte locators from verified snapshots; do not ask the Reviewer
+to compute hashes or normalize source coordinates.
+
+#### Manifest, Reviewer response, and persistence
+
+Proposed `change_audit_manifest_v2.schema.json`:
+
+```text
+SnapshotRef = {path: string, sha256: SHA}
+PinnedInput = {
+  id: ID, role: "baseline" | "candidate" | "reference" | "instructions",
+  source_path: string, snapshot: SnapshotRef, byte_length: integer
+}
+AuditManifestV2 = {
+  schema_version: "change-audit-manifest-v2",
+  generated_at: timestamp,
+  request: SnapshotRef,
+  inputs: PinnedInput[2..],
+  profile: string,
+  profile_guidance: SnapshotRef,
+  audit_brief: SnapshotRef,
+  prompt: SnapshotRef,
+  client: {name: string, version: string, model: string}
+}
+```
+
+Snapshot paths are confined relative paths beneath `change_audit/`; reject
+escapes, output symlinks, and collisions with any source/request file. The
+manifest MUST agree with the request on IDs, roles, byte digests, and resolved
+source paths. Capture the effective profile guidance and final prompt as exact
+bytes so a profile name alone cannot stand for changing built-in instructions.
+The brief includes full input text, the role/hash table, every objective and
+criteria, and source locators. No truncation or omitted objective is admissible.
+
+Add `change_audit_review_v1.schema.json`, an audit-specific envelope, without
+adding fields to the shared, closed `reviewer_feedback` schema:
+
+```text
+Assessment = {
+  objective_id: ID,
+  status: "satisfied" | "violated" | "not_assessed",
+  reasoning: string,
+  evidence_refs: EvidenceRef[],
+  finding_ids: string[],
+  inability_reason: string?
+}
+AuditReview = {
+  schema_version: "change-audit-review-v1",
+  audit_manifest_sha256: SHA,
+  reviewer_feedback: <existing canonical reviewer_feedback object>,
+  objective_assessments: Assessment[0..64]
+}
+```
+
+The Reviewer receives the expected manifest digest alongside the persisted
+prompt; the manifest binds the prompt body, which MUST NOT embed its own
+manifest digest (avoiding a hash cycle). Persist that invocation binding with
+the review. The nested feedback retains `round_number=1`, selected profile,
+`draft_hash=draft_hash(audit_brief)`, and `oscillation_key=null`.
+The existing normalized brief hash is a separately labeled compatibility field;
+the manifest's byte digests govern source and evidence integrity.
+
+Persist validated, canonicalized envelope as `change_audit_review.json` and its
+nested feedback unchanged as `change_audit_feedback.json`. The latter remains
+readable by findings consumers, but alone supplies no coverage claim. Audit
+adapters MUST validate the envelope and retain every assessment rather than feed
+it through a Phase 1 schema. Existing identity/severity normalization applies
+only inside `reviewer_feedback`; it MUST preserve `feedback_id` and all assessment
+fields. Reject duplicate finding IDs before resolving links. Retain exact raw
+client output when available under `change_audit/` for diagnostics; malformed
+output is never persisted under a filename denoting validated review.
+
+The following checks are deterministic, after shape/context/hash validation:
+
+1. Declared objective IDs are unique. Assessment IDs form exactly the declared
+   set, each with multiplicity one. Never deduplicate, rename, fill, or infer an
+   assessment; unknown IDs cannot replace missing IDs. With no objectives, the
+   assessment array MUST be empty.
+2. All Refs resolve to pinned, unchanged snapshots and valid byte locations.
+   Every `satisfied` or `violated` assessment cites at least one Ref for every
+   applicable input ID. `not_assessed` may have no evidence when unavailable;
+   any supplied evidence is still validated.
+3. `violated` requires at least one distinct `finding_ids` entry resolving to an
+   in-scope finding in this response. `satisfied` and `not_assessed` require an
+   empty finding list. `not_assessed` requires a nonempty `inability_reason`;
+   other statuses require null. All statuses require concise reasoning.
+4. For conclusive preservation assessments, evidence contains each declared
+   baseline Ref and references every named candidate. A satisfied assessment
+   requires actual candidate byte ranges; a violated assessment may use whole
+   candidate Refs to explain loss. An unassessed preservation objective remains
+   incomplete, even when other obligations are satisfied.
+5. There is no assessment scope flag or waiver. A violated objective linked only
+   to an `in_scope=false` finding fails validation; the Orchestrator MUST NOT
+   silently reclassify that finding. A claim of scope conflict can only be an
+   explicit `not_assessed`, never a successful exemption.
+
+Schema checks alone cannot establish ID multiplicity, cross-artifact consistency,
+bounds, UTF-8 alignment, or semantic meaning. Use explicit cross-artifact
+validators for these structural checks. Do not rely on unsupported JSON Schema
+keywords in Whetstone's minimal `SchemaRegistry`; in particular, `uniqueItems`
+alone does not enforce uniqueness by objective ID. Similar prose, nonempty
+reasoning, and valid citations do not mechanically establish relevance,
+equivalence, absence, or fulfillment.
+
+#### Report contract and deterministic aggregation
+
+Proposed `change_audit_report_v2.schema.json` replaces the v1 report only for the
+opt-in invocation. All summaries below are Orchestrator-owned:
+
+```text
+Coverage = {
+  status: "not_requested" | "complete" | "incomplete" | "invalid",
+  declared_ids: ID[], satisfied_ids: ID[], violated_ids: ID[],
+  not_assessed_ids: ID[], missing_ids: ID[],
+  duplicate_ids: ID[], unknown_ids: ID[],
+  objective_complete_pass: boolean?
+}
+Preservation = {
+  status: "not_requested" | "preserved" | "violated" | "inconclusive" | "invalid",
+  objective_ids: ID[], satisfied_ids: ID[], violated_ids: ID[],
+  not_assessed_ids: ID[]
+}
+Diagnostic = {
+  category: "input_contract" | "review_contract" | "infrastructure",
+  code: string, path: string, message: string
+}
+AuditReportV2 = {
+  schema_version: "change-audit-report-v2",
+  generated_at: timestamp,
+  mode: "findings_only" | "objective_assessed" | null,
+  execution_status: "completed" | "invalid_input" | "invalid_review" | "infrastructure_failed",
+  verdict: "pass" | "pass_with_minor_clarification" | "needs_revision" |
+           "blocked" | "inconclusive" | "audit_failed",
+  findings_verdict: "pass" | "pass_with_minor_clarification" |
+                    "needs_revision" | "blocked" | null,
+  feedback_counts: <v1 severity-count object>?,
+  in_scope_feedback_ids: string[], out_of_scope_feedback_ids: string[],
+  objective_coverage: Coverage,
+  preservation_assessment: Preservation,
+  diagnostics: Diagnostic[],
+  failure_reason: string?,
+  recommended_next_action: "none" | "manual_patch" | "complete_assessment" | "fix_audit_setup",
+  audit_manifest: SnapshotRef?,
+  source_review: SnapshotRef?,
+  source_feedback: SnapshotRef?
+}
+```
+
+`boundary_preserved` MUST NOT occur in v2. A report is published only after all
+referenced artifacts have been written and revalidated. Manifest/review/feedback
+Refs are null if the corresponding validated artifact was not produced. Preflight
+failure may write a diagnostic report if a safe output location exists; an
+unwritable/colliding root must produce a nonzero CLI error, never a stale pass.
+Do not publish zero finding counts as though a failed Reviewer checked the input.
+
+For structurally valid input, `mode` is `objective_assessed` iff objectives are
+nonempty, else `findings_only`. Before a request can be validated, use
+`mode=null`, coverage and preservation `invalid`, and objective pass false;
+do not invent the requested mode or claim that no objectives were requested.
+
+Aggregate in this order:
+
+1. Invalid request => `execution_status=invalid_input`; malformed/missing/
+   duplicate/unknown assessments, bad context, bad evidence, or broken finding
+   links => `invalid_review`. Transport, timeout, snapshot/source drift, or
+   persistence failure => `infrastructure_failed`. Each yields `audit_failed`,
+   nonempty diagnostics/failure reason, and `fix_audit_setup`. Partial review is
+   diagnostic only: findings verdict/counts null, finding ID arrays empty.
+   Coverage is `invalid` and pass false for requested/undetermined objectives;
+   absent objectives remain `not_requested` with pass null. Requested preservation
+   is `invalid`; known absent preservation remains `not_requested`.
+2. Valid review => `completed`, empty diagnostics, null failure reason. Compute
+   `findings_verdict`, counts and in/out-of-scope IDs using the v1 severity
+   precedence. Independently compute coverage: no objectives => `not_requested`;
+   any `not_assessed` => `incomplete`; otherwise `complete`.
+   A completed assessment may be a violation: coverage complete does not mean pass.
+3. `objective_complete_pass` is null when no objectives were requested. Otherwise
+   it is true only if execution completed and every objective is satisfied with
+   valid required evidence. Any violation, inability, missing item, or validation
+   failure makes it false. Findings remain an independent gate.
+4. Preservation: no preservation objectives => `not_requested`; else any valid
+   violated preservation objective => `violated`; otherwise any unassessed one
+   => `inconclusive`; otherwise => `preserved`. Keep the constituent ID lists so
+   partial preservation and violation-plus-uncertainty remain visible.
+5. Overall valid-result precedence: in-scope blocker => `blocked`; otherwise
+   in-scope major OR any violated objective => `needs_revision`; otherwise any
+   unassessed objective => `inconclusive`; otherwise the findings verdict
+   (`pass` or `pass_with_minor_clarification`). Thus even a minor-severity
+   objective violation prevents passing. Findings-only passes are explicitly
+   labeled with their mode and are never objective-assessed passes.
+
+ID summaries are unique, lexically sorted lists; declare/input/assessment array
+order has no semantic effect. On invalid review, retain all discoverable missing,
+duplicate, and unknown IDs as diagnostics; do not present partial satisfied or
+violated IDs as validated assessments. Emit diagnostic codes such as
+`DUPLICATE_OBJECTIVE_ID`, `MISSING_ASSESSMENT`, `UNKNOWN_OBJECTIVE_ID`,
+`DUPLICATE_ASSESSMENT`, `INVALID_EVIDENCE_REF`, `INVALID_FINDING_LINK`,
+`INPUT_ROLE_CONFLICT`, and `INPUT_HASH_MISMATCH`, with field paths.
+
+Next action for completed results is `none` on pass, `manual_patch` on
+pass-with-minor/revision/blocked, or `complete_assessment` on inconclusive.
+When violations and unassessed objectives coexist, the report MUST also display
+the outstanding objective IDs; a manual patch cannot clear them without a new
+audit. No next-action value automatically invokes another workflow.
+
+#### Versioning and release boundary
+
+The smallest release adds four canonical schemas: request v1, manifest v2,
+review envelope v1, and report v2, plus a client-compatible output schema where
+the existing transports require one. It does not change shared reviewer
+feedback, Phase 1/2 contracts, or preservation-bridge/vNext suites. Source and
+snapshot references may follow existing byte-range/Ref conventions without
+importing their acceptance machinery.
+
+Legacy invocation continues emitting the exact v1 schema and CLI fields with
+their existing semantics. Legacy readback/documentation MUST label its result
+as findings-based and `boundary_preserved` as severity-derived. Opt-in CLI JSON
+MUST include the v2 schema version, execution status, mode, verdict, findings
+verdict, coverage, preservation, and report path; it MUST NOT emit a v1-shaped
+success summary. V2 process exit codes: 0 for pass/pass-with-minor, 1 for a
+completed substantive or inconclusive result, 2 for setup/contract/infrastructure
+failure. Legacy exit behavior remains unchanged.
+
+Readers dispatch on schema version and reject unknown versions. Existing
+`ChangeAuditResult` and `run_change_audit` retain v1 behavior; introduce a typed
+v2 result/request entry point sharing internal helpers rather than changing the
+meaning of `boundary_preserved` for library callers. Old reports cannot be
+upgraded into assessments: show coverage/preservation as unavailable in a
+readback view, preserve the original version, or run a new explicit audit.
+Do not backfill objectives from notes or infer preservation from zero findings.
+A future default switch requires a separate compatibility decision.
+
 ## ARTIFACT VALIDATION POLICY
 
 The Orchestrator MUST validate every client-produced artifact before using it for scheduling, mutation, acceptance, convergence, oscillation detection, or conflict escalation.

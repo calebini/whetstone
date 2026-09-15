@@ -1383,6 +1383,8 @@ Implementation complete at the declared fixture-driven boundary: bound Reviewer 
 
 Dependencies: 18.4; D8 design ratified and bounded consistency audit closed, with consuming-suite qualification still required before release. One authority mutation owner is permitted at a time; parallel registration is not an enabled feature.
 
+Implementation in progress: full inventory/rule and assertion preflight feeds native/injected proposal transport and deterministic assessment. The proposed [local storage kernel](contracts/algorithms/vnext_local_storage_kernel_v1.md) adds physical binding, kernel exclusion, fork-safe ownership, durable publication and explicit uncertainty. The isolated [candidate registry](contracts/algorithms/vnext_candidate_registration_v1.md) connects persisted candidate/map/report/inventory replay to initial unverified disposition, contiguous creation events, exact candidate reuse and sole-orphan recovery. The [durable Editor request journal](contracts/algorithms/vnext_proposal_requests_v1.md) enforces job/transaction-wide invocation slots, bounded shape repair and explicit technical continuation across restarts. The [completed-request handoff](contracts/algorithms/vnext_proposal_handoff_v1.md) now binds the exact source request to its Reviewer round, repeats source/target durability barriers, publishes a round receipt and supplies the registry's assessment loader without another Editor call. The [proposal admission and staging consumer](contracts/algorithms/vnext_proposal_admission_v1.md) now validates descriptor-bound registered algorithms, every consumed schema pin, committed seed authority and exact retained Reviewer/decision inputs before request work. It validates a frozen input package before initializing a fresh D8 root and refuses existing-root upgrades. The [bounded D7 closeout](contracts/algorithms/vnext_proposal_closeout_v1.md) connects first decisions, atomic verification-pointer commit/recovery and terminal projections; exact pre-packaging failure diagnostics never fabricate a candidate. The private round entry preserves timeout causes and bounded explicit continuation. The [stored-run interface](contracts/algorithms/vnext_proposal_run_v1.md) now retains/reloads input selectors, admits later rounds into seed-only roots and derives read-only request/candidate/materialization status; its front door requires explicit recovery before any writes. The [seed Reviewer sequence](contracts/algorithms/vnext_seed_review_requests_v1.md) now generates bound feedback/advice from seed-only roots, derives round/profile budgets, retains bounded attempts and exposes read-only recovery/finding status before exact Editor admission. The [seed review phase closeout](contracts/algorithms/vnext_seed_review_closeout_v1.md) now executes configured profiles through findings or clean/budget/failure terminals and supports materialization-only report recovery. The [staged input package](contracts/algorithms/vnext_proposal_package_v1.md) now supplies exact descriptor/review/constraint references, derives initial seed authority, copies only referenced inputs to a fresh root and joins live feedback to explicit packaged limits without operator grants. The [guarded command consumer](contracts/algorithms/vnext_proposal_cli_v1.md) now connects explicit package/config selection, fresh-root admission, native Reviewer/Editor execution, read-only status and explicit bounded continuation. Complete endpoint reentry and missing-report recovery invoke no clients; the exact proposal qualification map remains empty. The [explicit operator consumer](contracts/algorithms/vnext_operator_decisions_v1.md) now binds concrete options, accountable responses and separately selected receipts to exact Reviewer/base/unit evidence before derived-task admission; partial request publication can be replayed without clients or bypassing candidate state. This change passes 148 distinct targeted operator/CLI/review/closeout/unit/compatibility checks, including final recovery refinements. Retained same-base toy cases prove that an exact weakening grant permits its named unit but rejects weakening its neighbor. Prior broad vNext evidence remains retained separately. Retained native scenarios include pass/rejection/map-failure endpoints, fresh-process terminal recovery and a complete seed Reviewer-to-Editor journey with response reuse and no extra calls, under test-only registered suites. The [v2 supplement](contracts/algorithms/vnext_candidate_assembly_v2.md) defines the components and their limits. D8 audit/reconciliation and final consuming-suite qualification remain open; historical promoted-base admission and later decision ordinals remain later-slice obligations; no new suite or runtime mode is activated. Exact logs, input hashes and inspectable scenarios are retained in `rounds/vnext-assembly-001/`.
+
 - [ ] Assemble deterministically from the immutable base and canonical patch/payload hashes, deriving and binding the candidate section identity map. Check parser, structure, assertions, invariants, inventories and allowed surface with reusable bridge primitives where their contracts match.
 - [ ] Implement candidate identity, immutable candidate directories, initial unverified disposition and run-wide creation-event registration. Select latest through the unique contiguous committed chain; preserve and diagnose incomplete orphans without timestamp/directory heuristics.
 - [ ] Exercise proposal-only from admitted request through inspectable registered candidate and deterministic report while seed authority remains unchanged. Passing deterministic validation must not label a candidate verified.
@@ -1393,6 +1395,8 @@ Likely surfaces: dedicated assembler/candidate-store/registration modules, `arti
 
 Dependencies: 18.5.
 
+Independent implementation is progressing while 18.5's D8/release gate remains pending. Registered context, preservation coverage, semantic-policy-v2, independent native Verifier requests and append-only semantic decisions feed the [normal proposal workflow](contracts/algorithms/vnext_semantic_workflow_v1.md). Exact proposal and semantic qualifications remain separate empty shipping maps. The [interpretation-answer component](contracts/algorithms/vnext_semantic_answers_v1.md) records explicit selections or declines with no effect grants; [follow-up preflight](contracts/algorithms/vnext_semantic_followup_preflight_v1.md) derives a distinct v3 plan within the unchanged original editing scope. The [durable follow-up admission](contracts/algorithms/vnext_semantic_followup_admission_v1.md) now commits exact transaction selection, routes transaction-specific handoff/registration, and reproduces historical sources through strictly earlier read-only creation prefixes. Six new admission checks plus 47 existing routing checks pass. The retained same-round journey registers and independently verifies an actual second candidate while preserving the original final rejection, outstanding question, context and invocation counts. Fresh-process readback validates all 339 retained fixture files with no additional client calls and unchanged seed authority. Its post-test inspection metadata serialization failure was repaired from retained bytes; runtime artifacts were not rewritten. Exact scope, failure history, logs and source hashes are in `rounds/vnext-semantic-001/validation-followup-admission-stage.json`. Explicit semantic answer/selection commands are implemented behind a separate empty qualification map, with 46 command/configuration/qualification checks passing. Shared no-adapter Editor output recovery passes 58 request/closeout/CLI checks, recorded in `rounds/vnext-semantic-001/validation-output-recovery-stage.json`. The normal positive follow-up workflow passes, including stale-command refusal and fresh-owner completed reentry without writes or extra calls (`validation-normal-followup-workflow-stage.json`). Same-invocation semantic source reuse passes 18 answer/decision regressions and fresh-process readback of all 339 retained follow-up fixture files (`validation-answer-source-replay-stage.json`). The repeated-follow-up journey also passes: three genuine candidates in one Reviewer round preserve both rejected ancestors, their contexts, original editing scope and seed authority (`validation-repeated-followup-stage.json`). That long process used earlier imports; final-release regression remains required. Normal semantic recovery and the scripted native CLI journey now pass (`validation-normal-followup-recovery-stage.json`, `validation-native-followup-stage.json`). Fresh-process native readback validates all 384 fixture files without adapters, new calls or writes. The long journey tests used earlier imports; final current-source qualification, complete coverage reconciliation and D8 remain open. No 18.6 completion or public activation is claimed; continue from `rounds/vnext-semantic-001/next-semantic-operator-transactions.md`.
+
 - [ ] Add the independent verifier protocol with bounded but sufficient base/candidate context, admitted findings, preservation obligations and authority constraints. Validate all returned evidence and exact input bindings; Editor self-certification is insufficient.
 - [ ] Implement immutable verification attempts, per-finding coverage, candidate decisions, disposition events and atomic candidate-local verification-pointer commit. Distinguish validation pass, candidate verified/rejected, and interrupted unverified state.
 - [ ] Keep retries on the correct immutable base and plan; any proposed reduced patch is a new validated proposal, not an in-place edit of a registered candidate.
@@ -1402,6 +1406,8 @@ Likely surfaces: `clients.py`, `protocols.py`, `prompts.py`, candidate verificat
 #### 18.7 Atomic Promotion, Locking And Recovery
 
 Dependencies: 18.6 and ratified D8. The design was ratified and its bounded audit closed on 2026-09-15; consuming-release qualification remains open.
+
+Independent 18.7 implementation now includes a [committed pointer-history reader](src/whetstone/vnext_pointer_history.py). It validates exact predecessor snapshots through the seed, canonical promotion/verification/registration bindings, candidate maps and disposition finality without enumerating future or stale unbound intents. Forty-nine distinct pointer/contract/section-lineage checks pass, recorded in `rounds/vnext-promotion-001/validation-pointer-history-stage.json`. Its new fixtures are fictional structural evidence. Immutable seed validation and shared round reconstruction are now separated from the existing P-mode/current-seed guard; 64 distinct layered checks and a fresh 339-file retained follow-up readback pass (`validation-seed-input-boundary-stage.json`). Shared pure semantic decision derivation now applies the mode-dependent permission rule and exact predecessor checks; 23 projection/decision/answer tests and current retained readback pass (`validation-mode-decision-stage.json`), with the existing P entry retaining its mode guard. The separately pinned V semantic consumer now passes five actual registration/request/decision/recovery tests and 52 shared regressions (`validation-verified-semantics-stage.json`), without advancing global authority. The canonical promotion-tail reader passes ten V checks and 24 shared semantic regressions, plus overlapping final schema-pin/reentry checks (`validation-promotion-tail-stage.json`). Prepared tails preserve semantic disposition and global authority; reentry does not publish, and rehashed conflicts or uncommitted predecessor snapshots refuse. The separately pinned historical reader now reproduces genuine one- and two-promotion histories and same-round V follow-ups, resolving each original base/inventory through a proof-local ascending chain. Ten distinct history checks and 71 shared request/handoff/answer/preflight/follow-up admission regressions pass (`validation-verified-history-stage.json`). Test fixtures publish the promotion pointers and provide writer/answer selection; this does not qualify a production promotion workflow. Stage 1 materialization now has a separately pinned consumer: 12 recovery/boundary tests and 40 storage/history regressions pass (`validation-materialization-stage.json`). It repairs only committed spec/source-round/state mirrors under the shared fence, preserves unrelated state, repeats durability barriers without rewriting authority, and stops before a next-ordinal scan. The separately pinned production promotion writer now implements sole next-ordinal claimant reconciliation, immutable intent/event/snapshot preparation, fresh evidence revalidation at conditional pointer commit and separate materialization recovery. Genuine writer-driven multiple-promotion and same-round follow-up journeys, all preparation prefixes, actual process death/exclusion, lost acknowledgement and exact base-pointer binding checks pass. All 16 writer checks and 17 shared semantic regressions pass; exact batch scope, source-version limits and the corrected fixture assertion are recorded in `validation-promotion-writer-stage.json`. The separately pinned live-work owner now selects and executes Editor, registration and Verifier operations under one actual fence. It supplies materialization/registration/verification recovery precedence, exact current-base selection, latest-candidate finality, same-round child routing and explicit continuation without extra clients. All 15 live-work checks and both shared fixture regressions pass, including genuine seed/promoted-base journeys, actual process-death recovery and source drift during Editor calls; current-source evidence is recorded in `validation-live-work-stage.json`. The V operator owner now publishes exact interpretation answers and explicit child admission/selection using shared producers with unchanged P wrappers: eight V checks and 17 P regressions pass (`validation-verified-operator-stage.json`). Its actual question-to-promoted-child journey preserves the rejected parent and client counts across all response/receipt and admission/selection interruption prefixes. The stored V run owner now reopens seed and promoted roots from immutable root selectors and lazily resolves exact canonical round records; seven reopen, input-binding, mode and fresh-process checks pass (`validation-verified-run-stage.json`). Canonical new round publication remains fixture setup. The normal V Reviewer sequence, scheduler/phase integration, D8 audit/reconciliation and release qualification remain open; continue from `rounds/vnext-promotion-001/verified-review-next.md`. No promotion mode is activated.
 
 - [ ] Implement the fenced run-wide lock mutually excluding registration and promotion, then promotion intents, prepared disposition events, ordinal-indexed pointer snapshots and the atomic current-verified replacement commit point.
 - [ ] Implement current committed lineage validation, sole next-ordinal claimant selection and post-commit materialization recovery in the specified order. Materialize `spec.md`, `draft_after.md`, history and state only from the committed authority.
@@ -1483,3 +1489,198 @@ First successful live build:
 - [x] Persist complete prompt snapshots
 - [x] Complete at least one live round without accepting malformed artifacts
 - [x] Preserve fixture-mode regression behavior
+
+## Proposed Audit-Change Objectives Release
+
+**Status: proposal for review only, 2026-09-13.** No runtime, schema, fixture, or
+test implementation is included. This proposal does not change the existing
+candidate-editing delivery sequence or authorize nested review, commit, or push.
+
+### Current-state assessment
+
+The authoritative owner is [CHANGE AUDIT WORKFLOW](docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#change-audit-workflow),
+routed by the coordinating spec's family map; machine artifact requirements also
+live in [the artifact leaf](docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md).
+The root `spec.md` is decomposed source/provenance, not the place to grow this
+feature. No repository `AGENTS.md` or `specs/repo-standard.md` was found.
+
+- [change_audit.py](src/whetstone/change_audit.py) reads notes and undifferentiated
+  specs, constructs one brief, invokes one Reviewer, validates canonical feedback,
+  and emits v1 manifest/report plus Markdown. It has no objective inventory,
+  assessment array, evidence resolver, or explicit baseline/candidate roles.
+- `build_change_audit_report` counts in-scope severity and derives
+  `boundary_preserved` from pass/pass-with-minor. This implements the current v1
+  spec, but it is not a semantic preservation assessment. Out-of-scope findings
+  are retained and excluded from counts. Zero findings says nothing about whether
+  a requested question was actually assessed.
+- Input hashes use [draft_hash](src/whetstone/hashing.py), which normalizes
+  newlines, trailing whitespace, and terminal blank lines. The manifest therefore
+  does not bind exact source bytes. The brief embeds text but there are no
+  independent exact-byte source snapshots or structured evidence locations.
+- [reviewer_feedback.schema.json](contracts/schemas/reviewer_feedback.schema.json)
+  is closed and findings-centric; `evidence` is a string. Both existing audit
+  schemas are closed v1 contracts. Adding assessment fields without versioned
+  dispatch would be incompatible.
+- [clients.py](src/whetstone/clients.py) selects Phase 1/2 output schemas and
+  canonicalizes findings. [cli.py](src/whetstone/cli.py) currently instantiates
+  audit clients with Phase 1 schema selection, while the prompt correctly says
+  `audit_change`. V2 needs explicit audit schema selection in both supported
+  clients, not just more prompt instructions.
+- The CLI exposes `verdict`, `boundary_preserved`, and artifact paths, and returns
+  zero after `run_change_audit` even for reported failure. The public
+  `ChangeAuditResult`, [Markdown renderer](src/whetstone/change_audit.py),
+  [audit tests](tests/test_change_audit.py), and [CLI test](tests/test_cli.py)
+  consume v1 meanings. Repository searches also found historical reports under
+  `rounds/`, operator examples, and static site content; external consumers are
+  not inventoried by this checkout.
+
+### Proposed contract and smallest useful release
+
+The proposed normative amendments are in two existing leaves:
+
+1. [Scope/behavior amendment](docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#proposed-extension-explicit-objectives-and-evidence-backed-coverage):
+   optional JSON request, bounded required objectives, explicit input roles,
+   one Reviewer, atomic preservation obligations, and honest reporting.
+2. [Machine contract amendment](docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#proposed-change-audit-objective-contracts):
+   closed request/manifest/review/report shapes, exact-byte references,
+   cross-artifact validation, aggregate precedence, and compatibility.
+
+Ship one opt-in `--audit-request` extension. The request replaces the legacy
+input flags for that invocation and includes hash-bound inputs/roles, audit
+notes, and zero to 64 objectives. It uses existing profile/client flags. A small
+JSON packet is enough; no new approval ceremony, scheduler, registry, or editor
+workflow is needed. Four canonical schemas plus a transport schema are the
+complete new machine surface. Keep common definitions local to these contracts
+unless actual reuse warrants a shared primitive.
+
+Each protected baseline obligation is one preservation objective, with exact
+baseline spans and candidate IDs. This keeps assessment cardinality identical
+for ordinary checks and preservation; it avoids a second obligation inventory.
+The operator chooses what is protected. A request to cover every baseline
+requirement must enumerate every such obligation; this release cannot certify
+the completeness of that enumeration.
+
+The report distinguishes structural coverage from satisfaction: `complete`
+means all objectives got valid conclusive assessments, which can include
+violations. `objective_complete_pass=true` requires all satisfied, and the
+overall verdict also considers severity. Missing/malformed records are contract
+failures; `not_assessed` is a completed but inconclusive review. Findings-only
+audits remain available with either legacy flags or an empty v2 objective list.
+No semantic preservation field is populated from finding counts.
+
+### Focused fixtures and test requirements
+
+Use small pinned UTF-8 files for a reminder baseline, full candidate or amendment,
+supporting reference, instructions, and request. The baseline should have three
+separately located obligations: ordinary-reminder fallback remains required;
+the change grants no additional execution authority; a future multi-item request
+does not require a fabricated notification. Give each a stable ID and criteria.
+A second fixture uses an amendment that refers to unchanged baseline text to
+exercise explicit composition criteria. Script Reviewer envelopes; do not call
+a model to establish expected test outcomes.
+
+Proposed fixture home: `contracts/fixtures/change_audit/`, with source bytes,
+request, scripted response, and expected diagnostics/report for each scenario.
+Generate exact hashes/offsets from those bytes and also include intentionally
+wrong hashes/locations. Reuse the existing `unittest` and injected-client pattern.
+
+| Fixture or fault | Required deterministic result |
+| --- | --- |
+| All objectives satisfied with valid per-input evidence; no findings | Completed; coverage complete; objective pass true; overall pass; declared preservation preserved. |
+| All objectives satisfied plus unrelated in-scope major | Objective pass true, findings needs_revision, overall needs_revision; preservation stays independently assessed. |
+| Violated objective with linked in-scope finding | Coverage complete if all conclusive; objective pass false; overall needs_revision or blocked. Include a minor finding to prove severity cannot hide the violation. |
+| Duplicate declared IDs, including different bodies with same ID | Invalid input before client; no implicit deduplication. |
+| Missing assessment, duplicate assessment, or unknown ID substituted for a required ID | Invalid review, audit_failed; report exact missing/duplicate/unknown IDs; never pass. |
+| Unknown status, blank reasoning, missing field, unknown property, duplicate JSON key | Contract failure; no coercion to satisfied or not_assessed. |
+| Explicit not_assessed with concrete inability_reason | Completed; coverage incomplete; objective pass false; inconclusive unless a stronger findings/violation outcome applies. |
+| Empty findings with missing or not_assessed objective | Missing => invalid review; not_assessed => inconclusive. Neither passes. |
+| Unknown artifact, wrong digest, reference outside objective input_ids | Invalid review; request-side bad Ref/hash fails preflight. |
+| Negative/reversed/zero-length/out-of-range span or UTF-8 mid-character endpoint | Invalid reference; cover CRLF, trailing spaces, non-ASCII and empty files without normalized offsets. |
+| Whole-artifact Ref to empty candidate explaining loss | Valid violated assessment with finding; whole-artifact-only satisfied preservation is invalid. |
+| Missing/dangling/duplicate finding link or duplicate feedback_id | Invalid review; do not repair by dropping links or renumbering findings. |
+| Baseline Ref resolves to candidate, candidate target resolves to baseline, missing role, or one file aliased into both roles | Invalid input. Same-byte separate baseline/candidate files remain valid. |
+| Consistent operator mislabeling of different files | Role table faithfully shows supplied bindings; fixture does not claim semantic reversal detection. |
+| Partial preservation: one satisfied, one weakened, one not_assessed | Coverage incomplete, objective pass false, preservation violated with all constituent IDs, overall needs_revision. Without weakening, preservation inconclusive. |
+| Scope evasion through assessment in_scope=false or status out_of_scope | Invalid review. Linked finding in_scope=false is invalid; explicit scope-conflict not_assessed is incomplete, never waived. |
+| Valid-looking but semantically irrelevant citations / similar wording | Structural validator may accept a structurally conformant scripted judgment; output states semantic limits, and the test makes no truth/equivalence claim. |
+| Ordinary legacy audit without objectives | Original schemas, fields, severity mapping, library result, and exit behavior unchanged; legacy wording explains findings-only limits. |
+| V2 request with objectives=[] and no baseline | Completed findings-only result, coverage/preservation not_requested, objective pass null; unexpected assessments rejected. |
+| Check objectives without preservation | Objective-assessed result with preservation not_requested, even when all checks pass. |
+| Source bytes changed only in whitespace; request or snapshot tampered; stale manifest reply | Digest/binding failure; no pass and no rewrite of sources. |
+| Timeout, malformed response, unsafe output path, write failure | Distinct execution category, no fabricated zero-findings result, no stale successful report; zero invocations on preflight failure and at most one afterward. |
+| Reordered objectives/assessments or renamed source files with maintained role bindings | Same assessment aggregation for order; new packet digests when bytes/bindings change; filenames never assign authority. |
+| Existing output directory / source-request-output collisions | Refuse safely before overwrite or client invocation. |
+| Both client transports using fake executables | Correct audit output schema and phase, envelope retained, nested normalization preserves links, no Phase 1/2 schema leakage. |
+| Sources and reviewer-only boundary | Compare read_bytes before/after for every supplied input and request; no Editor calls, scheduler state, spec/history writes, convergence declaration, promotion, acceptance or apply-back artifacts. |
+
+Coverage and report tests MUST exercise the full precedence table: failure before
+substantive results; blockers before majors/objective violations; those before
+inconclusive; passing only afterward. Validate JSON and Markdown agree, CLI v2
+exit codes agree with the verdict, and unsupported versions fail closed.
+
+These tests establish deterministic protocol behavior and non-mutation. They do
+not certify that an LLM actually inspected every obligation or made a correct
+semantic judgment. Prompt assertions can test instructions, not cognition.
+
+### Implementation sequence after proposal approval
+
+1. **Contracts and pure validators.** Add request v1, manifest v2, review v1 and
+   report v2 schemas plus any provider output projection. Add explicit validators
+   for ID bijection, role binding, exact bytes, UTF-8 ranges, finding links, and
+   aggregate fields. Work within `SchemaRegistry`'s supported subset or add
+   separately tested support; do not assume ignored keywords enforce anything.
+   Implement the success/failure vectors above without live clients.
+2. **Packet preparation.** Extend `change_audit.py` or extract a focused local
+   audit-contract helper. Validate before constructing/invoking clients; capture
+   request, source snapshots, effective profile guidance, brief, prompt and
+   manifest under a fresh audit directory. Guard collisions and write failures.
+   Separate normalized feedback-context hashes from exact-byte artifact identity.
+   A baseline/candidate role table and readable source locators belong in the
+   prompt and rendered report. Preserve sources and reject unsupported isolation.
+3. **One-call Reviewer integration.** Add an audit-specific envelope route in
+   `clients.py` and an audit prompt in `prompts.py`. Retain existing finding
+   canonicalization inside the envelope and all assessment fields unchanged.
+   Validate the single response, capture diagnostics/raw bytes when available,
+   and produce canonical feedback and the review artifact. No automatic repair
+   call, nested reviewer, or convergence path.
+4. **Reports, CLI, and compatibility.** Add typed v2 result/entry point alongside
+   the existing v1 API. Branch argument validation in `cli.py` for request versus
+   legacy inputs. Derive v2 JSON/Markdown/CLI summaries from validated artifacts;
+   implement the specified exit codes without changing legacy exit behavior.
+   Ensure missing assessed results are visible, not defaulted. Keep v1 schemas
+   frozen and do not relabel historical passes as objective assessments.
+5. **Qualification and documentation.** Run focused contract, audit, prompt,
+   client and CLI tests, then existing regression tests for shared helpers.
+   Update README/Quickstart and checked-in site audit examples with one ordinary
+   audit and one objective packet; document byte locations, the role-selection
+   limit, legacy boundary semantics, and version-dispatch migration. Add a
+   coordinating-spec pointer to the existing owners only after ratification.
+   Advertise v2 only after these deterministic gates pass; a live trial would
+   require separate authorization and is not needed to accept fixture behavior.
+
+Expected initial checks at implementation time:
+`PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_change_audit*.py'`,
+then relevant contracts/clients/prompts/CLI modules and the standard regression
+suite. This proposal itself calls for document/diff consistency checks only,
+not runtime tests or live audit invocations.
+
+### Product choices for review
+
+Recommended defaults are concrete so implementation can proceed once this
+proposal is accepted. No additional factual input is needed to finish the design.
+
+- **Opt-in migration:** keep legacy flags on v1 initially and select v2 through
+  the JSON request. This preserves existing consumers but leaves a deprecated,
+  severity-derived preservation indicator on legacy output. Switching all
+  invocations to v2 should be a separately announced breaking release.
+- **Preservation granularity:** require one objective per protected obligation;
+  do not auto-extract a baseline inventory. This deliberately limits the claim
+  to the declared set and keeps the release independent of preservation-bridge
+  governance.
+- **Bound and CLI behavior:** cap the explicit list at 64, allow zero for ordinary
+  v2 audits, and use v2 exit codes 0/1/2 for pass/substantive-or-inconclusive/failure.
+  These are proposed product choices, not claims about current runtime behavior.
+
+Outside this release: semantic equivalence guarantees, automatic scope waivers,
+objective generation, cross-run registries, signing/quorum, editing, repair loops,
+promotion, source apply-back, and retroactive assessment of historical audits.

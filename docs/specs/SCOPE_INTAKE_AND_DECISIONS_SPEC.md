@@ -303,6 +303,123 @@ If the Reviewer returns valid out-of-scope feedback, the Orchestrator MUST prese
 
 The human-readable `change_audit_report.md` MUST include the verdict, boundary-preserved value, in-scope feedback counts, recommended next action, and a concise grouped list of in-scope findings. It MUST NOT add new semantic findings beyond the persisted reviewer feedback.
 
+### Proposed extension: explicit objectives and evidence-backed coverage
+
+**Status: proposal for review; not ratified or implemented.** This subsection
+defines an opt-in extension to `audit-change`. The v1 workflow above remains the
+current contract. The proposed machine shapes and validation rules are owned by
+[the artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#proposed-change-audit-objective-contracts).
+The [implementation proposal](../../IMPLEMENTATION_PLAN.md#proposed-audit-change-objectives-release)
+records current-state evidence, compatibility, fixtures, and delivery order.
+
+The extension answers two separate questions: which requested checks received an
+evidence-backed assessment, and which issues were found? Absence of findings MUST
+NOT stand in for an assessment. Even complete structural coverage does not prove
+that the Reviewer performed the checks correctly.
+
+#### Proposed invocation and scope
+
+Add one alternative input form to the existing command:
+
+```text
+whetstone audit-change --root <fresh_audit_root> \
+  --audit-request <request.json> \
+  [--profile consistency] [--client <reviewer_client>] \
+  [--model <model>] [--timeout-seconds <seconds>]
+```
+
+`--audit-request` is mutually exclusive with `--notes` and `--spec`. It supplies
+the notes, role-bound source inputs, and optional objective list in one small JSON
+packet; profile and client options retain their existing meanings. The old
+`--notes` plus repeated `--spec` invocation continues to select v1. Request-based
+invocation selects v2 reports even with `objectives: []`; it requires no baseline
+unless an objective actually compares against a baseline. An ordinary v2 audit
+may have one candidate document and no objectives or baseline.
+
+Every declared objective is required; there is no optional-objective, waiver, or
+`out_of_scope` assessment status. The profile supplies a review lens and notes
+describe intent and exclusions. Neither can remove a declared objective. If the
+Reviewer cannot reconcile an objective with the notes, criteria, or available
+inputs, it MUST return `not_assessed` with a concrete reason. It MUST NOT silently
+drop the objective, replace it with an easier question, or mark it satisfied
+because the profile or notes would normally exclude it. Unrelated findings may
+still be recorded with `in_scope=false` under the existing findings rules.
+
+Objectives MUST name their applicable input IDs and expected evidence or
+assessment criteria. IDs are operator-authored, stable across reorderings and
+rechecks of the same obligation, and unique within the request; changing an
+obligation's meaning requires a new ID. Whetstone validates uniqueness and exact
+binding within this audit, not a global identity registry. Changing any request
+or input bytes requires a new audit packet and review.
+
+#### Assessments and preservation
+
+The Reviewer MUST return exactly one assessment per objective, with status
+`satisfied`, `violated`, or `not_assessed`, concise reasoning, and structured
+evidence references. `satisfied` means the Reviewer judges the obligation met or
+the question answered under its declared criteria. `violated` means the Reviewer
+judges the criteria unmet and MUST link at least one corresponding in-scope
+finding. `not_assessed` means no conclusive judgment was reached and MUST explain
+why. An omitted or malformed assessment is a contract failure, distinct from an
+explicit, structurally valid inability to assess. No hidden chain-of-thought is
+requested or persisted as a contract requirement.
+
+Each preservation objective MUST identify exactly one protected obligation in
+the baseline, its exact source span(s), and the candidate artifact(s) in which
+its treatment must be examined. Comparing several protected obligations means
+declaring several objectives, rather than one unstructured blanket assertion.
+The operator owns this bounded list; this release does not discover or certify
+that it exhausts every baseline requirement. Reports MUST qualify preservation
+as applying only to the listed obligations and pinned candidate bytes.
+
+For a satisfied preservation objective, evidence MUST identify where that
+obligation survives in each named candidate and reasoning MUST explain why the
+force, applicability, conditions, exceptions, and execution authority are
+preserved under the criteria. Matching wording or valid citations alone is not
+sufficient semantic reasoning. Loss or weakening is `violated`, with a linked
+finding; uncertainty is `not_assessed`. An absent successor can cite the whole
+candidate as the inspected search domain and explain the absence; it MUST NOT
+fabricate a location for missing text. A whole-candidate reference cannot support
+a satisfied preservation judgment in place of actual successor spans.
+
+Here, `candidate` is a document role: it may be an already authored amendment or
+a complete revised document. Criteria MUST state how an amendment combines with
+the baseline and any explicit supersession rules. If a complete post-change
+judgment requires missing context, the result is `not_assessed`; Whetstone does
+not synthesize a revised document or assume an implicit merge. This role does
+not register a vNext candidate or import its promotion lifecycle.
+
+#### Reporting and operating boundary
+
+The v2 report MUST present findings/severity, objective coverage and completion,
+and preservation assessment separately, using the artifact leaf's deterministic
+aggregation. `boundary_preserved` is absent from v2. A clean findings result with
+missing, invalid, or unassessed objectives MUST NOT produce an objective-complete
+pass. A violated objective prevents a pass regardless of its finding's severity.
+
+An ordinary audit with no explicit objectives MUST say `findings_only`, objective
+coverage `not_requested`, and preservation `not_requested`. It MUST NOT claim
+that natural-language checks in the notes or every aspect of the profile were
+individually assessed. Legacy v1 `boundary_preserved` remains a historical
+severity-derived indicator, not evidence of semantic preservation; its existing
+field meaning MUST NOT be silently rewritten.
+
+The report MUST state: "Whetstone validates objective coverage and evidence-reference
+structure. Semantic judgments are Reviewer assessments, not mathematical guarantees."
+The Markdown rendering MUST expose each objective's ID, question, status,
+reasoning, resolved evidence, linked findings, and any validation diagnostics.
+It MUST never synthesize missing assessments or additional semantic findings.
+
+The extension remains one bounded Reviewer invocation, with local preparation,
+validation, and reporting. It MUST NOT invoke an Editor, a second Reviewer,
+automatic corrective review loops, Phase 1/2, convergence, preservation-bridge
+acceptance, promotion, or apply-back. Inputs MUST be snapshotted without source
+writes, and Reviewer context/access MUST be limited to the approved packet.
+Unsupported client isolation or input limits MUST fail before invocation rather
+than silently widening access or truncating documents/objectives. Source/output
+path collisions MUST be rejected. A fresh `change_audit/` directory avoids
+overwriting prior results; this release adds no resume or governance workflow.
+
 ## SPEC DECOMPOSITION WORKFLOW
 
 Spec decomposition splits an overloaded source spec into a governed spec family while preserving normative content, source provenance, and authority boundaries.
