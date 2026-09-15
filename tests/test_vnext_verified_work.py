@@ -3,6 +3,7 @@ import select
 import subprocess
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from whetstone.vnext_local_storage import OwnershipLost, StorageBusy
@@ -296,6 +297,7 @@ class VerifiedWorkTests(unittest.TestCase):
             descriptor_ref=refs['descriptor'], review_ref=refs['review'], seed_map_ref=refs['seed_map'], round_refs=refs['rounds']))
         script = '''import json,sys
 from pathlib import Path
+sys.path.insert(0, sys.argv[2])
 from whetstone import vnext_registry
 from whetstone.vnext_contracts import ALGORITHM_VERSIONS
 from whetstone.vnext_local_storage import LocalAuthorityStore
@@ -319,7 +321,7 @@ with LocalAuthorityStore(root,job_id=job['job_id']) as store:
     client.propose=pause
     VerifiedWork(store,history=owner).request(round_number=1,client=client)
 '''
-        child = subprocess.Popen([sys.executable, '-u', '-c', script, json.dumps(packet)],
+        child = subprocess.Popen([sys.executable, '-u', '-c', script, json.dumps(packet), str(Path(__file__).resolve().parent)],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         def cleanup():
             if child.poll() is None: child.kill()
