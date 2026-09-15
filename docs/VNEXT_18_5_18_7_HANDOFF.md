@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+Audit follow-up on 2026-09-15: the authorized `gpt-5.6-sol` [D8 bounded audit](audits/VNEXT_D8.md) completed with two major contract-clarification findings and one minor terminology finding (`needs_revision`). Design ratification stands; audit closure requires the narrow corrections and a focused recheck. The older pending-authorization and not-yet-run statements below describe earlier checkpoints.
+
 Follow-up on 2026-09-15: the operator has now [ratified the D8 storage design](specs/VNEXT_LOCAL_STORAGE_SPEC.md), including the single-host/single-writer scope. That explicit request also authorizes the corresponding local owning-spec and plan updates, which have been recorded. The D8 audit has not run; refreshed exact-payload authorization and release qualification remain open. The reconciliation and approval states below describe the earlier checkpoint and are retained as historical evidence.
 
 This is a checkpoint of existing, unactivated implementation. **18.5, 18.6 and

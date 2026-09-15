@@ -1,0 +1,305 @@
+{
+  "scope": "Bounded D8 ratified storage contract consistency; not runtime qualification or convergence.",
+  "source_commit": "8b970f635b7884fe5afbe947bbccfd9abc1c0aeb",
+  "root": "rounds/vnext-d8-audit-003",
+  "configured_client": {
+    "name": "codex",
+    "model": "gpt-5.6-sol",
+    "version": "0.154.0-alpha.6.2",
+    "command": "/Applications/ChatGPT.app/Contents/Resources/codex"
+  },
+  "authorization": "User approved the prepared external Reviewer pass after the exact seven-file payload and destination were presented, and explicitly selected gpt-5.6-sol. Only the requested model and approval statement in notes changed; seven source snapshots are unchanged. The technical setup correction uses an already-installed newer executable, with unchanged source payload and requested model.",
+  "profile": "consistency",
+  "timeout_seconds": 360,
+  "report": {
+    "audit_brief_hash": "c0593fb267ae89fbe7013bf989477ca518189bf94c27794b3b8eb8d5188233c1",
+    "audit_manifest_path": "change_audit/audit_manifest.json",
+    "boundary_preserved": false,
+    "failure_reason": null,
+    "feedback_counts": {
+      "blocker": 0,
+      "major": 2,
+      "minor": 1,
+      "nit": 0
+    },
+    "generated_at": "2026-09-15T11:45:16.808427+00:00",
+    "in_scope_feedback_ids": [
+      "fb_consistency_001",
+      "fb_consistency_002",
+      "fb_consistency_003"
+    ],
+    "out_of_scope_feedback_ids": [],
+    "profile": "consistency",
+    "recommended_next_action": "manual_patch",
+    "schema_version": "change-audit-report-v1",
+    "source_feedback_path": "change_audit/change_audit_feedback.json",
+    "verdict": "needs_revision"
+  },
+  "feedback": {
+    "draft_hash": "c0593fb267ae89fbe7013bf989477ca518189bf94c27794b3b8eb8d5188233c1",
+    "feedback": [
+      {
+        "affected_sections": [
+          "inputs/binding.md#vnext-local-storage-binding-v1",
+          "inputs/kernel.md#scope-and-physical-binding",
+          "inputs/storage.md#fresh-root-initialization-and-physical-identity"
+        ],
+        "authority_impact": "major",
+        "baseline_severity": "major",
+        "claim": "The physical-binding contract does not define whether descriptor.path is an absolute path or a root-relative path, even though acquisition must deterministically locate and identity-check the immutable descriptor under the admitted root.",
+        "determinism_impact": "major",
+        "evidence": "storage.md says the binding contains an \"immutable descriptor path/hash\" and requires every authority file to remain on the admitted root without symlink traversal. kernel.md likewise calls this a closed canonical record. However, binding.md constrains descriptor.path only as {\"type\":\"string\",\"minLength\":1}; unlike root_path, it neither requires an absolute path nor defines root-relative resolution. Cooperating processes with different working directories can therefore resolve the same valid binding bytes to different files, or an implementation can interpret the field as an external path, undermining the claimed descriptor and confinement checks.",
+        "feedback_id": "fb_consistency_001",
+        "in_scope": true,
+        "invariant_violated": "artifact_integrity",
+        "issue_fingerprint": "ffd5123e948658341a8e7c4224d92d47a458f5c6cc1519c3e55ed25138401223",
+        "issue_id": "iss_ffd5123e94865834",
+        "issue_type": "physical_binding_path_ambiguity",
+        "normalized_severity": "major",
+        "oscillation_key": null,
+        "recommended_change": "Choose one representation and state it consistently in the prose and schema: either require a canonical absolute path confined beneath root_path, or require a normalized root-relative path with an explicit resolution rule. Require acquisition to resolve it without symlink traversal and verify that it remains on the admitted root device before comparing its hash.",
+        "rubric_impact": null,
+        "severity_rationale": "This affects the ratified physical-binding boundary and can cause different cooperating implementations to validate different descriptor artifacts from the same binding record."
+      },
+      {
+        "affected_sections": [
+          "inputs/candidate.md#promotion-and-current-verified-authority",
+          "inputs/storage.md#durable-publication"
+        ],
+        "authority_impact": "major",
+        "baseline_severity": "major",
+        "claim": "The promotion intent declares two expected-current hash fields but defines only the pointer-byte hash, leaving the other field's source and validation semantics ambiguous at the conditional authority commit.",
+        "determinism_impact": "major",
+        "evidence": "The promotion-intent field list contains both expected_current_verified_hash and expected_current_verified_pointer_hash. The following prose defines singularly that \"The expected pointer hash MUST identify the exact canonical bytes of rounds/current_verified.json\" and later Stage 2 requires the pointer to match \"both expected current hashes,\" without defining what expected_current_verified_hash hashes. storage.md requires rereading and validating the expected current pointer's exact bytes/hash and ordinal, which also does not resolve the second field. Implementations can consequently populate or compare expected_current_verified_hash as the verified draft hash, pointer hash, or another value while still following different parts of the text.",
+        "feedback_id": "fb_consistency_002",
+        "in_scope": true,
+        "invariant_violated": "artifact_integrity",
+        "issue_fingerprint": "df6e30701f0e1a505c4e35b9a14e121867fd1d0ece29e833648a37883b256ee7",
+        "issue_id": "iss_df6e30701f0e1a50",
+        "issue_type": "promotion_hash_field_semantics_undefined",
+        "normalized_severity": "major",
+        "oscillation_key": null,
+        "recommended_change": "Define each field independently at its declaration and throughout reconciliation. If intended, state that expected_current_verified_hash equals current_verified.verified_draft_hash, while expected_current_verified_pointer_hash equals SHA-256 of the exact canonical current_verified.json bytes; then name both comparisons explicitly in preparation, Stage 2 eligibility, and conditional commit validation.",
+        "rubric_impact": null,
+        "severity_rationale": "The ambiguity affects stale-claimant detection and the base guard immediately before the authority-advancing pointer replacement, so divergent implementations could disagree on whether a prepared promotion is eligible."
+      },
+      {
+        "affected_sections": [
+          "audit_brief.md#whetstone-change-audit-brief",
+          "inputs/artifacts.md#vnext-identity-and-suite-manifest-invariant"
+        ],
+        "authority_impact": null,
+        "baseline_severity": "minor",
+        "claim": "The same change-audit workflow is identified as audit_change in the invocation brief but audit-change in the normative artifact contract, without declaring these as separate internal and command-line names.",
+        "determinism_impact": "minor",
+        "evidence": "The brief states \"Workflow: audit_change\" and the requested phase is audit_change. artifacts.md states that change_audit_feedback.json \"is produced by the audit-change workflow.\" No mapping or namespace distinction explains the underscore-versus-hyphen spelling.",
+        "feedback_id": "fb_consistency_003",
+        "in_scope": true,
+        "invariant_violated": "deterministic_behavior",
+        "issue_fingerprint": "06f834a2b343f1ea6891bd8d9e431191af8c381a9ca5043018ebb395c98a45aa",
+        "issue_id": "iss_06f834a2b343f1ea",
+        "issue_type": "workflow_identifier_inconsistency",
+        "normalized_severity": "minor",
+        "oscillation_key": null,
+        "recommended_change": "Use one canonical workflow identifier in both locations, preferably audit_change to match the configured invocation, or explicitly state that audit-change is the external command spelling mapped to the internal audit_change workflow identifier.",
+        "rubric_impact": "minor",
+        "severity_rationale": "The mismatch is small but directly concerns command/option terminology and can cause inconsistent routing, validation, or documentation if the tokens are treated as exact identifiers."
+      }
+    ],
+    "profile": "consistency",
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "name": "Codex Whetstone Reviewer",
+      "version": "0.154.0-alpha.6.2"
+    },
+    "round_number": 1
+  },
+  "sources": [
+    {
+      "source": "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+      "source_sha256": "28bec862e4a105b04c64959a16f3c81f1407062804038a15256403f27f017618",
+      "headings": null,
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/storage.md",
+      "snapshot_sha256": "ecff024948401c5121205625af93edd61d77cba2afb86459bced78e0e9ff4936"
+    },
+    {
+      "source": "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+      "source_sha256": "c3f62a19d05e117aef45eeaccf3eb3eccab8a26473cf97bdd4666d7349cc8604",
+      "headings": null,
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/kernel.md",
+      "snapshot_sha256": "c6c6a76743640e0930f308047e021b6b569dccc8de6d2a6685ebab88f70f2ca6"
+    },
+    {
+      "source": "contracts/schemas/vnext_local_storage_binding_v1.schema.json",
+      "source_sha256": "64ef2db5ab9e95c4a7a9d66abffa0914741d5d5b66aaf6f422b50eaaf9736afb",
+      "headings": null,
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/binding.md",
+      "snapshot_sha256": "4614baa1000fc984fcf1e63186fcfcfa73d636aba0ae81106f7d91309576d0f4"
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "source_sha256": "db74fd1cad49b4a995077d7bdfadee863ed1de210bfa0b767de214bcc401f5b8",
+      "headings": [
+        "## Core Safety Invariant",
+        "## Candidate Transaction",
+        "## Candidate Disposition Event Commit Rules",
+        "## Local Storage Decision (D8)",
+        "## Promotion And Current Verified Authority",
+        "## Resume And Replay",
+        "## Safe Terminal Semantics",
+        "## Public Contract Suite"
+      ],
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/candidate.md",
+      "snapshot_sha256": "e65b1eafbb72ceb238609fd29ce66f65401fdac6a3894fee151c34d0d27e7545"
+    },
+    {
+      "source": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "source_sha256": "76dd4d987d95e807abb31293e503e07be3ed79622c4900421b466f8fa0e08545",
+      "headings": [
+        "## vNext Candidate Processing (D7)"
+      ],
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/scheduler.md",
+      "snapshot_sha256": "8aeaf3bd29a6589634bbd058871babfc37e1024dda02c9c74fcd56a83118f4a3"
+    },
+    {
+      "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "source_sha256": "88e20296b7eeb1ea4fb454caf509de3db7d9514d75ba071228e1ff18c7b98bce",
+      "headings": [
+        "### vNext identity and suite-manifest invariant",
+        "## ARTIFACT VALIDATION POLICY"
+      ],
+      "selection": null,
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/artifacts.md",
+      "snapshot_sha256": "7798062e7cb3f4fa1a4689a292ef2e8d088df2c1d042a8bf7a343f7815df27b5"
+    },
+    {
+      "source": "IMPLEMENTATION_PLAN.md",
+      "source_sha256": "ea1ac4d05392041960d4d0b6167e1b2e8b377ac0b9213818899df93d30fa3ec2",
+      "headings": null,
+      "selection": "Exact D8 row, 18.5/18.7 dependency lines and current next-action paragraph; unrelated historical progress and audit-change proposal excluded.",
+      "snapshot": "rounds/vnext-d8-audit-003/inputs/plan.md",
+      "snapshot_sha256": "4f5007cacf0d985a46c2b4614b5a3c756d3089edf4db7007c645f3f713e2c24b"
+    }
+  ],
+  "notes_sha256": "87d008f7e4dcdf755dab8720bc1a23914e326e2cc79dbee8f6a37dee82c1c065",
+  "artifact_hashes": {
+    "change_audit/audit_brief.md": "c0593fb267ae89fbe7013bf989477ca518189bf94c27794b3b8eb8d5188233c1",
+    "change_audit/change_audit_feedback.json": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015",
+    "change_audit/audit_manifest.json": "db5c705024bca017aa630910e58bc96ed1820f3694da484e1672a074c27cb6e4",
+    "change_audit/change_audit_report.md": "31eda83218656ce7ae3ca3afb3f929f73018e616b058b23459d98bb4f790f582",
+    "change_audit/change_audit_report.json": "039a3fee5091c5b9acb1a175a4e072870f2fbe50691625549e18617803c40dd5"
+  },
+  "prepared_prompt_manifest": {
+    "audit_brief_hash": "c0593fb267ae89fbe7013bf989477ca518189bf94c27794b3b8eb8d5188233c1",
+    "files": {
+      "prepared/audit_brief.md": "c0593fb267ae89fbe7013bf989477ca518189bf94c27794b3b8eb8d5188233c1",
+      "prepared/reviewer_feedback.codex.schema.json": "9fde3ff5170c1126cd0da8312fb610f68be11217f0cb40cae492c584fbcd3775",
+      "prepared/reviewer_prompt.txt": "9a956166bc160a3e8332da75c443db094adc578a602395afc0a1624eec7e349a"
+    },
+    "reviewer_invoked": false
+  },
+  "source_and_snapshot_hashes_rechecked_after_audit": true,
+  "pre_execution_source_files_unchanged": 470,
+  "previous_attempt": {
+    "root": "rounds/vnext-d8-audit-002",
+    "verdict": "audit_failed",
+    "configured_model": "gpt-5.6-sol",
+    "client_version": "0.142.0",
+    "service_error": "The 'gpt-5.6-sol' model requires a newer version of Codex. Please upgrade to the latest app or CLI and try again.",
+    "report_sha256": "822f972cabddd68eb2dfd8aabc5f1ede364adbcc1fbea79caa3b8c3d4517cf3c",
+    "valid_feedback_received": false
+  },
+  "local_adjudication": [
+    {
+      "feedback_id": "fb_consistency_001",
+      "disposition": "accept_contract_clarification",
+      "assessment": "Specify descriptor.path as a canonical normalized run-root-relative path, independent of process CWD, resolved under the admitted root descriptor with confinement checks. The existing kernel already does this; no current implementation CWD/path-escape bug was demonstrated. The broader candidate leaf also states a general logical-package-path rule outside the supplied excerpt, so the Reviewer severity should not be interpreted as evidence that existing code accepts arbitrary descriptor paths.",
+      "evidence": [
+        {
+          "path": "src/whetstone/vnext_local_storage.py",
+          "line": 76,
+          "detail": "_parts rejects absolute, traversal, noncanonical, backslash and temporary paths."
+        },
+        {
+          "path": "src/whetstone/vnext_local_storage.py",
+          "line": 102,
+          "detail": "_Tree.parent traverses from the retained root descriptor without symlinks and checks device confinement."
+        },
+        {
+          "path": "src/whetstone/vnext_local_storage.py",
+          "line": 260,
+          "detail": "_check_binding reads the descriptor through the confined tree before comparing its hash."
+        },
+        {
+          "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+          "line": 306,
+          "detail": "General public embedded artifact paths are confined logical package paths; the storage-specific field should be explicit."
+        }
+      ]
+    },
+    {
+      "feedback_id": "fb_consistency_002",
+      "disposition": "accept_contract_clarification",
+      "assessment": "Define expected_current_verified_hash as current_verified.verified_draft_hash and expected_current_verified_pointer_hash as SHA-256 of exact canonical current_verified.json bytes. Name the comparisons in preparation, reconciliation and conditional commit. The producer and validators already distinguish these values; this audit did not demonstrate a runtime hashing defect.",
+      "evidence": [
+        {
+          "path": "src/whetstone/vnext_verified_promotion.py",
+          "line": 87,
+          "detail": "Producer assigns the verified draft hash and current pointer snapshot hash separately."
+        },
+        {
+          "path": "src/whetstone/vnext_verified_semantics.py",
+          "line": 131,
+          "detail": "Prepared intent validation compares draft hash and exact pointer bytes hash separately."
+        },
+        {
+          "path": "src/whetstone/vnext_validation.py",
+          "line": 339,
+          "detail": "Committed promotion validation binds both expected hashes."
+        },
+        {
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 397,
+          "detail": "Existing same-draft-bytes stale-pointer regression; not rerun for this review."
+        }
+      ]
+    },
+    {
+      "feedback_id": "fb_consistency_003",
+      "disposition": "nonblocking_outside_d8_storage_followup",
+      "assessment": "CLI command audit-change and internal phase/workflow audit_change occupy distinct namespaces in the current parser and prompt renderer. A terminology note may improve documentation, but no routing defect or D8 ownership/publication inconsistency was demonstrated. Preserve the Reviewer minor/in-scope classification in raw feedback; this is separate local adjudication.",
+      "evidence": [
+        {
+          "path": "src/whetstone/cli.py",
+          "line": 136,
+          "detail": "CLI parser command spelling audit-change."
+        },
+        {
+          "path": "src/whetstone/change_audit.py",
+          "line": 133,
+          "detail": "Internal workflow identifier audit_change."
+        },
+        {
+          "path": "src/whetstone/change_audit.py",
+          "line": 303,
+          "detail": "Reviewer prompt phase audit_change."
+        }
+      ]
+    }
+  ],
+  "followup": "Clarify the descriptor path representation and two expected-current hash fields in their owning contracts, then perform a bounded correction recheck. No corrective source edits were made during this Reviewer pass.",
+  "design_ratification_stands": true,
+  "d8_audit_gate_closed": false,
+  "runtime_or_schema_changes": false,
+  "new_runtime_tests": false,
+  "modes_activated": false,
+  "external_source_apply_back": false,
+  "push_performed": false,
+  "reviewer_pass_completed": true,
+  "prepared_prompt_manifest_note": "The nested preview manifest records pre-invocation preparation. The completed report and execution_status.json establish final invocation status."
+}
