@@ -1,0 +1,124 @@
+{
+  "status": "corrections_applied_recheck_staged_not_run",
+  "findings_patched": [
+    "fb_consistency_001",
+    "fb_consistency_002"
+  ],
+  "minor_finding": "fb_consistency_003 retained as separately adjudicated terminology; no workflow or CLI rename",
+  "source_base_commit": "ed5f2de0657a66c70a6c053e8a951272f87c1ce8",
+  "sources": [
+    {
+      "source": "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+      "source_sha256": "477eb54090d7666d7556753e68cd0a69c4866dd8cab1e61cc02a0d5c199af606",
+      "headings": null,
+      "snapshot": "rounds/vnext-d8-audit-004/inputs/storage.md",
+      "snapshot_sha256": "aea570f38eca3f422672ddea650290526102a6308a68174efca543d45d04b566"
+    },
+    {
+      "source": "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+      "source_sha256": "b028202823cac4b332465cb58876c6eb53caff1ccde39864bc03b58aa6e681d3",
+      "headings": null,
+      "snapshot": "rounds/vnext-d8-audit-004/inputs/kernel.md",
+      "snapshot_sha256": "f9f415f39e90bae24a87931bebc935118258e5cbe4bbdeab532349e0f014b50a"
+    },
+    {
+      "source": "contracts/schemas/vnext_local_storage_binding_v1.schema.json",
+      "source_sha256": "05bd33b448f6c3d27ba07ed4116973055e9ebcc7eed23f696f3b2ac9fc6f2dd0",
+      "headings": null,
+      "snapshot": "rounds/vnext-d8-audit-004/inputs/binding.md",
+      "snapshot_sha256": "bb42016e8085112a144c1262c1c1565482cc7ec89a40a01bdcd83ff363a4a4fc"
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "source_sha256": "db00a07c6110fce4b098ef1cbdb0d0a8a0963553b9a5272ee120d52f557184b7",
+      "headings": [
+        "## Core Safety Invariant",
+        "## Versioned Job Descriptor",
+        "## Local Storage Decision (D8)",
+        "## Promotion And Current Verified Authority"
+      ],
+      "snapshot": "rounds/vnext-d8-audit-004/inputs/candidate.md",
+      "snapshot_sha256": "53b599243c67ce65442cb471e52351bd25b2d975974b68a107d73863aa99ef2a"
+    },
+    {
+      "source": "rounds/vnext-d8-audit-003/change_audit/change_audit_feedback.json",
+      "source_sha256": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015",
+      "headings": null,
+      "snapshot": "rounds/vnext-d8-audit-004/inputs/prior-feedback.json",
+      "snapshot_sha256": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015"
+    }
+  ],
+  "correction_patch": {
+    "path": "rounds/vnext-d8-audit-004/inputs/corrections.patch",
+    "sha256": "d49b24ec928d9f157bcacc601abefafd0e43aed4032974717489263872e18a95",
+    "source_paths": [
+      "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+      "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+      "contracts/schemas/vnext_local_storage_binding_v1.schema.json",
+      "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md"
+    ]
+  },
+  "notes_sha256": "9741d09becff57e5ca8897fda259d313cbe7043ee8aad9a5beff2c3faeae4451",
+  "configured_client": {
+    "name": "codex",
+    "command": "/Applications/ChatGPT.app/Contents/Resources/codex",
+    "model": "gpt-5.6-sol",
+    "version": "0.154.0-alpha.6.2",
+    "executable_sha256": "ecad78dbf98adb89ec475edac86630406cbe59d9f3070b17d88065f136b94bcb"
+  },
+  "profile": "consistency",
+  "timeout_seconds": 360,
+  "staged_root": "rounds/vnext-d8-audit-004",
+  "staging_manifest_sha256": "2feccc9be086ebda2274dcffc09e6eec4c5af7cd5a99d565c101847ade84d3a0",
+  "prepared_prompt_manifest": {
+    "audit_brief_hash": "41839e737c19030eb8080d1159afec9ce52d408c22b4283977fe985b60a4612d",
+    "files": {
+      "prepared/audit_brief.md": "2350144b3ae954aec6ce439814f67a3ee40ce5ff887bb4562c67144b0ee89f56",
+      "prepared/reviewer_feedback.codex.schema.json": "9fde3ff5170c1126cd0da8312fb610f68be11217f0cb40cae492c584fbcd3775",
+      "prepared/reviewer_prompt.txt": "9267171fda099e8836e9149a6be3d81d2e849dd9789a89968c73fa4d1ec3d1e6"
+    },
+    "reviewer_invoked": false
+  },
+  "targeted_validation": [
+    {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_local_storage.py' -v",
+      "tests": 32,
+      "seconds": 2.641,
+      "result": "OK",
+      "log": "rounds/vnext-d8-audit-004/storage-tests.log",
+      "sha256": "e729f16995204309b55e37f7537dd0a3bb1dc83a2b27d264b646e350f8f5edfd"
+    },
+    {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_contracts.py' -v",
+      "tests": 32,
+      "seconds": 1.418,
+      "result": "OK",
+      "log": "rounds/vnext-d8-audit-004/contracts-tests.log",
+      "sha256": "516bab7dc002b58a7574608e48bb1c6f66373ca42e8f9e89412a2875588d35fc"
+    },
+    {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_verified_promotion.py' -k stale_tail_with_identical_base_bytes -v",
+      "tests": 1,
+      "seconds": 85.132,
+      "result": "OK",
+      "log": "rounds/vnext-d8-audit-004/pointer-binding-test.log",
+      "sha256": "803c46a31d68864aa6a7966ea25e7707a04689a643ce46a77c633f54813894d5"
+    }
+  ],
+  "distinct_tests": 65,
+  "runtime_source_changed": false,
+  "binding_schema_change": "Constrain already-required root-relative descriptor path syntax in the unregistered schema; no frozen-suite edits.",
+  "full_suite_rerun": false,
+  "frozen_suite_unchanged": true,
+  "unrelated_original_diffs_unchanged": {
+    "IMPLEMENTATION_PLAN.md": "ea1ac4d05392041960d4d0b6167e1b2e8b377ac0b9213818899df93d30fa3ec2",
+    "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md": "88e20296b7eeb1ea4fb454caf509de3db7d9514d75ba071228e1ff18c7b98bce",
+    "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md": "1f154ad6e825b2e4c5218144bbc79a9c4b4960d1ad7e8881be1efd46e8b44191"
+  },
+  "preflight": "passed without invoking Reviewer",
+  "external_transmission_attempted": false,
+  "reviewer_invocation_attempted": false,
+  "d8_audit_gate_closed": false,
+  "execution_authorized": false,
+  "next_action": "Run the staged bounded gpt-5.6-sol recheck only after an instruction to execute it; do not infer a pass from the patch or local tests."
+}

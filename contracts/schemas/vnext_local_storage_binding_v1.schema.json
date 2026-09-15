@@ -20,7 +20,14 @@
     "lock_hash": {"$ref": "#/$defs/hash"},
     "descriptor": {
       "type": "object", "additionalProperties": false,
-      "properties": {"path": {"type": "string", "minLength": 1}, "hash": {"$ref": "#/$defs/hash"}},
+      "properties": {
+        "path": {
+          "type": "string", "minLength": 1,
+          "description": "Normalized POSIX-style path relative to the admitted run root, independent of process CWD. Resolve from the retained root descriptor without symlinks; enforce same-device regular-file confinement before checking descriptor.hash.",
+          "pattern": "^(?!(?:\\.|\\.\\.)(?:/|$))(?!\\.vnext-tmp-)[^/\\\\\\u0000]+(?:/(?!(?:\\.|\\.\\.)(?:/|$))(?!\\.vnext-tmp-)[^/\\\\\\u0000]+)*$"
+        },
+        "hash": {"$ref": "#/$defs/hash"}
+      },
       "required": ["path", "hash"]
     }
   },

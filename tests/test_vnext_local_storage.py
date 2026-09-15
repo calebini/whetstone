@@ -18,7 +18,8 @@ import unittest
 from unittest.mock import patch
 
 from whetstone import vnext_local_storage as storage
-from whetstone.vnext_contracts import canonical_json_bytes, sha256_bytes
+from whetstone.contracts import SchemaValidationError
+from whetstone.vnext_contracts import VNextSchemaRegistry, canonical_json_bytes, sha256_bytes
 
 
 JOB='job_'+'a'*64
@@ -104,6 +105,34 @@ root=Path(sys.argv[1]);job=sys.argv[2]
         binding=dict(self.binding);binding['unexpected']=1
         (self.root/storage.BINDING_PATH).write_bytes(canonical_json_bytes(binding))
         with self.assertRaises(ValueError):self.open_store()
+
+    def test_binding_schema_requires_normalized_root_relative_descriptor_path(self):
+        registry=VNextSchemaRegistry()
+        for path in ['job_descriptor.json','rounds/job.json','inputs/nested/job.json']:
+            binding=copy.deepcopy(self.binding);binding['descriptor']['path']=path
+            with self.subTest(path=path):registry.validate(binding,'vnext_local_storage_binding_v1')
+        for path in ['', '/', '/job.json', '../job.json', 'rounds/../job.json',
+                     '.', '..', './job.json', 'rounds/./job.json', 'rounds//job.json',
+                     'rounds/job.json/', 'rounds\\job.json', 'rounds/\x00job.json',
+                     '.vnext-tmp-job', 'rounds/.vnext-tmp-job/descriptor.json']:
+            binding=copy.deepcopy(self.binding);binding['descriptor']['path']=path
+            with self.subTest(path=path),self.assertRaises(SchemaValidationError):
+                registry.validate(binding,'vnext_local_storage_binding_v1')
+
+    def test_descriptor_resolution_is_independent_of_process_working_directory(self):
+        misleading=self.base/DESCRIPTOR;misleading.parent.mkdir()
+        misleading.write_bytes(b'wrong descriptor in process working directory')
+        child=self.process("""os.chdir(root.parent)
+with LocalAuthorityStore(root,job_id=job) as store:
+    assert store.read_descriptor() == (root/'rounds/job.json').read_bytes()
+    token=store.acquire(lambda read: None)
+    store.release(token)
+print('ready',flush=True)
+""")
+        self.ready(child)
+        _,error=child.communicate(timeout=5)
+        self.assertEqual(child.returncode,0,error)
+        self.assertEqual(misleading.read_bytes(),b'wrong descriptor in process working directory')
 
     def test_wrong_job_or_physical_copy_cannot_acquire(self):
         with self.assertRaisesRegex(ValueError,'another job'):

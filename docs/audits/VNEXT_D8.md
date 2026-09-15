@@ -19,6 +19,29 @@ fresh attempt used the already-installed desktop executable without changing
 the model, seven source snapshots or system installation. Both attempts are
 preserved under `rounds/vnext-d8-audit-{002,003}/`.
 
+## Correction follow-up: staged, not run
+
+The two major findings have now been patched. The storage contract, kernel
+notes and unregistered binding schema explicitly require a normalized path
+relative to the run root. The candidate contract defines both expected-current
+hashes at declaration, preparation, committed-predecessor replay, next-ordinal
+claimant validation and conditional commit. Runtime source is unchanged.
+
+All **65 focused tests pass**: 32 storage tests (including new path-schema and
+fresh-process CWD checks), 32 contract tests and the existing same-draft-bytes
+stale-pointer promotion regression. This is targeted validation, not a new full
+regression or an audit pass.
+
+The [staging evidence](vnext-d8-recheck-staging.json) pins the packet under
+`rounds/vnext-d8-audit-004/`. It contains four current contract snapshots, the
+original feedback and the exact correction diff, plus notes and the standard
+Reviewer prompt/schema. The proposed pass uses `gpt-5.6-sol`, consistency,
+CLI `0.154.0-alpha.6.2` and a 360-second limit. `preflight.py` verifies source,
+snapshot, prompt and executable hashes without invoking a Reviewer;
+`run-command.txt` retains the proposed command. The user requested staging
+only. **No recheck or external transmission has occurred; D8 audit closure
+remains pending.** The original report and feedback below are unchanged.
+
 ## Findings and local assessment
 
 The [evidence record](vnext-d8-audit.json) preserves the exact Reviewer feedback
@@ -60,9 +83,10 @@ and audit-manifest schemas validate. No new runtime tests were run for this
 Reviewer pass. The earlier reconciliation's regression and focused reruns remain
 separately scoped historical evidence.
 
-Next: make the two narrow contract clarifications and perform a focused
-correction recheck. This pass made no corrective specification, schema or
-runtime changes and did not invoke an Editor. No new modes, 18.8–18.9 work,
+Next: execute the staged focused correction recheck when instructed. The
+original Reviewer pass made no corrective specification, schema or runtime
+changes; the subsequent patches are recorded above. Neither step invoked an
+Editor. No new modes, 18.8–18.9 work,
 push or external source apply-back occurred. Existing uncommitted plan,
 artifact and scope proposals remain intact. There is no audit pass to infer
 from the successful execution of the Reviewer command.
