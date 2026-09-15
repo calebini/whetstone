@@ -237,7 +237,7 @@ On 2026-09-15 the operator ratified the single-host, local-filesystem storage de
 
 The D8 supplement owns acquisition, physical binding, fencing, release/fork behavior, durable publication and supported-filesystem limits. This leaf continues to own registration, finality, claimant selection and promotion ordering. Legacy/bridge paths, the frozen first suite and existing descriptors are unchanged. Distributed writers, active-root relocation and parallel authoritative commits are outside the ratified scope.
 
-The design choice is resolved. Its bounded consistency audit and consuming-suite qualification remain open; ratification does not complete 18.5–18.7 or activate proposal/promotion modes.
+The design choice is ratified and its [bounded consistency audit and correction recheck](../audits/VNEXT_D8.md) have closed the design-audit gate. Consuming-suite qualification remains open; this does not complete 18.5–18.7 or activate proposal/promotion modes.
 
 ## Versioned Job Descriptor
 

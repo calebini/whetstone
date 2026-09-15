@@ -1,9 +1,8 @@
 # D8 bounded consistency audit
 
-Result: **needs revision**. The Reviewer reported **0 blockers, 2 major findings,
-1 minor finding**, with `boundary_preserved: false`. The ratified single-host
-storage design stands, but the D8 design-audit gate is **not closed**. This is
-neither a convergence result nor runtime/release qualification.
+Current result: **pass — zero findings**, with `boundary_preserved: true`, on the authorized focused correction recheck. **The D8 design-audit gate is closed.** The single-host design remains ratified; consuming-release qualification and slices 18.5–18.7 remain incomplete.
+
+The original audit reported **needs revision: 0 blockers, 2 major findings, 1 minor finding**, with `boundary_preserved: false`. Its evidence and the local terminology disposition below remain unchanged.
 
 The completed Reviewer-only pass used **gpt-5.6-sol**, profile `consistency`,
 a 360-second timeout and the installed desktop Codex executable
@@ -19,7 +18,17 @@ fresh attempt used the already-installed desktop executable without changing
 the model, seven source snapshots or system installation. Both attempts are
 preserved under `rounds/vnext-d8-audit-{002,003}/`.
 
+## Correction recheck: passed
+
+The user authorized execution of the staged packet on 2026-09-15. One Reviewer-only invocation configured for **gpt-5.6-sol**, consistency, Codex `0.154.0-alpha.6.2`, and a 360-second limit completed successfully. It reviewed correction checkpoint `553300c`, targeting `fb_consistency_001`, `fb_consistency_002` and direct regressions. It returned **pass, zero findings, boundary_preserved: true**. This closes the two major findings; the earlier minor terminology finding retains its separate nonblocking local disposition.
+
+The [recheck evidence](vnext-d8-recheck.json) preserves the exact feedback, report, audit manifest, authorization and source/artifact hashes. All three artifact schemas validate. The actual brief matches the prepared preview byte for byte; its normalized draft hash is separately verified. Sources and packet snapshots were unchanged through execution. No runtime tests were rerun; the 65 focused tests below remain prior patch-validation evidence.
+
+Model metadata limit: the invocation and audit manifest select `gpt-5.6-sol`; the model-authored feedback self-labels `gpt-5`/`1.0.0`. That response is preserved verbatim and is not runtime identity attestation. No independent served-model attestation was captured.
+
 ## Correction follow-up: staged, not run
+
+Historical staging checkpoint, superseded by the executed recheck above:
 
 The two major findings have now been patched. The storage contract, kernel
 notes and unregistered binding schema explicitly require a normalized path
@@ -83,10 +92,9 @@ and audit-manifest schemas validate. No new runtime tests were run for this
 Reviewer pass. The earlier reconciliation's regression and focused reruns remain
 separately scoped historical evidence.
 
-Next: execute the staged focused correction recheck when instructed. The
+Next: the normal V Reviewer sequence and canonical round admission/publication against committed promoted bases, followed by consuming-suite qualification. The focused correction recheck is complete. The
 original Reviewer pass made no corrective specification, schema or runtime
 changes; the subsequent patches are recorded above. Neither step invoked an
 Editor. No new modes, 18.8–18.9 work,
 push or external source apply-back occurred. Existing uncommitted plan,
-artifact and scope proposals remain intact. There is no audit pass to infer
-from the successful execution of the Reviewer command.
+artifact and scope proposals remain intact. Audit closure rests on the validated passing feedback and report from the focused recheck, not merely a successful command exit. It does not establish runtime qualification or broader slice completion.

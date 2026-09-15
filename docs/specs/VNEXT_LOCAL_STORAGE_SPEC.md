@@ -1,6 +1,6 @@
 # Local Storage Contract (D8)
 
-Status: **design ratified by the operator on 2026-09-15; bounded consistency audit and consuming-release qualification pending**. The operator explicitly accepted the single-host storage recommendation and requested ratification. This resolves the storage policy choice; it does not claim an audit pass, complete slices 18.5–18.7, register a suite or activate a runtime mode.
+Status: **design ratified and bounded consistency audit closed on 2026-09-15; consuming-release qualification pending**. The [focused correction recheck](../audits/VNEXT_D8.md) passed with zero findings. This does not complete slices 18.5–18.7, register a suite or activate a runtime mode.
 
 The [candidate leaf](CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#local-storage-decision-d8) owns registration, candidate finality and promotion semantics. This normative supplement selects their single-host exclusion, fencing and durable publication protocol, named `vnext-local-storage-v1`. The artifact and scheduler leaves retain ownership of their artifact and lifecycle contracts.
 
@@ -14,9 +14,9 @@ Remote model execution does not make the model another authority writer: model o
 
 This contract consolidates the retained proposal at `rounds/vnext-d8-audit-001/storage-design.md` with the physical-binding, exclusive fresh-root initialization and uncertainty rules documented in the [kernel implementation notes](../../contracts/algorithms/vnext_local_storage_kernel_v1.md). The staged audit inputs and execution status remain historical evidence and MUST NOT be silently rewritten as an audit of this contract.
 
-The next bounded consistency audit must review this consolidated contract against the candidate, scheduler and artifact owners. It must assess stale ownership/fork/release races, publication uncertainty, original ordering, initialization/version binding and honest environment limits. Record and resolve material contradictions; only changed decisions require renewed operator choice. Design ratification does not waive this audit or the consuming-release tests below.
+The completed bounded audit reviewed this contract against the candidate, scheduler and artifact owners. Two major contract-clarification findings were corrected; the authorized focused recheck passed with zero findings and `boundary_preserved: true`. The [audit record](../audits/VNEXT_D8.md) retains the original findings, the separate nonblocking terminology disposition and the passing recheck. The design-audit gate is closed; the consuming-release tests below remain required.
 
-No external Reviewer invocation has occurred for D8. This local ratification does not itself assert exact-payload transmission approval. The old staged packet's pending approval is not authorization for a refreshed packet. No source apply-back, new mode activation or 18.8–18.9 implementation is included.
+The operator authorized the prepared audit and subsequent focused recheck with `gpt-5.6-sol`; both completed invocations and their exact packets are retained separately from earlier blocked attempts. No source apply-back, new mode activation or 18.8–18.9 implementation is included.
 
 ## Binding and supported environment
 
@@ -69,7 +69,7 @@ Every recovery invocation reacquires ownership and reconstructs authority from i
 
 ## Existing evidence and its limits
 
-The [18.5–18.7 reconciliation](../VNEXT_18_5_18_7_HANDOFF.md) and [validation record](../audits/VNEXT_18_5_18_7_VALIDATION.json) retain the actual current-source regression and focused test results. The full run recorded 1,151 passes and two subprocess fixture-import failures; the corrected 13-test and 15-test modules passed separately. All 1,153 distinct tests have passing evidence across those runs, not a clean single full-suite run. This is evidence for bounded implemented behaviors, not an audit of this newly consolidated contract or complete release qualification.
+The [18.5–18.7 reconciliation](../VNEXT_18_5_18_7_HANDOFF.md) and [validation record](../audits/VNEXT_18_5_18_7_VALIDATION.json) retain the actual current-source regression and focused test results. The full run recorded 1,151 passes and two subprocess fixture-import failures; the corrected 13-test and 15-test modules passed separately. All 1,153 distinct tests have passing evidence across those runs, not a clean single full-suite run. This is evidence for bounded implemented behaviors. The subsequent contract audit and focused correction recheck are recorded separately; neither completes release qualification.
 
 ## Required qualification
 

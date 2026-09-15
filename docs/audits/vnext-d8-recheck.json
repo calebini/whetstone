@@ -1,0 +1,233 @@
+{
+  "status": "completed_pass",
+  "scope": "Focused recheck of fb_consistency_001 and fb_consistency_002 and direct regressions; not a broader implementation or release audit.",
+  "source_checkpoint": "553300cef12ac962408eabe21a7fa11752ef8603",
+  "authorization": {
+    "recorded_at": "2026-09-15T13:20:12.053689+00:00",
+    "user_instruction": "let's go ahead and run the bounded recheck",
+    "scope": "Run the exact staged D8 correction recheck previously presented, with gpt-5.6-sol, consistency, 360 seconds, Reviewer only.",
+    "payload_manifest": "staging.json",
+    "payload_manifest_sha256": "2feccc9be086ebda2274dcffc09e6eec4c5af7cd5a99d565c101847ade84d3a0",
+    "notes_sha256": "9741d09becff57e5ca8897fda259d313cbe7043ee8aad9a5beff2c3faeae4451",
+    "prepared_prompt_manifest_sha256": "981dd9146d533bab8ecd2432f72eedbc4159a8556c30d7a66df45ef4ecc13a06",
+    "configured_client": {
+      "name": "codex",
+      "command": "/Applications/ChatGPT.app/Contents/Resources/codex",
+      "model": "gpt-5.6-sol",
+      "version": "0.154.0-alpha.6.2",
+      "executable_sha256": "ecad78dbf98adb89ec475edac86630406cbe59d9f3070b17d88065f136b94bcb"
+    },
+    "execution_authorized": true,
+    "source_checkpoint": "553300cef12ac962408eabe21a7fa11752ef8603",
+    "source_payload_unchanged": true
+  },
+  "configured_client": {
+    "name": "codex",
+    "command": "/Applications/ChatGPT.app/Contents/Resources/codex",
+    "model": "gpt-5.6-sol",
+    "version": "0.154.0-alpha.6.2",
+    "executable_sha256": "ecad78dbf98adb89ec475edac86630406cbe59d9f3070b17d88065f136b94bcb"
+  },
+  "reviewer_metadata_note": "The model-authored feedback self-identifies as gpt-5/version 1.0.0. Preserved verbatim; this is not runtime attestation. The invocation and audit manifest select gpt-5.6-sol with Codex 0.154.0-alpha.6.2. No independent served-model attestation was captured.",
+  "report": {
+    "audit_brief_hash": "41839e737c19030eb8080d1159afec9ce52d408c22b4283977fe985b60a4612d",
+    "audit_manifest_path": "change_audit/audit_manifest.json",
+    "boundary_preserved": true,
+    "failure_reason": null,
+    "feedback_counts": {
+      "blocker": 0,
+      "major": 0,
+      "minor": 0,
+      "nit": 0
+    },
+    "generated_at": "2026-09-15T13:20:36.649877+00:00",
+    "in_scope_feedback_ids": [],
+    "out_of_scope_feedback_ids": [],
+    "profile": "consistency",
+    "recommended_next_action": "none",
+    "schema_version": "change-audit-report-v1",
+    "source_feedback_path": "change_audit/change_audit_feedback.json",
+    "verdict": "pass"
+  },
+  "feedback": {
+    "draft_hash": "41839e737c19030eb8080d1159afec9ce52d408c22b4283977fe985b60a4612d",
+    "feedback": [],
+    "profile": "consistency",
+    "reviewer": {
+      "model": "gpt-5",
+      "name": "Codex Whetstone Reviewer",
+      "version": "1.0.0"
+    },
+    "round_number": 1
+  },
+  "audit_manifest": {
+    "audit_notes_hash": "9741d09becff57e5ca8897fda259d313cbe7043ee8aad9a5beff2c3faeae4451",
+    "audit_notes_path": "notes.md",
+    "client": {
+      "model": "gpt-5.6-sol",
+      "name": "codex",
+      "version": "0.154.0-alpha.6.2"
+    },
+    "generated_at": "2026-09-15T13:20:23.757951+00:00",
+    "profile": "consistency",
+    "schema_version": "change-audit-manifest-v1",
+    "specs": [
+      {
+        "hash": "aea570f38eca3f422672ddea650290526102a6308a68174efca543d45d04b566",
+        "path": "inputs/storage.md"
+      },
+      {
+        "hash": "f9f415f39e90bae24a87931bebc935118258e5cbe4bbdeab532349e0f014b50a",
+        "path": "inputs/kernel.md"
+      },
+      {
+        "hash": "bb42016e8085112a144c1262c1c1565482cc7ec89a40a01bdcd83ff363a4a4fc",
+        "path": "inputs/binding.md"
+      },
+      {
+        "hash": "53b599243c67ce65442cb471e52351bd25b2d975974b68a107d73863aa99ef2a",
+        "path": "inputs/candidate.md"
+      },
+      {
+        "hash": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015",
+        "path": "inputs/prior-feedback.json"
+      },
+      {
+        "hash": "e69f8b6119fa0094b56963e471e11b35ddcc062073586b9b3f722d1be3ba83a6",
+        "path": "inputs/corrections.patch"
+      }
+    ]
+  },
+  "source_packet": {
+    "status": "staged_not_run",
+    "source_base_commit": "ed5f2de0657a66c70a6c053e8a951272f87c1ce8",
+    "source_state": "Current corrected source bytes; exact correction diff against source_base_commit included.",
+    "target_findings": [
+      "fb_consistency_001",
+      "fb_consistency_002"
+    ],
+    "sources": [
+      {
+        "source": "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+        "source_sha256": "477eb54090d7666d7556753e68cd0a69c4866dd8cab1e61cc02a0d5c199af606",
+        "headings": null,
+        "snapshot": "rounds/vnext-d8-audit-004/inputs/storage.md",
+        "snapshot_sha256": "aea570f38eca3f422672ddea650290526102a6308a68174efca543d45d04b566"
+      },
+      {
+        "source": "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+        "source_sha256": "b028202823cac4b332465cb58876c6eb53caff1ccde39864bc03b58aa6e681d3",
+        "headings": null,
+        "snapshot": "rounds/vnext-d8-audit-004/inputs/kernel.md",
+        "snapshot_sha256": "f9f415f39e90bae24a87931bebc935118258e5cbe4bbdeab532349e0f014b50a"
+      },
+      {
+        "source": "contracts/schemas/vnext_local_storage_binding_v1.schema.json",
+        "source_sha256": "05bd33b448f6c3d27ba07ed4116973055e9ebcc7eed23f696f3b2ac9fc6f2dd0",
+        "headings": null,
+        "snapshot": "rounds/vnext-d8-audit-004/inputs/binding.md",
+        "snapshot_sha256": "bb42016e8085112a144c1262c1c1565482cc7ec89a40a01bdcd83ff363a4a4fc"
+      },
+      {
+        "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "source_sha256": "db00a07c6110fce4b098ef1cbdb0d0a8a0963553b9a5272ee120d52f557184b7",
+        "headings": [
+          "## Core Safety Invariant",
+          "## Versioned Job Descriptor",
+          "## Local Storage Decision (D8)",
+          "## Promotion And Current Verified Authority"
+        ],
+        "snapshot": "rounds/vnext-d8-audit-004/inputs/candidate.md",
+        "snapshot_sha256": "53b599243c67ce65442cb471e52351bd25b2d975974b68a107d73863aa99ef2a"
+      },
+      {
+        "source": "rounds/vnext-d8-audit-003/change_audit/change_audit_feedback.json",
+        "source_sha256": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015",
+        "headings": null,
+        "snapshot": "rounds/vnext-d8-audit-004/inputs/prior-feedback.json",
+        "snapshot_sha256": "f495932b96cfb039d3217b8e45325818d60a580f90b0bcad71211beb997dc015"
+      }
+    ],
+    "additional_snapshot": {
+      "path": "rounds/vnext-d8-audit-004/inputs/corrections.patch",
+      "sha256": "d49b24ec928d9f157bcacc601abefafd0e43aed4032974717489263872e18a95",
+      "source_paths": [
+        "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+        "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+        "contracts/schemas/vnext_local_storage_binding_v1.schema.json",
+        "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md"
+      ]
+    },
+    "notes_sha256": "9741d09becff57e5ca8897fda259d313cbe7043ee8aad9a5beff2c3faeae4451",
+    "configured_client": {
+      "name": "codex",
+      "command": "/Applications/ChatGPT.app/Contents/Resources/codex",
+      "model": "gpt-5.6-sol",
+      "version": "0.154.0-alpha.6.2",
+      "executable_sha256": "ecad78dbf98adb89ec475edac86630406cbe59d9f3070b17d88065f136b94bcb"
+    },
+    "profile": "consistency",
+    "timeout_seconds": 360,
+    "execution_authorized": false,
+    "authorization": "User authorized local patches and staging only. Run this refreshed payload only on a subsequent instruction to execute the staged recheck."
+  },
+  "raw_artifact_sha256": {
+    "rounds/vnext-d8-audit-004/change_audit/audit_brief.md": "2350144b3ae954aec6ce439814f67a3ee40ce5ff887bb4562c67144b0ee89f56",
+    "rounds/vnext-d8-audit-004/change_audit/audit_manifest.json": "690aaa2a3838a48ed6483781a468feabec8028564c39ab9d21531fd474041fff",
+    "rounds/vnext-d8-audit-004/change_audit/change_audit_feedback.json": "49155d5ae6315bba07297f787fa531a0533a3f5513bd99faa15efc788de339da",
+    "rounds/vnext-d8-audit-004/change_audit/change_audit_report.json": "037a42b438376eaedaa258804f0681246ff8741e3dde175f86c8e2abde893096",
+    "rounds/vnext-d8-audit-004/change_audit/change_audit_report.md": "952a7fe2375e5b8e2ba3282aa1d546c5cc11d0e4f5503d9ab712d821c7529b11"
+  },
+  "prepared_brief_raw_sha256": "2350144b3ae954aec6ce439814f67a3ee40ce5ff887bb4562c67144b0ee89f56",
+  "hash_note": "audit_brief_hash/draft_hash use Whetstone draft normalization; raw file SHA-256 is recorded separately. Actual brief bytes match prepared preview.",
+  "validation": {
+    "schemas": [
+      "change_audit_report",
+      "reviewer_feedback",
+      "change_audit_manifest"
+    ],
+    "sources_and_snapshots_unchanged_after_execution_before_status_updates": true,
+    "preexisting_uncommitted_files_unchanged_after_execution": true,
+    "prior_focused_tests": [
+      {
+        "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_local_storage.py' -v",
+        "tests": 32,
+        "seconds": 2.641,
+        "result": "OK",
+        "log": "rounds/vnext-d8-audit-004/storage-tests.log",
+        "sha256": "e729f16995204309b55e37f7537dd0a3bb1dc83a2b27d264b646e350f8f5edfd"
+      },
+      {
+        "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_contracts.py' -v",
+        "tests": 32,
+        "seconds": 1.418,
+        "result": "OK",
+        "log": "rounds/vnext-d8-audit-004/contracts-tests.log",
+        "sha256": "516bab7dc002b58a7574608e48bb1c6f66373ca42e8f9e89412a2875588d35fc"
+      },
+      {
+        "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_verified_promotion.py' -k stale_tail_with_identical_base_bytes -v",
+        "tests": 1,
+        "seconds": 85.132,
+        "result": "OK",
+        "log": "rounds/vnext-d8-audit-004/pointer-binding-test.log",
+        "sha256": "803c46a31d68864aa6a7966ea25e7707a04689a643ce46a77c633f54813894d5"
+      }
+    ],
+    "tests_run_for_this_recheck": 0
+  },
+  "closure": {
+    "targeted_findings_closed": [
+      "fb_consistency_001",
+      "fb_consistency_002"
+    ],
+    "prior_minor_finding": "fb_consistency_003 retains the local nonblocking, separate-namespace terminology disposition in VNEXT_D8.md; original Reviewer feedback is unchanged.",
+    "d8_design_audit_gate_closed": true,
+    "consuming_release_qualified": false,
+    "slices_18_5_through_18_7_complete": false,
+    "mode_activation": false,
+    "push": false,
+    "external_spec_apply_back": false
+  },
+  "remaining_work": "Normal V Reviewer sequence and canonical round admission/publication against committed promoted bases, then consuming-suite qualification. 18.8\u201318.9 remain excluded."
+}

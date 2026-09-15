@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+Current status after the authorized recheck on 2026-09-15: **D8 design ratification and bounded design-audit closure are complete**. The [focused recheck](audits/VNEXT_D8.md#correction-recheck-passed) of correction checkpoint `553300c` passed with zero findings and `boundary_preserved: true`. The 65 prior focused tests remain passing evidence; no runtime tests were rerun for this audit. **18.5–18.7 remain incomplete**, consuming-suite qualification remains open, and shipping qualification maps remain empty. Next bounded implementation target: the normal V Reviewer sequence and canonical round admission/publication against committed promoted bases. Earlier dated follow-ups below are historical; their pending-audit and authorization statements are superseded.
+
 Correction follow-up on 2026-09-15: the two major D8 contract findings are patched, 65 focused tests pass, and a [bounded recheck packet is staged](audits/VNEXT_D8.md#correction-follow-up-staged-not-run) for `gpt-5.6-sol`. It has not run; D8 audit closure and consuming-release qualification remain open.
 
 Audit follow-up on 2026-09-15: the authorized `gpt-5.6-sol` [D8 bounded audit](audits/VNEXT_D8.md) completed with two major contract-clarification findings and one minor terminology finding (`needs_revision`). Design ratification stands; audit closure requires the narrow corrections and a focused recheck. The older pending-authorization and not-yet-run statements below describe earlier checkpoints.
