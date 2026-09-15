@@ -50,16 +50,15 @@ claims. Compatibility checks retain the P seed-review, P stored-run, V journal,
 bounded-prefix and staged V stored-run behavior.
 
 This is targeted integration evidence, not a full regression or release audit.
-Same-round operator follow-ups and multiple successive promotions through this
-new runtime sequence still need integrated qualification; existing component
-fixtures do not close those rows. Complete fault-prefix/process-death coverage at
-this new boundary also remains open. Rejected candidates and outstanding choices
+The subsequent [runtime follow-up checkpoint](VNEXT_RUNTIME_FOLLOWUP.md) adds
+passing evidence for a representative same-round operator child, a second
+promotion, fresh-process readback and selected recovery/refusal boundaries.
+Complete fault-prefix/process-death coverage and broader follow-up qualification
+remain open. Rejected candidates and outstanding choices
 continue through existing work/operator owners; this increment adds no automatic
 resolution or replacement review on an unchanged base.
 
-Next bounded work within 18.7: exercise the runtime round producer through a
-same-round operator follow-up and a second promotion, preserving original rejected
-candidate evidence and exact client counts after reopening. Reconcile remaining
+Next bounded work within 18.7: map remaining runtime fault boundaries to existing tests and retained evidence, then add only uncovered high-priority interruption/process cases. The representative operator-child/two-promotion journey is now recorded in the follow-up checkpoint. Reconcile remaining
 18.5–18.7 acceptance rows before considering completion. Full scheduler terminals,
 vertical/focused/closeout integration, extensions, Phase 2 and apply-back remain
 18.8; full release qualification and activation remain 18.9. Neither is included.

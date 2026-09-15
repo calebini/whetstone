@@ -1,0 +1,76 @@
+{
+  "checkpoint": "Bounded runtime operator follow-up and second promotion",
+  "recorded_at": "2026-09-15T16:21:17.476177+00:00",
+  "result": "targeted_tests_pass",
+  "source": {
+    "base_commit": "95c75b218b4b3e4abce9b94cda4925cd0b8defc7",
+    "runtime_and_contracts_unchanged_from_base": true,
+    "new_test_sha256": "3757c06b15b958e6f16d987f8720755c42fb87ff42a451dff44425b77c7b8d8b",
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "scope": "Production runtime rounds, same-round explicit interpretation child, two promotions, fresh-process readback and selected recovery boundaries. Scripted clients only."
+  },
+  "distinct_new_tests": 4,
+  "full_regression_run": false,
+  "runtime_patch_required": false,
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_operator_child_second_promotion_and_fresh_process_readback test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_declined_or_stale_answer_cannot_select_runtime_child -v",
+      "tests": 2,
+      "seconds": 482.982,
+      "result": "OK",
+      "log": "rounds/vnext-runtime-followup-001/final-journey-tests.log",
+      "sha256": "c712a99f895684c4af9d567e80094434a5751dfe81f436dd1fb5ed76a0d180b9",
+      "test_ids": [
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_operator_child_second_promotion_and_fresh_process_readback",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_declined_or_stale_answer_cannot_select_runtime_child"
+      ]
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_answer_and_selection_prefixes_reopen_without_clients test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_second_promotion_lost_ack_repairs_before_new_review_and_replays_original_raw -v",
+      "tests": 2,
+      "seconds": 336.388,
+      "result": "OK",
+      "log": "rounds/vnext-runtime-followup-001/recovery-tests.log",
+      "sha256": "72f28bc163cd00200d7d295f525f5dee31b220afcd182355238a3cc263e0e433",
+      "test_ids": [
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_answer_and_selection_prefixes_reopen_without_clients",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_second_promotion_lost_ack_repairs_before_new_review_and_replays_original_raw"
+      ]
+    }
+  ],
+  "test_source_scope": "Recovery tests began before the additive editing-scope assertions in the main journey and the decline test were added. Recovery method bodies and runtime bytes did not change. The final journey run exercises the strengthened main journey and decline/stale test against the recorded test file.",
+  "exploratory_journey_log": {
+    "path": "rounds/vnext-runtime-followup-001/journey.log",
+    "sha256": "d1bd4d414888acf08eea7476feb20d4db7b3647fdc80e686c3021f9604049cc4",
+    "result": "OK; original main journey before additional scope/context assertions"
+  },
+  "validated_cases": [
+    "Production Reviewer round 1, finally rejected parent with outstanding interpretation question, explicit answer and separate child selection",
+    "Distinct same-round child preserves the original editing plan and identical Editor/Verifier interpretation evidence, verifies independently and promotes to ordinal 1",
+    "Production Reviewer round 2, third candidate, independent verification and second promotion; review 3 binds ordinal 2",
+    "Original parent artifacts, original round record and immutable root selectors remain byte-identical",
+    "Full journey counts: 3 Reviewer, 3 Editor, 3 Verifier calls; no client calls during operator publication or reopening",
+    "Fresh-process readback reconstructs both promotions and three candidates without writes or clients",
+    "Injected post-response and post-admission interruptions recover exact operator selection after reopening, with no extra calls",
+    "Injected lost acknowledgement after second pointer commit repairs mirrors before new review; repeated promotion creates no third ordinal",
+    "Original round-1 raw Reviewer tampering blocks further admission after two promotions",
+    "Stale and declined answers cannot select a runtime child; superseded parent cannot submit another answer"
+  ],
+  "remaining": [
+    "Complete runtime interruption-prefix/process-termination/competing-owner coverage beyond selected boundaries",
+    "Repeated interpretation follow-ups and wider profile combinations beyond this representative journey",
+    "Remaining 18.5\u201318.7 acceptance mapping and consuming-suite qualification"
+  ],
+  "excluded": [
+    "18.8 scheduler/Phase 2/apply-back integration",
+    "18.9 complete release qualification, live soak and activation",
+    "External specification apply-back and push"
+  ],
+  "shipping_controls": {
+    "new_mode_activation": false,
+    "shipping_suite_changed": false,
+    "external_model_calls": 0,
+    "runtime_and_contracts_changed": false
+  },
+  "slice_18_7_complete": false
+}
