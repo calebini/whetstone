@@ -94,6 +94,7 @@ class _ReplayAdmission:
         require(type(number) is int and number in selectors, 'unselected historical Reviewer round')
         record = self.proof.reader.json(selectors[number], 'vnext_proposal_round_input_v1')
         values = self.proof.values(record['base_pointer'])
+        self.proof.owner._validate_round_review(self.proof, number, record)
         return self.proof.owner._round_inputs(self.proof.reader, values, number)
 
 
@@ -213,6 +214,9 @@ class VerifiedHistoryAdmission(ProposalAdmission):
     def __init__(self, store, **selectors):
         super().__init__(_ReadOnlyStore(store), **selectors)
         self.load_inputs = _HistoricalInputs(self)
+
+    def _validate_round_review(self, proof, number, record):
+        """Stored-run consumers may require bounded original Reviewer replay."""
 
     def _prove(self, read):
         return _Proof(self, read).run()

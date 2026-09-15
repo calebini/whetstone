@@ -78,33 +78,28 @@ class _RunHistory(VerifiedHistoryAdmission):
                 'installed verified run algorithm differs from pinned suite')
         return reader, values
 
-    def _round_inputs(self, reader, values, number):
-        result = super()._round_inputs(reader, values, number)
-        # The existing seed-only Reviewer protocol cannot validate a V
-        # multi-base sequence. Refuse runtime-produced feedback until its V
-        # sequence owner is integrated; explicit staged inputs remain usable.
-        require(result['feedback_ref']['path'] != f'rounds/round-{number}/reviewer_feedback.json',
-                'runtime V Reviewer evidence requires the verified review sequence owner')
+    def _validate_round_review(self, proof, number, record):
+        # Historical staged sources remain readable during Stage 1 recovery.
+        # Unrelated future claims are checked by the live owner after repair.
+        if not self.run._staged or record['feedback']['path'] == f'rounds/round-{number}/reviewer_feedback.json':
+            from whetstone.vnext_verified_review import validate_round_review
+            validate_round_review(proof, number, record)
         self.run._guard(self.run.store.read)
-        return result
-
-
-def _require_staged_boundary(store):
-    try: claims = store.list_directory('rounds/review_index')
-    except FileNotFoundError: claims = ()
-    require(not claims, 'runtime V Reviewer sequence cannot be bypassed by alternate round inputs')
 
 
 class _RunOperator(VerifiedOperator):
     def _observe(self, proof):
         view = super()._observe(proof)
-        if view.outcome != 'materialization_required': _require_staged_boundary(self.store)
+        if view.outcome != 'materialization_required':
+            from whetstone.vnext_verified_review import validate_current_sequence
+            validate_current_sequence(proof)
         return view
 
 
 class _RunPromotion(VerifiedPromotion):
     def _select(self, proof):
-        _require_staged_boundary(self.store)
+        from whetstone.vnext_verified_review import validate_current_sequence
+        validate_current_sequence(proof)
         return super()._select(proof)
 
 
@@ -137,6 +132,18 @@ class VerifiedRun:
     def submit_answer(self, **options): return self._operator().submit_answer(**options)
     def select_followup(self, **options): return self._operator().select_followup(**options)
     def promote(self, **options): return _RunPromotion(self.store, history=self._history()).promote(**options)
+    def review_status(self):
+        from whetstone.vnext_verified_review import VerifiedReview
+        return VerifiedReview(self).status()
+
+    def review_next(self, *, client=None, continuation=False):
+        from whetstone.vnext_verified_review import VerifiedReview
+        return VerifiedReview(self).next(client=client, continuation=continuation)
+
+    def admit_reviewed_round(self, *, decision_refs=()):
+        from whetstone.vnext_verified_review import VerifiedReview
+        return VerifiedReview(self).admit(decision_refs=decision_refs)
+
     def close(self): self.store.close()
     def __enter__(self): return self
     def __exit__(self, *exc): self.close()

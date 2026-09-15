@@ -98,6 +98,27 @@ class VerifiedRunTests(unittest.TestCase):
             run.request(round_number=1, client=f.editor)
         self.assertEqual(self.files(f), before)
 
+    def test_promoted_staged_mirror_repair_precedes_unrelated_runtime_claim(self):
+        f = self.fixture()
+        run = VerifiedRun(f.store, suite_path=f.admission.suite_path)
+        run.request(round_number=1, client=f.editor)
+        self.assertEqual(run.request(round_number=1, client=f.editor).value.status, 'complete')
+        f.creation = run.register(round_number=1, created_at=STAMP).value
+        f.identifier = f.creation['candidate_id']
+        self.verify(f, run)
+        run.promote(prepared_at=STAMP)
+        (f.root / 'spec.md').unlink()
+        index = f.root / 'rounds/review_index'; index.mkdir()
+        (index / 'request-99.json').write_bytes(b'not json')
+        run = self.reopen(f)
+        self.assertEqual(run.inspect().outcome, 'materialization_required')
+        self.assertEqual(run.request(round_number=1, client=f.editor).outcome, 'materialization_recovered')
+        self.assertEqual(f.editor.calls, 1)
+        before = self.files(f)
+        with self.assertRaisesRegex(ValueError, 'Reviewer sequence cannot be bypassed'):
+            run.request(round_number=1, client=f.editor)
+        self.assertEqual(self.files(f), before)
+
     def test_changed_manifest_or_resolved_input_cannot_refresh_existing_owner(self):
         f = self.fixture()
         run = VerifiedRun(f.store, suite_path=f.admission.suite_path)

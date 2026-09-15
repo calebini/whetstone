@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+Latest implementation checkpoint on 2026-09-15: the [bounded 18.7 V Reviewer integration](VNEXT_VERIFIED_REVIEW_INTEGRATION.md) adds standard horizontal review selection over exact committed bases and production canonical round publication. It extends the earlier staged-only boundary behind a separate unactivated contract pin. Historical statements below that these components are absent are superseded for this bounded path. 18.5–18.7 and consuming-release qualification remain incomplete. The linked checkpoint records validation and the remaining same-round follow-up/multiple-promotion integration work.
+
 Current status after the authorized recheck on 2026-09-15: **D8 design ratification and bounded design-audit closure are complete**. The [focused recheck](audits/VNEXT_D8.md#correction-recheck-passed) of correction checkpoint `553300c` passed with zero findings and `boundary_preserved: true`. The 65 prior focused tests remain passing evidence; no runtime tests were rerun for this audit. **18.5–18.7 remain incomplete**, consuming-suite qualification remains open, and shipping qualification maps remain empty. Next bounded implementation target: the normal V Reviewer sequence and canonical round admission/publication against committed promoted bases. Earlier dated follow-ups below are historical; their pending-audit and authorization statements are superseded.
 
 Correction follow-up on 2026-09-15: the two major D8 contract findings are patched, 65 focused tests pass, and a [bounded recheck packet is staged](audits/VNEXT_D8.md#correction-follow-up-staged-not-run) for `gpt-5.6-sol`. It has not run; D8 audit closure and consuming-release qualification remain open.

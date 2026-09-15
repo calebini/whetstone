@@ -1,0 +1,173 @@
+{
+  "checkpoint": "Bounded 18.7 standard horizontal V Reviewer and canonical round integration",
+  "base_commit": "7a26277b6f02240f18f40629c0d415777286f46d",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 64,
+  "test_executions_in_final_evidence": 72,
+  "new_tests": 13,
+  "full_regression_run": false,
+  "sources": {
+    "base_commit": "7a26277b6f02240f18f40629c0d415777286f46d",
+    "files": {
+      "src/whetstone/vnext_verified_review.py": "4f00a269784571150dce57241894729e58371c9036d9480cb1c699babe878bc5",
+      "src/whetstone/vnext_verified_history.py": "d77526bfba61adc173d37a6546eff65e067193028797b2d14f581c999771d949",
+      "src/whetstone/vnext_verified_run.py": "09af57e3cd0876874b7a20cfa5688907a268b7fe1e26067833b2d76cccd8d08a",
+      "contracts/algorithms/vnext_verified_review_sequence_v1.md": "4257122a051fab2ca0198a00d953a8a010f4f1bcfc01ba9184bf883a2278215c",
+      "tests/test_vnext_verified_review.py": "3e1be03faf01bf14adea1d10c423f56b532741d630094fee1f9c073b3f2538d6",
+      "tests/test_vnext_verified_run.py": "f84dcafe14bb192da9bea5c82c3598ff6c90d223c3e2eedfd36eaa16040c7acd"
+    },
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "note": "Final source after staged historical replay was isolated from future runtime claims. Validated by the eight-test stored-run rerun and final production journey; the standard-runtime branch is unchanged from the twelve-test integration run."
+  },
+  "validation": [
+    {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p test_vnext_verified_review.py -v",
+      "scope": "Twelve runtime tests after completed-prefix durability correction, before the staged-only history-guard adjustment.",
+      "tests": 12,
+      "seconds": 204.725,
+      "result": "OK",
+      "log": "rounds/vnext-verified-review-integration-001/final-integration-tests.log",
+      "sha256": "5361b690ecd1d4ec10cc69e1e460db832a9fb1efe1a61dbd4b4502bce239bf8f",
+      "test_ids": [
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority"
+      ]
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_run test_vnext_verified_review_prefix test_vnext_verified_review_requests test_vnext_review_requests test_vnext_proposal_run -v",
+      "scope": "Existing 51 tests; began before later refinements to the new review-next method and staged history guard. Affected stored-run coverage was rerun.",
+      "tests": 51,
+      "seconds": 254.556,
+      "result": "OK",
+      "log": "rounds/vnext-verified-review-integration-001/compatibility-tests.log",
+      "sha256": "3d1185ff5e6df786e5f7abd2e6574331075ffb196bf0164b9ff51e616b96e1c7",
+      "test_ids": [
+        "test_vnext_proposal_run.StoredProposalRunTests.test_damaged_committed_pointer_is_not_hidden_by_unselected_future_round",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_duplicate_staged_selectors_cannot_choose_a_round",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_fresh_process_reopens_and_replays_without_a_new_editor_call",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_immutable_run_selector_changes_refuse_without_clients",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_missing_terminal_materialization_is_resumable_without_another_client_call",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_noncanonical_seed_and_invalid_review_policy_refuse_before_root_creation",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_prepared_verification_is_resumable_without_claiming_a_decision",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_reopened_root_derives_inputs_and_runs_without_caller_selectors",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_round_admission_rejects_conflicting_staged_record_before_publication",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_seed_only_initialization_can_admit_feedback_later",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_status_and_reopen_are_read_only_while_an_owner_is_active",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_timeout_eligibility_survives_reopening_and_exhaustion_keeps_cause",
+        "test_vnext_proposal_run.StoredProposalRunTests.test_unbound_input_record_is_not_treated_as_an_admitted_round",
+        "test_vnext_review_requests.SeedReviewTests.test_alternate_feedback_path_cannot_bypass_live_reviewer_proof",
+        "test_vnext_review_requests.SeedReviewTests.test_clean_review_finishes_without_candidate_or_extra_round",
+        "test_vnext_review_requests.SeedReviewTests.test_contradictory_round_binding_is_not_a_shape_retry",
+        "test_vnext_review_requests.SeedReviewTests.test_exhaustion_and_binding_failure_never_get_an_extra_review",
+        "test_vnext_review_requests.SeedReviewTests.test_extra_round_claim_cannot_advance_past_findings",
+        "test_vnext_review_requests.SeedReviewTests.test_horizontal_and_vertical_profile_order_and_clean_completion",
+        "test_vnext_review_requests.SeedReviewTests.test_live_feedback_and_advice_feed_admitted_editor_and_candidate",
+        "test_vnext_review_requests.SeedReviewTests.test_lost_result_acknowledgement_is_replayed_before_next_claim",
+        "test_vnext_review_requests.SeedReviewTests.test_mid_call_authority_drift_retains_raw_and_refuses_result",
+        "test_vnext_review_requests.SeedReviewTests.test_missing_bound_predecessor_and_claim_do_not_reset_attempts",
+        "test_vnext_review_requests.SeedReviewTests.test_native_reviewer_uses_raw_transport_and_the_new_response_schema",
+        "test_vnext_review_requests.SeedReviewTests.test_prepared_first_invocation_cannot_contradict_claimed_timeout",
+        "test_vnext_review_requests.SeedReviewTests.test_profile_budget_exhaustion_and_shape_repair_have_separate_counts",
+        "test_vnext_review_requests.SeedReviewTests.test_rehashed_advice_cannot_replace_committed_reviewer_provenance",
+        "test_vnext_review_requests.SeedReviewTests.test_retained_response_can_finish_after_interruption_without_another_call",
+        "test_vnext_review_requests.SeedReviewTests.test_selected_status_is_read_only_and_retains_timeout_cause_after_exhaustion",
+        "test_vnext_review_requests.SeedReviewTests.test_selected_status_stops_at_findings_without_claiming_candidate_or_resume",
+        "test_vnext_review_requests.SeedReviewTests.test_sensitive_advice_is_only_advisory_and_blocks_editor",
+        "test_vnext_review_requests.SeedReviewTests.test_shape_retry_is_one_slot_and_inspection_does_not_repair",
+        "test_vnext_review_requests.SeedReviewTests.test_timeout_requires_explicit_continuation_and_freezes_transport",
+        "test_vnext_verified_review_prefix.VerifiedReviewPrefixTests.test_bounded_prefix_never_enumerates_or_consumes_future_claims",
+        "test_vnext_verified_review_prefix.VerifiedReviewPrefixTests.test_missing_raw_or_rehashed_original_bindings_refuse_without_repair",
+        "test_vnext_verified_review_prefix.VerifiedReviewPrefixTests.test_original_base_prefix_replays_across_promotion_without_self_support",
+        "test_vnext_verified_review_prefix.VerifiedReviewPrefixTests.test_pending_last_request_cannot_become_complete_source_or_be_skipped",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_changed_authority_during_call_retains_raw_but_refuses_result",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_claim_and_raw_output_recover_without_resetting_slots_or_calling_again",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_original_base_replays_after_promotion_but_cannot_invoke",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_same_byte_promotion_cannot_alias_original_request_pointer",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_seed_and_promoted_review_use_exact_base_and_keep_original_seed",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_shape_timeout_and_binding_failures_preserve_two_slot_policy",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_unproven_base_and_missing_contract_refuse_before_writes",
+        "test_vnext_verified_run.VerifiedRunTests.test_canonical_round_must_match_exact_staged_bytes_before_work",
+        "test_vnext_verified_run.VerifiedRunTests.test_changed_manifest_or_resolved_input_cannot_refresh_existing_owner",
+        "test_vnext_verified_run.VerifiedRunTests.test_fresh_process_reopens_promoted_root_without_clients_or_writes",
+        "test_vnext_verified_run.VerifiedRunTests.test_missing_run_pin_refuses_before_repair",
+        "test_vnext_verified_run.VerifiedRunTests.test_proposal_mode_cannot_reopen_as_verified_mode",
+        "test_vnext_verified_run.VerifiedRunTests.test_reopen_seed_and_promoted_runs_resolves_later_round_without_in_memory_selectors",
+        "test_vnext_verified_run.VerifiedRunTests.test_unrelated_future_input_and_review_claim_do_not_prevent_seed_mirror_recovery"
+      ]
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_run -v",
+      "scope": "All eight stored-run tests against final source, including the new promoted staged-mirror recovery regression.",
+      "tests": 8,
+      "seconds": 84.898,
+      "result": "OK",
+      "log": "rounds/vnext-verified-review-integration-001/final-stored-run-tests.log",
+      "sha256": "1d188fad9df7c1eb1cfbf6204c0749d462301a624ff6713f85fd465da638cba0",
+      "test_ids": [
+        "test_vnext_verified_run.VerifiedRunTests.test_canonical_round_must_match_exact_staged_bytes_before_work",
+        "test_vnext_verified_run.VerifiedRunTests.test_changed_manifest_or_resolved_input_cannot_refresh_existing_owner",
+        "test_vnext_verified_run.VerifiedRunTests.test_fresh_process_reopens_promoted_root_without_clients_or_writes",
+        "test_vnext_verified_run.VerifiedRunTests.test_missing_run_pin_refuses_before_repair",
+        "test_vnext_verified_run.VerifiedRunTests.test_promoted_staged_mirror_repair_precedes_unrelated_runtime_claim",
+        "test_vnext_verified_run.VerifiedRunTests.test_proposal_mode_cannot_reopen_as_verified_mode",
+        "test_vnext_verified_run.VerifiedRunTests.test_reopen_seed_and_promoted_runs_resolves_later_round_without_in_memory_selectors",
+        "test_vnext_verified_run.VerifiedRunTests.test_unrelated_future_input_and_review_claim_do_not_prevent_seed_mirror_recovery"
+      ]
+    },
+    {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p test_vnext_verified_review.py -k production_round -v",
+      "scope": "Production runtime journey rerun against final source after the staged-only history-guard adjustment.",
+      "tests": 1,
+      "seconds": 42.419,
+      "result": "OK",
+      "log": "rounds/vnext-verified-review-integration-001/final-journey.log",
+      "sha256": "d6596f9fbb3fbbe2ee162b4fa8b0c5592796bacdc22ced1a8cc7ad10d72aa4b4",
+      "test_ids": [
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen"
+      ]
+    }
+  ],
+  "historical_pre_refinement_logs": [
+    "rounds/vnext-verified-review-integration-001/first-journey.log",
+    "rounds/vnext-verified-review-integration-001/integration-tests.log",
+    "rounds/vnext-verified-review-integration-001/boundary-tests.log"
+  ],
+  "source_scope_note": "The final change to the shared stored-run history hook preserves staged original evidence during Stage 1 repair. Its eight-test module and the production runtime journey passed on final bytes. The twelve-test run exercises the unchanged runtime branch; unaffected P/journal coverage is retained without repeating it. No clean single full-suite pass is claimed.",
+  "implemented": [
+    "Standard horizontal one-review selection over exact seed or committed promoted pointer",
+    "Original raw Reviewer prefix replay during candidate history proof without recursively proving the current head",
+    "Canonical round publication from completed Reviewer receipts, packaged constraints and explicit decision refs",
+    "Existing fenced recovery precedence, bounded continuation and completed-prefix durability replay before later claims"
+  ],
+  "remaining": [
+    "Same-round operator follow-ups and multiple successive promotions through the new runtime sequence",
+    "Complete interruption-prefix and process-death qualification at the new integration boundary",
+    "Remaining 18.5\u201318.7 acceptance mapping and consuming-suite qualification"
+  ],
+  "excluded": [
+    "18.8 scheduler terminals, vertical/focused/closeout paths, extensions, Phase 2 and apply-back",
+    "18.9 full P0 qualification, live soak and activation",
+    "Audit-objectives proposal implementation"
+  ],
+  "shipping_controls": {
+    "frozen_suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "proposal_semantic_followup_qualification_maps_empty": true,
+    "new_shipping_suite": false,
+    "mode_activation": false,
+    "external_model_calls": 0,
+    "push": false,
+    "external_spec_apply_back": false
+  },
+  "d8_design_audit": "closed; unchanged by this integration checkpoint",
+  "slice_18_7_complete": false
+}
