@@ -2,6 +2,8 @@
 
 Date: 2026-09-15. Inspected checkpoint: `51d8618` (runtime/contracts unchanged from `95c75b2`).
 
+Update 2026-09-16: [Batch A](VNEXT_RUNTIME_FAULTS_BATCH_A.md) now passes all three fault cases (two test methods): actual runtime writer death immediately before/after the second pointer rename with competing work/registration/promotion exclusion, and typed uncertain-rename recovery with ownership poisoning before lock-context cleanup. Runtime/contracts remain unchanged. The inventory below describes the earlier checkpoint; its Batch A gaps are superseded only by this exact new evidence. Batch B is next; normal release/reacquisition interleaving and the remaining Batch C boundaries stay open.
+
 **The next gap is process-interruption coverage through the stored runtime owner and canonical Reviewer history.** Storage and lower-level owners already have substantial fault coverage, including actual killed writers. The latest runtime integration adds selected exception/reopen checks, not an equivalent process-death campaign. These are missing proofs, not demonstrated runtime defects. 18.7 remains incomplete.
 
 This is a bounded source/evidence assessment, not another runtime test run. The [machine-readable inventory](audits/VNEXT_18_7_FAULT_COVERAGE.json) records 166 test methods across 14 relevant modules, current source hashes, and comparisons against retained evidence. All 29 inspected log digests and reported test counts match. Seven of 30 recorded source comparisons differ from this checkout; their historical scope is retained explicitly. Counts from overlapping runs are not added together.

@@ -1,0 +1,77 @@
+{
+  "checkpoint": "18.7 Batch A runtime promotion faults",
+  "recorded_at": "2026-09-15T22:43:32.049447+00:00",
+  "base_commit": "2afae07f23ec435c5214d3353c5a997b4289d1b0",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 2,
+  "fault_cases": 3,
+  "full_regression_run": false,
+  "runtime_patch_required": false,
+  "source": {
+    "runtime_and_contracts_unchanged_since": "95c75b218b4b3e4abce9b94cda4925cd0b8defc7",
+    "test_file": "tests/test_vnext_verified_runtime_faults.py",
+    "test_sha256": "5f4f9b3fbbf5cafed2c7efb433de8a4e8dea7a368248100198b3d2fbcdbb638d",
+    "source_manifest": "rounds/vnext-runtime-faults-001/source-manifest.json",
+    "source_manifest_sha256": "ada8efe478af38da59290f514b6a0cd5de1d2f27046823d3494f8af0137a6cc1",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950"
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_faults -v",
+    "tests": 2,
+    "seconds": 312.819,
+    "test_ids": [
+      "test_vnext_verified_runtime_faults.RuntimePromotionFaultTests.test_killed_runtime_writer_before_and_after_second_pointer_rename",
+      "test_vnext_verified_runtime_faults.RuntimePromotionFaultTests.test_uncertain_second_rename_poisoned_owner_requires_fresh_runtime_readback"
+    ],
+    "log": "rounds/vnext-runtime-faults-001/tests.log",
+    "sha256": "a444ae7dc7ab43181e6b91e5e3227db4c920531bf4ece95ca3473b0fa3f7082e",
+    "exit_code": 0,
+    "result": "OK; no skips"
+  },
+  "validated_cases": [
+    {
+      "case": "process_death_before_second_pointer_rename",
+      "fault": "SIGKILL of child paused before os.replace after intent/event/snapshot preparation",
+      "authority_at_interruption": 1,
+      "recovery": "Original claimant and timestamp reused; commit ordinal 2 exactly once."
+    },
+    {
+      "case": "process_death_after_second_pointer_rename",
+      "fault": "SIGKILL of child paused after os.replace before post-rename barriers and normal lock release",
+      "authority_at_interruption": 2,
+      "recovery": "Fresh readback repairs mirrors, forbids pointer replacement and ends before new Reviewer work."
+    },
+    {
+      "case": "uncertain_second_pointer_rename_acknowledgement",
+      "fault": "Real os.replace succeeds, injected OSError passes through actual storage classification to StorageWriteError",
+      "authority_at_interruption": 2,
+      "recovery": "Token and lock descriptor invalidated before locked-context unwinding; stale-token publication refuses; fresh runtime readback repairs without recommit."
+    }
+  ],
+  "shared_assertions": [
+    "Both process cases open the run from stored root/suite locators with no staged round selectors.",
+    "While child holds lock, parent runtime request/register/promote each raises StorageBusy and preserves all bytes.",
+    "Read-only reopen/status before and after child death preserve every file byte.",
+    "Exactly two scripted Reviewer, Editor and Verifier calls per case; recovery adds none.",
+    "Prepared claimant, timestamp, prior canonical rounds, root selectors, client evidence and immutable history remain exact.",
+    "Recovered spec, round-2 draft_after and state projection match committed authority.",
+    "Repeated promotion is not eligible, changes no bytes and creates no third ordinal or review claim."
+  ],
+  "remaining": [
+    "Batch B: killed Reviewer around durable raw publication and runtime registration/verification recovery precedence.",
+    "Batch C: normal lock-release/materialization-reacquisition interleaving, partial mirror process death, finer dependency/operator prefixes.",
+    "Complete 18.7 fault mapping/consuming qualification and remaining 18.5\u201318.7 acceptance; no slice completion inferred."
+  ],
+  "excluded": [
+    "18.8\u201318.9 implementation or qualification campaigns",
+    "Mode activation or shipping suite changes",
+    "External model calls, external specification apply-back and push"
+  ],
+  "slice_18_7_complete": false
+}
