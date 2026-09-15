@@ -1,0 +1,278 @@
+{
+  "recorded_at": "2026-09-15T00:39:09.611015+00:00",
+  "starting_commit": "c726422865799951184c7cf3630611d2f29af4b8",
+  "implementation_checkpoint": "c066909a2ade66ab136812499a0cff4cfe3af091",
+  "status": "partial_unactivated_checkpoint",
+  "incomplete_slices": [
+    "18.5",
+    "18.6",
+    "18.7"
+  ],
+  "excluded_slices": [
+    "18.8",
+    "18.9"
+  ],
+  "external_transmission_attempted": false,
+  "modes_activated": false,
+  "pushed": false,
+  "external_spec_apply_back": false,
+  "environment": {
+    "python": "3.14.6",
+    "macos": "26.6.2",
+    "machine": "arm64"
+  },
+  "full_regression": {
+    "log": "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+    "sha256": "104604d03c232657236c5bc3f4b165ca2af9adf952c6bb74f0f25262a13c6a20",
+    "tests": 1153,
+    "seconds": 10155.046,
+    "result": "FAILED (failures=2)",
+    "exit_code": 1,
+    "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py' -v",
+    "failure_ids": [
+      "test_fresh_process_reopens_and_replays_without_a_new_editor_call (test_vnext_proposal_run.StoredProposalRunTests.test_fresh_process_reopens_and_replays_without_a_new_editor_call)",
+      "test_real_process_holds_fence_through_editor_and_death_requires_continuation (test_vnext_verified_work.VerifiedWorkTests.test_real_process_holds_fence_through_editor_and_death_requires_continuation)"
+    ],
+    "error_ids": []
+  },
+  "corrected_modules": [
+    {
+      "log": "rounds/reconciliation-18-5-18-7-001/stored-run-corrected-tests.log",
+      "sha256": "e78c17e726f3329b51d96ce1330641b082d9bb064488eca53cdbdf6fd9b3e162",
+      "tests": 13,
+      "seconds": 47.32,
+      "result": "OK",
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_proposal_run.py' -v"
+    },
+    {
+      "log": "rounds/reconciliation-18-5-18-7-001/verified-work-corrected-tests.log",
+      "sha256": "4bf3d202efd2a1619230ebbf61c54f1fdbe0ca0dd8ea025e21a71da026b99137",
+      "tests": 15,
+      "seconds": 181.017,
+      "result": "OK",
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_vnext_verified_work.py' -v"
+    }
+  ],
+  "combined_evidence": {
+    "distinct_tests": 1153,
+    "baseline_tests": 515,
+    "vnext_tests": 638,
+    "passing_evidence_for_all_discovered_tests": true,
+    "clean_single_full_suite_run": false,
+    "note": "The full process used the two original fixture-import tests. Both affected modules pass separately after test-only corrections. The overlapping reruns are not added to the distinct total."
+  },
+  "source_provenance": {
+    "initial_manifest": "rounds/reconciliation-18-5-18-7-001/test-source-manifest.json",
+    "initial_manifest_sha256": "87c568c2b23a60a8d775ac06c9b7ea78b910f3e01dda58c4ba0ef8744e31fc7c",
+    "initial_files": 464,
+    "only_drift": {
+      "tests/test_vnext_proposal_run.py": {
+        "initial": "5a9fcbf94171aee27f4695271d8fb94ad48a4f551bf6f94680b7d0be1295e0c0",
+        "current": "af4e76acc6defc030c062f40145ec3e6fd0b610204413e21f2bd49868ead59b9"
+      },
+      "tests/test_vnext_verified_work.py": {
+        "initial": "2825a5c25ffcde1651849204d6a6bdd2737d2e8a09d3dd85880595a34d45c9f0",
+        "current": "5c90a87884328e0936cc5839f9fdd3a7831565319ede6a97525c5f662edeeea5"
+      }
+    },
+    "runtime_source_unchanged_during_validation": true
+  },
+  "readbacks": [
+    {
+      "command": "PYTHONPATH=src python3 rounds/vnext-semantic-001/followup-scenario/readback.py",
+      "log": "rounds/reconciliation-18-5-18-7-001/followup-readback.log",
+      "sha256": "2df20a2039a65fd9f5516ac0d9e397293c95bd6123ef2566585ea9a576a2be4c",
+      "result": {
+        "read_only": true,
+        "manifest_files": 339,
+        "new_client_calls": 0,
+        "candidates": 2,
+        "reviewer_rounds": [
+          1
+        ],
+        "source_disposition": "CANDIDATE_REJECTED",
+        "child_disposition": "CANDIDATE_VERIFIED",
+        "seed_authority_unchanged": true,
+        "role_calls": {
+          "followup_editor": 1,
+          "followup_verifier": 1,
+          "source_editor": 1,
+          "source_verifier": 1
+        }
+      }
+    },
+    {
+      "command": "PYTHONPATH=src python3 rounds/vnext-semantic-001/native-followup-scenario/readback.py",
+      "log": "rounds/reconciliation-18-5-18-7-001/native-readback.log",
+      "sha256": "7a80d379acf9b77ae6c98853816679b9fce2be3a5fb4ca154e61fcb40e137739",
+      "result": {
+        "read_only": true,
+        "manifest_files": 384,
+        "adapter_constructions": 0,
+        "new_client_calls": 0,
+        "candidates": 2,
+        "reviewer_rounds": [
+          1
+        ],
+        "source_disposition": "CANDIDATE_REJECTED",
+        "child_disposition": "CANDIDATE_VERIFIED",
+        "seed_authority_unchanged": true,
+        "native_fixture_calls": {
+          "reviewer": 1,
+          "editor": 2,
+          "verifier": 2
+        }
+      }
+    }
+  ],
+  "compileall": "passed; both corrected test modules separately compiled",
+  "whitespace_checks": "passed",
+  "historical_evidence": {
+    "records": 44,
+    "referenced_logs": 121,
+    "all_logs_exist": true,
+    "provided_log_hashes": 101,
+    "all_provided_hashes_match": true,
+    "comparable_per_log_test_counts": 81,
+    "all_comparable_counts_match": true,
+    "records_with_source_drift": 26,
+    "overlapping_historical_counts_not_summed": true
+  },
+  "d8": {
+    "status": "exact_payload_decision_requested_no_approval_received",
+    "external_transmission_attempted": false,
+    "prior_status": {
+      "status": "not_run_approval_pending",
+      "reason": "Automatic approval review rejected transmission of the newly derived storage design and private spec excerpts to the external Codex Reviewer; exact-payload approval has been requested.",
+      "payload_manifest": "staging.json",
+      "no_reviewer_invocation": true
+    },
+    "staged_manifest_sha256": "6cd81c48de6f8937d1a8e157ded88e873c77f71297d6daf193aae8dc7ca52e45",
+    "notes_match": true,
+    "inputs": [
+      {
+        "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "snapshot": "rounds/vnext-d8-audit-001/inputs/candidate.md",
+        "snapshot_matches": true,
+        "source_matches": false
+      },
+      {
+        "source": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "snapshot": "rounds/vnext-d8-audit-001/inputs/scheduler.md",
+        "snapshot_matches": true,
+        "source_matches": true
+      },
+      {
+        "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "snapshot": "rounds/vnext-d8-audit-001/inputs/artifacts.md",
+        "snapshot_matches": true,
+        "source_matches": true
+      },
+      {
+        "source": "IMPLEMENTATION_PLAN.md",
+        "snapshot": "rounds/vnext-d8-audit-001/inputs/plan.md",
+        "snapshot_matches": true,
+        "source_matches": false
+      },
+      {
+        "source": "rounds/vnext-d8-audit-001/storage-design.md",
+        "snapshot": "rounds/vnext-d8-audit-001/inputs/storage.md",
+        "snapshot_matches": true,
+        "source_matches": true
+      }
+    ]
+  },
+  "d8_selected_section_comparison": [
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Core Safety Invariant",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Candidate Transaction",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Candidate Disposition Event Commit Rules",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Promotion And Current Verified Authority",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Resume And Replay",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "heading": "## Safe Terminal Semantics",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "heading": "## vNext Candidate Processing (D7)",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "heading": "### vNext identity and suite-manifest invariant",
+      "selected_section_matches": true
+    },
+    {
+      "source": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "heading": "## ARTIFACT VALIDATION POLICY",
+      "selected_section_matches": true
+    },
+    {
+      "source": "IMPLEMENTATION_PLAN.md",
+      "heading": "#### 18.5 Candidate Assembly, Validation And Registration",
+      "selected_section_matches": false
+    },
+    {
+      "source": "IMPLEMENTATION_PLAN.md",
+      "heading": "#### 18.7 Atomic Promotion, Locking And Recovery",
+      "selected_section_matches": false
+    },
+    {
+      "source": "IMPLEMENTATION_PLAN.md",
+      "heading": "#### 18.9 Compatibility, Qualification And Controlled Activation",
+      "selected_section_matches": true
+    }
+  ],
+  "frozen_suite": {
+    "path": "contracts/suites/vnext-contracts-1.json",
+    "sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "unchanged": true
+  },
+  "preservation": {
+    "initial_dirty_files": 212,
+    "archive": "rounds/reconciliation-18-5-18-7-001/initial-work.tar.gz",
+    "archive_sha256": "5514593e519f8e498187a50dd164efd3a04d96458eb66215769a1888f8db7874",
+    "original_changes_preserved_except_test_harness_fixes": true,
+    "uncommitted_files_preserved": {
+      "IMPLEMENTATION_PLAN.md": "9bf9b7de0edf6a7780a14979ddafa5e3a44c5e5be98c7f7fea86c342336ceada",
+      "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md": "88e20296b7eeb1ea4fb454caf509de3db7d9514d75ba071228e1ff18c7b98bce",
+      "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md": "1f154ad6e825b2e4c5218144bbc79a9c4b4960d1ad7e8881be1efd46e8b44191"
+    }
+  },
+  "limitations": [
+    "D8 exact-payload authorization and normative storage ratification remain pending.",
+    "Local implementation-plan paragraph update was rejected by automatic approval review; explicit approval remains pending and original diff is intact.",
+    "Private V Reviewer helpers do not integrate normal sequence selection or canonical round publication.",
+    "No complete consuming-suite, cross-implementation, power-loss, distributed-storage, hostile-writer or live-provider qualification.",
+    "Shipping qualification maps remain empty; no new modes activated."
+  ],
+  "local_evidence_directory": "rounds/reconciliation-18-5-18-7-001",
+  "local_evidence_policy": "Raw logs and preserved prior evidence remain ignored; this compact record is checkpointed.",
+  "validated_code_checkpoint": "2b7b9ac0af9e86b3ace2c30c961f269620469b36",
+  "private_v_reviewer_helper_tests": {
+    "tests": 11,
+    "passed": 11,
+    "normal_sequence_integration": false
+  }
+}
