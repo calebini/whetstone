@@ -160,6 +160,8 @@ class VerifiedWork:
         def validate(read): captured['proof'] = self._proof(read)
         with self.store.locked(validate) as token:
             proof = captured['proof']
+            if not self.promotion._pending(proof):
+                self.promotion.materialization._synchronize_complete(token, proof)
             view = self._observe(proof)
             if view.outcome == 'materialization_required': pass
             elif view.outcome == 'registration_recovery_required':

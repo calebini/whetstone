@@ -69,6 +69,21 @@ class VerifiedMaterialization:
         proof.guard(self.store.read)
         return self._view(proof, pending)
 
+    def _synchronize_complete(self, token, proof):
+        """Reestablish visible matching mirrors before a mutating owner proceeds.
+
+        A failed final-state flush can leave no byte mismatch. A fresh process
+        cannot infer durable acknowledgement from equality or a prior status.
+        Keep the caller's actual fence; this path never repairs or rewrites.
+        """
+        targets = self._targets(proof)
+        require(not self._pending(targets), 'pending materialization requires separate repair')
+        self.store.synchronize_existing(token, _snapshot(proof.pointers[-1])['path'], expected=proof.head_raw)
+        self.store.synchronize_existing(token, 'rounds/current_verified.json', expected=proof.head_raw)
+        for path, raw in targets.items():
+            self.store.synchronize_existing(token, path, expected=raw)
+        proof.guard(self.store.read)
+
     def repair(self):
         captured = {}
         def validate(read): captured['proof'] = self._proof(read)

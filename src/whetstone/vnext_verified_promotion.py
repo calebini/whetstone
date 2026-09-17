@@ -187,6 +187,7 @@ class VerifiedPromotion:
             proof = captured['proof']
             pending = self._pending(proof)
             if not pending:
+                self.materialization._synchronize_complete(token, proof)
                 selected = self._select(proof)
                 if selected is None:
                     return PromotionView('not_eligible', deepcopy(proof.pointers[-1]))

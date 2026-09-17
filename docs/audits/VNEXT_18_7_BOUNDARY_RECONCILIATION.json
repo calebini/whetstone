@@ -1,0 +1,269 @@
+{
+  "checkpoint": "18.7 publication/operator boundary reconciliation and final-state durability correction",
+  "recorded_at": "2026-09-17T22:31:40.385339+00:00",
+  "base_commit": "d2ad1c525412b4ef4ed3db098cba23009f25ed49",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 76,
+  "new_tests": 2,
+  "new_runtime_journeys": 3,
+  "full_regression_run": false,
+  "runtime_patch_required": true,
+  "runtime_change": "Mutating work/operator/Reviewer and promotion owners synchronize matching current authority/mirrors under their existing fence before proceeding; readonly and separate mismatch repair remain unchanged.",
+  "source": {
+    "manifest": "rounds/vnext-boundary-reconciliation-001/source-manifest.json",
+    "manifest_sha256": "e91fef42cffee962f87221904928d55d1e74b511333aacdadd206fa9e9726be9",
+    "all_manifest_files_still_match": true,
+    "modified_runtime": {
+      "src/whetstone/vnext_verified_materialization.py": "711f354ffd676375683da4eda45c8fd6b5d2e7b1baa0dd8b3b5eab372fc37ec6",
+      "src/whetstone/vnext_verified_promotion.py": "0092bd23f74d35d65746f36dd78ce3a488eb5ac718971df30793a3a3ccb5d98a",
+      "src/whetstone/vnext_verified_work.py": "be25a30264db0aab02fe1cf161f019cb906eec833608780864cc36754c77e88e"
+    },
+    "test_file": "tests/test_vnext_verified_runtime_boundaries.py",
+    "test_sha256": "975bb02b655c148ac6e93059925894c969821d8ba0f39811cd14402086b8df78",
+    "contracts_unchanged": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "shipping_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "reproduction": {
+    "base_commit": "d2ad1c5",
+    "runtime_patch_applied": false,
+    "test_copy": "rounds/vnext-boundary-reconciliation-001/initial-test.py",
+    "test_copy_sha256": "f38be1ba3673f9bf013359959c0b4681563ff688ef18c8fbbc0cf31a27ef786c",
+    "log": "rounds/vnext-boundary-reconciliation-001/reproduction.log",
+    "log_sha256": "a1cd59b8317b27b0ce858b598feb1f00accdd71fb94e65d173780ae5b8b98397",
+    "exit_code": 1,
+    "result": "FAILED (failures=3)",
+    "tests": 1,
+    "seconds": 92.055,
+    "interpretation": "Both promotion and work reentry skipped matching-mirror synchronization; final no-op promotion synchronized no paths.",
+    "note": "The test module was expanded with a separate operator method while this process held its initial imports. Traceback line excerpts can reflect the later on-disk file; initial-test.py preserves the executed test source."
+  },
+  "initial_focused_run": {
+    "log": "rounds/vnext-boundary-reconciliation-001/focused.log",
+    "sha256": "68b3c553f66264d4b8305de5a8e60aaa9543501091faef04c8f2d333c4e07557",
+    "result": "FAILED (errors=2)",
+    "cause": "Test harness attempted consumer read of adapter-owned temporary names; corrected byte-preservation assertion to inspect fixture files directly.",
+    "source_manifest": "rounds/vnext-boundary-reconciliation-001/initial-source-manifest.json",
+    "source_manifest_sha256": "dbfd9d95c126824fabe3d79c31d6e5394eb9542f915332b8acdd7d4cc6dfcd8a"
+  },
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_boundaries -v",
+      "tests": 2,
+      "seconds": 204.651,
+      "test_ids": [
+        "test_vnext_verified_runtime_boundaries.RuntimeBoundaryTests.test_uncertain_final_state_requires_barriers_even_when_all_mirrors_match",
+        "test_vnext_verified_runtime_boundaries.RuntimeBoundaryTests.test_uncertain_operator_receipt_and_selection_replay_exactly_without_clients"
+      ],
+      "log": "rounds/vnext-boundary-reconciliation-001/focused-recheck.log",
+      "sha256": "4f780295edf81373a8b43de5e7776b0b833c94b6085ca44d4a175b7c546fc96e",
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-boundary-reconciliation-001/source-manifest.json",
+      "source_scope_note": "Final source manifest."
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_materialization test_vnext_verified_promotion test_vnext_verified_runtime_materialization test_vnext_verified_runtime_mirror_uncertainty -v",
+      "tests": 31,
+      "seconds": 1382.868,
+      "test_ids": [
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_durability_failure_invalidates_ownership_without_creating_mirrors",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_each_interrupted_mirror_prefix_recovers_without_another_promotion",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_matching_run_state_format_and_unrelated_members_are_preserved",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_materialization_requires_its_pin_and_shared_fence",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_mirror_primitive_cannot_replace_authority_or_bypass_validation",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_missing_committed_snapshot_and_invalid_state_are_not_guessed",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_promoted_recovery_does_not_validate_a_later_candidate_or_next_intent",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_promoted_repair_and_reentry_preserve_all_authority_bytes",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_read_only_classification_rechecks_head_after_mirror_reads",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_repair_uses_fresh_head_after_an_earlier_seed_inspection",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_seed_repair_stops_without_reading_next_ordinal_or_creating_a_round_draft",
+        "test_vnext_verified_materialization.VerifiedMaterializationTests.test_visible_uncertain_mirror_is_synchronized_on_reentry",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_absent_unverified_and_nonfinal_candidates_cannot_prepare_promotion",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_all_precommit_prefixes_reuse_claimant_and_timestamp",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_competing_valid_intents_refuse_without_choosing_a_winner",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_latest_rejection_does_not_fall_back_to_an_older_verified_candidate",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_lost_ownership_and_changed_final_evidence_refuse_before_commit",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_lost_pointer_acknowledgement_recovers_materialization_without_repromotion",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_nonprefix_or_changed_preparation_never_overwrites_evidence",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_promotion_requires_its_own_pin_before_any_mirror_write",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_real_process_death_before_and_after_pointer_commit_recovers_once",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_real_writer_recovers_seed_then_promotes_once_without_extra_clients",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_reserved_older_claimant_survives_a_later_rejected_registration",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_reserved_older_claimant_survives_a_later_verified_registration",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_same_round_followup_uses_the_production_pointer_owner",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_stale_tail_with_identical_base_bytes_cannot_authorize_another_intent",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_two_successive_promotions_use_the_production_pointer_owner",
+        "test_vnext_verified_promotion.VerifiedPromotionTests.test_unselected_later_round_during_repair_refuses_without_restoring_old_head",
+        "test_vnext_verified_runtime_materialization.RuntimeMaterializationTests.test_killed_partial_mirror_writer_repairs_only_remaining_targets",
+        "test_vnext_verified_runtime_materialization.RuntimeMaterializationTests.test_released_promoter_repairs_fresh_head_after_another_runtime_advances",
+        "test_vnext_verified_runtime_mirror_uncertainty.RuntimeMirrorUncertaintyTests.test_post_rename_flush_and_replay_barrier_failures_require_fresh_repair"
+      ],
+      "log": "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+      "sha256": "f6fffdc581704557d64d26ea5de4d30d745c05298f7c7b21b51d91c4c5df1ae3",
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-boundary-reconciliation-001/initial-source-manifest.json",
+      "source_scope_note": "Runtime and executed regression modules unchanged; only the separate new boundary-test harness assertion changed after broad regression launch."
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_work test_vnext_verified_operator test_vnext_verified_review test_vnext_verified_run -v",
+      "tests": 43,
+      "seconds": 843.886,
+      "test_ids": [
+        "test_vnext_verified_work.VerifiedWorkTests.test_borrowed_fence_does_not_survive_operation_or_ownership_loss",
+        "test_vnext_verified_work.VerifiedWorkTests.test_changed_bound_authority_during_editor_cannot_commit_a_result",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_owner_drives_seed_editor_registration_verifier_and_promotion",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_owner_repeats_complete_journey_on_promoted_base",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_same_round_followup_uses_exact_selection_and_preserves_rejected_parent",
+        "test_vnext_verified_work.VerifiedWorkTests.test_materialization_precedes_malformed_later_candidate_and_next_intent",
+        "test_vnext_verified_work.VerifiedWorkTests.test_own_contract_and_competing_fence_refuse_before_calls_or_writes",
+        "test_vnext_verified_work.VerifiedWorkTests.test_prepared_verification_recovers_without_starting_verifier",
+        "test_vnext_verified_work.VerifiedWorkTests.test_promoted_inventory_drift_during_editor_cannot_hide_in_proven_base",
+        "test_vnext_verified_work.VerifiedWorkTests.test_real_process_holds_fence_through_editor_and_death_requires_continuation",
+        "test_vnext_verified_work.VerifiedWorkTests.test_registration_orphan_recovers_separately_without_another_editor",
+        "test_vnext_verified_work.VerifiedWorkTests.test_reserved_claimant_blocks_editor_and_verifier_after_later_registration",
+        "test_vnext_verified_work.VerifiedWorkTests.test_retained_editor_and_verifier_output_recovers_without_a_client",
+        "test_vnext_verified_work.VerifiedWorkTests.test_unfinished_latest_candidate_blocks_new_transaction_and_deterministic_reject_skips_verifier",
+        "test_vnext_verified_work.VerifiedWorkTests.test_verifier_timeout_requires_explicit_continuation_and_keeps_slot_budget",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_actual_question_answer_selection_child_and_promotion_preserve_parent",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_admission_and_selection_prefixes_recover_exact_child_without_clients",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_decline_stale_bindings_and_different_receipt_cannot_select_child",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_fence_loss_after_response_leaves_receipt_for_exact_recovery",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_missing_contract_refuses_before_materialization_or_operator_writes",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_operator_dry_run_never_repairs_and_mutating_recovery_ends_before_answer",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_response_and_receipt_prefixes_recover_exact_answer_without_clients",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_superseded_source_and_changed_raw_verifier_evidence_refuse_operator_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority",
+        "test_vnext_verified_run.VerifiedRunTests.test_canonical_round_must_match_exact_staged_bytes_before_work",
+        "test_vnext_verified_run.VerifiedRunTests.test_changed_manifest_or_resolved_input_cannot_refresh_existing_owner",
+        "test_vnext_verified_run.VerifiedRunTests.test_fresh_process_reopens_promoted_root_without_clients_or_writes",
+        "test_vnext_verified_run.VerifiedRunTests.test_missing_run_pin_refuses_before_repair",
+        "test_vnext_verified_run.VerifiedRunTests.test_promoted_staged_mirror_repair_precedes_unrelated_runtime_claim",
+        "test_vnext_verified_run.VerifiedRunTests.test_proposal_mode_cannot_reopen_as_verified_mode",
+        "test_vnext_verified_run.VerifiedRunTests.test_reopen_seed_and_promoted_runs_resolves_later_round_without_in_memory_selectors",
+        "test_vnext_verified_run.VerifiedRunTests.test_unrelated_future_input_and_review_claim_do_not_prevent_seed_mirror_recovery"
+      ],
+      "log": "rounds/vnext-boundary-reconciliation-001/work-operator-review.log",
+      "sha256": "f7fcbd4393014d4de47c439c7954bddffe004c290174dbabc0fbc6a223598df6",
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-boundary-reconciliation-001/initial-source-manifest.json",
+      "source_scope_note": "Runtime and executed regression modules unchanged; only the separate new boundary-test harness assertion changed after broad regression launch."
+    }
+  ],
+  "retained_evidence": [
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_A.json",
+      "log": "rounds/vnext-runtime-faults-001/tests.log",
+      "tests": 2,
+      "sha256": "a444ae7dc7ab43181e6b91e5e3227db4c920531bf4ece95ca3473b0fa3f7082e",
+      "digest_and_count_match": true
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_B.json",
+      "log": "rounds/vnext-runtime-recovery-001/corrected-tests.log",
+      "tests": 3,
+      "sha256": "9b19b0530c9636fc0362573066d66d503cd43461740390e98872f2939d3cf290",
+      "digest_and_count_match": true
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_B.json",
+      "log": "rounds/vnext-runtime-recovery-001/shared-regressions.log",
+      "tests": 25,
+      "sha256": "5eeea92458706357bdec377fb28fe59e7afb307255559a8477bc2852652f2878",
+      "digest_and_count_match": true
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_C.json",
+      "log": "rounds/vnext-runtime-materialization-001/tests.log",
+      "tests": 2,
+      "sha256": "12e4699a21049590556670956303be2d237c1ca0d4971625ebe4b60d6c4f1dcc",
+      "digest_and_count_match": true
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_C_MIRROR_UNCERTAINTY.json",
+      "log": "rounds/vnext-runtime-mirror-uncertainty-001/tests.log",
+      "tests": 1,
+      "sha256": "cba7494513db3d1089c73e3b1066cf1fe810ace868e420298cdcb3394bb9fb4c",
+      "digest_and_count_match": true
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_C_VERIFIER.json",
+      "log": "rounds/vnext-runtime-verifier-001/tests.log",
+      "tests": 1,
+      "sha256": "00bbffd7ebc8218cc65170f84cc536553f09563defbbb93c5cc91a0cb8413e41",
+      "digest_and_count_match": true
+    }
+  ],
+  "coverage": [
+    {
+      "family": "registration",
+      "component": "Seven after-publication prefixes; typed creation acknowledgement and replay failures.",
+      "runtime": "Batch B complete orphan recovery and original Reviewer revalidation.",
+      "remaining": "Early incomplete runtime prefix and typed creation-commit uncertainty not separately demonstrated."
+    },
+    {
+      "family": "verification",
+      "component": "Three prepared prefixes and typed candidate-pointer acknowledgement loss.",
+      "runtime": "Prepared event plus killed Verifier before/after raw.",
+      "remaining": "Runtime candidate-pointer acknowledgement loss not separately demonstrated."
+    },
+    {
+      "family": "promotion",
+      "component": "Six before/after preparation cases.",
+      "runtime": "Complete prepared package before pointer kill; after-pointer kill and typed rename uncertainty.",
+      "remaining": "Early partial preparation has component coverage, not full runtime matrix."
+    },
+    {
+      "family": "mirrors",
+      "component": "Six before/after destinations and barrier checks.",
+      "runtime": "Partial deaths, later-head handoff, spec uncertainty/replay; new final-state all-matching correction.",
+      "remaining": "Not every destination/barrier permutation or physical power loss."
+    },
+    {
+      "family": "operator",
+      "component": "Eight before/after response/receipt/admission/selection prefixes.",
+      "runtime": "Prior response/admission interruption plus new receipt/selection typed link uncertainty and failed replay flush.",
+      "remaining": "Before-publication combinations and actual killed operator remain component/narrower process evidence."
+    },
+    {
+      "family": "round_decision_references",
+      "component": "Named-unit proposal decision reproduction and tamper refusal.",
+      "runtime": "Empty decision lists only; synchronization loop inspected.",
+      "remaining": "Nonempty canonical-runtime decision-reference synchronization and interruption before round publication: next focused target."
+    }
+  ],
+  "remaining": [
+    "Nonempty decision references through canonical round admission.",
+    "Resolve narrower runtime registration/candidate-pointer/promotion preparation proofs against consuming acceptance requirements.",
+    "Complete consuming-suite and wider 18.5\u201318.7 acceptance qualification."
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false,
+  "excluded": [
+    "Full-suite/activation qualification",
+    "18.8\u201318.9 implementation",
+    "External model calls, specification apply-back and push"
+  ]
+}
