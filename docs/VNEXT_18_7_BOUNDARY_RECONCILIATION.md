@@ -2,6 +2,8 @@
 
 Date: 2026-09-18. Starting checkpoint: `d2ad1c5`.
 
+Acceptance follow-up: the [18.7 acceptance map](VNEXT_18_7_ACCEPTANCE_MAP.md) now reconciles these publication/operator proofs against D8 and the candidate P0 scenarios. The representative Batch C inventory is closed; the remaining joint two-candidate/process selection proof and current-source refresh are explicit. Earlier next-step statements below are historical. No new runtime test or implementation change was made for this consolidation, and 18.7 remains incomplete.
+
 Latest follow-up: [representative runtime publication prefixes](VNEXT_RUNTIME_PUBLICATION_PREFIXES.md) now cover early incomplete registration, candidate-pointer acknowledgement loss with failed/successful barrier replay, and intent-only promotion recovery. All three journeys pass without runtime changes. This supersedes the table's three representative runtime gaps for those exact boundaries; the historical component/runtime distinctions remain. Next is acceptance/evidence consolidation, with consuming qualification still open.
 
 Subsequent test-only checkpoint: [canonical nonempty decision references](VNEXT_RUNTIME_DECISION_REFERENCES.md) now pass request/response replay-flush recovery and five missing/altered/drift refusals, with no runtime change from `c6e5929`. The table's decision-reference gap and next-slice statement below are superseded for that exact seed-base single-decision path. The other three narrower runtime publication proofs and consuming qualification remain open.
