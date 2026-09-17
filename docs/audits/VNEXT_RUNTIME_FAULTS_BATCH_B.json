@@ -1,0 +1,149 @@
+{
+  "checkpoint": "18.7 Batch B Reviewer slots and runtime recovery",
+  "recorded_at": "2026-09-17T19:53:02.111595+00:00",
+  "base_commit": "9a01f9ca491f88881212db493bab84a5a0ce7076",
+  "result": "targeted_tests_pass_after_runtime_and_harness_corrections",
+  "distinct_tests": 28,
+  "new_tests": 3,
+  "new_fault_cases": 4,
+  "full_regression_run": false,
+  "runtime_patch_required": true,
+  "runtime_fix": {
+    "path": "src/whetstone/vnext_verified_work.py",
+    "problem": "An existing semantic candidate plus a later registration orphan made explicit recovery re-enter semantic admission through an unrestricted registry, which rejected the orphan before it could be reconciled.",
+    "correction": "Validate every committed candidate decision through its bounded read-only historical creation prefix, then reconcile registration under the original fence. Keep live semantic orphan guards and recovery-only return."
+  },
+  "source": {
+    "changed_runtime_files": [
+      "src/whetstone/vnext_verified_work.py"
+    ],
+    "contracts_changed": false,
+    "test_file": "tests/test_vnext_verified_runtime_recovery.py",
+    "test_sha256": "1b2c805f79b85f04d7e20acd2e5d369602cb2ece949f85de90d2a94c07d52396",
+    "runtime_sha256": "2578bd7613cbdd4c17b6acc14d8fc2710f14991e02924662449f953c722dc977",
+    "source_manifest": "rounds/vnext-runtime-recovery-001/corrected-source-manifest.json",
+    "source_manifest_sha256": "62be2fae6751b056189a30a70a108c5cb8fa0d6dbfc2bbd26b1ca4f76ab6e164",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "regression_test_sources": {
+      "tests/test_vnext_verified_work.py": {
+        "sha256": "5c90a87884328e0936cc5839f9fdd3a7831565319ede6a97525c5f662edeeea5",
+        "unchanged_from_base": true,
+        "test_methods": 15
+      },
+      "tests/test_vnext_verified_history.py": {
+        "sha256": "a3b89bf572478938ac0e6631b26ffc1aec5129a8bd7e666fba24320d1093dc42",
+        "unchanged_from_base": true,
+        "test_methods": 10
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_recovery -v",
+      "tests": 3,
+      "seconds": 227.408,
+      "test_ids": [
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_killed_reviewer_before_and_after_durable_raw_preserves_slots",
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_runtime_prepared_verification_recovers_without_client_or_promotion",
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_runtime_registration_orphan_recovers_before_work_and_rechecks_original_review"
+      ],
+      "log": "rounds/vnext-runtime-recovery-001/corrected-tests.log",
+      "sha256": "9b19b0530c9636fc0362573066d66d503cd43461740390e98872f2939d3cf290",
+      "exit_code": 0,
+      "result": "OK; no skips"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_work test_vnext_verified_history -v",
+      "tests": 25,
+      "seconds": 418.657,
+      "test_ids": [
+        "test_vnext_verified_work.VerifiedWorkTests.test_borrowed_fence_does_not_survive_operation_or_ownership_loss",
+        "test_vnext_verified_work.VerifiedWorkTests.test_changed_bound_authority_during_editor_cannot_commit_a_result",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_owner_drives_seed_editor_registration_verifier_and_promotion",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_owner_repeats_complete_journey_on_promoted_base",
+        "test_vnext_verified_work.VerifiedWorkTests.test_live_same_round_followup_uses_exact_selection_and_preserves_rejected_parent",
+        "test_vnext_verified_work.VerifiedWorkTests.test_materialization_precedes_malformed_later_candidate_and_next_intent",
+        "test_vnext_verified_work.VerifiedWorkTests.test_own_contract_and_competing_fence_refuse_before_calls_or_writes",
+        "test_vnext_verified_work.VerifiedWorkTests.test_prepared_verification_recovers_without_starting_verifier",
+        "test_vnext_verified_work.VerifiedWorkTests.test_promoted_inventory_drift_during_editor_cannot_hide_in_proven_base",
+        "test_vnext_verified_work.VerifiedWorkTests.test_real_process_holds_fence_through_editor_and_death_requires_continuation",
+        "test_vnext_verified_work.VerifiedWorkTests.test_registration_orphan_recovers_separately_without_another_editor",
+        "test_vnext_verified_work.VerifiedWorkTests.test_reserved_claimant_blocks_editor_and_verifier_after_later_registration",
+        "test_vnext_verified_work.VerifiedWorkTests.test_retained_editor_and_verifier_output_recovers_without_a_client",
+        "test_vnext_verified_work.VerifiedWorkTests.test_unfinished_latest_candidate_blocks_new_transaction_and_deterministic_reject_skips_verifier",
+        "test_vnext_verified_work.VerifiedWorkTests.test_verifier_timeout_requires_explicit_continuation_and_keeps_slot_budget",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_changed_actual_head_during_replay_refuses_without_repair",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_committed_pointer_cannot_hide_missing_original_verifier_response",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_fresh_replay_rejects_altered_editor_source_after_an_earlier_success",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_historical_request_factory_refuses_another_storage_owner",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_history_requires_its_own_pinned_algorithm",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_inventory_capture_remains_bound_after_semantic_replay",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promoted_same_round_followup_replays_rejected_parent_and_exact_answer",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promotion_cannot_use_itself_as_its_transaction_base",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_second_genuine_promotion_replays_both_original_bases"
+      ],
+      "log": "rounds/vnext-runtime-recovery-001/shared-regressions.log",
+      "sha256": "5eeea92458706357bdec377fb28fe59e7afb307255559a8477bc2852652f2878",
+      "exit_code": 0,
+      "result": "OK; no skips"
+    }
+  ],
+  "initial_run": {
+    "log": "rounds/vnext-runtime-recovery-001/tests.log",
+    "sha256": "2b29492967f5db5550d6a7eb58d1aecf75d21692cac9ffd5f7f3520c30ab5b5c",
+    "source_manifest": "rounds/vnext-runtime-recovery-001/source-manifest.json",
+    "source_manifest_sha256": "82027a7c8aa09e4435ebc4cd9c047862fe5e7a3a9ed0bef3538cf37cbad40107",
+    "test_source": "rounds/vnext-runtime-recovery-001/initial-test-source.py",
+    "test_source_sha256": "f0f0b2d9e25e78eccd871dfcfd96949e6562babe5c46c66891e16b30f6eb82eb",
+    "tests": 3,
+    "seconds": 172.606,
+    "result": "FAILED (failures=2, errors=1)",
+    "interpretation": "Two Reviewer fault-hook failures intercepted earlier completed raw replay before the new client was called; one registration error exposed the runtime defect. Prepared-verification case passed. Entire new module rerun after corrections; initial results not counted as final qualification."
+  },
+  "validated_cases": [
+    {
+      "case": "killed_reviewer_before_durable_raw",
+      "boundary": "Round-2 child has invoked scripted Reviewer once; pauses before response publication, then SIGKILL.",
+      "outcome": "Reopen retains one interrupted invocation. No implicit continuation writes/calls. Explicit retry uses linked attempt 2 and no attempt 3."
+    },
+    {
+      "case": "killed_reviewer_after_durable_raw",
+      "boundary": "Round-2 raw publish completes storage barriers; child pauses before outcome/receipt, then SIGKILL.",
+      "outcome": "Reopen sees valid raw; explicit continuation without client completes attempt 1 with exact bytes and no second attempt."
+    },
+    {
+      "case": "registration_orphan_after_prior_promotion",
+      "boundary": "Exception before creation-2.json after complete candidate/initial disposition evidence.",
+      "outcome": "All work routes wait for registration recovery. Altered round-1 Reviewer evidence refuses writes. Recovery adds only original creation event and leaves candidate unverified."
+    },
+    {
+      "case": "prepared_verification_event",
+      "boundary": "Exception after candidate disposition event-3.json before second candidate-pointer snapshot/commit.",
+      "outcome": "Effective decision remains nonfinal/unverified. Altered round-2 Reviewer evidence refuses writes. Explicit client-free recovery preserves final decision/timestamp, advances only candidate pointer and stops before global promotion."
+    }
+  ],
+  "shared_assertions": [
+    "Production round inputs, empty staged selectors and committed ordinal-1 base in all four cases.",
+    "Read-only reopen/status preserve bytes; concurrent Reviewer cannot acquire ownership while child holds it.",
+    "Original Reviewer evidence and previously committed authority remain required.",
+    "No extra client calls beyond one permitted retry when raw was not retained; recovery never adds another candidate, round or global promotion."
+  ],
+  "remaining": [
+    "Batch C: normal promotion-lock release/materialization-reacquisition interleaving and partial-mirror process death.",
+    "Actual Verifier process death and remaining registration/verification/operator/dependency publication-prefix mapping.",
+    "Complete consuming-suite qualification and remaining 18.5\u201318.7 acceptance; no slice completion inferred."
+  ],
+  "excluded": [
+    "18.8\u201318.9 implementation or release qualification campaigns",
+    "Mode activation or shipping suite changes",
+    "External model calls, external specification apply-back and push"
+  ],
+  "slice_18_7_complete": false
+}

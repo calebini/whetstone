@@ -165,8 +165,13 @@ class VerifiedWork:
             elif view.outcome == 'registration_recovery_required':
                 if not recover_registration: return view
                 admission = _Admission(_BorrowedFence(self.store, token), proof)
-                journal = VerifiedSemanticDecisionJournal(proof.router.registry(), admission=proof.router)
-                for creation in proof.view.creations: journal._state(creation)
+                # Recheck committed decisions through their historical prefixes.
+                # The pending orphan must gate live semantic admission, not the
+                # evidence replay needed to recover that same registration.
+                for creation in proof.view.creations:
+                    historical = proof.transactions(creation['candidate_creation_ordinal'])
+                    journal = VerifiedSemanticDecisionJournal(historical.registry(), admission=historical)
+                    journal._state(creation)
                 value = admission.registry().reconcile()
                 return VerifiedWorkView('registration_recovered', deepcopy(proof.pointers[-1]), value.latest, value=value)
             elif view.outcome == 'promotion_required': return view
