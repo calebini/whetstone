@@ -2,6 +2,19 @@
 
 Date: 2026-09-15. Inspected checkpoint: `51d8618` (runtime/contracts unchanged from `95c75b2`).
 
+Current update 2026-09-17: [Batch C Verifier interruption](VNEXT_RUNTIME_FAULTS_BATCH_C_VERIFIER.md) passes two actual killed-process cases in one parameterized method over unchanged runtime/contracts from `de69207`. Before raw publication, explicit continuation consumes only the remaining invocation slot; after durable raw, client-free continuation completes the candidate. Both preserve global promotion 1. This closes the actual Verifier response-boundary gap, not every verification publication prefix.
+
+| Current bounded runtime coverage | Status / remaining proof |
+| --- | --- |
+| Second promotion commit, cross-role exclusion and typed rename uncertainty | Batch A passes its three cases. |
+| Reviewer death before/after raw; registration orphan and prepared verification event recovery | Batch B passes its four cases; finer registration/decision prefixes remain to reconcile. |
+| Normal lock release with a later promotion; death after spec/source-round mirror repair | First Batch C checkpoint passes its three cases. Runtime mirror uncertainty/barrier placement remains open. |
+| Verifier death before/after durable raw | This checkpoint passes two cases. It does not cover every Verifier/decision publication boundary. |
+| Decision-reference synchronization; operator receipt/selection-marker boundaries | Component evidence exists; remaining runtime coverage must still be reconciled. |
+| Complete consuming-suite and 18.5–18.7 acceptance qualification | Open; these checkpoints do not qualify activation. |
+
+Next bounded step: runtime mirror uncertainty with typed storage failure, ownership poisoning and fresh-owner repair. The dated updates and original assessment below retain their historical scopes; their next-step and absence statements are superseded only for the exact cases above.
+
 Latest update 2026-09-17: the [bounded Batch C handoff/mirror checkpoint](VNEXT_RUNTIME_FAULTS_BATCH_C.md) passes three process cases in two test methods over unchanged runtime/contracts from `c9d3409`. A normally released promoter resumes after another process promotes ordinal 3, reports its own commit at 2 separately, and synchronizes only current authority. Actual deaths after completed spec/source-round mirror writes recover only the remaining targets. This closes those particular gaps, not all of Batch C. Actual Verifier death, finer registration/verification prefixes, runtime mirror uncertainty, decision-reference synchronization and operator receipt/selection boundaries remain open.
 
 Update 2026-09-17: [Batch B](VNEXT_RUNTIME_FAULTS_BATCH_B.md) passes four new fault cases in three test methods, plus 25 live-work/history regressions. It found and fixed registration recovery being blocked by an existing semantic candidate plus a later orphan: committed decisions now replay through bounded historical prefixes before the orphan is reconciled. Actual Reviewer death before/after durable raw and representative registration/prepared-verification recovery are covered through canonical runtime history. Contracts and shipping gates are unchanged. Batch C begins with normal promotion-lock release/materialization-reacquisition interleaving and partial-mirror process death; actual Verifier death and finer publication prefixes remain open. Earlier inventory/evidence below remains scoped to its dated checkpoint.

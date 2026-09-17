@@ -1,0 +1,69 @@
+{
+  "checkpoint": "18.7 bounded Batch C Verifier process interruption",
+  "recorded_at": "2026-09-17T21:28:16.927051+00:00",
+  "base_commit": "de692073e1021a648b9bc2a928fdadb14df5ea31",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 1,
+  "process_cases": 2,
+  "killed_writer_cases": 2,
+  "full_regression_run": false,
+  "runtime_patch_required": false,
+  "source": {
+    "runtime_and_contracts_unchanged_from_base": true,
+    "test_file": "tests/test_vnext_verified_runtime_verifier_faults.py",
+    "test_sha256": "00485a4785148b3a7c838cbc718ae8f1836951dbd87c2b08c9527bdc1b4de6a0",
+    "source_manifest": "rounds/vnext-runtime-verifier-001/source-manifest.json",
+    "source_manifest_sha256": "e3ac05515a197d9e755873464ef3a606e33e5f69a1b98e3d8ca1272534bf9dff",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950"
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_verifier_faults -v",
+    "tests": 1,
+    "seconds": 206.997,
+    "test_ids": [
+      "test_vnext_verified_runtime_verifier_faults.RuntimeVerifierFaultTests.test_killed_verifier_before_and_after_durable_raw_preserves_slots_and_authority"
+    ],
+    "log": "rounds/vnext-runtime-verifier-001/tests.log",
+    "sha256": "00bbffd7ebc8218cc65170f84cc536553f09563defbbb93c5cc91a0cb8413e41",
+    "exit_code": 0,
+    "result": "OK; no skips"
+  },
+  "validated_cases": [
+    {
+      "case": "death_before_verifier_raw_publication",
+      "boundary": "SIGKILL after scripted Verifier call but before durable response publication; invocation marker already durable.",
+      "outcome": "Explicit continuation retains interrupted slot 1 and uses only slot 2 with exact predecessor-outcome binding; no invented first response."
+    },
+    {
+      "case": "death_after_verifier_raw_publication",
+      "boundary": "SIGKILL after raw response publication and durability barriers, before outcome publication.",
+      "outcome": "Explicit client-free continuation preserves exact raw evidence and completes candidate verification without another slot."
+    }
+  ],
+  "shared_assertions": [
+    "Canonical round 2 over committed promotion 1; child reopens root/suite with no staged round selectors.",
+    "Actual SIGKILL; live owner excludes competing verification and promotion.",
+    "Read-only reopen and ordinary reentry do not repair or invoke clients.",
+    "Recovery finalizes only candidate decision 2; global authority remains at 1.",
+    "Earlier artifacts remain exact except candidate-local current-decision pointer; no third invocation, round or candidate.",
+    "Fresh final reentry selects promotion_required without new clients.",
+    "Two Reviewer and Editor calls each; one baseline and one killed-child Verifier call, plus one explicit retry only before raw publication."
+  ],
+  "remaining": [
+    "Runtime mirror uncertainty/barrier placement and explicit decision-reference synchronization.",
+    "Finer registration/verification publication prefixes and operator receipt/selection-marker boundaries.",
+    "Remaining Batch C coverage mapping and complete consuming-suite/18.5\u201318.7 acceptance qualification."
+  ],
+  "excluded": [
+    "Full regression and physical power-loss qualification",
+    "18.8\u201318.9 implementation, activation, external model calls, apply-back and push"
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false
+}
