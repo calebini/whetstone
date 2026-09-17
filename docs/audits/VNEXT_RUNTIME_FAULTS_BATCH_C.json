@@ -1,0 +1,77 @@
+{
+  "checkpoint": "18.7 bounded Batch C lock handoff and partial mirrors",
+  "recorded_at": "2026-09-17T21:14:26.004960+00:00",
+  "base_commit": "c9d3409216f289895541adc5c38a4863c4b056b3",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 2,
+  "process_cases": 3,
+  "killed_writer_cases": 2,
+  "handoff_cases": 1,
+  "full_regression_run": false,
+  "runtime_patch_required": false,
+  "source": {
+    "runtime_and_contracts_unchanged_from_base": true,
+    "test_file": "tests/test_vnext_verified_runtime_materialization.py",
+    "test_sha256": "b04597442a3c64be05f343a11f757db36da940778b87b0bdce22b5143f1c50a9",
+    "source_manifest": "rounds/vnext-runtime-materialization-001/source-manifest.json",
+    "source_manifest_sha256": "8956df24e14197ba5142ef3608fb550482c191f9383cca9f1acf2eb8d56bf134",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950"
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_materialization -v",
+    "tests": 2,
+    "seconds": 429.696,
+    "test_ids": [
+      "test_vnext_verified_runtime_materialization.RuntimeMaterializationTests.test_killed_partial_mirror_writer_repairs_only_remaining_targets",
+      "test_vnext_verified_runtime_materialization.RuntimeMaterializationTests.test_released_promoter_repairs_fresh_head_after_another_runtime_advances"
+    ],
+    "log": "rounds/vnext-runtime-materialization-001/tests.log",
+    "sha256": "12e4699a21049590556670956303be2d237c1ca0d4971625ebe4b60d6c4f1dcc",
+    "exit_code": 0,
+    "result": "OK; no skips"
+  },
+  "validated_cases": [
+    {
+      "case": "normal_promotion_release_then_fresh_materialization",
+      "boundary": "Child commits ordinal 2 and normally releases promotion fence, pauses before materialization; parent repairs 2 and promotes 3 before child resumes.",
+      "outcome": "Released token refuses publication. Child synchronizes current ordinal 3 and its source-round mirrors without any artifact rewrite; reports committed 2 and current 3 separately."
+    },
+    {
+      "case": "death_after_spec_mirror",
+      "boundary": "SIGKILL after completed spec.md materialization with repair fence held.",
+      "outcome": "Fresh runtime readback finds only source-round draft and run-state mirrors pending. Recovery writes exactly those targets and ends without clients or promotion."
+    },
+    {
+      "case": "death_after_source_round_mirror",
+      "boundary": "SIGKILL after completed round-2 draft_after.md materialization with repair fence held.",
+      "outcome": "Only run state remains pending; recovery synchronizes both matching draft mirrors and writes only state."
+    }
+  ],
+  "shared_assertions": [
+    "Root/suite-only child reopening; production canonical Reviewer rounds and promotion publishers.",
+    "Read-only reopening/status never repair or change bytes.",
+    "Partial-repair owner excludes competing runtime Reviewer and promotion while alive.",
+    "Immutable history, original timestamps, pointer snapshots and unrelated operator state remain exact.",
+    "Repair never republishes authority, recommits a pointer or invokes a client.",
+    "Partial-repair cases retain two Reviewer/Editor/Verifier calls each and create no third ordinal/review.",
+    "Handoff intentionally completes a third round/promotion (three calls per role); resumed child creates no fourth ordinal or extra artifact."
+  ],
+  "remaining": [
+    "Actual Verifier process death and finer registration/verification prefix coverage.",
+    "Runtime mirror uncertainty/barrier placement, explicit decision-reference synchronization and operator receipt/selection-marker boundaries.",
+    "Remaining Batch C coverage mapping and complete consuming-suite/18.5\u201318.7 acceptance qualification."
+  ],
+  "excluded": [
+    "Physical power-loss qualification",
+    "18.8\u201318.9 implementation or release qualification campaigns",
+    "Mode activation, shipping suite changes, external model calls, external apply-back and push"
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false
+}
