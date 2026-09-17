@@ -2,6 +2,8 @@
 
 Date: 2026-09-18. Starting checkpoint: `d2ad1c5`.
 
+Subsequent test-only checkpoint: [canonical nonempty decision references](VNEXT_RUNTIME_DECISION_REFERENCES.md) now pass request/response replay-flush recovery and five missing/altered/drift refusals, with no runtime change from `c6e5929`. The table's decision-reference gap and next-slice statement below are superseded for that exact seed-base single-decision path. The other three narrower runtime publication proofs and consuming qualification remain open.
+
 This reconciles the remaining publication/operator inventory against the actual
 producers, test bodies and retained results. It also investigates the final
 run-state uncertainty case left open by the prior mirror checkpoint.

@@ -1,0 +1,123 @@
+{
+  "checkpoint": "18.7 canonical round nonempty decision-reference recovery",
+  "recorded_at": "2026-09-17T22:43:24.294430+00:00",
+  "base_commit": "c6e5929146f7a5d5d1d2e0c33684edac2df0c178",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 2,
+  "replay_fault_cases": 2,
+  "refusal_cases": 5,
+  "first_run_passed": true,
+  "runtime_patch_required": false,
+  "full_regression_run": false,
+  "source": {
+    "runtime_and_contracts_unchanged_from_base": true,
+    "test_file": "tests/test_vnext_verified_runtime_decision_refs.py",
+    "test_sha256": "ee79767e8e308290b5aabdc3fcee2ac5f8ca70c9ffa127d983a20cb6a2d834e7",
+    "manifest": "rounds/vnext-runtime-decision-refs-001/source-manifest.json",
+    "manifest_sha256": "331adb3164e22ff545543321a7d449fe2d8a6d77d1fa23c1166115a63159c2e0",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "shipping_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_decision_refs -v",
+    "tests": 2,
+    "seconds": 12.936,
+    "test_ids": [
+      "test_vnext_verified_runtime_decision_refs.RuntimeDecisionReferenceTests.test_missing_altered_and_mid_replay_changed_decisions_refuse_round_publication",
+      "test_vnext_verified_runtime_decision_refs.RuntimeDecisionReferenceTests.test_request_and_response_replay_failures_recover_exact_round_without_clients"
+    ],
+    "log": "rounds/vnext-runtime-decision-refs-001/tests.log",
+    "sha256": "01427fd3571b19f96c92b271a5685da4aae77362d43107e2a14c84291d1392c0",
+    "exit_code": 0,
+    "result": "OK; no skips"
+  },
+  "validated_cases": [
+    {
+      "case": "request_replay_final_flush",
+      "outcome": "Real adapter uncertainty and immediate ownership poisoning; no response replay or round publication."
+    },
+    {
+      "case": "response_replay_final_flush",
+      "outcome": "Real adapter uncertainty and immediate ownership poisoning; no round publication."
+    },
+    {
+      "case": "missing_request",
+      "outcome": "Refuses before publication."
+    },
+    {
+      "case": "missing_response",
+      "outcome": "Refuses before publication."
+    },
+    {
+      "case": "altered_request",
+      "outcome": "Exact-hash refusal before publication."
+    },
+    {
+      "case": "altered_response",
+      "outcome": "Exact-hash refusal before publication."
+    },
+    {
+      "case": "response_changed_after_request_replay",
+      "outcome": "Detects drift after initial preflight and before response replay/round publication."
+    }
+  ],
+  "shared_assertions": [
+    "Canonical seed-base Reviewer round; empty staged selector list.",
+    "Fictional explicit named-unit weakening request/response, bound to original Reviewer finding and current inventory.",
+    "Readonly reopen changes no bytes; poisoned owner cannot publish.",
+    "Recovery order: original Reviewer receipt, decision request, decision response, canonical round.",
+    "Only proposal_input.json is newly created; exact original evidence and timestamp retained.",
+    "Fresh preflight reconstructs one binding, one derived task, exact named-unit weakening and no removal grant.",
+    "Repeated admission returns the same reference without file changes.",
+    "One Reviewer call; no Editor/Verifier work, candidate registration, second review claim or promotion."
+  ],
+  "prior_evidence": {
+    "record": "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+    "logs": [
+      {
+        "log": "rounds/vnext-boundary-reconciliation-001/focused-recheck.log",
+        "sha256": "4f780295edf81373a8b43de5e7776b0b833c94b6085ca44d4a175b7c546fc96e",
+        "tests": 2,
+        "digest_and_count_match": true
+      },
+      {
+        "log": "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+        "sha256": "f6fffdc581704557d64d26ea5de4d30d745c05298f7c7b21b51d91c4c5df1ae3",
+        "tests": 31,
+        "digest_and_count_match": true
+      },
+      {
+        "log": "rounds/vnext-boundary-reconciliation-001/work-operator-review.log",
+        "sha256": "f7fcbd4393014d4de47c439c7954bddffe004c290174dbabc0fbc6a223598df6",
+        "tests": 43,
+        "digest_and_count_match": true
+      }
+    ],
+    "source_manifest_matches": true,
+    "prior_tests_not_rerun_or_added_to_current_count": 76
+  },
+  "remaining": [
+    "Representative runtime early incomplete registration, candidate-pointer acknowledgement loss and early promotion preparation, reconciled against existing component matrices.",
+    "Complete consuming-suite qualification and wider 18.5\u201318.7 acceptance map."
+  ],
+  "limits": [
+    "Seed-base single decision only; not every promoted base or multiple simultaneous decisions.",
+    "No physical power-loss or full-suite qualification."
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false,
+  "excluded": [
+    "18.8\u201318.9 work and activation",
+    "External model calls, specification apply-back and push"
+  ]
+}
