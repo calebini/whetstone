@@ -1,0 +1,130 @@
+{
+  "checkpoint": "18.7 representative runtime publication prefixes",
+  "recorded_at": "2026-09-17T22:53:37.525254+00:00",
+  "base_commit": "250ec93ec11d42a1d4b5294e971bef3367256fde",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 3,
+  "runtime_journeys": 3,
+  "injected_boundaries": 4,
+  "first_run_passed": false,
+  "runtime_patch_required": false,
+  "full_regression_run": false,
+  "source": {
+    "runtime_and_contracts_unchanged_from_base": true,
+    "test_file": "tests/test_vnext_verified_runtime_publication_prefixes.py",
+    "test_sha256": "89dfd55b11e784501140d9a56038acbdfdcb6548421bfce6a07cd51db8f970a6",
+    "manifest": "rounds/vnext-runtime-publication-prefixes-001/source-manifest.json",
+    "manifest_sha256": "e7b919e26acd5be7c0522faa72a0f159090ae02ac08ea905812a87c93a7da39b",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "shipping_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "distinct_passing_tests": 3,
+    "full_module_clean_pass": false,
+    "unchanged_helpers_and_other_methods_verified_by_ast": true,
+    "initial_test_copy": "rounds/vnext-runtime-publication-prefixes-001/initial-test.py",
+    "initial_test_sha256": "e49676ab51f0c29914462e7783828780802040baae6bb339621fef4e398025f4",
+    "initial_failure": "Registration test counted legitimate proposal-handoff artifacts as unexpected registration output. Only this method changed: capture the candidate-registration boundary after handoff and verify that handoff uses committed promotion 1.",
+    "runs": [
+      {
+        "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_publication_prefixes -v",
+        "tests": 3,
+        "seconds": 248.203,
+        "passed_test_ids": [
+          "test_vnext_verified_runtime_publication_prefixes.RuntimePublicationPrefixTests.test_candidate_pointer_ack_loss_repeats_barrier_before_global_promotion",
+          "test_vnext_verified_runtime_publication_prefixes.RuntimePublicationPrefixTests.test_intent_only_preparation_recovers_original_claimant_and_timestamp"
+        ],
+        "log": "rounds/vnext-runtime-publication-prefixes-001/tests.log",
+        "sha256": "c80dfe63450bb3916d7a9b826b8fedf16eeb5ccfe539c2c0219080664a8d0564",
+        "exit_code": 1,
+        "source_manifest": "rounds/vnext-runtime-publication-prefixes-001/initial-source-manifest.json",
+        "source_manifest_sha256": "79761e2fb6160294649b7e409b0cbaa41170bb40c4c2e63bd76e29c2d6067ef4"
+      },
+      {
+        "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_publication_prefixes.RuntimePublicationPrefixTests.test_incomplete_registration_preparation_refuses_without_manufacturing_artifacts -v",
+        "tests": 1,
+        "seconds": 50.42,
+        "passed_test_ids": [
+          "test_vnext_verified_runtime_publication_prefixes.RuntimePublicationPrefixTests.test_incomplete_registration_preparation_refuses_without_manufacturing_artifacts"
+        ],
+        "log": "rounds/vnext-runtime-publication-prefixes-001/registration-recheck.log",
+        "sha256": "36b357ce8c12c8423ec2e967c23dbf0b3f7550077d50c3fe4d15e645020fa0a5",
+        "exit_code": 0,
+        "source_manifest": "rounds/vnext-runtime-publication-prefixes-001/source-manifest.json",
+        "source_manifest_sha256": "e7b919e26acd5be7c0522faa72a0f159090ae02ac08ea905812a87c93a7da39b"
+      }
+    ]
+  },
+  "validated_cases": [
+    {
+      "case": "early_incomplete_registration",
+      "fault": "OSError after completed registration preparation, before candidate artifacts.",
+      "outcome": "Preserve sole incomplete orphan; latest remains candidate 1; live work waits; explicit recovery refuses missing artifacts; global authority remains 1.",
+      "client_counts": {
+        "reviewer": 2,
+        "editor": 2,
+        "verifier": 1
+      }
+    },
+    {
+      "case": "candidate_pointer_acknowledgement_loss",
+      "fault": "Actual final candidate-pointer rename followed by OSError; then fresh promotion attempt fails actual candidate-pointer synchronization flush.",
+      "outcome": "Both typed uncertainties poison ownership before context cleanup. Final verified decision 2 stays exact, global authority remains 1 until successful fresh synchronization preceding intent publication. Exactly one promotion 2 then completes.",
+      "client_counts": {
+        "reviewer": 2,
+        "editor": 2,
+        "verifier": 2
+      }
+    },
+    {
+      "case": "intent_only_preparation",
+      "fault": "OSError after completed promotion-intent-2 publication, before event/snapshot.",
+      "outcome": "Fresh owner preserves sole candidate and original intent timestamp, blocks new work, then publishes event/snapshot and promotion 2 exactly once.",
+      "client_counts": {
+        "reviewer": 2,
+        "editor": 2,
+        "verifier": 2
+      }
+    }
+  ],
+  "shared_assertions": [
+    "Canonical Reviewer history and actual promoted base; no staged round selectors.",
+    "Readonly reopening/status preserves bytes and prior authority.",
+    "Existing immutable history remains exact; no invented missing registration artifacts.",
+    "Failed candidate-pointer replay creates no promotion intent/snapshot.",
+    "Successful promotion retains exact mirrors and no third ordinal/review/candidate.",
+    "No external clients or extra role invocations."
+  ],
+  "prior_evidence": {
+    "record": "docs/audits/VNEXT_RUNTIME_DECISION_REFERENCES.json",
+    "log": "rounds/vnext-runtime-decision-refs-001/tests.log",
+    "sha256": "01427fd3571b19f96c92b271a5685da4aae77362d43107e2a14c84291d1392c0",
+    "source_manifest_matches": true,
+    "prior_test_count_not_added": 2
+  },
+  "remaining": [
+    "Consolidate 18.7 acceptance against the accumulated implementation/component/runtime evidence; identify concrete unresolved consuming requirements.",
+    "Batch C evidence reconciliation and complete consuming-suite/wider 18.5\u201318.7 acceptance qualification."
+  ],
+  "limits": [
+    "Three representative journeys, not every component prefix at runtime.",
+    "Early incomplete registration remains artifact-invalid and non-resumable through current automatic recovery.",
+    "No new killed-process, physical power-loss or full-suite qualification."
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false,
+  "excluded": [
+    "18.8\u201318.9 implementation and shipping activation",
+    "External provider calls, specification apply-back and push"
+  ]
+}

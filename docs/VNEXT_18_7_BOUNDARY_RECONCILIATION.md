@@ -2,6 +2,8 @@
 
 Date: 2026-09-18. Starting checkpoint: `d2ad1c5`.
 
+Latest follow-up: [representative runtime publication prefixes](VNEXT_RUNTIME_PUBLICATION_PREFIXES.md) now cover early incomplete registration, candidate-pointer acknowledgement loss with failed/successful barrier replay, and intent-only promotion recovery. All three journeys pass without runtime changes. This supersedes the table's three representative runtime gaps for those exact boundaries; the historical component/runtime distinctions remain. Next is acceptance/evidence consolidation, with consuming qualification still open.
+
 Subsequent test-only checkpoint: [canonical nonempty decision references](VNEXT_RUNTIME_DECISION_REFERENCES.md) now pass request/response replay-flush recovery and five missing/altered/drift refusals, with no runtime change from `c6e5929`. The table's decision-reference gap and next-slice statement below are superseded for that exact seed-base single-decision path. The other three narrower runtime publication proofs and consuming qualification remain open.
 
 This reconciles the remaining publication/operator inventory against the actual
