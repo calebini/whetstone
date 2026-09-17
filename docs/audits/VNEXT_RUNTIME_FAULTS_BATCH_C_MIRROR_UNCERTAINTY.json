@@ -1,0 +1,82 @@
+{
+  "checkpoint": "18.7 bounded Batch C runtime mirror uncertainty",
+  "recorded_at": "2026-09-17T21:34:28.525864+00:00",
+  "base_commit": "54a5c3c4c039dd0ad951cf0dc15c20afc1119999",
+  "result": "targeted_tests_pass",
+  "distinct_tests": 1,
+  "runtime_journeys": 1,
+  "sequential_fault_boundaries": 2,
+  "process_death_cases": 0,
+  "full_regression_run": false,
+  "runtime_patch_required": false,
+  "source": {
+    "runtime_and_contracts_unchanged_from_base": true,
+    "test_file": "tests/test_vnext_verified_runtime_mirror_uncertainty.py",
+    "test_sha256": "d0fbed87d179a0adece1e93a74964f94eb88d75de36b3f28399a6ebcc267dda7",
+    "source_manifest": "rounds/vnext-runtime-mirror-uncertainty-001/source-manifest.json",
+    "source_manifest_sha256": "9d925d60941c84afd13fa43db026c993794d51b49fa8a7881149b8d21df8245b",
+    "all_manifest_files_still_match": true,
+    "suite_1_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950"
+  },
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "validation": {
+    "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_mirror_uncertainty -v",
+    "tests": 1,
+    "seconds": 110.233,
+    "test_ids": [
+      "test_vnext_verified_runtime_mirror_uncertainty.RuntimeMirrorUncertaintyTests.test_post_rename_flush_and_replay_barrier_failures_require_fresh_repair"
+    ],
+    "log": "rounds/vnext-runtime-mirror-uncertainty-001/tests.log",
+    "sha256": "cba7494513db3d1089c73e3b1066cf1fe810ace868e420298cdcb3394bb9fb4c",
+    "exit_code": 0,
+    "result": "OK; no skips"
+  },
+  "validated_boundaries": [
+    {
+      "boundary": "post_spec_rename_final_full_flush",
+      "injection": "OSError at the real adapter final _full_flush call after spec.md replacement and parent-directory synchronization.",
+      "outcome": "StorageWriteError with reconciliation required and exact spec hash; ownership poisoned before locked context cleanup, ordinal 2 remains committed, two mirrors pending."
+    },
+    {
+      "boundary": "matching_spec_synchronization_final_full_flush",
+      "injection": "On fresh-owner repair, OSError at the second _full_flush of synchronize_existing(spec.md).",
+      "outcome": "Reconciliation required; ownership poisoned immediately, no pending mirror writes, no artifact-byte changes or client calls."
+    }
+  ],
+  "shared_assertions": [
+    "Original promotion-2 pointer, timestamp and immutable evidence preserved.",
+    "Poisoned token cannot publish immediately or after reopening.",
+    "Read-only reopening/status preserves bytes and identifies exactly source-round draft and state as pending.",
+    "Third owner synchronizes snapshot, pointer and matching spec, writes only remaining targets, and ends before Reviewer invocation.",
+    "Successful repair forbids authority publication and pointer replacement.",
+    "Unrelated operator state survives; exactly two calls per scripted role; no third promotion or Reviewer claim."
+  ],
+  "prior_evidence_checked": [
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_C.json",
+      "log_digest_matches": true,
+      "source_manifest_drift": []
+    },
+    {
+      "record": "docs/audits/VNEXT_RUNTIME_FAULTS_BATCH_C_VERIFIER.json",
+      "log_digest_matches": true,
+      "source_manifest_drift": []
+    }
+  ],
+  "remaining": [
+    "Uncertain final run-state publication with all visible mirrors matching is not exercised by this runtime test.",
+    "Remaining registration/verification prefix, decision-reference synchronization and operator receipt/selection-marker coverage reconciliation.",
+    "Complete consuming-suite and 18.5\u201318.7 acceptance qualification."
+  ],
+  "excluded": [
+    "All destination/barrier combinations, actual device failures and physical power-loss qualification",
+    "Full regression and 18.8\u201318.9 implementation",
+    "Mode activation, external model calls, apply-back and push"
+  ],
+  "batch_c_complete": false,
+  "slice_18_7_complete": false
+}
