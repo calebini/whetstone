@@ -2,6 +2,8 @@
 
 Date: 2026-09-18. Inspected checkpoint: `0d2e7f4`.
 
+Subsequent G1 result: the [joint selection checkpoint](VNEXT_CONCURRENT_SELECTION.md) now passes the two lock-winner orders plus 18 promotion/Batch A regressions without runtime changes. G1 below is closed at its declared scope. The two Batch A methods are credited toward G2, leaving 97 existing methods (eight runtime, 89 component). Current-source passing evidence totals 84 distinct methods after overlap accounting. The original evidence map below remains the historical consolidation; its G1 gap/next-action and 99-method cohort statements are superseded by this checkpoint. 18.7 remains incomplete.
+
 **The publication/operator boundary inventory is reconciled. One concrete joint
 acceptance scenario remains unproved, followed by a fixed current-source evidence
 refresh.** This pass found no additional runtime defect. It changes documentation

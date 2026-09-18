@@ -2,6 +2,8 @@
 
 Date: 2026-09-15. Inspected checkpoint: `51d8618` (runtime/contracts unchanged from `95c75b2`).
 
+Current G1 result (2026-09-18): [two-candidate concurrent selection](VNEXT_CONCURRENT_SELECTION.md) passes with each caller holding the real lock first. The newest verified candidate alone promotes; the other caller is busy while held and ineligible after reopening. All 19 focused/regression methods pass, including a current-source Batch A refresh. Next is the fixed G2 cohort of 97 remaining methods; no new generic fault batch is scheduled. Runtime/contracts are unchanged and 18.7 remains incomplete.
+
 Current acceptance inventory (2026-09-18): the [acceptance map](VNEXT_18_7_ACCEPTANCE_MAP.md) reconciles the finite Batch C boundary list against D8 and the candidate P0 scenarios. It identifies the remaining joint two-candidate/process selection proof and a fixed current-source refresh; it does not prescribe another generic fault batch. Fifteen evidence records and 35 distinct log digests were checked, with 81 distinct methods retaining current-source passing evidence. No runtime tests were run in this pass; 18.7 is incomplete.
 
 Current update on 2026-09-18: [three representative publication journeys](VNEXT_RUNTIME_PUBLICATION_PREFIXES.md) now pass on canonical runtime history above promotion 1. They cover an incomplete registration preparation, final candidate-pointer rename acknowledgement loss plus a failed replay barrier, and intent-only promotion recovery with the original timestamp. No runtime/contracts changed from `250ec93`. This supplies the finite three-item representative gap list from the reconciliation; it is not every component prefix repeated at runtime. Acceptance/evidence consolidation and consuming qualification remain open.
@@ -26,7 +28,7 @@ Prior update 2026-09-17: [Batch C Verifier interruption](VNEXT_RUNTIME_FAULTS_BA
 | Nonempty decision-reference synchronization | Two seed-base replay-flush faults and five refusal cases now pass; exact recovery, provenance and named-unit grants are reproduced. Promoted-base/multiple-decision combinations are outside this test. |
 | Complete consuming-suite and 18.5–18.7 acceptance qualification | Open; these checkpoints do not qualify activation. |
 
-Next bounded step: the [joint P0 selection fixture](VNEXT_18_7_ACCEPTANCE_MAP.md#remaining-gates-and-exact-next-slice), then the fixed evidence refresh. The dated updates and original assessment below retain their historical scopes; their next-step and absence statements are superseded by the acceptance map.
+Next bounded step: G2's fixed remaining 97-method evidence refresh, as recorded in the [G1 handoff](VNEXT_CONCURRENT_SELECTION.md). The joint selection proof is closed. Earlier dated next-step and absence statements retain their historical scopes.
 
 Latest update 2026-09-17: the [bounded Batch C handoff/mirror checkpoint](VNEXT_RUNTIME_FAULTS_BATCH_C.md) passes three process cases in two test methods over unchanged runtime/contracts from `c9d3409`. A normally released promoter resumes after another process promotes ordinal 3, reports its own commit at 2 separately, and synchronizes only current authority. Actual deaths after completed spec/source-round mirror writes recover only the remaining targets. This closes those particular gaps, not all of Batch C. Actual Verifier death, finer registration/verification prefixes, runtime mirror uncertainty, decision-reference synchronization and operator receipt/selection boundaries remain open.
 
