@@ -2,7 +2,7 @@
 
 Date: 2026-09-18. Inspected checkpoint: `0d2e7f4`.
 
-Current status after [G2 validation](VNEXT_G2_VALIDATION.md): all 97 selected methods pass with no runtime change. G1 and G2 are closed at their declared scopes; the three 18.7 implementation tasks are now checked at the isolated component/runtime boundary. There are 181 distinct current-source passing methods after crediting the earlier 84. Overall 18.7 dependency and consuming-release qualification remain incomplete. Next is G3: reconcile 18.5 acceptance first, then 18.6 separately. No further G2 rerun or generic fault batch is pending.
+Current status after [G2 validation](VNEXT_G2_VALIDATION.md): all 97 selected methods pass with no runtime change. G1 and G2 are closed at their declared scopes; the three 18.7 implementation tasks are now checked at the isolated component/runtime boundary. There are 181 distinct current-source passing methods after crediting the earlier 84. Overall 18.7 dependency and consuming-release qualification remain incomplete. G3’s [18.5 acceptance closeout](VNEXT_18_5_ACCEPTANCE_MAP.md) now validates its three bounded implementation tasks. Next is the separate 18.6 acceptance reconciliation. No further G2 rerun or generic fault batch is pending.
 
 ## Historical consolidation and follow-ups
 
@@ -136,10 +136,11 @@ affected coverage. Preserve failures and exact source versions; do not add
 counts from overlapping runs. With G1 and this cohort passing, reassess the three
 18.7 checkboxes against this map and record the bounded implementation result.
 
-**G3 — earlier-slice dependencies.** Assembly and independent semantic acceptance,
-plus their P/semantic/follow-up consuming qualifications, remain separately open
-in 18.5–18.6. This storage map does not certify all preservation or semantic-policy
-P0 scenarios. Resolve their exact acceptance maps before calling 18.5–18.7 complete.
+**G3 — earlier-slice dependencies.** The [18.5 acceptance closeout](VNEXT_18_5_ACCEPTANCE_MAP.md)
+now validates its three bounded assembly/registration/proposal tasks. Independent
+semantic and follow-up acceptance in 18.6 is the next separate reconciliation.
+Shipping P/semantic/follow-up consuming qualification remains open. These bounded
+maps do not certify all release P0 scenarios or make 18.5–18.7 release-complete.
 
 **G4 — later release gates, excluded here.** D8 requires a new descriptor-bound
 consuming suite pinning its normative document, storage envelopes and vectors.
