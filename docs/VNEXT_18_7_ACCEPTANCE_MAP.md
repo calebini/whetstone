@@ -2,6 +2,12 @@
 
 Date: 2026-09-18. Inspected checkpoint: `0d2e7f4`.
 
+Current status after [G2 validation](VNEXT_G2_VALIDATION.md): all 97 selected methods pass with no runtime change. G1 and G2 are closed at their declared scopes; the three 18.7 implementation tasks are now checked at the isolated component/runtime boundary. There are 181 distinct current-source passing methods after crediting the earlier 84. Overall 18.7 dependency and consuming-release qualification remain incomplete. Next is G3: reconcile 18.5 acceptance first, then 18.6 separately. No further G2 rerun or generic fault batch is pending.
+
+## Historical consolidation and follow-ups
+
+The dated evidence below is retained; its pending G1/G2 and unchecked-task statements are superseded by the current status above. The companion JSON remains the original consolidation record; the G2 JSON records closure without rewriting that evidence.
+
 Subsequent G1 result: the [joint selection checkpoint](VNEXT_CONCURRENT_SELECTION.md) now passes the two lock-winner orders plus 18 promotion/Batch A regressions without runtime changes. G1 below is closed at its declared scope. The two Batch A methods are credited toward G2, leaving 97 existing methods (eight runtime, 89 component). Current-source passing evidence totals 84 distinct methods after overlap accounting. The original evidence map below remains the historical consolidation; its G1 gap/next-action and 99-method cohort statements are superseded by this checkpoint. 18.7 remains incomplete.
 
 **The publication/operator boundary inventory is reconciled. One concrete joint
