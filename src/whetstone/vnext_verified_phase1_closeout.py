@@ -142,18 +142,22 @@ class _Closeout(VerifiedReview):
             return work
         return self.evaluate(proof)
 
+    def _synchronize_sources(self, store, proof, closeout):
+        frames, _, _ = _sequence(proof)
+        for frame in frames:
+            request = _VerifiedReviewRequest(_ReviewInputs(store, proof, frame.header['base_pointer']),
+                                             frame.request.number, frame.request.profile)
+            request.synchronize(store._token, frame.header, frame.outcomes)
+            request.finish(store._token, frame.review)
+        checked = self.evaluate(proof)
+        require(checked.evidence == closeout.evidence, 'Phase 1 closeout changed during source synchronization')
+        return checked
+
     def finish(self):
         def publish(store, proof):
             closeout = self.evaluate(proof)
             require(closeout.report is not None, 'Phase 1 has no eligible review terminal to publish')
-            frames, _, _ = _sequence(proof)
-            for frame in frames:
-                request = _VerifiedReviewRequest(_ReviewInputs(store, proof, frame.header['base_pointer']),
-                                                 frame.request.number, frame.request.profile)
-                request.synchronize(store._token, frame.header, frame.outcomes)
-                request.finish(store._token, frame.review)
-            checked = self.evaluate(proof)
-            require(checked.evidence == closeout.evidence, 'Phase 1 closeout changed during source synchronization')
+            checked = self._synchronize_sources(store, proof, closeout)
             # Exact replay repeats barriers even when a lost ack left both visible.
             store.publish(store._token, checked.report_ref['path'], checked.report)
             store.publish(store._token, checked.evidence_ref['path'], checked.evidence)

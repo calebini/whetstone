@@ -1,0 +1,117 @@
+"""Evidence-derived operator status and recovery-only Phase 1 state projection."""
+from copy import deepcopy
+from dataclasses import dataclass
+
+from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, decode_json, require, sha256_bytes
+from whetstone.vnext_verified_materialization import STATE_PATH
+from whetstone.vnext_verified_phase1_closeout import _Closeout
+from whetstone.vnext_verified_work import VerifiedWork, VerifiedWorkView
+
+
+ALGORITHM = 'algorithms/vnext_verified_phase1_operator_v1.md'
+STATE_FIELD = 'vnext_phase1_closeout'
+
+
+@dataclass(frozen=True)
+class VerifiedOperatorStatus:
+    work_outcome: str
+    current_pointer: dict
+    review_gate: str | None
+    terminal_report: dict | None
+    terminal_report_ref: dict | None
+    closeout_ref: dict | None
+    accepted: bool | None
+    state_current: bool | None
+    stale_state: bool
+    pending_paths: tuple
+    next_action: str
+    phase2_permitted: bool = False
+    apply_back_permitted: bool = False
+    resume_permitted: bool = False
+
+
+class _OperatorStatus(_Closeout):
+    def _proof(self, read):
+        proof = super()._proof(read)
+        entries = {row['path']: row for row in proof.reader.suite.manifest['algorithms']}
+        require(ALGORITHM in entries, 'verified operator status contract is outside supported suite')
+        require(sha256_bytes(confined_file(CONTRACT_ROOT, ALGORITHM).read_bytes()) == entries[ALGORITHM]['sha256'],
+                'installed verified operator status contract differs from pinned suite')
+        return proof
+
+    def _state_target(self, closeout):
+        raw = self.store.read(STATE_PATH)  # Base mirror recovery owns absence/malformed state.
+        state = decode_json(raw)
+        require(isinstance(state, dict), 'Phase 1 state projection requires a JSON object')
+        reference = closeout.evidence_ref if closeout.materialized else None
+        stale = STATE_FIELD in state and (reference is None or state[STATE_FIELD] != reference)
+        if reference is None:
+            changed = STATE_FIELD in state
+            state.pop(STATE_FIELD, None)
+        else:
+            changed = state.get(STATE_FIELD) != reference
+            state[STATE_FIELD] = deepcopy(reference)
+        return raw, canonical_json_bytes(state) if changed else raw, stale
+
+    def _status(self, proof, closeout):
+        raw, target, stale = self._state_target(closeout)
+        current = raw == target
+        committed = closeout.materialized
+        action = ('reconcile_phase1_state' if not current else
+                  'phase1_complete' if committed else
+                  'finish_phase1' if closeout.report is not None else closeout.review_gate)
+        result = VerifiedOperatorStatus('work_available', deepcopy(proof.latest), closeout.review_gate,
+            deepcopy(closeout.report) if committed else None,
+            deepcopy(closeout.report_ref) if committed else None,
+            deepcopy(closeout.evidence_ref) if committed else None,
+            closeout.accepted, current, stale,
+            ((STATE_PATH,) if not current else ()) + closeout.pending_paths, action)
+        proof.guard(self.store.read)
+        self.run._guard(self.store.read)
+        return result
+
+    def inspect_status(self):
+        proof = self._proof(self.store.read)
+        work = VerifiedWork._observe(self, proof)
+        if work.outcome != 'work_available':
+            proof.guard(self.store.read)
+            self.run._guard(self.store.read)
+            return VerifiedOperatorStatus(work.outcome, deepcopy(proof.latest), None, None, None, None,
+                None, None, False, work.pending_paths, work.outcome)
+        return self._status(proof, self.evaluate(proof))
+
+    def reconcile(self):
+        def synchronize(store, proof):
+            closeout = self.evaluate(proof)
+            before, target, _ = self._state_target(closeout)
+            if closeout.materialized:
+                checked = self._synchronize_sources(store, proof, closeout)
+                require(checked.materialized, 'committed Phase 1 closeout disappeared during recovery')
+                for reference, value in ((checked.report_ref, checked.report), (checked.evidence_ref, checked.evidence)):
+                    self.store.synchronize_existing(store._token, reference['path'], expected=canonical_json_bytes(value))
+            # Only this namespaced reference changes. Never trust or follow cached paths.
+            def validate_target(read, path, raw):
+                proof.guard(read)
+                self.run._guard(read)
+                require(path == STATE_PATH and raw == target and read(path) == before,
+                        'Phase 1 state target changed during recovery')
+            if before != target:
+                self.store.materialize(store._token, STATE_PATH, target, validate_target=validate_target)
+            else:
+                # Equality after a lost final acknowledgement is not durability.
+                self.store.synchronize_existing(store._token, STATE_PATH, expected=target)
+            checked = self.evaluate(proof)
+            require(checked.evidence == closeout.evidence and checked.materialized == closeout.materialized,
+                    'Phase 1 evidence changed during state recovery')
+            result = self._status(proof, checked)
+            require(result.state_current, 'Phase 1 state recovery incomplete')
+            return VerifiedWorkView('phase1_state_synchronized', deepcopy(proof.pointers[-1]), value=result)
+        return self._execute(synchronize)
+
+
+def inspect_verified_operator(run):
+    return _OperatorStatus(run).inspect_status()
+
+
+def reconcile_verified_phase1_state(run):
+    return _OperatorStatus(run).reconcile()

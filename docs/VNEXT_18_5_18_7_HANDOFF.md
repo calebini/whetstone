@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+18.8 operator follow-up (2026-09-20): [operator status and run-state recovery](VNEXT_18_8_PHASE1_OPERATOR.md) now rederive the active terminal from current committed closeout evidence, reject stale cached success, and synchronize the derived reference without advancing work. All four 18.8 tasks remain incomplete. Next is bounded Phase 2 entry eligibility; Phase 2 execution, public activation, push and external apply-back remain excluded. Earlier next-action statements below are historical.
+
 18.8 closeout follow-up (2026-09-20): [global acceptance and immutable Phase 1 terminal publication](VNEXT_18_8_PHASE1_CLOSEOUT.md) now follow the bounded status view. Complete current-pointer profile coverage and zero global major/blocker debt are required for acceptance; publication binds source receipts and replays durability barriers without clients or new ordinals. All four 18.8 tasks remain incomplete. Operator status/run-state integration is next; Phase 2, public activation, push and external apply-back remain outside this slice.
 
 18.8 follow-on (2026-09-20): the user has authorized beginning the next implementation area. The [first bounded status slice](VNEXT_18_8_PHASE1_STATUS.md) exposes current-verified-pointer-bound profile budgets and cleanliness alongside recovery/promotion precedence. All four 18.8 tasks remain incomplete; accepted-draft evaluation and Phase 1 terminal closeout are next. The 18.5–18.7 checkpoints below remain historical evidence, not a claim that this new source was part of their earlier runs. Public activation, pushing and external apply-back remain excluded.

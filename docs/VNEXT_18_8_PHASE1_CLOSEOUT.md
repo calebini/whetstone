@@ -95,7 +95,8 @@ ignored `rounds/vnext-18-8-closeout-001/`.
 
 ## Handoff
 
-Next bounded integration: connect this evidence-derived terminal selection to the
+Follow-up implemented in [the operator projection slice](VNEXT_18_8_PHASE1_OPERATOR.md).
+The original next-step scope was: connect this evidence-derived terminal selection to the
 operator status/run-state projection, including stale historical reports and
 recovery-only reentry. Keep Phase 2 capability distinct from a Phase 1 result and
 bind any derived state to current verified lineage.

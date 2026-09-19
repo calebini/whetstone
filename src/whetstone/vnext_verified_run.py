@@ -133,6 +133,12 @@ class VerifiedRun:
     def finish_phase1(self):
         from whetstone.vnext_verified_phase1_closeout import finish_verified_phase1
         return finish_verified_phase1(self)
+    def operator_status(self):
+        from whetstone.vnext_verified_phase1_operator import inspect_verified_operator
+        return inspect_verified_operator(self)
+    def reconcile_phase1_state(self):
+        from whetstone.vnext_verified_phase1_operator import reconcile_verified_phase1_state
+        return reconcile_verified_phase1_state(self)
     def request(self, **options): return self._operator().request(**options)
     def register(self, **options): return self._operator().register(**options)
     def verify(self, **options): return self._operator().verify(**options)

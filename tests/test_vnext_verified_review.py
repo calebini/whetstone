@@ -24,7 +24,8 @@ class VerifiedReviewTests(unittest.TestCase):
     files = history.VerifiedHistoryTests.files
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
-                closeout_contract=False):
+                closeout_contract=False, operator_status_contract=False):
+        closeout_contract = closeout_contract or operator_status_contract
         original = unit.UnitPreflightTests.setUp
         def setup(owner):
             original(owner)
@@ -40,6 +41,7 @@ class VerifiedReviewTests(unittest.TestCase):
         if sequence_contract: algorithms += ('vnext_verified_review_sequence_v1',)
         if status_contract: algorithms += ('vnext_verified_phase1_status_v1',)
         if closeout_contract: algorithms += ('vnext_verified_phase1_closeout_v1',)
+        if operator_status_contract: algorithms += ('vnext_verified_phase1_operator_v1',)
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,
                 extra_schemas={'vnext_review_request_v2'} | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set()),

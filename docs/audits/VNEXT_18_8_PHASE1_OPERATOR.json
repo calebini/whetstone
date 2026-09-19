@@ -1,0 +1,128 @@
+{
+  "checkpoint": "18.8 bounded Phase 1 operator status and state recovery",
+  "date": "2026-09-20",
+  "base_commit": "78ff26e7bda6b088f117b2a0a67995994c19f4b0",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-operator-001/source-manifest.json",
+    "sha256": "30235fe12506101a3145588660a6108475d02dcc958bec65703480966939bfd5",
+    "all_files_unchanged_during_tests": true
+  },
+  "result": "bounded implementation validated; all four 18.8 tasks remain incomplete",
+  "new_methods": 7,
+  "regression_methods": 40,
+  "distinct_executed_methods": 47,
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase1_operator -v",
+      "log": "rounds/vnext-18-8-operator-001/focused-tests.log",
+      "sha256": "1e905d5716fb6e1c1682cc88b6d9cb19e3afb1d6f141fde8474b8088d20eee9a",
+      "tests": 7,
+      "seconds": 55.035,
+      "test_ids": [
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_final_state_interruption_and_visible_lost_ack_require_full_barrier_replay",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_mirror_recovery_precedes_projection_and_ends_invocation",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_missing_pin_and_malformed_state_refuse_before_writes",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_only_committed_closeout_selects_terminal_and_projection_preserves_legacy_fields",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_promoted_budget_failure_overrides_stale_success_and_preserves_report_history",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_source_barrier_failure_and_damaged_committed_artifacts_refuse_without_state_write",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_stale_cached_success_and_newest_report_cannot_close_an_unreviewed_run"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase1_closeout test_vnext_verified_phase1_status test_vnext_verified_review test_status -v",
+      "log": "rounds/vnext-18-8-operator-001/regression-tests.log",
+      "sha256": "3c022a007635853174a09ff692df5760ea78d4b1873ff766c3a6e5b2c94c1c35",
+      "tests": 40,
+      "seconds": 309.098,
+      "test_ids": [
+        "test_status.StatusTests.test_render_status_text_includes_operator_fields",
+        "test_status.StatusTests.test_status_marks_phase1_editor_artifact_validation_failure_resumable",
+        "test_status.StatusTests.test_status_marks_prior_failure_report_historical_after_convergence",
+        "test_status.StatusTests.test_status_prefers_round_telemetry_over_stale_run_state",
+        "test_status.StatusTests.test_status_prefers_stable_run_state_over_stale_failure_report",
+        "test_status.StatusTests.test_status_reports_budget_extension_resume_command",
+        "test_status.StatusTests.test_status_reports_incomplete_latest_round",
+        "test_status.StatusTests.test_status_reports_pending_client_attempt_without_telemetry",
+        "test_status.StatusTests.test_status_reports_phase1_handoff_and_decision_summary",
+        "test_status.StatusTests.test_status_reports_phase2_closeout_command",
+        "test_status.StatusTests.test_status_reports_resumable_editor_timeout_commands",
+        "test_status.StatusTests.test_status_reports_resumable_reviewer_timeout_commands",
+        "test_status.StatusTests.test_status_reports_run_artifact_pointers",
+        "test_status.StatusTests.test_status_treats_older_same_terminal_report_as_stale",
+        "test_status.StatusTests.test_status_warns_when_root_draft_hash_differs_from_run_state",
+        "test_status.StatusTests.test_status_warns_when_terminal_failure_report_is_missing",
+        "test_status.StatusTests.test_status_without_run_state_suggests_phase1",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_materialization_recovery_ends_before_closeout_and_missing_pin_refuses",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_profile_cleanliness_cannot_erase_global_nonfocus_major_debt",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_promotion_requires_new_review_and_budget_failure_uses_committed_promotion_event",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_publication_prefixes_and_lost_final_ack_replay_without_clients",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_seed_acceptance_requires_every_profile_and_publishes_bound_terminal_without_phase2",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_source_barrier_failure_and_corrupt_committed_evidence_do_not_fabricate_success",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_clean_profiles_are_bound_detached_readonly_observations_not_phase_readiness",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_incomplete_review_does_not_spend_logical_budget_or_publish_clean_evidence",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_new_status_pin_and_original_review_evidence_are_required",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_orphan_registration_is_reported_without_recovery_or_extra_review",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_promotion_invalidates_clean_evidence_preserves_budgets_and_gates_mirror_repair",
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips"
+    }
+  ],
+  "implementation": [
+    "src/whetstone/vnext_verified_phase1_operator.py",
+    "src/whetstone/vnext_verified_run.py",
+    "src/whetstone/vnext_verified_phase1_closeout.py"
+  ],
+  "contract": "contracts/algorithms/vnext_verified_phase1_operator_v1.md",
+  "shipping_controls": {
+    "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "compatibility": "Two explicit internal APIs require a separate consumer pin. Existing closeout source-barrier loop extracted without semantic change. Legacy/bridge runtime bytes unchanged; legacy status regressions pass.",
+  "first_runs_passed": true,
+  "runtime_patch_after_tests_started": false,
+  "full_regression_run": false,
+  "next_slice": "Bounded Phase 2 entry eligibility against current verified lineage and complete accepted Phase 1 evidence; execution remains separate.",
+  "remaining": [
+    "Focused/vertical/retry/resume and budget-extension consumers",
+    "Version/history/declaration, Phase 2 execution and convergence integration",
+    "Strop/readback eligibility and complete operator/terminal reporting",
+    "18.9 shipping-suite, P0/cross-implementation/compatibility qualification, live soak and activation"
+  ],
+  "limits": [
+    "Internal horizontal operator view and namespaced run-state reference only; no public status/CLI dispatch or Phase 2 permission",
+    "Scripted clients and test-only suites; no live-provider qualification",
+    "Fault hooks cover caller/publication/barrier boundaries, not new power-loss or syscall-permutation qualification",
+    "Missing-mirror precedence tested directly; exhaustive orphan/operator-decision/rejected-parent compositions not covered by this cohort",
+    "Single-host macOS/APFS scope; no distributed writer support"
+  ],
+  "excluded": [
+    "18.9 implementation",
+    "external provider transmission",
+    "mode activation",
+    "push",
+    "external specification apply-back"
+  ]
+}
