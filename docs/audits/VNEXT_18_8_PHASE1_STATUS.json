@@ -1,0 +1,108 @@
+{
+  "checkpoint": "18.8 first slice: read-only verified Phase 1 progress",
+  "date": "2026-09-20",
+  "base_commit": "9a09bc1bf6e47230d302a559699d351ede6ab64f",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-status-001/source-manifest.json",
+    "sha256": "70202bb75dec71853b9e63fdfd8ea635fefe41bed79a6613a163b3dbef5686db",
+    "all_files_unchanged_during_tests": true
+  },
+  "result": "bounded implementation validated; all four 18.8 tasks remain incomplete",
+  "new_methods": 5,
+  "regression_methods": 25,
+  "distinct_executed_methods": 30,
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase1_status -v",
+      "log": "rounds/vnext-18-8-status-001/focused-tests.log",
+      "sha256": "582b31ca2529c35ba696444482da0f0d3d640028d1d0028ecc8333e6bc975d2f",
+      "tests": 5,
+      "seconds": 51.091,
+      "test_ids": [
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_clean_profiles_are_bound_detached_readonly_observations_not_phase_readiness",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_incomplete_review_does_not_spend_logical_budget_or_publish_clean_evidence",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_new_status_pin_and_original_review_evidence_are_required",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_orphan_registration_is_reported_without_recovery_or_extra_review",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_promotion_invalidates_clean_evidence_preserves_budgets_and_gates_mirror_repair"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_review test_scheduler -v",
+      "log": "rounds/vnext-18-8-status-001/regression-tests.log",
+      "sha256": "621984ea4ae8f4eb70027a0ea6728ba82c1470f00cbdc548f2260d53fdd3dca6",
+      "tests": 25,
+      "seconds": 169.182,
+      "test_ids": [
+        "test_scheduler.SchedulerTests.test_default_focus_anchor_matches_versioned_section_id_suffix",
+        "test_scheduler.SchedulerTests.test_default_phase_1_order",
+        "test_scheduler.SchedulerTests.test_duplicate_profile_steps_have_independent_state",
+        "test_scheduler.SchedulerTests.test_force_advance_marks_residual_status",
+        "test_scheduler.SchedulerTests.test_mutated_focus_invalidates_clean_profile",
+        "test_scheduler.SchedulerTests.test_phase_1_profile_sets_preserve_final_profile_always_run_behavior",
+        "test_scheduler.SchedulerTests.test_phase_complete_requires_all_clean_and_accepted_draft",
+        "test_scheduler.SchedulerTests.test_profile_prompt_guidance_is_defined_for_light_profile",
+        "test_scheduler.SchedulerTests.test_repeats_blocker_profile_until_budget_then_advances",
+        "test_scheduler.SchedulerTests.test_repeats_major_profile_for_clean_verification",
+        "test_scheduler.SchedulerTests.test_resolve_focus_anchors_requires_exactly_one_suffix_match",
+        "test_scheduler.SchedulerTests.test_utility_mvp_phase_2_omits_adversarial",
+        "test_scheduler.SchedulerTests.test_utility_mvp_profile_set_uses_lightweight_profiles",
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips"
+    }
+  ],
+  "implementation": [
+    "src/whetstone/vnext_verified_phase1_status.py",
+    "src/whetstone/vnext_verified_run.py"
+  ],
+  "contract": "contracts/algorithms/vnext_verified_phase1_status_v1.md",
+  "shipping_controls": {
+    "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "compatibility": "Existing methods unchanged; explicit new method requires separate suite pin. Legacy/bridge runtime bytes unchanged. Shared scheduler and V review regression pass.",
+  "first_runs_passed": true,
+  "runtime_patch_after_tests_started": false,
+  "full_regression_run": false,
+  "next_slice": "Global accepted-draft evaluation and Phase 1 terminal closeout on the bounded horizontal path; profile cleanliness alone cannot grant readiness.",
+  "remaining": [
+    "Other normal/focused/vertical/retry/resume and budget-extension consumers",
+    "Version/history/declaration, Phase 2 and convergence integration",
+    "Strop/readback eligibility and terminal publication across supported paths",
+    "18.9 shipping-suite, P0/cross-implementation/compatibility qualification, live soak and activation"
+  ],
+  "limits": [
+    "Read-only observation, not a terminal report, resume grant or Phase 2 admission",
+    "Scripted clients and test-only suites; no live-provider qualification",
+    "Single-host macOS/APFS scope; no distributed writer support"
+  ],
+  "excluded": [
+    "18.9 implementation",
+    "external provider transmission",
+    "mode activation",
+    "push",
+    "external specification apply-back"
+  ]
+}

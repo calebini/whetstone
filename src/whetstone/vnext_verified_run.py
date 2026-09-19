@@ -124,6 +124,9 @@ class VerifiedRun:
 
     def _operator(self): return _RunOperator(self.store, history=self._history())
     def inspect(self): return self._operator().inspect()
+    def phase1_status(self):
+        from whetstone.vnext_verified_phase1_status import inspect_verified_phase1
+        return inspect_verified_phase1(self)
     def request(self, **options): return self._operator().request(**options)
     def register(self, **options): return self._operator().register(**options)
     def verify(self, **options): return self._operator().verify(**options)
