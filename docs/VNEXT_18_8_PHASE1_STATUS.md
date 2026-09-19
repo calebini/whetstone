@@ -69,9 +69,9 @@ regression or live-provider qualification.
 
 ## Remaining integration
 
-The next bounded slice is global accepted-draft evaluation and Phase 1 terminal
-closeout for this horizontal path, with terminal publication/recovery bound to
-the same current verified lineage. A conjunction of clean profile observations
+The subsequent [closeout slice](VNEXT_18_8_PHASE1_CLOSEOUT.md) now implements global
+accepted-draft evaluation and immutable Phase 1 terminal publication/recovery for
+this horizontal path. Operator status/run-state projection is the next integration. A conjunction of clean profile observations
 must not substitute for global acceptance or automatically enable Phase 2.
 
 18.8 still needs the remaining focused/vertical/retry/resume scheduling and budget
