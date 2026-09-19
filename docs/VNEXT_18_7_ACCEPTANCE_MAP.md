@@ -2,7 +2,7 @@
 
 Date: 2026-09-18. Inspected checkpoint: `0d2e7f4`.
 
-Current status after [G2 validation](VNEXT_G2_VALIDATION.md): all 97 selected methods pass with no runtime change. G1 and G2 are closed at their declared scopes; the three 18.7 implementation tasks are now checked at the isolated component/runtime boundary. There are 181 distinct current-source passing methods after crediting the earlier 84. Overall 18.7 dependency and consuming-release qualification remain incomplete. G3’s [18.5 acceptance closeout](VNEXT_18_5_ACCEPTANCE_MAP.md) now validates its three bounded implementation tasks. Next is the separate 18.6 acceptance reconciliation. No further G2 rerun or generic fault batch is pending.
+Current status after [G2 validation](VNEXT_G2_VALIDATION.md): all 97 selected methods pass with no runtime change. G1 and G2 are closed at their declared scopes; the three 18.7 implementation tasks are now checked at the isolated component/runtime boundary. There are 181 distinct current-source passing methods after crediting the earlier 84. G3’s [18.5](VNEXT_18_5_ACCEPTANCE_MAP.md) and [18.6](VNEXT_18_6_ACCEPTANCE_MAP.md) closeouts now validate the earlier bounded implementation dependencies. G3 is closed; overall consuming-release qualification remains incomplete. Remaining 18.8 integration and 18.9 qualification/activation are outside this closeout. No further G2 rerun or generic fault batch is pending.
 
 ## Historical consolidation and follow-ups
 
@@ -137,8 +137,8 @@ counts from overlapping runs. With G1 and this cohort passing, reassess the thre
 18.7 checkboxes against this map and record the bounded implementation result.
 
 **G3 — earlier-slice dependencies.** The [18.5 acceptance closeout](VNEXT_18_5_ACCEPTANCE_MAP.md)
-now validates its three bounded assembly/registration/proposal tasks. Independent
-semantic and follow-up acceptance in 18.6 is the next separate reconciliation.
+now validates its three bounded assembly/registration/proposal tasks. The [18.6 closeout](VNEXT_18_6_ACCEPTANCE_MAP.md) also validates its independent
+semantic and follow-up tasks. G3 is closed at the bounded implementation scope.
 Shipping P/semantic/follow-up consuming qualification remains open. These bounded
 maps do not certify all release P0 scenarios or make 18.5–18.7 release-complete.
 

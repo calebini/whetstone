@@ -1,0 +1,2378 @@
+{
+  "base_commit": "48094bab287da0b2fa5753df428184a345a8c994",
+  "checkpoint": "G3 bounded 18.6 acceptance reconciliation",
+  "evidence_counts": {
+    "g2_components": 26,
+    "g2_runtime": 5,
+    "original_regression_individual_pass": 140
+  },
+  "evidence_sources": {
+    "g2_components": {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_local_storage test_vnext_candidate_registry test_vnext_semantic_decisions test_vnext_pointer_history test_vnext_verified_history test_vnext_verified_semantics -v",
+      "exit_code": 0,
+      "log": "rounds/vnext-g2-refresh-001/components.log",
+      "result": "OK; no skips",
+      "seconds": 476.585,
+      "sha256": "c216f915096b86a6f9b1717b6f4da3789f9c3face4e3356af741e112888ac1a5",
+      "test_ids": [
+        "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+        "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+        "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+        "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+        "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+        "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+        "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+        "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+        "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+        "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+        "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+        "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+        "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+        "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+        "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+        "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+        "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+        "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+        "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+        "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+        "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+        "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+        "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_all_registration_publication_prefixes_preserve_or_reconcile_evidence",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_changed_seed_authority_stops_before_candidate_mutation",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_committed_candidate_map_report_and_inventory_tampering_refuses",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_competing_store_cannot_register_while_authority_is_held",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_complete_orphan_is_not_latest_and_recovers_before_later_registration",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_failed_deterministic_report_remains_registered_unverified",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_foreign_base_lineage_refuses_before_any_candidate_artifact",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_frozen_suite_wrong_mode_and_wrong_algorithms_refuse_registration_adapter",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_gap_alias_and_previous_hash_corruption_are_not_ordering_hints",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_identical_candidate_in_another_round_reuses_original_registration",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_latest_uses_creation_ordinal_not_round_timestamp_or_identifier",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_missing_committed_map_is_invalid_even_when_candidate_bytes_survive",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_missing_storage_control_file_is_not_an_empty_journal",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_multiple_orphans_halt_without_selecting_by_enumeration",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_registered_creation_is_unverified_and_replay_reuses_timestamp_and_ordinal",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_registration_commit_acknowledgement_loss_reuses_committed_event",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_rehashed_preparation_cannot_make_altered_candidate_authoritative",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_storage_listing_is_confined_and_read_only",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_two_processes_register_in_one_contiguous_chain",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_uncertain_visible_creation_requires_successful_replay_barrier",
+        "test_vnext_candidate_registry.CandidateRegistryTests.test_wrong_orphan_ordinal_predecessor_or_initial_event_halts",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_reject_is_final_with_semantic_reason_and_cannot_reopen",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append",
+        "test_vnext_pointer_history.PointerHistoryTests.test_complete_history_uses_callback_and_never_selects_unbound_future_artifacts",
+        "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_change_during_traversal_refuses",
+        "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_requires_own_identical_snapshot",
+        "test_vnext_pointer_history.PointerHistoryTests.test_fully_rehashed_history_cannot_reopen_a_final_decision",
+        "test_vnext_pointer_history.PointerHistoryTests.test_missing_or_changed_bound_ancestor_artifacts_refuse_without_repairs",
+        "test_vnext_pointer_history.PointerHistoryTests.test_predecessor_alias_gap_and_self_reference_refuse",
+        "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_intent_cannot_change_expected_base",
+        "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_promotion_event_cannot_skip_its_verified_predecessor",
+        "test_vnext_pointer_history.PointerHistoryTests.test_seed_history_requires_exact_seed_map_and_no_candidate_lineage",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_changed_actual_head_during_replay_refuses_without_repair",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_committed_pointer_cannot_hide_missing_original_verifier_response",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_fresh_replay_rejects_altered_editor_source_after_an_earlier_success",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_historical_request_factory_refuses_another_storage_owner",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_history_requires_its_own_pinned_algorithm",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_inventory_capture_remains_bound_after_semantic_replay",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promoted_same_round_followup_replays_rejected_parent_and_exact_answer",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promotion_cannot_use_itself_as_its_transaction_base",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_second_genuine_promotion_replays_both_original_bases",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_actual_verified_decision_permits_later_promotion_without_advancing_authority",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_deterministic_rejection_stops_before_verifier_and_cannot_reopen",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_final_decision_cannot_hide_missing_raw_verifier_evidence",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_missing_contract_and_proposal_mode_refuse_before_verifier",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_prepared_promotion_tail_is_readable_but_does_not_advance_authority_or_rewrite_decisions",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_select_an_uncommitted_future_predecessor",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_substitute_for_final_semantic_evidence",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_rehashed_promotion_tail_conflicts_refuse_without_repair",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_rejection_is_final_and_never_receives_promotion_permission",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_retained_response_and_prepared_final_decision_recover_without_another_verifier"
+      ],
+      "tests": 89
+    },
+    "g2_runtime": {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_runtime_followup test_vnext_verified_runtime_recovery test_vnext_verified_runtime_verifier_faults -v",
+      "exit_code": 0,
+      "log": "rounds/vnext-g2-refresh-001/runtime.log",
+      "result": "OK; no skips",
+      "seconds": 1240.345,
+      "sha256": "59960ad05a7fc00fdfca8531d59cf37370ffce0b7f626a568aced5616858b180",
+      "test_ids": [
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_declined_or_stale_answer_cannot_select_runtime_child",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_answer_and_selection_prefixes_reopen_without_clients",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_operator_child_second_promotion_and_fresh_process_readback",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_second_promotion_lost_ack_repairs_before_new_review_and_replays_original_raw",
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_killed_reviewer_before_and_after_durable_raw_preserves_slots",
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_runtime_prepared_verification_recovers_without_client_or_promotion",
+        "test_vnext_verified_runtime_recovery.RuntimeRecoveryTests.test_runtime_registration_orphan_recovers_before_work_and_rechecks_original_review",
+        "test_vnext_verified_runtime_verifier_faults.RuntimeVerifierFaultTests.test_killed_verifier_before_and_after_durable_raw_preserves_slots_and_authority"
+      ],
+      "tests": 8
+    },
+    "original_regression_individual_pass": {
+      "command": "PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "error_ids": [],
+      "exit_code": 1,
+      "failure_ids": [
+        "test_fresh_process_reopens_and_replays_without_a_new_editor_call (test_vnext_proposal_run.StoredProposalRunTests.test_fresh_process_reopens_and_replays_without_a_new_editor_call)",
+        "test_real_process_holds_fence_through_editor_and_death_requires_continuation (test_vnext_verified_work.VerifiedWorkTests.test_real_process_holds_fence_through_editor_and_death_requires_continuation)"
+      ],
+      "log": "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+      "result": "FAILED (failures=2)",
+      "seconds": 10155.046,
+      "sha256": "104604d03c232657236c5bc3f4b165ca2af9adf952c6bb74f0f25262a13c6a20",
+      "tests": 1153
+    }
+  },
+  "excluded": [
+    "18.8\u201318.9 implementation",
+    "external transmission",
+    "mode activation",
+    "push",
+    "external specification apply-back"
+  ],
+  "historical_stage_records": [
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerAdmissionTests.test_installed_answer_files_do_not_infer_schema_or_algorithm_support",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerAdmissionTests.test_installed_answer_files_do_not_infer_schema_or_algorithm_support.test_installed_answer_files_do_not_infer_schema_or_algorithm_support"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_explicit_selection_and_decline_never_grant_effects",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_explicit_selection_and_decline_never_grant_effects.test_explicit_selection_and_decline_never_grant_effects"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_recomputed_identity_cannot_add_effects_or_change_question_binding",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_recomputed_identity_cannot_add_effects_or_change_question_binding.test_recomputed_identity_cannot_add_effects_or_change_question_binding"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_stale_sources_unknown_options_and_contradictory_actions_refuse",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_stale_sources_unknown_options_and_contradictory_actions_refuse.test_stale_sources_unknown_options_and_contradictory_actions_refuse"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_timestamp_is_not_identity_but_is_part_of_immutable_bytes",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_timestamp_is_not_identity_but_is_part_of_immutable_bytes.test_timestamp_is_not_identity_but_is_part_of_immutable_bytes"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_dry_run_and_readback_preserve_original_evidence_and_multiple_answers_have_no_default",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_dry_run_and_readback_preserve_original_evidence_and_multiple_answers_have_no_default.test_dry_run_and_readback_preserve_original_evidence_and_multiple_answers_have_no_default"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_historical_receipt_remains_readable_but_superseded_candidate_cannot_receive_answers",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_historical_receipt_remains_readable_but_superseded_candidate_cannot_receive_answers.test_historical_receipt_remains_readable_but_superseded_candidate_cannot_receive_answers"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_receipt_acknowledgement_loss_and_tampered_response_refuse_without_hidden_repair",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_receipt_acknowledgement_loss_and_tampered_response_refuse_without_hidden_repair.test_receipt_acknowledgement_loss_and_tampered_response_refuse_without_hidden_repair"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_reject_dominance_remains_final_after_answer_and_receipt_must_be_explicit",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_reject_dominance_remains_final_after_answer_and_receipt_must_be_explicit.test_reject_dominance_remains_final_after_answer_and_receipt_must_be_explicit"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_response_prefix_requires_receipt_and_exact_reentry_finishes_without_clients",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_response_prefix_requires_receipt_and_exact_reentry_finishes_without_clients.test_response_prefix_requires_receipt_and_exact_reentry_finishes_without_clients"
+            },
+            {
+              "logged": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_unknown_artifacts_and_missing_or_changed_sources_refuse_without_writes",
+              "recorded": "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_unknown_artifacts_and_missing_or_changed_sources_refuse_without_writes.test_unknown_artifacts_and_missing_or_changed_sources_refuse_without_writes"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_reject_is_final_with_semantic_reason_and_cannot_reopen",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_reject_is_final_with_semantic_reason_and_cannot_reopen.test_reject_is_final_with_semantic_reason_and_cannot_reopen"
+            },
+            {
+              "logged": "test_vnext_semantic_decisions.SemanticDecisionTests.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append",
+              "recorded": "test_vnext_semantic_decisions.SemanticDecisionTests.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append"
+            }
+          ],
+          "log": "rounds/vnext-semantic-001/answer-source-replay-tests.log",
+          "outcome": "OK",
+          "seconds": 270.618,
+          "sha256": "19f070448a56176617d26a8c3804b9b33c204688cda174c374ada9515ec50fb2",
+          "supplied_ids_verified_from_log": true,
+          "tests": 18
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-answer-source-replay-stage.json",
+      "sha256": "27d3a8df93ca564426c7d34f7431127f4953b1f652741fffec4397b4a0da865e",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/answer-additional-tests.log",
+          "outcome": "OK",
+          "seconds": 45.952,
+          "sha256": "838f7389a730782ee2a7a9641d1c7b1215b9152d22feaceeb8fbeee6060d19fc",
+          "supplied_ids_verified_from_log": true,
+          "tests": 2
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/answer-recovery-tests.log",
+          "outcome": "OK",
+          "seconds": 80.998,
+          "sha256": "80dded37fc1aa7f049be168ae74fc8e481c907284498353a1b789480bfde2716",
+          "supplied_ids_verified_from_log": true,
+          "tests": 2
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/answer-tamper-tests.log",
+          "outcome": "OK",
+          "seconds": 81.498,
+          "sha256": "049fe74e05d925e42455f41ce19422f4f112391ab10796be3d0feb9b7f25f84c",
+          "supplied_ids_verified_from_log": true,
+          "tests": 2
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-answer-stage.json",
+      "sha256": "fcc4410af262ca375ef38c223c2a4d0d6fdf211c493cefb4fe405e242d091b60",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/coverage-tests.log",
+          "outcome": "OK",
+          "seconds": 8.416,
+          "sha256": "960d15f4db88c2f5d45b7f355d18380158c9ccf1fdff5cc640bbaf6835edae97",
+          "supplied_ids_verified_from_log": false,
+          "tests": 38
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/context-coverage-contract-tests.log",
+          "outcome": "OK",
+          "seconds": 7.798,
+          "sha256": "4a20512ac38521a7997011ff5354d1d7f421e14e59afda8a6890c3fffa7889fe",
+          "supplied_ids_verified_from_log": false,
+          "tests": 49
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/context-recheck-tests.log",
+          "outcome": "OK",
+          "seconds": 4.472,
+          "sha256": "5c7cc95a07491e9141d116a51b67ad7d778124f3edb0ed3a1a4417f6e70cc21e",
+          "supplied_ids_verified_from_log": false,
+          "tests": 7
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-context-stage.json",
+      "sha256": "a205d94a3c82e35085ebb8e76f6c5491aec78b8f2e1f8e2a31712d9aa76fe012",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/decision-tests.log",
+          "outcome": "OK",
+          "seconds": 160.805,
+          "sha256": "64289852b55c94bb43e1dc010ddacc79eaa3572285e16e81c66052509021edc2",
+          "supplied_ids_verified_from_log": false,
+          "tests": 7
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/round-final-tests.log",
+          "outcome": "OK",
+          "seconds": 479.478,
+          "sha256": "0955c66420f6d7df618273b3235faa41bd23577472b90cd2e630d6e7e342ac29",
+          "supplied_ids_verified_from_log": false,
+          "tests": 10
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/round-selection-recheck-tests.log",
+          "outcome": "OK",
+          "seconds": 306.258,
+          "sha256": "3d060bcad5b0a93d5cd37ab3371b9d92a0f6d8fc0b7ea93894d5669c25e0c6ea",
+          "supplied_ids_verified_from_log": false,
+          "tests": 3
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/decision-round-compatibility-tests.log",
+          "outcome": "OK",
+          "seconds": 230.721,
+          "sha256": "167aabb01714b809eeff631b4b2b0baff714a1d6ffea0f8afbf61519bc28b7c9",
+          "supplied_ids_verified_from_log": false,
+          "tests": 37
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/decision-round-frozen-contract-tests.log",
+          "outcome": "OK",
+          "seconds": 1.306,
+          "sha256": "b53fcd837a380923909c50bc602d097c3562d3a1ccadf70094c3d1f7feca93c5",
+          "supplied_ids_verified_from_log": false,
+          "tests": 32
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-decision-round-stage.json",
+      "sha256": "5f31a952a205544f3ff3dcea71f50277760d2179784b05c90fe714b4eaaac9ba",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/durable-request-tests.log",
+          "outcome": "OK",
+          "seconds": 181.444,
+          "sha256": "7337bda149fac4e0f37058801467eaa9abab6acc393d65059cd45fbf0a086c5b",
+          "supplied_ids_verified_from_log": false,
+          "tests": 14
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/durable-recovery-final-tests.log",
+          "outcome": "OK",
+          "seconds": 31.477,
+          "sha256": "1a2c32c7ea219f7bea013c07aa58cd5917703e6fa7e16a09e52f9af067e89a82",
+          "supplied_ids_verified_from_log": false,
+          "tests": 2
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/durable-admission-tests.log",
+          "outcome": "OK",
+          "seconds": 9.823,
+          "sha256": "2b31b84e00853cbed551250a0e0b0a0d5600f43e3351e212e5c36751e159c405",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/durable-frozen-contract-tests.log",
+          "outcome": "OK",
+          "seconds": 1.307,
+          "sha256": "9161701b8f57126f8a28deed0504c3779dfba77d2598853169efa1ef5bd6d7d4",
+          "supplied_ids_verified_from_log": false,
+          "tests": 32
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-durable-stage.json",
+      "sha256": "5440a175b8517aae0108dce775d12d3d566f0a9ed93cd8cf8113536e754c4f84",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/admission-recovery-tests.log",
+          "outcome": "OK",
+          "seconds": 141.814,
+          "sha256": "3ee9eb272aa2393d0b8b5c034f4ab4225fa76e4d1d8d2f6ff7c651aeff91770a",
+          "supplied_ids_verified_from_log": false,
+          "tests": 2
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/admission-boundary-tests.log",
+          "outcome": "OK",
+          "seconds": 254.405,
+          "sha256": "8f9bce205fad8825a47278434c3771736ed4959ff84226556ddaeb0aff3b7a8f",
+          "supplied_ids_verified_from_log": false,
+          "tests": 3
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/admission-request-recovery-test.log",
+          "outcome": "OK",
+          "seconds": 83.068,
+          "sha256": "4770a166cf979b54903cf97b49372821e95e0bc680ee804de2759eec85322b10",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log",
+          "outcome": "OK",
+          "seconds": 832.733,
+          "sha256": "fe2d30d1dc9057d06c6f0958024d681b5692135e0d2add4e7641f5ba0758e38f",
+          "supplied_ids_verified_from_log": false,
+          "tests": 47
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/admission-retained-journey-test.log",
+          "outcome": "OK",
+          "seconds": 767.182,
+          "sha256": "5b17f7d5efcd13890381c259fc0988b5dda6f23c5a469931369bb865908aa9f6",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-followup-admission-stage.json",
+      "sha256": "ede1f15c9ac240d93f0593f85781b2fce33752167c4079497fb4be3438f35e2d",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/followup-preflight-tests.log",
+          "outcome": "OK",
+          "seconds": 47.855,
+          "sha256": "cf8109126b31363d8740518d6f7f7d63cf213d179f1407edc30daf0d497d17c0",
+          "supplied_ids_verified_from_log": true,
+          "tests": 6
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/followup-verifier-context-test.log",
+          "outcome": "OK",
+          "seconds": 39.282,
+          "sha256": "610c5ea70041c4994e2a1e3c589b2a38adbef43a9fce486ec95f93c96188621b",
+          "supplied_ids_verified_from_log": true,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/followup-compatibility-tests.log",
+          "outcome": "OK",
+          "seconds": 12.737,
+          "sha256": "c59df1caf0b39f4c9be6e76d4f842b18f4f9d84a983354304554c70aaf4f0643",
+          "supplied_ids_verified_from_log": true,
+          "tests": 73
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-followup-preflight-stage.json",
+      "sha256": "649d19ca7e27010ab8f5e0785195607444c3117d4bef5f3515690773722beec6",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/native-followup-tests.log",
+          "outcome": "OK",
+          "seconds": 4220.158,
+          "sha256": "fda2fc9aa64b46ed2984c307fe259428bd98c970ecdae5e6111364eab708f995",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-native-followup-stage.json",
+      "sha256": "d754957405b2336a8223af8b33c90ea899ddb6eda79988d6cb047c4e68780e58",
+      "source_limit": "Original journey imported earlier validation-refactor source. Current fresh-process readback is running; it does not replace eventual full release regression.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/normal-followup-recovery-tests.log",
+          "outcome": "OK",
+          "seconds": 4076.456,
+          "sha256": "b3dfab8b8678b74595321a64665d20b4344965db3feb0a74975e96047b108a82",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-normal-followup-recovery-stage.json",
+      "sha256": "02915703a08360c6e65904e2d63e84836b1f148f5dcb1779c8dd30f118ba1b9d",
+      "source_limit": "Process imported validation replay refactor before exact-byte suite parser, same-invocation request reuse, seed-input boundary and V journal hooks. Final current-release regression still required.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/normal-followup-workflow-tests.log",
+          "outcome": "OK",
+          "seconds": 1980.411,
+          "sha256": "f7652b9d009742aa6b0772af926d3002fc6522c195e8acce9c9b56bb034647bd",
+          "supplied_ids_verified_from_log": true,
+          "tests": 1
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-normal-followup-workflow-stage.json",
+      "sha256": "06c029a0ac0706e700c323308e16904bbf4b47abdf1242ecbfc74acf50829f28",
+      "source_limit": "Process loaded validation-replay refactor before the exact-byte parser correction and same-invocation completed-request reuse. Current-version retained readback and targeted change regressions remain required.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/output-recovery-tests.log",
+          "outcome": "OK",
+          "seconds": 144.698,
+          "sha256": "d7c1964f440827c1b5ef4552b04049b2fb34e79bb092edf7ab3dea8bdabef129",
+          "supplied_ids_verified_from_log": false,
+          "tests": 41
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/output-recovery-input-tests.log",
+          "outcome": "OK",
+          "seconds": 0.0,
+          "sha256": "eb70c59e21e6253cc2e27a68f77498ac930163ffb9f2a94d15c350b716afe98d",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/terminal-output-recovery-test.log",
+          "outcome": "OK",
+          "seconds": 4.278,
+          "sha256": "7541a8c3dd979f63e6e707db8530d8b73054662a89dfcd632eb6fd2ef402363f",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/followup-shared-output-recovery-test.log",
+          "outcome": "OK",
+          "seconds": 101.418,
+          "sha256": "851547af8e829063783ca7d2d9aeb0e39469ecd60379e6f16fe8a12798387db0",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/output-recovery-cli-tests.log",
+          "outcome": "OK",
+          "seconds": 269.014,
+          "sha256": "0154d7618465320700f48ee724cc13753ed92e47e5e14130443d99cb27fcd483",
+          "supplied_ids_verified_from_log": false,
+          "tests": 14
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-output-recovery-stage.json",
+      "sha256": "4cf5406efb2cd1f892c399a7117b7ed3ffd325eb286733af3ea97bf9ee55c6d6",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [
+            {
+              "logged": "test_vnext_pointer_reader.PointerReaderTests.test_seed_and_promoted_snapshot_reads_use_the_store_callback",
+              "recorded": "test_vnext_pointer_reader.PointerReaderTests.test_seed_and_promoted_snapshot_reads_use_the_store_callback.test_seed_and_promoted_snapshot_reads_use_the_store_callback"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+              "recorded": "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes.test_all_fixture_artifact_shapes"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+              "recorded": "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+              "recorded": "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+              "recorded": "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch.test_candidate_identity_cannot_disagree_with_registered_patch"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+              "recorded": "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps.test_candidate_index_and_disposition_chains_reject_gaps"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+              "recorded": "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration.test_candidate_map_bytes_must_match_registration"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+              "recorded": "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference.test_closed_prejob_inputs_reject_job_backreference"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+              "recorded": "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot.test_current_pointer_requires_identical_ordinal_snapshot"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+              "recorded": "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths.test_exact_canonical_artifacts_and_confined_paths"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+              "recorded": "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers.test_model_patch_labels_are_not_persisted_identifiers"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+              "recorded": "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject.test_mutation_admission_and_slice_coverage_reject"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+              "recorded": "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject.test_nullable_pairs_algorithms_and_untrusted_digest_reject"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+              "recorded": "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact.test_operation_count_and_normative_assessment_coverage_are_exact"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+              "recorded": "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+              "recorded": "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+              "recorded": "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response.test_ratification_delta_cannot_invent_authority_or_operator_response"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+              "recorded": "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence.test_readonly_joined_candidate_verification_and_promotion_evidence"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+              "recorded": "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+              "recorded": "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective.test_terminal_cannot_take_unbound_prepared_event_as_effective"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+              "recorded": "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping.test_uncertainty_rejection_has_exact_mapping"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+              "recorded": "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event.test_verification_pointer_cannot_swap_a_decision_or_event"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+              "recorded": "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode.test_verified_decision_requires_exact_semantic_evidence_and_mode"
+            },
+            {
+              "logged": "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+              "recorded": "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings.test_verifier_envelope_cannot_inject_persisted_bindings"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+              "recorded": "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json.test_canonical_fixed_bytes_and_invalid_json"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+              "recorded": "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision.test_identity_registry_replay_and_role_collision"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+              "recorded": "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping.test_local_reference_uses_own_schema_and_json_pointer_escaping"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+              "recorded": "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match.test_negative_vector_must_reject_and_expected_output_must_match"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+              "recorded": "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors.test_published_suite_and_all_fixed_vectors"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+              "recorded": "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite.test_rehashed_manifest_cannot_replace_registered_suite"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+              "recorded": "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties.test_schema_keyword_audit_and_typed_additional_properties"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+              "recorded": "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering.test_suite_relocation_and_tampering"
+            },
+            {
+              "logged": "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+              "recorded": "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions.test_utc_timestamps_are_strict_even_through_shared_definitions"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_bad_package_and_imported_runtime_evidence_refuse_before_root_creation",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_bad_package_and_imported_runtime_evidence_refuse_before_root_creation.test_bad_package_and_imported_runtime_evidence_refuse_before_root_creation"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_changed_round_or_reviewer_evidence_refuses_before_client",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_changed_round_or_reviewer_evidence_refuses_before_client.test_changed_round_or_reviewer_evidence_refuses_before_client"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_existing_empty_root_and_existing_reviewer_root_are_not_upgraded",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_existing_empty_root_and_existing_reviewer_root_are_not_upgraded.test_existing_empty_root_and_existing_reviewer_root_are_not_upgraded"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_named_unit_selection_is_reconstructed_from_exact_retained_decision",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_named_unit_selection_is_reconstructed_from_exact_retained_decision.test_named_unit_selection_is_reconstructed_from_exact_retained_decision"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_promoted_or_changed_current_pointer_cannot_be_reseeded",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_promoted_or_changed_current_pointer_cannot_be_reseeded.test_promoted_or_changed_current_pointer_cannot_be_reseeded"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_registered_manifest_missing_consumer_schema_does_not_admit",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_registered_manifest_missing_consumer_schema_does_not_admit.test_registered_manifest_missing_consumer_schema_does_not_admit"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_rehashed_request_cannot_reinterpret_existing_unit_approval",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_rehashed_request_cannot_reinterpret_existing_unit_approval.test_rehashed_request_cannot_reinterpret_existing_unit_approval"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_rehashed_seed_map_does_not_replace_reproduced_seed_lineage",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_rehashed_seed_map_does_not_replace_reproduced_seed_lineage.test_rehashed_seed_map_does_not_replace_reproduced_seed_lineage"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_retained_inputs_admit_request_and_registration_without_fixture_callbacks",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_retained_inputs_admit_request_and_registration_without_fixture_callbacks.test_retained_inputs_admit_request_and_registration_without_fixture_callbacks"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_staged_package_initializes_new_root_and_runs_through_registration",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_staged_package_initializes_new_root_and_runs_through_registration.test_staged_package_initializes_new_root_and_runs_through_registration"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_suite_tamper_and_unregistered_suite_refuse_before_client",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_suite_tamper_and_unregistered_suite_refuse_before_client.test_suite_tamper_and_unregistered_suite_refuse_before_client"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.ProposalAdmissionTests.test_wrong_round_and_base_are_rejected_even_with_rehashed_input_record",
+              "recorded": "test_vnext_proposal_admission.ProposalAdmissionTests.test_wrong_round_and_base_are_rejected_even_with_rehashed_input_record.test_wrong_round_and_base_are_rejected_even_with_rehashed_input_record"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.SuiteDispatchTests.test_callback_reader_rejects_paths_before_invoking_storage",
+              "recorded": "test_vnext_proposal_admission.SuiteDispatchTests.test_callback_reader_rejects_paths_before_invoking_storage.test_callback_reader_rejects_paths_before_invoking_storage"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.SuiteDispatchTests.test_descriptor_selects_registered_algorithm_versions",
+              "recorded": "test_vnext_proposal_admission.SuiteDispatchTests.test_descriptor_selects_registered_algorithm_versions.test_descriptor_selects_registered_algorithm_versions"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.SuiteDispatchTests.test_mutated_cached_suite_or_changed_pins_do_not_create_trust",
+              "recorded": "test_vnext_proposal_admission.SuiteDispatchTests.test_mutated_cached_suite_or_changed_pins_do_not_create_trust.test_mutated_cached_suite_or_changed_pins_do_not_create_trust"
+            },
+            {
+              "logged": "test_vnext_proposal_admission.SuiteDispatchTests.test_registered_digest_without_algorithm_dispatch_cannot_admit_job",
+              "recorded": "test_vnext_proposal_admission.SuiteDispatchTests.test_registered_digest_without_algorithm_dispatch_cannot_admit_job.test_registered_digest_without_algorithm_dispatch_cannot_admit_job"
+            }
+          ],
+          "log": "rounds/vnext-semantic-001/pointer-reader-tests.log",
+          "outcome": "OK",
+          "seconds": 13.789,
+          "sha256": "f1098096efac21c60c7272d08b89ddb2d447c4cb664d3d6238d27867b4af3c2d",
+          "supplied_ids_verified_from_log": true,
+          "tests": 49
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-pointer-reader-stage.json",
+      "sha256": "b6fbb66d89b439cd5021b7c8584105141dd26ee274eb362175042a96d97006ca",
+      "source_limit": "This is snapshot binding only; the complete committed lineage reader, promotion protocol, recovery and release qualification remain required.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/protocol-integration-tests.log",
+          "outcome": "OK",
+          "seconds": 35.206,
+          "sha256": "7335c16cec969882aaf5977152c3bdf1c9a7ca3011d215b21d04e2a8badb8395",
+          "supplied_ids_verified_from_log": false,
+          "tests": 91
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/protocol-final-tests.log",
+          "outcome": "OK",
+          "seconds": 26.268,
+          "sha256": "a79ae8a7de8979e80efd748509c79f40677e3e79baf4936b9e6a96871e45869e",
+          "supplied_ids_verified_from_log": false,
+          "tests": 26
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-protocol-stage.json",
+      "sha256": "5834a2ce43ea82b076fdfd9f125b4f4eab0faf7c469fdd621d4f450f37f39f38",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/repeated-followup-tests.log",
+          "outcome": "OK",
+          "seconds": 4268.522,
+          "sha256": "79422d1bf53a85f9136b3a78c9dfb227dfe3a2cae6d67f8a17b0d944303be8bf",
+          "supplied_ids_verified_from_log": true,
+          "tests": 1
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-repeated-followup-stage.json",
+      "sha256": "eb744df2473c3bcec414ef1a3b3220b1ef9af64d1e4c416d3048d780d4405e5f",
+      "source_limit": "This long process loaded pre-validation-refactor code. Its protocol behavior is retained evidence, not a claim that the complete repeated journey has been rerun after the later validation/seed-input refactors. Current-release regression remains required.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [],
+      "record": "rounds/vnext-semantic-001/validation-replay-work-in-progress.json",
+      "sha256": "f2912f500e5ea5604753bb3cbc4f1e410da0df42be8197fc57efc62fca342eb3",
+      "source_limit": null,
+      "summary_only_or_in_progress": true
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": false,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/suite-verified-bytes-tests.log",
+          "outcome": "OK",
+          "seconds": 15.651,
+          "sha256": "3003f9bf65286b04fccee482e4d6b668e653b8245a4a6320a5ed4a281a5fe4de",
+          "supplied_ids_verified_from_log": true,
+          "tests": 51
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation-suite-verified-bytes-stage.json",
+      "sha256": "ea1668a773300d7803580d039523b94759c92a1a2104df9be83c46ac3f17f70e",
+      "source_limit": "Running long integration scenarios loaded the preceding validator version. Their exact pinned files are unchanged; fresh-process retained readback must exercise the final parser implementation.",
+      "summary_only_or_in_progress": false
+    },
+    {
+      "historical_only": true,
+      "logs": [
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/cli-workflow-tests.log",
+          "outcome": "FAILED (failures=1)",
+          "seconds": 1452.407,
+          "sha256": "15fc0fcb1cb23ac8bb7ed29b9212d9130e5f42a6b0a36fccf9d11432fe57103a",
+          "supplied_ids_verified_from_log": false,
+          "tests": 8
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/cli-native-workflow-test.log",
+          "outcome": "OK",
+          "seconds": 342.081,
+          "sha256": "db853b8a4f1b180b295fb1b7d60400d5e52e35eef5d5c4eb07c42909e3c5ff11",
+          "supplied_ids_verified_from_log": false,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/cli-recovery-final-test.log",
+          "outcome": "OK",
+          "seconds": 404.352,
+          "sha256": "b312ae524fd6480909af13873902d8fdf6cd1fab862170936c246575d71923ec",
+          "supplied_ids_verified_from_log": true,
+          "tests": 1
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/cli-workflow-compatibility-tests.log",
+          "outcome": "OK",
+          "seconds": 629.863,
+          "sha256": "7b0787293c875151f0c12d9c9316b55671af621c7e0ff3c2ebb17e2b89250e52",
+          "supplied_ids_verified_from_log": false,
+          "tests": 56
+        },
+        {
+          "historical_digest_verified": true,
+          "historical_identity_metadata_corrections": [],
+          "log": "rounds/vnext-semantic-001/cli-workflow-frozen-config-tests.log",
+          "outcome": "OK",
+          "seconds": 6.025,
+          "sha256": "f3fd274ed9237df3ce8d7bd067e05c5eafbad2350feca8ef36914a5ac4e56b02",
+          "supplied_ids_verified_from_log": false,
+          "tests": 74
+        }
+      ],
+      "record": "rounds/vnext-semantic-001/validation.json",
+      "sha256": "3156e36315cd320f19ad0c15eabf784cddb99c2ef6b1123c9f35c5e3f4673b6d",
+      "source_limit": null,
+      "summary_only_or_in_progress": false
+    }
+  ],
+  "limitations": [
+    "Composite retained evidence, not a new execution or single full-suite success. Original regression had two failures; exact original outcome is retained.",
+    "Counts identify unittest methods, not subcases; stage counts and 18.7/G2 totals overlap and must not be added.",
+    "Scripted providers and test-only suites do not qualify live model quality, another filesystem, physical power loss or distributed writers."
+  ],
+  "new_tests_added": 0,
+  "reconciliation_tool": {
+    "path": "rounds/vnext-18-6-acceptance-001/reconcile.py",
+    "sha256": "bca20dad43e2491987e0b731ff531f0966bcd7e5be878ed3fc976c349a082486"
+  },
+  "record_bindings": {
+    "docs/audits/VNEXT_18_5_18_7_VALIDATION.json": "4018ee547e322483a2758e212767b1d7f198bfda593871213db1c3fa8e267d54",
+    "docs/audits/VNEXT_G2_VALIDATION.json": "60f096d9d29e80d0ab4c3b35146ce63714401a3e98868e31d9622e95518ab9fc",
+    "rounds/reconciliation-18-5-18-7-001/test-source-manifest.json": "87c568c2b23a60a8d775ac06c9b7ea78b910f3e01dda58c4ba0ef8744e31fc7c",
+    "rounds/vnext-g2-refresh-001/source-manifest.json": "65bce1eff51cb9e8a64c925ea222a73610f03796d6027f4ea6b9d99ffbbb9ef7"
+  },
+  "recorded_at": "2026-09-19",
+  "remaining": [
+    "All nine bounded 18.5\u201318.7 implementation tasks and G3 are validated. Remaining 18.8 scheduler/Phase 2/apply-back integration is outside this checkpoint; no generic acceptance rerun is pending.",
+    "Publish and qualify a descriptor-bound shipping consuming suite; shipping maps stay empty.",
+    "Complete release P0/cross-implementation and compatibility qualification; this is not a clean whole-product rerun.",
+    "Later authorized scheduler/Phase 2/apply-back consumers, live soak and controlled activation remain outside this checkpoint."
+  ],
+  "requirements": [
+    {
+      "id": "S1",
+      "implementation": [
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_coverage.py",
+        "src/whetstone/vnext_semantic_admission.py"
+      ],
+      "requirement": "Complete registered immutable context and exact preservation obligations",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_admission.SemanticAdmissionTests.test_foreign_candidate_and_tampered_report_refuse_without_repair",
+        "test_vnext_semantic_admission.SemanticAdmissionTests.test_registered_context_is_reproduced_without_new_client_or_authority_writes",
+        "test_vnext_semantic_admission.SemanticAdmissionTests.test_registered_proposal_suite_cannot_infer_semantic_support_from_installed_files",
+        "test_vnext_semantic_admission.SemanticAdmissionTests.test_semantic_policy_without_consuming_algorithm_or_schema_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_creation_locator_candidate_or_map_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_payload_or_report_cannot_enter_a_plausible_context",
+        "test_vnext_semantic_context.SemanticContextTests.test_complete_registered_context_contains_independent_evidence_and_no_writes",
+        "test_vnext_semantic_context.SemanticContextTests.test_rehashed_foreign_round_or_transaction_creation_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_snapshot_is_deterministic_and_nested_mutation_cannot_change_its_hash",
+        "test_vnext_semantic_context.SemanticContextTests.test_unbound_context_and_changed_pinned_verifier_refuse",
+        "test_vnext_semantic_coverage.RegisteredCoverageTests.test_registered_readback_builds_coverage_without_changing_authority",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_blank_evidence_and_extra_claims_refuse",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_context_and_content_are_deterministic_detached_and_bound",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_duplicate_foreign_and_stale_endpoint_evidence_refuse",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_fail_and_uncertainty_remain_evidence_without_invented_verdict",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_forged_deterministic_pass_or_suppressed_obligation_refuses",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_merge_covers_each_required_unit_and_separate_complete_group",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_missing_unit_or_group_cannot_hide_behind_aggregate_pass",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_repaired_seed_syntax_keeps_a_mandatory_baseline_assessment",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_split_binds_all_successors",
+        "test_vnext_semantic_coverage.SemanticCoverageTests.test_unchanged_one_to_one_explicit_group_still_requires_evidence"
+      ]
+    },
+    {
+      "id": "S2",
+      "implementation": [
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_native_verifier.py"
+      ],
+      "requirement": "Independent read-only Verifier invocation and complete fail-closed policy validation",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_native_verifier.NativeVerifierTests.test_claude_receives_no_tools_or_session_and_preserves_exact_structured_span",
+        "test_vnext_native_verifier.NativeVerifierTests.test_editor_and_verifier_with_same_model_use_distinct_processes_prompts_and_schemas",
+        "test_vnext_native_verifier.NativeVerifierTests.test_provider_schema_drift_refuses_before_invocation",
+        "test_vnext_native_verifier.NativeVerifierTests.test_real_scripted_codex_process_verifies_exact_registered_context_without_authority_change",
+        "test_vnext_native_verifier.NativeVerifierTests.test_timeout_nonzero_and_provider_errors_remain_transport_failures_without_retry",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_advisory_failure_is_visible_but_uncertainty_still_requires_reject_mapping",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_authority_uncertainty_without_concrete_choice_rejects",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_blocking_assertion_nonpass_and_all_assertion_uncertainty_fail_closed",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_changed_editor_claim_blank_rationale_and_unbound_operator_verdict_refuse",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_concrete_authority_request_binds_candidate_verifier_raw_and_exact_excerpts",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_excluded_reference_only_or_changed_document_cannot_supply_authority_choice",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_incomplete_duplicate_foreign_and_version_mismatched_rules_refuse",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_invalid_scope_unknown_reused_or_stale_authority_excerpt_refuses",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_loss_and_coverage_uncertainty_require_exact_reject_rules",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_missing_duplicate_or_foreign_finding_operation_or_coverage_refuses",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_partial_finding_and_failed_coverage_cannot_pass",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_registered_context_pass_copies_only_frozen_identity_and_replays_exactly",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_reject_uncertainty_dominates_valid_authority_choice",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_schema_errors_are_distinct_from_contradictory_context_and_client_identity",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_unsupported_policy_refuses_before_raw_shape_parsing",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_useful_fix_with_unrelated_regression_cannot_pass_but_can_validly_reject",
+        "test_vnext_semantic_protocol.SemanticProtocolTests.test_verifier_prompt_is_separate_read_only_and_binds_complete_context"
+      ]
+    },
+    {
+      "id": "S3",
+      "implementation": [
+        "src/whetstone/vnext_semantic_requests.py"
+      ],
+      "requirement": "Immutable invocation attempts, bounded retries and raw-output recovery",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_requests.SemanticOperatorRequestTests.test_real_admitted_authority_choice_commits_request_before_report_and_replays_without_client",
+        "test_vnext_semantic_requests.SemanticRequestAdmissionTests.test_core_semantic_support_does_not_infer_durable_request_schema_or_algorithm_support",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_changed_derived_report_and_unknown_attempt_refuse_before_reentry_writes",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_derived_output_prefixes_recover_exactly_without_another_invocation",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_invalid_semantic_binding_remains_technical_without_automatic_or_explicit_retry",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_invocation_marker_consumes_slot_even_when_client_was_never_started",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_missing_bound_predecessor_or_raw_response_refuses_without_call",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_missing_initial_decision_refuses_before_request_or_client",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_one_shape_retry_can_complete_but_invalid_bindings_cannot_retry",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_pass_completes_receipt_without_changing_candidate_or_seed_and_reentry_needs_no_client",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_raw_capture_interruption_is_materialized_without_new_client",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_shape_retry_has_two_linked_markers_and_exhaustion_cannot_reset",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_timeout_requires_explicit_continuation_and_allows_only_timeout_change",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_unbound_candidate_report_cannot_create_a_fresh_request",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_uncertain_marker_publication_invalidates_writer_and_consumes_attempt",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_uninvoked_header_keeps_original_timeout_and_needs_explicit_continuation",
+        "test_vnext_semantic_requests.SemanticRequestTests.test_valid_semantic_rejection_is_complete_without_editor_or_verifier_repair"
+      ]
+    },
+    {
+      "id": "S4",
+      "implementation": [
+        "src/whetstone/vnext_semantic_decisions.py",
+        "src/whetstone/vnext_proposal_closeout.py",
+        "src/whetstone/vnext_validation.py"
+      ],
+      "requirement": "Append-only final decisions, candidate-local atomic pointer, ineffective prepared writes and finality",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_assembly_failure_keeps_prior_registered_candidate_latest",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_competing_owner_cannot_prepare_a_decision_or_allocate_an_ordinal",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_deterministic_failure_commits_final_rejection_without_semantic_evidence",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_event_without_decision_source_cannot_be_recovered",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_every_pre_pointer_prefix_is_prepared_and_recovery_reuses_exact_decision",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_explicit_recovery_after_decision_interruption_does_not_reinvoke_editor",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_extra_decision_or_event_claim_is_invalid_and_not_selected",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_failed_rejection_before_pointer_keeps_unverified_effective_state",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_failure_evidence_write_error_propagates_without_rejection_or_terminal",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_incomplete_request_cannot_enter_closeout",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_lost_commit_acknowledgement_allows_only_missing_terminal_materialization",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_lost_pointer_acknowledgement_uses_actual_committed_disposition",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_passing_determinism_commits_nonfinal_not_run_and_gate_unavailable",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_pointer_tampering_and_missing_targets_never_fall_back_to_initial_event",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_real_ambiguous_section_map_retains_failure_without_fabricated_candidate",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_real_assembly_boundary_failure_is_retained_before_candidate_creation",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_rehashed_decision_cannot_claim_semantics_or_change_finality",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_replay_dependency_failure_is_not_acknowledged_as_success",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_round_entry_reaches_endpoint_and_does_not_advertise_an_unimplemented_gate",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_shape_exhaustion_is_artifact_invalid_without_a_synthetic_candidate",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_terminal_selects_creation_ordinal_and_retains_earlier_rejections",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_timeout_in_final_slot_still_reports_timeout_but_no_resume",
+        "test_vnext_proposal_closeout.ProposalCloseoutTests.test_timeout_terminal_retains_exact_cause_and_explicit_continuation",
+        "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_changed_predecessor_is_not_reinterpreted_under_new_deterministic_evidence",
+        "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_final_or_later_predecessor_cannot_be_reopened",
+        "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_permission_depends_on_pinned_mode_and_final_semantic_pass",
+        "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_projection_does_not_enable_verified_mode_in_the_existing_journal",
+        "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_readonly_or_mismatched_job_cannot_derive_an_editing_decision",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_reject_is_final_with_semantic_reason_and_cannot_reopen",
+        "test_vnext_semantic_decisions.SemanticDecisionTests.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append"
+      ]
+    },
+    {
+      "id": "S5",
+      "implementation": [
+        "src/whetstone/vnext_semantic_run.py",
+        "src/whetstone/vnext_semantic_workflow.py",
+        "src/whetstone/vnext_proposal_cli.py"
+      ],
+      "requirement": "Normal stored-round and CLI workflow preserve seed authority and technical failure state",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_cli.SemanticCLIAdmissionTests.test_round_support_without_workflow_pin_refuses_before_root_or_adapter_creation",
+        "test_vnext_semantic_cli.SemanticCLITests.test_clean_seed_never_invokes_editor_or_verifier",
+        "test_vnext_semantic_cli.SemanticCLITests.test_deterministic_failure_stops_before_verifier_invocation",
+        "test_vnext_semantic_cli.SemanticCLITests.test_live_command_reaches_independent_verification_and_reentry_is_read_only",
+        "test_vnext_semantic_cli.SemanticCLITests.test_prepared_semantic_decision_and_terminal_recovery_construct_no_adapters",
+        "test_vnext_semantic_cli.SemanticCLITests.test_semantic_rejection_is_final_without_editor_repair_or_continuation",
+        "test_vnext_semantic_cli.SemanticCLITests.test_separate_qualification_gate_does_not_infer_semantics_from_installed_contracts",
+        "test_vnext_semantic_cli.SemanticCLITests.test_three_native_roles_complete_the_normal_command_and_reentry_without_more_calls",
+        "test_vnext_semantic_cli.SemanticCLITests.test_timeout_uses_explicit_verifier_continuation_and_preserves_exhausted_cause",
+        "test_vnext_semantic_run.SemanticOperatorRunTests.test_real_authority_choice_pauses_with_final_rejection_and_exact_request_id",
+        "test_vnext_semantic_run.SemanticRunAdmissionTests.test_decision_support_does_not_infer_round_consumer_support",
+        "test_vnext_semantic_run.SemanticRunAdmissionTests.test_deterministic_rejection_recovery_never_opens_semantic_work",
+        "test_vnext_semantic_run.SemanticRunTests.test_initial_decision_recovery_ends_before_any_verifier_call",
+        "test_vnext_semantic_run.SemanticRunTests.test_invalid_semantic_output_is_nonfinal_and_cannot_retry",
+        "test_vnext_semantic_run.SemanticRunTests.test_missing_terminal_recovers_only_materialization_and_corrupt_evidence_refuses",
+        "test_vnext_semantic_run.SemanticRunTests.test_new_registration_between_selection_and_lock_prevents_stale_verifier_invocation",
+        "test_vnext_semantic_run.SemanticRunTests.test_selected_stored_round_verifies_and_reopens_without_clients_or_seed_change",
+        "test_vnext_semantic_run.SemanticRunTests.test_timeout_continuation_preserves_cause_and_exhaustion_never_opens_another_slot",
+        "test_vnext_semantic_run.SemanticRunTests.test_unselected_round_refuses_before_writes",
+        "test_vnext_semantic_run.SemanticRunTests.test_valid_raw_and_prepared_decision_recover_without_verifier_or_editor"
+      ]
+    },
+    {
+      "id": "F1",
+      "implementation": [
+        "src/whetstone/vnext_semantic_answers.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py"
+      ],
+      "requirement": "Exact explicit answers grant no effects; fresh plan keeps original base and editing scope",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_answers.SemanticAnswerAdmissionTests.test_installed_answer_files_do_not_infer_schema_or_algorithm_support",
+        "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_explicit_selection_and_decline_never_grant_effects",
+        "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_recomputed_identity_cannot_add_effects_or_change_question_binding",
+        "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_stale_sources_unknown_options_and_contradictory_actions_refuse",
+        "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_timestamp_is_not_identity_but_is_part_of_immutable_bytes",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_dry_run_and_readback_preserve_original_evidence_and_multiple_answers_have_no_default",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_historical_receipt_remains_readable_but_superseded_candidate_cannot_receive_answers",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_receipt_acknowledgement_loss_and_tampered_response_refuse_without_hidden_repair",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_reject_dominance_remains_final_after_answer_and_receipt_must_be_explicit",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_response_prefix_requires_receipt_and_exact_reentry_finishes_without_clients",
+        "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_unknown_artifacts_and_missing_or_changed_sources_refuse_without_writes",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_altered_scope_or_source_bindings_refuse_before_any_client",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_decline_and_stale_receipt_cannot_supply_followup_evidence",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_editor_receives_interpretation_without_effect_grants_or_reclassified_findings",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_followup_has_distinct_stable_identity_and_exact_original_editing_scope",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_new_plan_drives_distinct_patch_candidate_and_independent_deterministic_assessment",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_unextended_preflight_remains_byte_identical_and_contract_support_is_explicit",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_verifier_context_carries_same_interpretation_and_cannot_reuse_source_response"
+      ]
+    },
+    {
+      "id": "F2",
+      "implementation": [
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_workflow.py"
+      ],
+      "requirement": "Fresh same-round child selection, reassembly and independent verification preserve rejected ancestors",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_actual_same_round_child_registers_and_verifies_without_rewriting_rejected_parent",
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_captured_editor_response_and_completed_reentry_need_no_adapter",
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_deterministic_rejection_of_child_never_invokes_verifier",
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_historical_prefix_cannot_write_consume_itself_or_alias_admission_paths",
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_missing_source_and_changed_selection_never_enable_request_or_expand_scope",
+        "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_prepared_input_and_lost_selection_acknowledgement_recover_without_clients",
+        "test_vnext_semantic_followup_workflow.SemanticFollowupWorkflowTests.test_explicit_selection_routes_normal_commands_and_reopens_completed_child",
+        "test_vnext_semantic_repeated_followup.RepeatedSemanticFollowupTests.test_rejected_v3_child_can_receive_a_distinct_answer_and_produce_a_third_candidate"
+      ]
+    },
+    {
+      "id": "F3",
+      "implementation": [
+        "src/whetstone/vnext_semantic_operator_cli.py",
+        "src/whetstone/vnext_semantic_followup_workflow.py"
+      ],
+      "requirement": "Follow-up recovery, native command composition and explicit qualification boundaries",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_semantic_followup_native_cli.NativeSemanticFollowupCommandTests.test_native_command_journey_preserves_rejection_and_verifies_explicit_followup",
+        "test_vnext_semantic_followup_workflow_recovery.SemanticFollowupWorkflowRecoveryTests.test_initial_raw_final_decision_and_terminal_recovery_preserve_call_allowances",
+        "test_vnext_semantic_operator_cli.SemanticOperatorCommandBoundaryTests.test_commands_on_absent_root_refuse_before_clients_or_root_creation",
+        "test_vnext_semantic_operator_cli.SemanticOperatorCommandTests.test_qualified_commands_keep_answers_separate_from_selection_and_invoke_no_clients",
+        "test_vnext_semantic_operator_qualification.SemanticOperatorQualificationTests.test_every_followup_consumer_contract_is_required",
+        "test_vnext_semantic_operator_qualification.SemanticOperatorQualificationTests.test_qualified_but_incomplete_suite_refuses_before_fresh_root_or_adapters"
+      ]
+    },
+    {
+      "id": "V1",
+      "implementation": [
+        "src/whetstone/vnext_verified_semantics.py",
+        "src/whetstone/vnext_pointer_history.py"
+      ],
+      "requirement": "Shared semantic consumer and finality proof under current committed-history composition",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_pointer_history.PointerHistoryTests.test_complete_history_uses_callback_and_never_selects_unbound_future_artifacts",
+        "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_change_during_traversal_refuses",
+        "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_requires_own_identical_snapshot",
+        "test_vnext_pointer_history.PointerHistoryTests.test_fully_rehashed_history_cannot_reopen_a_final_decision",
+        "test_vnext_pointer_history.PointerHistoryTests.test_missing_or_changed_bound_ancestor_artifacts_refuse_without_repairs",
+        "test_vnext_pointer_history.PointerHistoryTests.test_predecessor_alias_gap_and_self_reference_refuse",
+        "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_intent_cannot_change_expected_base",
+        "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_promotion_event_cannot_skip_its_verified_predecessor",
+        "test_vnext_pointer_history.PointerHistoryTests.test_seed_history_requires_exact_seed_map_and_no_candidate_lineage",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_actual_verified_decision_permits_later_promotion_without_advancing_authority",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_deterministic_rejection_stops_before_verifier_and_cannot_reopen",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_final_decision_cannot_hide_missing_raw_verifier_evidence",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_missing_contract_and_proposal_mode_refuse_before_verifier",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_prepared_promotion_tail_is_readable_but_does_not_advance_authority_or_rewrite_decisions",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_select_an_uncommitted_future_predecessor",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_substitute_for_final_semantic_evidence",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_rehashed_promotion_tail_conflicts_refuse_without_repair",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_rejection_is_final_and_never_receives_promotion_permission",
+        "test_vnext_verified_semantics.VerifiedSemanticTests.test_retained_response_and_prepared_final_decision_recover_without_another_verifier"
+      ]
+    },
+    {
+      "id": "V2",
+      "implementation": [
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "src/whetstone/vnext_semantic_requests.py"
+      ],
+      "requirement": "Representative current runtime operator-child and actual Verifier process-death recovery",
+      "status": "validated_bounded_implementation",
+      "test_ids": [
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_declined_or_stale_answer_cannot_select_runtime_child",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_answer_and_selection_prefixes_reopen_without_clients",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_operator_child_second_promotion_and_fresh_process_readback",
+        "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_second_promotion_lost_ack_repairs_before_new_review_and_replays_original_raw",
+        "test_vnext_verified_runtime_verifier_faults.RuntimeVerifierFaultTests.test_killed_verifier_before_and_after_durable_raw_preserves_slots_and_authority"
+      ]
+    }
+  ],
+  "result": "Three implementation tasks validated at the independent semantic and scripted same-round follow-up boundary; release not qualified",
+  "runtime_or_contract_changes": false,
+  "selected_distinct_passing_methods": 171,
+  "selected_test_methods": {
+    "test_vnext_native_verifier.NativeVerifierTests.test_claude_receives_no_tools_or_session_and_preserves_exact_structured_span": {
+      "evidence": "original_regression_individual_pass",
+      "line": 107,
+      "test_file": "tests/test_vnext_native_verifier.py"
+    },
+    "test_vnext_native_verifier.NativeVerifierTests.test_editor_and_verifier_with_same_model_use_distinct_processes_prompts_and_schemas": {
+      "evidence": "original_regression_individual_pass",
+      "line": 93,
+      "test_file": "tests/test_vnext_native_verifier.py"
+    },
+    "test_vnext_native_verifier.NativeVerifierTests.test_provider_schema_drift_refuses_before_invocation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 126,
+      "test_file": "tests/test_vnext_native_verifier.py"
+    },
+    "test_vnext_native_verifier.NativeVerifierTests.test_real_scripted_codex_process_verifies_exact_registered_context_without_authority_change": {
+      "evidence": "original_regression_individual_pass",
+      "line": 70,
+      "test_file": "tests/test_vnext_native_verifier.py"
+    },
+    "test_vnext_native_verifier.NativeVerifierTests.test_timeout_nonzero_and_provider_errors_remain_transport_failures_without_retry": {
+      "evidence": "original_regression_individual_pass",
+      "line": 115,
+      "test_file": "tests/test_vnext_native_verifier.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_complete_history_uses_callback_and_never_selects_unbound_future_artifacts": {
+      "evidence": "g2_components",
+      "line": 123,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_change_during_traversal_refuses": {
+      "evidence": "g2_components",
+      "line": 206,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_current_pointer_requires_own_identical_snapshot": {
+      "evidence": "g2_components",
+      "line": 182,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_fully_rehashed_history_cannot_reopen_a_final_decision": {
+      "evidence": "g2_components",
+      "line": 218,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_missing_or_changed_bound_ancestor_artifacts_refuse_without_repairs": {
+      "evidence": "g2_components",
+      "line": 150,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_predecessor_alias_gap_and_self_reference_refuse": {
+      "evidence": "g2_components",
+      "line": 172,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_intent_cannot_change_expected_base": {
+      "evidence": "g2_components",
+      "line": 186,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_promotion_event_cannot_skip_its_verified_predecessor": {
+      "evidence": "g2_components",
+      "line": 198,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_pointer_history.PointerHistoryTests.test_seed_history_requires_exact_seed_map_and_no_candidate_lineage": {
+      "evidence": "g2_components",
+      "line": 143,
+      "test_file": "tests/test_vnext_pointer_history.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_assembly_failure_keeps_prior_registered_candidate_latest": {
+      "evidence": "original_regression_individual_pass",
+      "line": 288,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_competing_owner_cannot_prepare_a_decision_or_allocate_an_ordinal": {
+      "evidence": "original_regression_individual_pass",
+      "line": 161,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_deterministic_failure_commits_final_rejection_without_semantic_evidence": {
+      "evidence": "original_regression_individual_pass",
+      "line": 64,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_event_without_decision_source_cannot_be_recovered": {
+      "evidence": "original_regression_individual_pass",
+      "line": 151,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_every_pre_pointer_prefix_is_prepared_and_recovery_reuses_exact_decision": {
+      "evidence": "original_regression_individual_pass",
+      "line": 76,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_explicit_recovery_after_decision_interruption_does_not_reinvoke_editor": {
+      "evidence": "original_regression_individual_pass",
+      "line": 244,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_extra_decision_or_event_claim_is_invalid_and_not_selected": {
+      "evidence": "original_regression_individual_pass",
+      "line": 143,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_failed_rejection_before_pointer_keeps_unverified_effective_state": {
+      "evidence": "original_regression_individual_pass",
+      "line": 112,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_failure_evidence_write_error_propagates_without_rejection_or_terminal": {
+      "evidence": "original_regression_individual_pass",
+      "line": 194,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_incomplete_request_cannot_enter_closeout": {
+      "evidence": "original_regression_individual_pass",
+      "line": 157,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_lost_commit_acknowledgement_allows_only_missing_terminal_materialization": {
+      "evidence": "original_regression_individual_pass",
+      "line": 251,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_lost_pointer_acknowledgement_uses_actual_committed_disposition": {
+      "evidence": "original_regression_individual_pass",
+      "line": 99,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_passing_determinism_commits_nonfinal_not_run_and_gate_unavailable": {
+      "evidence": "original_regression_individual_pass",
+      "line": 45,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_pointer_tampering_and_missing_targets_never_fall_back_to_initial_event": {
+      "evidence": "original_regression_individual_pass",
+      "line": 122,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_real_ambiguous_section_map_retains_failure_without_fabricated_candidate": {
+      "evidence": "original_regression_individual_pass",
+      "line": 299,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_real_assembly_boundary_failure_is_retained_before_candidate_creation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 181,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_rehashed_decision_cannot_claim_semantics_or_change_finality": {
+      "evidence": "original_regression_individual_pass",
+      "line": 133,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_replay_dependency_failure_is_not_acknowledged_as_success": {
+      "evidence": "original_regression_individual_pass",
+      "line": 170,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_round_entry_reaches_endpoint_and_does_not_advertise_an_unimplemented_gate": {
+      "evidence": "original_regression_individual_pass",
+      "line": 208,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_shape_exhaustion_is_artifact_invalid_without_a_synthetic_candidate": {
+      "evidence": "original_regression_individual_pass",
+      "line": 237,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_terminal_selects_creation_ordinal_and_retains_earlier_rejections": {
+      "evidence": "original_regression_individual_pass",
+      "line": 278,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_timeout_in_final_slot_still_reports_timeout_but_no_resume": {
+      "evidence": "original_regression_individual_pass",
+      "line": 226,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_proposal_closeout.ProposalCloseoutTests.test_timeout_terminal_retains_exact_cause_and_explicit_continuation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 215,
+      "test_file": "tests/test_vnext_proposal_closeout.py"
+    },
+    "test_vnext_semantic_admission.SemanticAdmissionTests.test_foreign_candidate_and_tampered_report_refuse_without_repair": {
+      "evidence": "original_regression_individual_pass",
+      "line": 69,
+      "test_file": "tests/test_vnext_semantic_admission.py"
+    },
+    "test_vnext_semantic_admission.SemanticAdmissionTests.test_registered_context_is_reproduced_without_new_client_or_authority_writes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 35,
+      "test_file": "tests/test_vnext_semantic_admission.py"
+    },
+    "test_vnext_semantic_admission.SemanticAdmissionTests.test_registered_proposal_suite_cannot_infer_semantic_support_from_installed_files": {
+      "evidence": "original_regression_individual_pass",
+      "line": 48,
+      "test_file": "tests/test_vnext_semantic_admission.py"
+    },
+    "test_vnext_semantic_admission.SemanticAdmissionTests.test_semantic_policy_without_consuming_algorithm_or_schema_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 54,
+      "test_file": "tests/test_vnext_semantic_admission.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerAdmissionTests.test_installed_answer_files_do_not_infer_schema_or_algorithm_support": {
+      "evidence": "original_regression_individual_pass",
+      "line": 294,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_explicit_selection_and_decline_never_grant_effects": {
+      "evidence": "original_regression_individual_pass",
+      "line": 81,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_recomputed_identity_cannot_add_effects_or_change_question_binding": {
+      "evidence": "original_regression_individual_pass",
+      "line": 104,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_stale_sources_unknown_options_and_contradictory_actions_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 93,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerBindingTests.test_timestamp_is_not_identity_but_is_part_of_immutable_bytes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 114,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_dry_run_and_readback_preserve_original_evidence_and_multiple_answers_have_no_default": {
+      "evidence": "original_regression_individual_pass",
+      "line": 147,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_historical_receipt_remains_readable_but_superseded_candidate_cannot_receive_answers": {
+      "evidence": "original_regression_individual_pass",
+      "line": 256,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_receipt_acknowledgement_loss_and_tampered_response_refuse_without_hidden_repair": {
+      "evidence": "original_regression_individual_pass",
+      "line": 192,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_reject_dominance_remains_final_after_answer_and_receipt_must_be_explicit": {
+      "evidence": "original_regression_individual_pass",
+      "line": 242,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_response_prefix_requires_receipt_and_exact_reentry_finishes_without_clients": {
+      "evidence": "original_regression_individual_pass",
+      "line": 170,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_answers.SemanticAnswerStorageTests.test_unknown_artifacts_and_missing_or_changed_sources_refuse_without_writes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 216,
+      "test_file": "tests/test_vnext_semantic_answers.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLIAdmissionTests.test_round_support_without_workflow_pin_refuses_before_root_or_adapter_creation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 278,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_clean_seed_never_invokes_editor_or_verifier": {
+      "evidence": "original_regression_individual_pass",
+      "line": 247,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_deterministic_failure_stops_before_verifier_invocation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 232,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_live_command_reaches_independent_verification_and_reentry_is_read_only": {
+      "evidence": "original_regression_individual_pass",
+      "line": 143,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_prepared_semantic_decision_and_terminal_recovery_construct_no_adapters": {
+      "evidence": "original_regression_individual_pass",
+      "line": 205,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_semantic_rejection_is_final_without_editor_repair_or_continuation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 171,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_separate_qualification_gate_does_not_infer_semantics_from_installed_contracts": {
+      "evidence": "original_regression_individual_pass",
+      "line": 160,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_three_native_roles_complete_the_normal_command_and_reentry_without_more_calls": {
+      "evidence": "original_regression_individual_pass",
+      "line": 256,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_cli.SemanticCLITests.test_timeout_uses_explicit_verifier_continuation_and_preserves_exhausted_cause": {
+      "evidence": "original_regression_individual_pass",
+      "line": 185,
+      "test_file": "tests/test_vnext_semantic_cli.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_changed_creation_locator_candidate_or_map_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 99,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_changed_payload_or_report_cannot_enter_a_plausible_context": {
+      "evidence": "original_regression_individual_pass",
+      "line": 111,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_complete_registered_context_contains_independent_evidence_and_no_writes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 51,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_rehashed_foreign_round_or_transaction_creation_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 85,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_snapshot_is_deterministic_and_nested_mutation_cannot_change_its_hash": {
+      "evidence": "original_regression_individual_pass",
+      "line": 75,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_context.SemanticContextTests.test_unbound_context_and_changed_pinned_verifier_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 122,
+      "test_file": "tests/test_vnext_semantic_context.py"
+    },
+    "test_vnext_semantic_coverage.RegisteredCoverageTests.test_registered_readback_builds_coverage_without_changing_authority": {
+      "evidence": "original_regression_individual_pass",
+      "line": 169,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_blank_evidence_and_extra_claims_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 139,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_context_and_content_are_deterministic_detached_and_bound": {
+      "evidence": "original_regression_individual_pass",
+      "line": 150,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_duplicate_foreign_and_stale_endpoint_evidence_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 113,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_fail_and_uncertainty_remain_evidence_without_invented_verdict": {
+      "evidence": "original_regression_individual_pass",
+      "line": 128,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_forged_deterministic_pass_or_suppressed_obligation_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 80,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_merge_covers_each_required_unit_and_separate_complete_group": {
+      "evidence": "original_regression_individual_pass",
+      "line": 46,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_missing_unit_or_group_cannot_hide_behind_aggregate_pass": {
+      "evidence": "original_regression_individual_pass",
+      "line": 104,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_repaired_seed_syntax_keeps_a_mandatory_baseline_assessment": {
+      "evidence": "original_regression_individual_pass",
+      "line": 93,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_split_binds_all_successors": {
+      "evidence": "original_regression_individual_pass",
+      "line": 62,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_coverage.SemanticCoverageTests.test_unchanged_one_to_one_explicit_group_still_requires_evidence": {
+      "evidence": "original_regression_individual_pass",
+      "line": 70,
+      "test_file": "tests/test_vnext_semantic_coverage.py"
+    },
+    "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_changed_predecessor_is_not_reinterpreted_under_new_deterministic_evidence": {
+      "evidence": "original_regression_individual_pass",
+      "line": 49,
+      "test_file": "tests/test_vnext_semantic_decision_projection.py"
+    },
+    "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_final_or_later_predecessor_cannot_be_reopened": {
+      "evidence": "original_regression_individual_pass",
+      "line": 58,
+      "test_file": "tests/test_vnext_semantic_decision_projection.py"
+    },
+    "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_permission_depends_on_pinned_mode_and_final_semantic_pass": {
+      "evidence": "original_regression_individual_pass",
+      "line": 31,
+      "test_file": "tests/test_vnext_semantic_decision_projection.py"
+    },
+    "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_projection_does_not_enable_verified_mode_in_the_existing_journal": {
+      "evidence": "original_regression_individual_pass",
+      "line": 72,
+      "test_file": "tests/test_vnext_semantic_decision_projection.py"
+    },
+    "test_vnext_semantic_decision_projection.SemanticDecisionProjectionTests.test_readonly_or_mismatched_job_cannot_derive_an_editing_decision": {
+      "evidence": "original_regression_individual_pass",
+      "line": 66,
+      "test_file": "tests/test_vnext_semantic_decision_projection.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_changed_predecessor_and_unknown_next_ordinal_refuse_without_downgrade": {
+      "evidence": "g2_components",
+      "line": 126,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp": {
+      "evidence": "g2_components",
+      "line": 87,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_final_pointer_cannot_hide_missing_raw_receipt_or_predecessor_snapshot": {
+      "evidence": "g2_components",
+      "line": 142,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition": {
+      "evidence": "g2_components",
+      "line": 110,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_pass_appends_linked_final_decision_and_preserves_seed_and_initial_evidence": {
+      "evidence": "g2_components",
+      "line": 43,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_reject_is_final_with_semantic_reason_and_cannot_reopen": {
+      "evidence": "g2_components",
+      "line": 65,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_decisions.SemanticDecisionTests.test_technical_failure_leaves_nonfinal_initial_decision_without_an_append": {
+      "evidence": "g2_components",
+      "line": 78,
+      "test_file": "tests/test_vnext_semantic_decisions.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_actual_same_round_child_registers_and_verifies_without_rewriting_rejected_parent": {
+      "evidence": "original_regression_individual_pass",
+      "line": 46,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_captured_editor_response_and_completed_reentry_need_no_adapter": {
+      "evidence": "original_regression_individual_pass",
+      "line": 162,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_deterministic_rejection_of_child_never_invokes_verifier": {
+      "evidence": "original_regression_individual_pass",
+      "line": 180,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_historical_prefix_cannot_write_consume_itself_or_alias_admission_paths": {
+      "evidence": "original_regression_individual_pass",
+      "line": 141,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_missing_source_and_changed_selection_never_enable_request_or_expand_scope": {
+      "evidence": "original_regression_individual_pass",
+      "line": 119,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_admission.SemanticFollowupAdmissionTests.test_prepared_input_and_lost_selection_acknowledgement_recover_without_clients": {
+      "evidence": "original_regression_individual_pass",
+      "line": 86,
+      "test_file": "tests/test_vnext_semantic_followup_admission.py"
+    },
+    "test_vnext_semantic_followup_native_cli.NativeSemanticFollowupCommandTests.test_native_command_journey_preserves_rejection_and_verifies_explicit_followup": {
+      "evidence": "original_regression_individual_pass",
+      "line": 29,
+      "test_file": "tests/test_vnext_semantic_followup_native_cli.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_altered_scope_or_source_bindings_refuse_before_any_client": {
+      "evidence": "original_regression_individual_pass",
+      "line": 99,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_decline_and_stale_receipt_cannot_supply_followup_evidence": {
+      "evidence": "original_regression_individual_pass",
+      "line": 146,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_editor_receives_interpretation_without_effect_grants_or_reclassified_findings": {
+      "evidence": "original_regression_individual_pass",
+      "line": 72,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_followup_has_distinct_stable_identity_and_exact_original_editing_scope": {
+      "evidence": "original_regression_individual_pass",
+      "line": 58,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_new_plan_drives_distinct_patch_candidate_and_independent_deterministic_assessment": {
+      "evidence": "original_regression_individual_pass",
+      "line": 81,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_unextended_preflight_remains_byte_identical_and_contract_support_is_explicit": {
+      "evidence": "original_regression_individual_pass",
+      "line": 154,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_verifier_context_carries_same_interpretation_and_cannot_reuse_source_response": {
+      "evidence": "original_regression_individual_pass",
+      "line": 112,
+      "test_file": "tests/test_vnext_semantic_followup_preflight.py"
+    },
+    "test_vnext_semantic_followup_workflow.SemanticFollowupWorkflowTests.test_explicit_selection_routes_normal_commands_and_reopens_completed_child": {
+      "evidence": "original_regression_individual_pass",
+      "line": 57,
+      "test_file": "tests/test_vnext_semantic_followup_workflow.py"
+    },
+    "test_vnext_semantic_followup_workflow_recovery.SemanticFollowupWorkflowRecoveryTests.test_initial_raw_final_decision_and_terminal_recovery_preserve_call_allowances": {
+      "evidence": "original_regression_individual_pass",
+      "line": 16,
+      "test_file": "tests/test_vnext_semantic_followup_workflow_recovery.py"
+    },
+    "test_vnext_semantic_operator_cli.SemanticOperatorCommandBoundaryTests.test_commands_on_absent_root_refuse_before_clients_or_root_creation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 17,
+      "test_file": "tests/test_vnext_semantic_operator_cli.py"
+    },
+    "test_vnext_semantic_operator_cli.SemanticOperatorCommandTests.test_qualified_commands_keep_answers_separate_from_selection_and_invoke_no_clients": {
+      "evidence": "original_regression_individual_pass",
+      "line": 74,
+      "test_file": "tests/test_vnext_semantic_operator_cli.py"
+    },
+    "test_vnext_semantic_operator_qualification.SemanticOperatorQualificationTests.test_every_followup_consumer_contract_is_required": {
+      "evidence": "original_regression_individual_pass",
+      "line": 14,
+      "test_file": "tests/test_vnext_semantic_operator_qualification.py"
+    },
+    "test_vnext_semantic_operator_qualification.SemanticOperatorQualificationTests.test_qualified_but_incomplete_suite_refuses_before_fresh_root_or_adapters": {
+      "evidence": "original_regression_individual_pass",
+      "line": 32,
+      "test_file": "tests/test_vnext_semantic_operator_qualification.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_advisory_failure_is_visible_but_uncertainty_still_requires_reject_mapping": {
+      "evidence": "original_regression_individual_pass",
+      "line": 276,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_authority_uncertainty_without_concrete_choice_rejects": {
+      "evidence": "original_regression_individual_pass",
+      "line": 189,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_blocking_assertion_nonpass_and_all_assertion_uncertainty_fail_closed": {
+      "evidence": "original_regression_individual_pass",
+      "line": 257,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_changed_editor_claim_blank_rationale_and_unbound_operator_verdict_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 324,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_concrete_authority_request_binds_candidate_verifier_raw_and_exact_excerpts": {
+      "evidence": "original_regression_individual_pass",
+      "line": 198,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_excluded_reference_only_or_changed_document_cannot_supply_authority_choice": {
+      "evidence": "original_regression_individual_pass",
+      "line": 240,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_incomplete_duplicate_foreign_and_version_mismatched_rules_refuse": {
+      "evidence": "original_regression_individual_pass",
+      "line": 175,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_invalid_scope_unknown_reused_or_stale_authority_excerpt_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 224,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_loss_and_coverage_uncertainty_require_exact_reject_rules": {
+      "evidence": "original_regression_individual_pass",
+      "line": 159,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_missing_duplicate_or_foreign_finding_operation_or_coverage_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 123,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_partial_finding_and_failed_coverage_cannot_pass": {
+      "evidence": "original_regression_individual_pass",
+      "line": 149,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_registered_context_pass_copies_only_frozen_identity_and_replays_exactly": {
+      "evidence": "original_regression_individual_pass",
+      "line": 108,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_reject_uncertainty_dominates_valid_authority_choice": {
+      "evidence": "original_regression_individual_pass",
+      "line": 216,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_schema_errors_are_distinct_from_contradictory_context_and_client_identity": {
+      "evidence": "original_regression_individual_pass",
+      "line": 290,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_unsupported_policy_refuses_before_raw_shape_parsing": {
+      "evidence": "original_regression_individual_pass",
+      "line": 305,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_useful_fix_with_unrelated_regression_cannot_pass_but_can_validly_reject": {
+      "evidence": "original_regression_individual_pass",
+      "line": 141,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_protocol.SemanticProtocolTests.test_verifier_prompt_is_separate_read_only_and_binds_complete_context": {
+      "evidence": "original_regression_individual_pass",
+      "line": 311,
+      "test_file": "tests/test_vnext_semantic_protocol.py"
+    },
+    "test_vnext_semantic_repeated_followup.RepeatedSemanticFollowupTests.test_rejected_v3_child_can_receive_a_distinct_answer_and_produce_a_third_candidate": {
+      "evidence": "original_regression_individual_pass",
+      "line": 40,
+      "test_file": "tests/test_vnext_semantic_repeated_followup.py"
+    },
+    "test_vnext_semantic_requests.SemanticOperatorRequestTests.test_real_admitted_authority_choice_commits_request_before_report_and_replays_without_client": {
+      "evidence": "original_regression_individual_pass",
+      "line": 313,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestAdmissionTests.test_core_semantic_support_does_not_infer_durable_request_schema_or_algorithm_support": {
+      "evidence": "original_regression_individual_pass",
+      "line": 341,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_changed_derived_report_and_unknown_attempt_refuse_before_reentry_writes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 229,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_derived_output_prefixes_recover_exactly_without_another_invocation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 172,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_invalid_semantic_binding_remains_technical_without_automatic_or_explicit_retry": {
+      "evidence": "original_regression_individual_pass",
+      "line": 131,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_invocation_marker_consumes_slot_even_when_client_was_never_started": {
+      "evidence": "original_regression_individual_pass",
+      "line": 188,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_missing_bound_predecessor_or_raw_response_refuses_without_call": {
+      "evidence": "original_regression_individual_pass",
+      "line": 217,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_missing_initial_decision_refuses_before_request_or_client": {
+      "evidence": "original_regression_individual_pass",
+      "line": 240,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_one_shape_retry_can_complete_but_invalid_bindings_cannot_retry": {
+      "evidence": "original_regression_individual_pass",
+      "line": 125,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_pass_completes_receipt_without_changing_candidate_or_seed_and_reentry_needs_no_client": {
+      "evidence": "original_regression_individual_pass",
+      "line": 90,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_raw_capture_interruption_is_materialized_without_new_client": {
+      "evidence": "original_regression_individual_pass",
+      "line": 158,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_shape_retry_has_two_linked_markers_and_exhaustion_cannot_reset": {
+      "evidence": "original_regression_individual_pass",
+      "line": 112,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_timeout_requires_explicit_continuation_and_allows_only_timeout_change": {
+      "evidence": "original_regression_individual_pass",
+      "line": 142,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_unbound_candidate_report_cannot_create_a_fresh_request": {
+      "evidence": "original_regression_individual_pass",
+      "line": 247,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_uncertain_marker_publication_invalidates_writer_and_consumes_attempt": {
+      "evidence": "original_regression_individual_pass",
+      "line": 254,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_uninvoked_header_keeps_original_timeout_and_needs_explicit_continuation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 202,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_requests.SemanticRequestTests.test_valid_semantic_rejection_is_complete_without_editor_or_verifier_repair": {
+      "evidence": "original_regression_individual_pass",
+      "line": 103,
+      "test_file": "tests/test_vnext_semantic_requests.py"
+    },
+    "test_vnext_semantic_run.SemanticOperatorRunTests.test_real_authority_choice_pauses_with_final_rejection_and_exact_request_id": {
+      "evidence": "original_regression_individual_pass",
+      "line": 249,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunAdmissionTests.test_decision_support_does_not_infer_round_consumer_support": {
+      "evidence": "original_regression_individual_pass",
+      "line": 210,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunAdmissionTests.test_deterministic_rejection_recovery_never_opens_semantic_work": {
+      "evidence": "original_regression_individual_pass",
+      "line": 224,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_initial_decision_recovery_ends_before_any_verifier_call": {
+      "evidence": "original_regression_individual_pass",
+      "line": 168,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_invalid_semantic_output_is_nonfinal_and_cannot_retry": {
+      "evidence": "original_regression_individual_pass",
+      "line": 151,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_missing_terminal_recovers_only_materialization_and_corrupt_evidence_refuses": {
+      "evidence": "original_regression_individual_pass",
+      "line": 130,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_new_registration_between_selection_and_lock_prevents_stale_verifier_invocation": {
+      "evidence": "original_regression_individual_pass",
+      "line": 180,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_selected_stored_round_verifies_and_reopens_without_clients_or_seed_change": {
+      "evidence": "original_regression_individual_pass",
+      "line": 59,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_timeout_continuation_preserves_cause_and_exhaustion_never_opens_another_slot": {
+      "evidence": "original_regression_individual_pass",
+      "line": 86,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_unselected_round_refuses_before_writes": {
+      "evidence": "original_regression_individual_pass",
+      "line": 162,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_semantic_run.SemanticRunTests.test_valid_raw_and_prepared_decision_recover_without_verifier_or_editor": {
+      "evidence": "original_regression_individual_pass",
+      "line": 103,
+      "test_file": "tests/test_vnext_semantic_run.py"
+    },
+    "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_declined_or_stale_answer_cannot_select_runtime_child": {
+      "evidence": "g2_runtime",
+      "line": 242,
+      "test_file": "tests/test_vnext_verified_runtime_followup.py"
+    },
+    "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_answer_and_selection_prefixes_reopen_without_clients": {
+      "evidence": "g2_runtime",
+      "line": 178,
+      "test_file": "tests/test_vnext_verified_runtime_followup.py"
+    },
+    "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_runtime_operator_child_second_promotion_and_fresh_process_readback": {
+      "evidence": "g2_runtime",
+      "line": 126,
+      "test_file": "tests/test_vnext_verified_runtime_followup.py"
+    },
+    "test_vnext_verified_runtime_followup.RuntimeFollowupTests.test_second_promotion_lost_ack_repairs_before_new_review_and_replays_original_raw": {
+      "evidence": "g2_runtime",
+      "line": 209,
+      "test_file": "tests/test_vnext_verified_runtime_followup.py"
+    },
+    "test_vnext_verified_runtime_verifier_faults.RuntimeVerifierFaultTests.test_killed_verifier_before_and_after_durable_raw_preserves_slots_and_authority": {
+      "evidence": "g2_runtime",
+      "line": 62,
+      "test_file": "tests/test_vnext_verified_runtime_verifier_faults.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_actual_verified_decision_permits_later_promotion_without_advancing_authority": {
+      "evidence": "g2_components",
+      "line": 148,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_deterministic_rejection_stops_before_verifier_and_cannot_reopen": {
+      "evidence": "g2_components",
+      "line": 187,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_final_decision_cannot_hide_missing_raw_verifier_evidence": {
+      "evidence": "g2_components",
+      "line": 248,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_missing_contract_and_proposal_mode_refuse_before_verifier": {
+      "evidence": "g2_components",
+      "line": 235,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_prepared_promotion_tail_is_readable_but_does_not_advance_authority_or_rewrite_decisions": {
+      "evidence": "g2_components",
+      "line": 260,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_select_an_uncommitted_future_predecessor": {
+      "evidence": "g2_components",
+      "line": 322,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_promotion_tail_cannot_substitute_for_final_semantic_evidence": {
+      "evidence": "g2_components",
+      "line": 313,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_rehashed_promotion_tail_conflicts_refuse_without_repair": {
+      "evidence": "g2_components",
+      "line": 277,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_rejection_is_final_and_never_receives_promotion_permission": {
+      "evidence": "g2_components",
+      "line": 171,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    },
+    "test_vnext_verified_semantics.VerifiedSemanticTests.test_retained_response_and_prepared_final_decision_recover_without_another_verifier": {
+      "evidence": "g2_components",
+      "line": 207,
+      "test_file": "tests/test_vnext_verified_semantics.py"
+    }
+  },
+  "shipping_controls": {
+    "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {}
+    }
+  },
+  "source": {
+    "baseline_python_and_contract_drift": {
+      "contracts/algorithms/vnext_local_storage_kernel_v1.md": {
+        "current": "5202a2b129fecf3fcb2f9cdf62a95e78fd7a907fb0663a8a63d9bac7ccb02235",
+        "old": "2aded7dc0fa97dd33a3d1d3d03afb95a2237563a56cdf42624b6c0faea161d01"
+      },
+      "contracts/schemas/vnext_local_storage_binding_v1.schema.json": {
+        "current": "05bd33b448f6c3d27ba07ed4116973055e9ebcc7eed23f696f3b2ac9fc6f2dd0",
+        "old": "64ef2db5ab9e95c4a7a9d66abffa0914741d5d5b66aaf6f422b50eaaf9736afb"
+      },
+      "src/whetstone/vnext_verified_history.py": {
+        "current": "d77526bfba61adc173d37a6546eff65e067193028797b2d14f581c999771d949",
+        "old": "418360809cb975c5dcc4b8dbccf7a75151f9a2798906ae49d3b4c79fe7d489b1"
+      },
+      "src/whetstone/vnext_verified_materialization.py": {
+        "current": "711f354ffd676375683da4eda45c8fd6b5d2e7b1baa0dd8b3b5eab372fc37ec6",
+        "old": "86bda9eb522a061a46e646e1e6cc55e89fd00643f9cb4ea66bcc2ad5838469c8"
+      },
+      "src/whetstone/vnext_verified_promotion.py": {
+        "current": "0092bd23f74d35d65746f36dd78ce3a488eb5ac718971df30793a3a3ccb5d98a",
+        "old": "44004505b03bc80e0d3a60a92ec6d968fbc04beb84d838aa8c834c45fecaa1f6"
+      },
+      "src/whetstone/vnext_verified_run.py": {
+        "current": "09af57e3cd0876874b7a20cfa5688907a268b7fe1e26067833b2d76cccd8d08a",
+        "old": "1689ea29096ae7b9310e4149bf2def32357897808e136a5bf0f7123011f687b5"
+      },
+      "src/whetstone/vnext_verified_work.py": {
+        "current": "be25a30264db0aab02fe1cf161f019cb906eec833608780864cc36754c77e88e",
+        "old": "9e4f88ebb051cb9976e15e895f42015024e2f6f93d19cb5d42cfa1fa794562ba"
+      },
+      "tests/test_vnext_local_storage.py": {
+        "current": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5",
+        "old": "05870e9bb542ad795497e226b75155400ae4327b4da821c75d887d70cf58718c"
+      },
+      "tests/test_vnext_proposal_run.py": {
+        "current": "af4e76acc6defc030c062f40145ec3e6fd0b610204413e21f2bd49868ead59b9",
+        "old": "5a9fcbf94171aee27f4695271d8fb94ad48a4f551bf6f94680b7d0be1295e0c0"
+      },
+      "tests/test_vnext_verified_run.py": {
+        "current": "f84dcafe14bb192da9bea5c82c3598ff6c90d223c3e2eedfd36eaa16040c7acd",
+        "old": "fe886ba9d1ae4043f75b5fe95a3e41aa8ce4a3870c88ad99dbb73c53c0f80273"
+      },
+      "tests/test_vnext_verified_work.py": {
+        "current": "5c90a87884328e0936cc5839f9fdd3a7831565319ede6a97525c5f662edeeea5",
+        "old": "2825a5c25ffcde1651849204d6a6bdd2737d2e8a09d3dd85880595a34d45c9f0"
+      }
+    },
+    "carried_python_dependency_closure": {
+      "src/whetstone/__init__.py": "048a39fb74f502670487a9156d045ce256b2ce847b29135018cf4a2e96e2a963",
+      "src/whetstone/apply_back.py": "9ab3e7d4f52c50ba11cf90e9093e27dea7e326ec19ff2f0a9203d4dac4d6b538",
+      "src/whetstone/artifacts.py": "b1e089f7c513536bbc4fb01d04abb3c0ccd5683a565f856d159e816401736d93",
+      "src/whetstone/change_audit.py": "4111d71b50e861848a3d0c79f5badef42d54f736f58f2e49fb823119fdf2e684",
+      "src/whetstone/cli.py": "1a6c88a9681c084fd5b489ddf3e038ea3a76b6587d14c192f43d794f9b4d9ab1",
+      "src/whetstone/clients.py": "f4ba3a5a57ea5997b7454fc4baf86df829ef29df175b5136b7d0ab87f9c9f3b3",
+      "src/whetstone/config.py": "53bf5387624b82645700471fad5ca4e77ad51ac54c2f36f778efc12a8be3711a",
+      "src/whetstone/conflicts.py": "fe40f19ba48a8dfe55109e5daa28cc8648ead241f3d218505087379ac5209863",
+      "src/whetstone/context_pressure.py": "e326059b49757225a889ae8a8894de5ed1fdf10774895fc65446798b02fa4bfb",
+      "src/whetstone/contract_surface.py": "77bab40aefd4acb594f96d5961f0bccbfd81af612637c2fb845856e15f101eb9",
+      "src/whetstone/contracts.py": "107022726b29e464f10e92a76ad4b639665208a59923972d86733d0daf0f310a",
+      "src/whetstone/decisions.py": "215fd15bdf4b4e190ad6fb87042eb44acdac9f35b5ce9f7edd25b4c88eee028e",
+      "src/whetstone/declaration.py": "c40a59a7236897eb25a40725ac17f50209d4643d1fb7ef9d1584da2836e3515c",
+      "src/whetstone/decomposition.py": "8986fe47ed56d8a2ef72e37af3a7556b596cfe9c9e74df6b75a283963f3e72b2",
+      "src/whetstone/diagnostic_sweep.py": "44bdc7b60af118ad1d9b5242d5de32646788471ba812aad3b22425efbb4db470",
+      "src/whetstone/engine.py": "1defa26bfacc8297a06a59feaddefc2a90843001ccbbbff5bbed9b3335e03770",
+      "src/whetstone/evaluation.py": "c23d982eb75389e29be751f0b5dd51df5b69763cb456157ba7c0de4956bba32f",
+      "src/whetstone/hashing.py": "8b82014a87692dc3f87b382b5f1b8f4a55916a8a30198ce2c3faeef37f5c79b0",
+      "src/whetstone/identity.py": "61cec1a3902e4771ad9ea7c88ce5e3dfee423938a2532e64cb74430f41d4c1d6",
+      "src/whetstone/live.py": "fe5e5f5aa9ad7b36c003e67f45dc63ec0f3e0816d5b5376f2af16cf7bd500374",
+      "src/whetstone/live_phase1.py": "cfe366a755cd9dacf6b69c913dad72ce90e4a81479680e8a824a21ac2f91b33a",
+      "src/whetstone/live_phase2.py": "365b5716325cd14363950f4930ad758ec1a49958bb8b9a8e87c6beb38703632c",
+      "src/whetstone/oscillation.py": "8312045f85a42ba10eaece3a2146207572cb3f99144cd8ebe7ff3e7fc8b020db",
+      "src/whetstone/preservation_acceptance.py": "881c641a8a9b09589e125d4adb77731c8882c4c74c7e544591f11b2e47379b03",
+      "src/whetstone/preservation_assessment.py": "6b79fe0cac66417609b49d7431c91634c1fe59e1ae68a0dc9cfcbf2884c0ee5c",
+      "src/whetstone/preservation_budget.py": "3af22afe12563b40505e9b748204136a381a95d790008e505e9751f0dc77a988",
+      "src/whetstone/preservation_consumers.py": "f991df4c69b965ea99c0bbb76c1ae71065b4c42d3318337d324e45c367598077",
+      "src/whetstone/preservation_continuation.py": "c71543cce6eef901794919cb45a7eb2003350b78b89f40364d78f9819213e730",
+      "src/whetstone/preservation_contracts.py": "f4e121eafda540962c03c200b26afae743f3c8ae0021b494245b2426c3dbe253",
+      "src/whetstone/preservation_inventory.py": "c1c4f52adb87e9a1d23f9016cb73f59e583f955652901f841ec98b3b0e3ac37a",
+      "src/whetstone/preservation_maintenance.py": "98bad50bc4dce19bb3f022168cb0377c99d8cb351758023607c2a2bd6df54bd7",
+      "src/whetstone/preservation_materialization.py": "afa065708c09678f58d609bc3f683d58b1fd6f9175ecdfb861c7e379d110e9bc",
+      "src/whetstone/preservation_phase2_closeout.py": "98a04599b31b2be64a016f107692afbd92e78a3b883156b4fd1a009a1fdc4107",
+      "src/whetstone/preservation_proposals.py": "ca0b7822c33e9cc139fbec75d3f7066268233dc576fc8ff6b56839a007ad633b",
+      "src/whetstone/preservation_review.py": "299d9cc8782fb1dcbd946a77c5f12956a5b2deb7c5439b0452828557d6e120c1",
+      "src/whetstone/preservation_round_evidence.py": "4341e29fdb0a77da4d555b03a6f1780999dc6da042576e2febccc319f51f139a",
+      "src/whetstone/preservation_runtime.py": "940114b481f1c7d5eaa2463c61d9820c5fd5b7d45d79d0551512011238cda17c",
+      "src/whetstone/preservation_vertical.py": "c269bad43bb91fb9243f54503c3af688ff659d487fbf5165cefb7d0af2eccc74",
+      "src/whetstone/prompts.py": "8719c24f42f198857a4d9b766ab1c6d40e065743f329542c3ba8f663eaff51ef",
+      "src/whetstone/reports.py": "2a763cb079eb44cdec6f719d6f0ccfbe11e7e8bf1f6beacf1a09dd1f7bb5354f",
+      "src/whetstone/resume.py": "942e3f18b42c1ed96755c1097c2c8528c9ca27e0f76ddc767197dc429baa4ef1",
+      "src/whetstone/rubrics.py": "3e3747a41cb971783faf35a9905b90e05c83a57617745239eb63bb2ce3be87ca",
+      "src/whetstone/run_state.py": "ceed9bf944b73e9580b34f00b094876a76f799e07f6e53214faa7f83f51ffce6",
+      "src/whetstone/runner.py": "a1f867e6d34e0b963161d0fd438ab8f7853b1fbf9a7035a793d9905de2448e23",
+      "src/whetstone/scheduler.py": "149959694974be7172077579c8f1fc102d185ac2a54e45e842b4410cd67faf29",
+      "src/whetstone/scope.py": "32b13dc60add21da7df81ed4f8cd37114120123870282a2d96eede8cecd15a16",
+      "src/whetstone/sections.py": "c45d8f89652d5a6ded0a63d5bffcfe6a54fbb397fff11148ec5068be17eb1906",
+      "src/whetstone/status.py": "229b346376c3be50cab1916d77e8d6bd06e93ca08c23701e7f28be0580651526",
+      "src/whetstone/termination.py": "b48898f9ca0f5208b4376c91879cd6d7e93dcb8b87352b903029ae3805b53bd3",
+      "src/whetstone/text_validation.py": "239007cb27b3c705cd8cd76481e87a087e78517a475bccd30fbe2269af3a0841",
+      "src/whetstone/versioning.py": "3046001d834c59150848c0f5fe0871b322d072cd0bacba5cc74632117d6e1496",
+      "src/whetstone/vnext_admission.py": "5c6d6302e1625e34141db4d7a7ac1246622c70f13f849a9b85cd36f7ed7aa1c4",
+      "src/whetstone/vnext_assembly.py": "f5892eb6b3afdd2912178718b54980e89276cba40682d021ae4bf36702b0ea48",
+      "src/whetstone/vnext_assertions.py": "b98d108eeb0d82884be8a3eade24b695ded6215a109dbd84ed0d387b23fecc43",
+      "src/whetstone/vnext_candidate_registry.py": "abd50c9c4688e9d5d60dbd85e0b3b8e05503ed35ff45f19843be14347f070b78",
+      "src/whetstone/vnext_candidate_validation.py": "fadbe78a99eed8070a6d8670bcd8f7ce3b9c904b22301cda0055c8de0063dc9b",
+      "src/whetstone/vnext_classification.py": "a3fdfffbbe716f5fdd630594662ca369dab7af8ef2cd25b88bd95caabe0523a9",
+      "src/whetstone/vnext_cli.py": "7c10fbc4e920bd60523dfec82b2e0e58bef511902e3f2cbbc132feea4f5aebd8",
+      "src/whetstone/vnext_conformance.py": "a1aa2e3cbbe2258d2c88674205c4747e004fd06fee419d64679090bdeeb40e92",
+      "src/whetstone/vnext_contracts.py": "9444104aa197e4cc610a0386a60fbb01800ebe17346147ac65fc7109f43f8843",
+      "src/whetstone/vnext_decisions.py": "2dcb78af5a5f2887194f0bb1d265880640d600cdbe76566de956b522732baa6f",
+      "src/whetstone/vnext_discovery.py": "c447170fa95075c7e58839917a105ac8c033d14963cdf07c61a6d15f6234299c",
+      "src/whetstone/vnext_identity.py": "6d63d133915f00103a88faddf01628abe16ce9d387d90fde48af87a3a0161281",
+      "src/whetstone/vnext_inventory.py": "3ec2dbed57260f24afccfb2801033ab7777cf388ad01f958e6f9a1cf336ea2b0",
+      "src/whetstone/vnext_inventory_diff.py": "bf084f84236693ed29e28348028b65f9a587a57e6524fc7ad7a1887a1ccb141e",
+      "src/whetstone/vnext_local_storage.py": "8eb44ca662ff1340f06dce90baf1082cc6c2419ddd8fdb34b04e951f80881701",
+      "src/whetstone/vnext_mutation_admission.py": "bd62052d66270cc65514f35299e4dbf239d10604fa30542ab021fde0dd64005a",
+      "src/whetstone/vnext_native_editor.py": "594b50b2420a9cfde05041989c2b1f2551e3d2d794ab9ce4912a2af1e2d87470",
+      "src/whetstone/vnext_native_reviewer.py": "64dc48c8acfc2df62db6bc0d9eec32a2ec5d203772b6f2dba2e5873f9169bf50",
+      "src/whetstone/vnext_native_verifier.py": "c47822800c3e492c6f9ceeaf03002835e937c52a61b232dfa814a49a1a687771",
+      "src/whetstone/vnext_operator_decisions.py": "4bf51aa73139633d1d5b5116862e303f9038efe2b1ccc1daaae641168221175d",
+      "src/whetstone/vnext_plans.py": "db24561e3274b6e1c9e7223971dce885e72c182dbcb716dc96be766cc3a1cb09",
+      "src/whetstone/vnext_proposal_admission.py": "4e51e643627f2aacb5e936e5a9eccdf176d53a3ae34ab0466c89ef90e2887dbc",
+      "src/whetstone/vnext_proposal_cli.py": "cb7ef3ff08d2d21b03e52581d948b89d6d9b65be3a150e3ca5fb4138b93229b6",
+      "src/whetstone/vnext_proposal_closeout.py": "d079591d437f01d8884bd2b87c72930611483432c257f79887de4a266163b84f",
+      "src/whetstone/vnext_proposal_handoff.py": "e4e298d479a88d70991c4a7691e20076d443804631d322af741867b5c92f27d0",
+      "src/whetstone/vnext_proposal_package.py": "9a53d2c5156d8bc22f110401a791c0e22ae26938e33a92313b4047607a134a32",
+      "src/whetstone/vnext_proposal_protocol.py": "1bf9778beb11ca80a5f47b4f30cfb6f3c4fdd50f8f91dd257ff463eac27db1de",
+      "src/whetstone/vnext_proposal_requests.py": "2ae8b87d13c2c6b6780f3f4a68d34539cefe363155e0bafff68416c16e8399d7",
+      "src/whetstone/vnext_proposal_run.py": "5df3da9f91c2eb525ee5f212d17029c9f2b602a23b249b90f44f2b8e423199ec",
+      "src/whetstone/vnext_proposal_status.py": "68e24e8c032a30a186ba84e2c3a4f799d6968560cd0577b1a384ef568d127778",
+      "src/whetstone/vnext_proposals.py": "5cbf705f90d941f892fa047884112b5a4d23509bd65e0b4e475314b56bfa3deb",
+      "src/whetstone/vnext_registry.py": "2ea372a4dbc0d9bd78505178b136d3898015408576270b16133ea35b63ab22a8",
+      "src/whetstone/vnext_review.py": "bb13be1c0a4de06e7bbea756faf709170eee3f9b51a6b0b0275598e3ba354e0f",
+      "src/whetstone/vnext_review_protocol.py": "448e87a74176499eba88fd14e1e9e6d29390afb6f5e6f94c1b37cc77eb216996",
+      "src/whetstone/vnext_review_requests.py": "c1a66e5f23639e9779a848c9e47f9a581045a6c62af1b06cc8b080272db9d47c",
+      "src/whetstone/vnext_section_lineage.py": "dad628245d81c54280ce436b7559e66975614d0b6bc7f6133bba66ffc14626de",
+      "src/whetstone/vnext_sections.py": "d391468081ed904fc92c0e3988e85464068195394d5da5943918cd66d9fe2955",
+      "src/whetstone/vnext_seed_review_closeout.py": "64977b28629a788a9f98ffc2cf72866d0475385bb2d0d9d2f296152f4014939a",
+      "src/whetstone/vnext_semantic_admission.py": "22774fe82e89d927f0b3040d706bf219035ee1b1ec24d9f58d91abbe7ff93c17",
+      "src/whetstone/vnext_semantic_answers.py": "62ff032860a2827e742de9bbf086308ef71b42aa1b917e2c26a7c11e38dfa0bc",
+      "src/whetstone/vnext_semantic_context.py": "d9e35123ca39dc56907cf4dc84d4b601d10e28809ba45b43d3df4caa4e17f1e6",
+      "src/whetstone/vnext_semantic_coverage.py": "ffbd69b5a2b2b96c73dc7a038177db9c03162ff275de5eb01e6e6ca2fad20803",
+      "src/whetstone/vnext_semantic_decisions.py": "b41d5b15fde97255546e9c1dfd6ffb8ead23e5cb60ca112c44721f8eed33816c",
+      "src/whetstone/vnext_semantic_followup_admission.py": "e277ea42868d1051244b3a1a1f9492466a7bf75391eeccbd48c601fe418cc658",
+      "src/whetstone/vnext_semantic_followup_preflight.py": "ffeb8e2077e8748f3c1838fb8a7405fd9ff2eebdac9f4a1a780d44d189cfd8b7",
+      "src/whetstone/vnext_semantic_followup_workflow.py": "b497d2e7dc71927f814eb3b4a602d32052580e492e8b124c3aaf5edfb00a0186",
+      "src/whetstone/vnext_semantic_operator_cli.py": "0416f220cc11267a3df60839426bb99c59b3434020b697233e6de81e6ee4b908",
+      "src/whetstone/vnext_semantic_protocol.py": "69b2cd59d2a316b11c6b7aa795dd2c39b5034c518a58159fa1aa7ab1d710c243",
+      "src/whetstone/vnext_semantic_requests.py": "0cb32a1f093228ebdfcbcaffdd15594c800e19fe1fd1074aabf60603acfdfbe5",
+      "src/whetstone/vnext_semantic_run.py": "fbc84cb2610644f01adbdeb8272d6b0ead1a60a31d81160b7053886eaa0dd43f",
+      "src/whetstone/vnext_semantic_workflow.py": "78c64bce618a149f24179facedc70a5b019cbeb8f5f95fb26eba2e6c59e62ca2",
+      "src/whetstone/vnext_storage.py": "14998991827553bb12c4874c084eb2c1ae417f2809241eee56d9ee77e4f03097",
+      "src/whetstone/vnext_unit_authorization.py": "3956018b5de82e1b3a6b2078a3b2a2876a3df5361193cf068a43ce7d2f2de0d9",
+      "src/whetstone/vnext_unit_lineage.py": "f36924d653f6247aa3df29798a2e3c369d639c02ed0e52bc229f82622a32e39f",
+      "src/whetstone/vnext_unit_preflight.py": "9df9f811ef39b41adeea19ccc404003b6aac741d6fd22fe4b7e5e50dd256a2e7",
+      "src/whetstone/vnext_unit_proposals.py": "bfc0dfdd4e41ce4609ad09d04b956b4f877b215d59068f89747320723ee734f7",
+      "src/whetstone/vnext_unit_protocol.py": "dba9020378938799d8b535cde66bfad78444aed40e2cf5058c593050f75bb720",
+      "src/whetstone/vnext_validation.py": "725dcc127f1ec9a905eac08953026a4f306ed2d37149b2feeca43634727e4d85",
+      "src/whetstone/vocabulary.py": "b4750b80ac18838658d08c8f493a430862479ee8ef39cf5a52670eb295ee8670",
+      "tests/test_vnext_admission.py": "db97531d8f3ee8c0219c1ffc4a69b99f05bcaf3716f516f8c3caa3dae681cf3d",
+      "tests/test_vnext_candidate_registry.py": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+      "tests/test_vnext_candidate_validation.py": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+      "tests/test_vnext_native_verifier.py": "b6b104069b34bf5e703156f90fcb6d890f630f76ba8533a9b108ec86d65f0b9d",
+      "tests/test_vnext_patch_operations.py": "f80ec4fd7f967b2055a33d25244033cdf62c312acb0b2f57a400fab066bd2e33",
+      "tests/test_vnext_proposal_admission.py": "212cce6d559bc8cd9d82d904380900c6adebfdb59926f7e94d4550938c65a387",
+      "tests/test_vnext_proposal_cli.py": "5a5a6a50537e0faf7966c27ad4c0135d1c8c6fc98bc093154c89e94eff9cca4b",
+      "tests/test_vnext_proposal_closeout.py": "52e827dfa7b3c5a1b1ffd4e7d3ec997271641f00fa7abefb55f8253f5d94dddb",
+      "tests/test_vnext_proposal_package.py": "df1346f77bcd620fa9fd587337d1c675db7aa0e8351983d68cb438277a11c772",
+      "tests/test_vnext_proposal_requests.py": "26edd64478e48652ba080897626d0154efec6bfeaae0ae7a6ef61c422aad552e",
+      "tests/test_vnext_review_requests.py": "a7fbc4bd1286774a815f7175feea7102b1c7f9e451893e7d9c4b645f7150ba54",
+      "tests/test_vnext_semantic_admission.py": "4d16f77a81ed65a82cc38b711657f4b55d40789d08322da767fdb4ef771ec2bd",
+      "tests/test_vnext_semantic_answers.py": "92f7ba3f538b7f70a8c9535cd81b50b2507524cb1b44e33200bbcac393fd1826",
+      "tests/test_vnext_semantic_cli.py": "8e8761b7b8b9de8710a7a5e7bf8029b11ed84fe6e654f297f7d40a6011a73d3c",
+      "tests/test_vnext_semantic_context.py": "17b9d320eb5576c68051459cf277f1e8ea7f0f780c2eb3251a98bbf19bea5957",
+      "tests/test_vnext_semantic_coverage.py": "af4fc77476807fd0e7d0948e70d6facad7d3a82168fdf89d3e8cb8245c455235",
+      "tests/test_vnext_semantic_decision_projection.py": "4578be4bdf6accbdd891489f3a2bbdbf80d1586210791c814dd5bba9e7c65bc7",
+      "tests/test_vnext_semantic_decisions.py": "e1899690889dc8041339b7b1f2162f204b7f9da4fc128757ad9bd6e444c4c8c8",
+      "tests/test_vnext_semantic_followup_admission.py": "bda5303960a5fe8e514c82f0e82b72c9f7662aa2c60ad33011abe33c6b34fafa",
+      "tests/test_vnext_semantic_followup_native_cli.py": "f87f4c93bb5cdff582927a55974d4fc0e6195197bce1a47c62bc666d309e335e",
+      "tests/test_vnext_semantic_followup_preflight.py": "75f7d050e60a9b0da9f7b64ab42695f58d82edb370a8cc66c8931ac3c65106a3",
+      "tests/test_vnext_semantic_followup_workflow.py": "eda1e054120a7a0e6b2cc0ed36948d12470aa102ba4cec4d2dce40eaa42807a3",
+      "tests/test_vnext_semantic_followup_workflow_recovery.py": "40ec8f750fabc1d46797357c0aab91dbbe994df7bdf0d287383b62b043664670",
+      "tests/test_vnext_semantic_operator_cli.py": "0e42aa4df9618fef3bd7c1d1af983ac27315068b038623d8d476fdac40f69e31",
+      "tests/test_vnext_semantic_operator_qualification.py": "8137605d9ee93c164a6531693ddec411583e25a0c000f78c002a18134362b863",
+      "tests/test_vnext_semantic_protocol.py": "d538720e9ce31ae8e2ee6afa5d821c30c0c84bf8d15d0625052e31c96f9b57f8",
+      "tests/test_vnext_semantic_repeated_followup.py": "fe5c40cf2340edb3fc8dd8cad95be443a5b7e08ed6f9928cd9f1119eed4b79d2",
+      "tests/test_vnext_semantic_requests.py": "8773c72d9bce65aff3640b7efd9b0d006025ccfb52a8bb7459053d92505ea776",
+      "tests/test_vnext_semantic_run.py": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+      "tests/test_vnext_unit_authorization.py": "5e8dc5ae13459507d9d1e1571a27b8e8284937ba10d6560f7e0d00855c6178b1",
+      "tests/test_vnext_unit_correspondence.py": "888945b0a52e23f397270431b4aedd11e98cd3225ac3ebefc0fdd6cfa57a5964",
+      "tests/test_vnext_unit_preflight.py": "d56b968399568f9436a43c0a3a2a50a8fceae5ae6ee5e48db82a17d316e9b678",
+      "tests/vnext_consuming_suite_fixture.py": "ccefcc1d9574dbdea95e95d4a2ac89e7e7442553091c68c886ed26851f1f4b26",
+      "tests/vnext_fixtures.py": "17a4fa7141aeea9fadaad42915eeef3237e7fd8255e99d631f1cf5cffc668a8b",
+      "tests/vnext_mutation_fixtures.py": "f8e2c1640726a4b0b3ebf66cfe3e87d58d304fb49fccb86be1b4017d525d4c0a"
+    },
+    "closure_drift": {},
+    "closure_method": "Static local Python import closure, including function-local imports; not dynamic instrumentation",
+    "drift_assessment": [
+      "Every file in the carried semantic Python dependency closure matches the original validation manifest; no corrected-test substitution is needed for the selected methods.",
+      "Changed verified-runtime modules are outside the carried semantic dependency closure. V composition and actual process-death evidence are separately credited from current G2.",
+      "Local-storage descriptor-path schema was tightened and its kernel contract clarified after baseline. Current G2 covers schema rejection/resolution and registry consumers. Carried semantic runs are not represented as reruns against this schema.",
+      "All G2 manifest hashes still match. No other baseline contract bytes changed."
+    ],
+    "manifest": "rounds/vnext-18-6-acceptance-001/source-manifest.json",
+    "sha256": "8b9d6c6a50711590f49a91492d0c2fa7eafecedb399ac4c640334c6155857979"
+  },
+  "tests_executed_this_checkpoint": 0
+}

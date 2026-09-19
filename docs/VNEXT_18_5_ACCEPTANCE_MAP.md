@@ -5,8 +5,9 @@ Date: 2026-09-19. Starting checkpoint: `833ea21`.
 **The three 18.5 implementation tasks are validated at the isolated component
 and scripted proposal-only boundary.** No implementation defect or additional
 test case was identified by this reconciliation. Public proposal-only release
-qualification remains open. This closes the 18.5 portion of G3; the next bounded
-step is 18.6 acceptance reconciliation.
+qualification remains open. This closes the 18.5 portion of G3. The subsequent
+[18.6 closeout](VNEXT_18_6_ACCEPTANCE_MAP.md) now closes its remaining bounded
+acceptance work; G3 is complete at that scope.
 
 This assessment reads the candidate leaf's transaction, registration and
 deterministic-validation requirements alongside the v2 assembly supplement,
@@ -80,10 +81,11 @@ including deterministic assembly/reporting, D8-backed registration and the
 scripted seed-to-unverified-candidate journey. D8 design ratification and its
 bounded audit remain closed.
 
-Still partial: overall dependency/release acceptance across 18.5–18.7. The next
-step is to map 18.6's independent semantic coverage/finality and answer/follow-up
-criteria to existing evidence, credit current G2 results, and identify only
-specific missing proof. No further generic 18.5 or storage fault batch is pending.
+Still partial: overall release acceptance across 18.5–18.7. The subsequent 18.6
+closeout maps independent semantic coverage/finality and answer/follow-up criteria
+to existing evidence and validates those bounded tasks. No further generic
+acceptance or storage fault batch is pending; remaining 18.8 integration and 18.9
+release gates stay outside this closeout.
 
 Still unqualified: a shipping descriptor-bound consuming suite, full release
 P0/cross-implementation and compatibility qualification, other storage
