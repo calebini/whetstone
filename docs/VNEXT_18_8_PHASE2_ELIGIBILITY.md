@@ -70,7 +70,9 @@ runtime bytes, shipping maps and frozen suite bytes remain unchanged.
 
 ## Handoff
 
-Next bounded slice: define and validate an immutable **Phase 2 configuration and
+The [configuration-binding slice](VNEXT_18_8_PHASE2_BINDING.md) implements this
+follow-up with a new pinned API; this prerequisite API retains its original contract.
+The original next-step scope was: define and validate an immutable **Phase 2 configuration and
 entry-request binding** to the job, current pointer and Phase 1 closeout. Bind the
 target, rubric evidence, profile order/budgets and role identities explicitly;
 reject stale/cross-job requests and unsupported settings without reading defaults

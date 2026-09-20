@@ -44,6 +44,9 @@ class _Eligibility(_OperatorStatus):
 
     def inspect_eligibility(self):
         proof = self._proof(self.store.read)
+        return self._evaluate_eligibility(proof)
+
+    def _evaluate_eligibility(self, proof):
         work = VerifiedWork._observe(self, proof)
         latest = None
         decisions = ()

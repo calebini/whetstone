@@ -142,6 +142,15 @@ class VerifiedRun:
     def phase2_eligibility(self):
         from whetstone.vnext_verified_phase2_eligibility import inspect_verified_phase2_eligibility
         return inspect_verified_phase2_eligibility(self)
+    def prepare_phase2_entry(self, configuration):
+        from whetstone.vnext_verified_phase2_binding import prepare_phase2_entry
+        return prepare_phase2_entry(self, configuration)
+    def bind_phase2_entry(self, configuration):
+        from whetstone.vnext_verified_phase2_binding import bind_phase2_entry
+        return bind_phase2_entry(self, configuration)
+    def phase2_entry_status(self):
+        from whetstone.vnext_verified_phase2_binding import inspect_phase2_entry
+        return inspect_phase2_entry(self)
     def request(self, **options): return self._operator().request(**options)
     def register(self, **options): return self._operator().register(**options)
     def verify(self, **options): return self._operator().verify(**options)

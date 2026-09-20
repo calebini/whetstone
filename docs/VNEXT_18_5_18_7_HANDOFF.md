@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+18.8 Phase 2 binding follow-up (2026-09-20): [immutable configuration and request publication](VNEXT_18_8_PHASE2_BINDING.md) now bind explicit target/rubric/profile-budget/role inputs to current verified lineage and Phase 1 closeout, with source barriers and recoverable publication. Binding does not enter Phase 2. All four 18.8 tasks remain incomplete. Next is fenced entry and its distinct recovery commit. The user has deferred pushing until feature completion; all checkpoints remain local. Earlier next-action statements below are historical.
+
 18.8 Phase 2 prerequisite follow-up (2026-09-20): [entry-eligibility inspection](VNEXT_18_8_PHASE2_ELIGIBILITY.md) now distinguishes proven Phase 1 readiness from unavailable Phase 2 admission/execution. It binds current draft/map and closeout evidence and blocks unpromoted/rejected candidates, unresolved decisions and incomplete review/recovery. Next is immutable Phase 2 configuration/entry-request binding; the existing review schema has no Phase 2 target/rubric/budgets. All four 18.8 tasks remain incomplete. Earlier next-action statements below are historical.
 
 18.8 operator follow-up (2026-09-20): [operator status and run-state recovery](VNEXT_18_8_PHASE1_OPERATOR.md) now rederive the active terminal from current committed closeout evidence, reject stale cached success, and synchronize the derived reference without advancing work. All four 18.8 tasks remain incomplete. Next is bounded Phase 2 entry eligibility; Phase 2 execution, public activation, push and external apply-back remain excluded. Earlier next-action statements below are historical.
