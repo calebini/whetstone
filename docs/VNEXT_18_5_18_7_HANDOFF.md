@@ -2,6 +2,8 @@
 
 Date: 2026-09-14–15. Starting commit: `c726422`.
 
+18.8 Phase 2 prerequisite follow-up (2026-09-20): [entry-eligibility inspection](VNEXT_18_8_PHASE2_ELIGIBILITY.md) now distinguishes proven Phase 1 readiness from unavailable Phase 2 admission/execution. It binds current draft/map and closeout evidence and blocks unpromoted/rejected candidates, unresolved decisions and incomplete review/recovery. Next is immutable Phase 2 configuration/entry-request binding; the existing review schema has no Phase 2 target/rubric/budgets. All four 18.8 tasks remain incomplete. Earlier next-action statements below are historical.
+
 18.8 operator follow-up (2026-09-20): [operator status and run-state recovery](VNEXT_18_8_PHASE1_OPERATOR.md) now rederive the active terminal from current committed closeout evidence, reject stale cached success, and synchronize the derived reference without advancing work. All four 18.8 tasks remain incomplete. Next is bounded Phase 2 entry eligibility; Phase 2 execution, public activation, push and external apply-back remain excluded. Earlier next-action statements below are historical.
 
 18.8 closeout follow-up (2026-09-20): [global acceptance and immutable Phase 1 terminal publication](VNEXT_18_8_PHASE1_CLOSEOUT.md) now follow the bounded status view. Complete current-pointer profile coverage and zero global major/blocker debt are required for acceptance; publication binds source receipts and replays durability barriers without clients or new ordinals. All four 18.8 tasks remain incomplete. Operator status/run-state integration is next; Phase 2, public activation, push and external apply-back remain outside this slice.

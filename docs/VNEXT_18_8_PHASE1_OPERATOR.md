@@ -82,7 +82,10 @@ orphan/operator-decision composition.
 
 ## Handoff
 
-Next bounded slice: implement Phase 2 **entry eligibility** against current verified
+The [Phase 2 prerequisite slice](VNEXT_18_8_PHASE2_ELIGIBILITY.md) implements the
+read-only Phase 1 side and identifies missing immutable Phase 2 configuration.
+Entry and execution remain unavailable. The original next-step scope was:
+implement Phase 2 **entry eligibility** against current verified
 lineage and complete accepted Phase 1 evidence, checking that stale reports,
 unpromoted candidates, unresolved decisions and unsupported configuration cannot
 grant entry. Keep eligibility distinct from execution, which still needs a pinned

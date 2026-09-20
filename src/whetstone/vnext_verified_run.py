@@ -139,6 +139,9 @@ class VerifiedRun:
     def reconcile_phase1_state(self):
         from whetstone.vnext_verified_phase1_operator import reconcile_verified_phase1_state
         return reconcile_verified_phase1_state(self)
+    def phase2_eligibility(self):
+        from whetstone.vnext_verified_phase2_eligibility import inspect_verified_phase2_eligibility
+        return inspect_verified_phase2_eligibility(self)
     def request(self, **options): return self._operator().request(**options)
     def register(self, **options): return self._operator().register(**options)
     def verify(self, **options): return self._operator().verify(**options)
