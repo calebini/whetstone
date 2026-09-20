@@ -151,6 +151,12 @@ class VerifiedRun:
     def phase2_entry_status(self):
         from whetstone.vnext_verified_phase2_binding import inspect_phase2_entry
         return inspect_phase2_entry(self)
+    def enter_phase2(self):
+        from whetstone.vnext_verified_phase2_entry import enter_verified_phase2
+        return enter_verified_phase2(self)
+    def phase2_state(self):
+        from whetstone.vnext_verified_phase2_entry import inspect_verified_phase2_state
+        return inspect_verified_phase2_state(self)
     def request(self, **options): return self._operator().request(**options)
     def register(self, **options): return self._operator().register(**options)
     def verify(self, **options): return self._operator().verify(**options)

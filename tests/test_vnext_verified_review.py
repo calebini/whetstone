@@ -25,7 +25,8 @@ class VerifiedReviewTests(unittest.TestCase):
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
                 closeout_contract=False, operator_status_contract=False, phase2_eligibility_contract=False,
-                phase2_binding_contract=False):
+                phase2_binding_contract=False, phase2_entry_contract=False):
+        phase2_binding_contract = phase2_binding_contract or phase2_entry_contract
         phase2_eligibility_contract = phase2_eligibility_contract or phase2_binding_contract
         operator_status_contract = operator_status_contract or phase2_eligibility_contract
         closeout_contract = closeout_contract or operator_status_contract
@@ -47,10 +48,12 @@ class VerifiedReviewTests(unittest.TestCase):
         if operator_status_contract: algorithms += ('vnext_verified_phase1_operator_v1',)
         if phase2_eligibility_contract: algorithms += ('vnext_verified_phase2_eligibility_v1',)
         if phase2_binding_contract: algorithms += ('vnext_verified_phase2_binding_v1',)
+        if phase2_entry_contract: algorithms += ('vnext_verified_phase2_entry_v1',)
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,
                 extra_schemas={'vnext_review_request_v2'} | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set())
-                    | ({'vnext_phase2_configuration_v1', 'vnext_phase2_entry_request_v1'} if phase2_binding_contract else set()),
+                    | ({'vnext_phase2_configuration_v1', 'vnext_phase2_entry_request_v1'} if phase2_binding_contract else set())
+                    | ({'vnext_phase2_entry_v1'} if phase2_entry_contract else set()),
                 register_candidate=False)
         refs = f.admission._refs
         constraints = json.loads(f.store.read(refs['rounds'][1]['path']))['constraints']

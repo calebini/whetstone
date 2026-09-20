@@ -89,7 +89,9 @@ Legacy/bridge runtime bytes, frozen suite and shipping maps remain unchanged.
 
 ## Handoff
 
-Next bounded slice: implement a fenced Phase 2 entry owner consuming this committed
+The [entry slice](VNEXT_18_8_PHASE2_ENTRY.md) implements this boundary
+with a separate pinned API; the original binding API retains its contract.
+The original next-step scope was: implement a fenced Phase 2 entry owner consuming this committed
 request, with a distinct entry commit and recovery-only reentry. Revalidate current
 pointer, Phase 1 prerequisites, configuration and source barriers under that fence.
 Start with the no-version-change path; explicitly refuse version maintenance until
