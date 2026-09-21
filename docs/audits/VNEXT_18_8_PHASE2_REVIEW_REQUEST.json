@@ -1,0 +1,138 @@
+{
+  "checkpoint": "18.8 first pinned Phase 2 Reviewer request publication",
+  "date": "2026-09-21",
+  "base_commit": "6734ad60feb7e79970fba49d6ffc38141fb38f73",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "working_boundary": "Started clean at 6734ad6; changes left unstaged and uncommitted",
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-review-001/source-manifest.json",
+    "sha256": "a892843f1f1a05935328253793809dfa3e5f617536b70053637270007d6f3883",
+    "unchanged_since_final_snapshot": true
+  },
+  "result": "bounded request publication validated; no client invocation or response consumption; all four 18.8 tasks incomplete",
+  "distinct_executed_methods": 37,
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_review -v",
+      "log": "rounds/vnext-18-8-phase2-review-001/focused-tests.log",
+      "sha256": "5cd5a94d83210976b4c746bb98e951fd4c32cc9489e9f0c364247a4935fe8883",
+      "tests": 6,
+      "seconds": 110.98,
+      "test_ids": [
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_all_publication_prefixes_and_final_lost_ack_replay_without_new_request",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_changed_transport_corrupt_sources_and_missing_committed_dependencies_refuse",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_entry_and_state_recovery_are_separate_and_mirror_recovery_ends_call",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_exact_first_step_prompt_transport_and_detached_replay",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_missing_pin_and_vocabulary_drift_refuse_before_publication",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_source_barriers_and_drift_prevent_request_commit"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-18-8-phase2-review-001/source-manifest.json",
+      "source_unchanged_during_run": true
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_entry test_vnext_verified_phase2_binding test_prompts test_vocabulary -v",
+      "log": "rounds/vnext-18-8-phase2-review-001/regression-tests.log",
+      "sha256": "6b9271646d8d77b190d29ac2e45b65b29f8caaf0cb7ef64779a27de1dc15d1c3",
+      "tests": 31,
+      "seconds": 210.692,
+      "test_ids": [
+        "test_prompts.PromptTests.test_audit_change_reviewer_prompt_is_not_phase_1",
+        "test_prompts.PromptTests.test_editor_prompt_includes_bounded_synthesis_guidance_when_report_supplied",
+        "test_prompts.PromptTests.test_editor_prompt_names_schema_and_includes_feedback",
+        "test_prompts.PromptTests.test_editor_prompt_says_whetstone_computes_generated_draft_hash",
+        "test_prompts.PromptTests.test_file_backed_prompts_reference_context_without_embedding_content",
+        "test_prompts.PromptTests.test_phase_2_editor_prompt_forbids_declaration_in_spec",
+        "test_prompts.PromptTests.test_phase_2_reviewer_prompt_includes_declaration_artifact_when_supplied",
+        "test_prompts.PromptTests.test_phase_2_reviewer_prompt_requires_oscillation_classification",
+        "test_prompts.PromptTests.test_reviewer_prompt_includes_light_profile_guidance",
+        "test_prompts.PromptTests.test_reviewer_prompt_names_profile_and_schema",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_explicit_ordered_inputs_bind_exact_current_evidence_and_reopen_without_phase_entry",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_missing_binding_pin_refuses_before_any_publication",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_missing_committed_configuration_and_changed_rubric_are_not_reconstructed",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_phase1_debt_and_separate_mirror_or_state_recovery_cannot_publish_request",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_promoted_request_rejects_stale_pointer_cross_job_and_changed_selection",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_publication_prefixes_and_lost_request_ack_repeat_exact_binding_without_clients",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_source_and_rubric_barriers_fail_before_binding_even_after_visible_commit",
+        "test_vnext_verified_phase2_binding.VerifiedPhase2BindingTests.test_unsupported_missing_or_cross_job_configuration_refuses_without_publication",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_corrupt_committed_sources_entry_or_missing_commit_refuse_without_reconstruction",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_entry_and_final_state_interruptions_recover_exactly_without_advancing_work",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_entry_commit_is_distinct_preserves_authority_and_reentry_only_synchronizes",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_mirror_and_phase1_state_recovery_end_before_entry_state_repair",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_missing_entry_pin_refuses_before_writes",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_missing_request_or_configuration_prefix_is_not_automatically_bound_or_entered",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_review_and_bound_source_barriers_precede_entry_and_repeat_on_recovery",
+        "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_whole_major_noop_enters_but_required_version_changes_refuse_without_writes",
+        "test_vocabulary.ControlledVocabularyTests.test_cli_exports_vocabulary",
+        "test_vocabulary.ControlledVocabularyTests.test_controlled_vocabulary_packet_validates",
+        "test_vocabulary.ControlledVocabularyTests.test_prompt_vocabularies_are_exported",
+        "test_vocabulary.ControlledVocabularyTests.test_scheduler_reads_profile_vocabulary",
+        "test_vocabulary.ControlledVocabularyTests.test_vocabulary_hash_is_stable_for_packet"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "starting_source_manifest": "rounds/vnext-18-8-phase2-review-001/pre-detachment-source-manifest.json",
+      "starting_source_manifest_sha256": "cc80b567944e81cb68bc4fb84ebba0f50eb342299a28192a5f3ad1416c750579",
+      "changed_during_run": [
+        "src/whetstone/vnext_verified_phase2_review.py",
+        "tests/test_vnext_verified_phase2_review.py"
+      ],
+      "scope_note": "Regression started before the detached-reference fix. Only the new request module and its new test changed during the run; these regression modules do not call the new request APIs. Existing entry/binding/prompt/vocabulary runtime and regression tests remained byte-identical. No all-source-unchanged regression claim."
+    }
+  ],
+  "first_run_passed": false,
+  "initial_failure": {
+    "log": "rounds/vnext-18-8-phase2-review-001/initial-focused-tests.log",
+    "sha256": "9a7eb4f3ab08e60b357d80d8a39f53c6f4009e1d8b637bef6e66dcdc97df9828",
+    "source_manifest": "rounds/vnext-18-8-phase2-review-001/initial-source-manifest.json",
+    "source_manifest_sha256": "bcab3822212e2cd76c824e6fdd2cb6ef5ac82cbe0b52d71c6e2bcb6603bbebf0",
+    "result": "6 methods; 10 subtest/method errors from prohibited consumer descriptor synchronization",
+    "correction": "Retain immutable descriptor validation; leave control-artifact durability to storage initialization; synchronize only consumer-owned sources."
+  },
+  "detachment_correction": {
+    "reproduction_log": "rounds/vnext-18-8-phase2-review-001/detachment-reproduction.log",
+    "sha256": "d6d64b91343934ca958244d0da9d47edd0326196d1d78f723974c37e926ad0ed",
+    "correction": "Deep-copy returned run selector references; added mutation checks on the same open run before reopen.",
+    "prior_focused_log": "rounds/vnext-18-8-phase2-review-001/pre-detachment-focused-tests.log",
+    "prior_focused_log_sha256": "bc74bed1a56d1ef3cc5cb517fe0caa86559aa857fee47cb09fef904c974c8b34"
+  },
+  "shipping_controls": {
+    "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "scope": [
+    "first configured profile step/pass only",
+    "exact input, prompt, transport, rubric, vocabulary and schema binding",
+    "publication-prefix and final lost-acknowledgement recovery"
+  ],
+  "limits": [
+    "scripted Phase 1 clients; no Phase 2 client execution",
+    "seed-base fixture for new request owner; promoted-base and later historical entry consumers remain unqualified",
+    "publication/barrier exceptions; no new process-death or power-loss qualification",
+    "no full-product regression; macOS/APFS only"
+  ],
+  "next_slice": "Bounded invocation/result journal with Phase 2 response validation and explicit attempt limits; no candidate admission or scheduler advance implied.",
+  "excluded": [
+    "commit",
+    "push",
+    "public activation",
+    "external transmission",
+    "external apply-back",
+    "18.9 implementation"
+  ],
+  "checkpoint_followup": {
+    "date": "2026-09-22",
+    "authorization": "User authorized a local commit of the validated bounded request publication slice; pushing remains deferred until feature completion.",
+    "verification": "Validated source snapshot and both retained passing test-log hashes rechecked before staging; only handoff metadata updated.",
+    "tests_rerun": false,
+    "historical_scope": "working_boundary and excluded describe the original validation invocation. The six focused and 31 regression methods retain their recorded source-version limits."
+  }
+}

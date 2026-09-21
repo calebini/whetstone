@@ -89,9 +89,10 @@ The user subsequently authorized a local commit of this validated slice. Push,
 external transmission, apply-back, public activation and authoritative-spec
 amendment remain excluded.
 
-The next implementation boundary is the first pinned Phase 2 Reviewer request on
-the entered draft: freeze exact rubric/profile/vocabulary inputs and client request
-bindings, honor the explicit per-step budgets, and keep candidate production and
+The [first request follow-up](VNEXT_18_8_PHASE2_REVIEW_REQUEST.md) now implements
+request publication on the entered draft, without client invocation. Its bounded
+invocation/result journal remains next. The original request boundary was to
+freeze exact rubric/profile/vocabulary inputs and client request bindings, honor the explicit per-step budgets, and keep candidate production and
 promotion separately gated. This entry reader is scoped to startup before Phase 2
 changes the draft; later promotion requires historical entry anchoring and current
 verified lineage checks in the consuming owner. Do not use this entry commit as
