@@ -69,9 +69,9 @@ maps and existing legacy/bridge/storage/versioning runtime bytes are unchanged.
 
 ## Remaining boundary
 
-Next: a bounded invocation/result journal consuming this immutable request,
-with Phase 2 response and oscillation validation, exact replay and explicit
-attempt limits. This slice neither calls a client nor consumes a response. It
+The [invocation/result follow-up](VNEXT_18_8_PHASE2_CLIENT.md) now implements
+a separately pinned journal consuming this immutable request, with Phase 2
+response and oscillation validation, exact replay and explicit attempt limits. This slice neither calls a client nor consumes a response. It
 does not yet translate Phase 2 feedback into V finding advice/candidate admission.
 The ordinary feedback input schema is not the Phase 1 feedback/advice wrapper;
 a future provider adapter must validate its schema and transport compatibility.

@@ -160,6 +160,12 @@ class VerifiedRun:
     def bind_phase2_review(self, transport):
         from whetstone.vnext_verified_phase2_review import bind_phase2_review
         return bind_phase2_review(self, transport)
+    def run_phase2_review(self, *, client=None, continuation=False):
+        from whetstone.vnext_verified_phase2_client import run_phase2_review
+        return run_phase2_review(self, client=client, continuation=continuation)
+    def phase2_review_status(self):
+        from whetstone.vnext_verified_phase2_client import phase2_review_status
+        return phase2_review_status(self)
     def phase2_state(self):
         from whetstone.vnext_verified_phase2_entry import inspect_verified_phase2_state
         return inspect_verified_phase2_state(self)

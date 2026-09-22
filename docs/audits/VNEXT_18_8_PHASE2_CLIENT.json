@@ -1,0 +1,119 @@
+{
+  "checkpoint": "18.8 first Phase 2 invocation and result journal",
+  "date": "2026-09-22",
+  "base_commit": "d5a51e54e8c2ae8054a665dd28442e463fd047a7",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "working_boundary": "Started clean at d5a51e5; changes remain unstaged and uncommitted",
+  "result": "bounded scripted-client invocation and result recovery validated; all four 18.8 tasks remain incomplete",
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-client-001/source-manifest.json",
+    "sha256": "d8a8e60d688184a8e537a29310e39e939b141ab179aa59cf69f4656aa58f72ee",
+    "unchanged_during_final_focused_run": true
+  },
+  "validation": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_client -v",
+      "log": "rounds/vnext-18-8-phase2-client-001/focused-tests.log",
+      "sha256": "69f69ece891a3931f71ed54ed75bfdece9c85857db8fbaebe21a454480b4b522",
+      "tests": 7,
+      "seconds": 276.654,
+      "test_ids": [
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_binding_and_section_contradictions_are_not_shape_retries",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_missing_request_pins_changed_transport_and_corrupt_receipt_dependencies_refuse",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_response_and_result_publication_prefixes_recover_without_client",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_shape_and_process_failure_retry_once_and_exhaustion_survives_reopen",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_source_barriers_drift_and_separate_mirror_recovery_precede_execution",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_timeout_and_uncertain_invocation_require_explicit_remaining_slot",
+        "test_vnext_verified_phase2_client.VerifiedPhase2ClientTests.test_valid_feedback_is_canonical_and_completed_replay_preserves_authority"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-18-8-phase2-client-001/source-manifest.json"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_review test_vnext_verified_review_requests test_oscillation -v",
+      "log": "rounds/vnext-18-8-phase2-client-001/regression-tests.log",
+      "sha256": "72ca8a91b19d0089f11ea80d0961b999bf24216a9531fc2d1331d5a61eac8a85",
+      "tests": 21,
+      "seconds": 154.863,
+      "test_ids": [
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_computes_identity_fields",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_controlled_terms",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_section_id",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_draft_cycle_after_real_change",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_churn_after_three_cumulative_appearances",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_flip_flop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_mechanical_churn_without_stop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_readdition_and_then_repeated_readdition_stop",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_all_publication_prefixes_and_final_lost_ack_replay_without_new_request",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_changed_transport_corrupt_sources_and_missing_committed_dependencies_refuse",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_entry_and_state_recovery_are_separate_and_mirror_recovery_ends_call",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_exact_first_step_prompt_transport_and_detached_replay",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_missing_pin_and_vocabulary_drift_refuse_before_publication",
+        "test_vnext_verified_phase2_review.VerifiedPhase2ReviewTests.test_source_barriers_and_drift_prevent_request_commit",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_changed_authority_during_call_retains_raw_but_refuses_result",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_claim_and_raw_output_recover_without_resetting_slots_or_calling_again",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_original_base_replays_after_promotion_but_cannot_invoke",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_same_byte_promotion_cannot_alias_original_request_pointer",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_seed_and_promoted_review_use_exact_base_and_keep_original_seed",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_shape_timeout_and_binding_failures_preserve_two_slot_policy",
+        "test_vnext_verified_review_requests.VerifiedReviewRequestTests.test_unproven_base_and_missing_contract_refuse_before_writes"
+      ],
+      "exit_code": 0,
+      "result": "OK; no skips",
+      "source_manifest": "rounds/vnext-18-8-phase2-client-001/pre-outcome-binding-source-manifest.json",
+      "source_manifest_sha256": "7bc8c9ffafefeb3ca37905efa532fc408b8429c55cdb148380f8743aca3d2e07",
+      "scope_note": "Completed on unchanged pre-correction source. Carried forward: the later change affects only the new Phase 2 client module and its focused tests, neither consumed by these regressions. Shared transport, request owner, canonicalization and regression tests remain byte-identical."
+    }
+  ],
+  "distinct_executed_methods": 28,
+  "preliminary_smoke": {
+    "log": "rounds/vnext-18-8-phase2-client-001/smoke.log",
+    "sha256": "8a9f720c6eb8d7043b6160417fbc6ef2e62d8de61e675533fd993a0b1d8d037e",
+    "exit_code": 0,
+    "scope": "One seed/promoted success/replay method passed before adding the competing-descriptor fence assertions; subsumed by the final focused cohort, not counted separately."
+  },
+  "outcome_binding_correction": {
+    "reproduction_log": "rounds/vnext-18-8-phase2-client-001/outcome-binding-reproduction.log",
+    "sha256": "044803561c88b35513c2e1e84fac7641617828395c4b21af1868c1650cc72443",
+    "finding": "No-response outcome inspection accepted a foreign request_id; the raw-response path already reproduced exact outcome bindings.",
+    "correction": "Require every stored outcome to match its logical request ID and attempt slot before replay; test altered request_id and attempt in status and continuation.",
+    "prior_focused_log": "rounds/vnext-18-8-phase2-client-001/pre-outcome-binding-focused-tests.log",
+    "prior_focused_log_sha256": "3a8c907f36312248eaea622f4382c12bae62ded5a159cc7aca79b8b138f4f602"
+  },
+  "shipping_controls": {
+    "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    }
+  },
+  "compatibility": "Shared transport loop, legacy/bridge, storage, prior Phase 2 request/entry owners and canonicalization helpers unchanged. New APIs are lazy and require separate test-only suite pins.",
+  "limits": [
+    "Scripted raw-byte clients only; no default native provider adapter or external transmission",
+    "Seed and promoted first-entry bases; no later Phase 2 promotion/historical-entry integration",
+    "Same-process competing storage descriptors verify callback-time fencing; no new multiprocess or physical power-loss qualification",
+    "Publication acknowledgement and source-barrier hooks, not exhaustive syscall coverage",
+    "One request/result, no V advice or candidate admission, scheduler counters, profile advancement, declaration or convergence",
+    "Bounded request continuation only; no generic Phase 2 resume or full-product regression"
+  ],
+  "next_slice": "Consume the bound validated result for exact successful-pass accounting and V finding-advice/admission; qualify the authority boundary before candidate dispatch or another review.",
+  "excluded": [
+    "commit",
+    "push",
+    "public activation",
+    "external transmission",
+    "external apply-back",
+    "18.9 implementation"
+  ],
+  "checkpoint_followup": {
+    "authorization": "User subsequently authorized a local commit of the validated bounded Phase 2 invocation/result slice; pushing remains deferred until feature completion.",
+    "verification": "Source snapshot and both retained passing test-log hashes rechecked before staging; only handoff metadata updated.",
+    "tests_rerun": false,
+    "historical_scope": "working_boundary and excluded describe the original validation invocation. The seven focused and 21 regression methods retain their recorded source-version limits."
+  }
+}
