@@ -73,3 +73,7 @@ html[data-native-fullscreen=true] .diagram-dialog{width:100vw;max-width:none;hei
 
 .home-note a{text-decoration:underline;text-underline-offset:3px}
 .diagram-scroll-hint{display:none}@media(max-width:760px){.diagram-scroll-hint{display:block;font:9px/1.8 'JetBrains Mono',monospace;color:var(--text-secondary);margin:0 0 12px}.path-card .card-art{font-size:60px;right:18px;bottom:12px;opacity:.35}}
+
+/* Keep review-profile identifiers intact while comparison tables scroll on small screens. */
+#phase1-lenses table,#profile-sets table,#phase2-lenses table{min-width:680px}
+#phase1-lenses td:first-child code,#profile-sets td:first-child code,#phase2-lenses td:first-child code{white-space:nowrap}
