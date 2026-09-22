@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-22",
+  "starting_head": "2cac435151a9ad4fc42f78ffb9d4d79673fc1e30",
+  "status": "validated_uncommitted",
+  "distinct_tests": 17,
+  "batches": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_advice -v",
+      "exit_code": 0,
+      "methods": [
+        "test_vnext_verified_phase2_advice.Phase2AdviceTests.test_binding_is_read_only_to_prepare_and_does_not_grant_round_or_authority",
+        "test_vnext_verified_phase2_advice.Phase2AdviceTests.test_exact_bindings_coverage_and_deterministic_authority_guards",
+        "test_vnext_verified_phase2_advice.Phase2AdviceTests.test_interrupted_attachment_conflict_barriers_and_missing_committed_dependency",
+        "test_vnext_verified_phase2_advice.Phase2AdviceTests.test_unpinned_owner_refuses_without_writes"
+      ],
+      "count": 4,
+      "log": "rounds/vnext-18-8-phase2-advice-001/focused-tests.log",
+      "sha256": "9d2fe712d5d312e3c6f4d27594210a86ad0abbf688eaba5da110ef28a5ea0f82",
+      "elapsed_seconds": 70.597
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_classification test_vnext_verified_phase2_consumption -v",
+      "exit_code": 0,
+      "methods": [
+        "test_vnext_classification.ClassificationTests.test_blocking_frozen_section_requires_a_new_job",
+        "test_vnext_classification.ClassificationTests.test_bounded_correction_resolves_display_anchor_to_stable_identity",
+        "test_vnext_classification.ClassificationTests.test_deferred_destructive_work_stays_excluded_unless_it_conflicts_with_a_blocking_invariant",
+        "test_vnext_classification.ClassificationTests.test_destructive_or_policy_triggers_override_editor_fixable_advice",
+        "test_vnext_classification.ClassificationTests.test_missing_or_stale_advice_cannot_admit_editor_work",
+        "test_vnext_classification.ClassificationTests.test_non_normative_reference_cannot_supply_requirement_authority",
+        "test_vnext_classification.ClassificationTests.test_prospective_compatibility_introduction_is_forbidden_but_cleanup_is_distinct",
+        "test_vnext_classification.ClassificationTests.test_repeated_issue_retains_sources_and_conflicting_recommendations_pause",
+        "test_vnext_classification.ClassificationTests.test_unknown_targets_and_scope_surfaces_do_not_expand_scope",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_clean_result_uncertain_publication_and_replay_barrier",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_mirror_recovery_ends_call_and_changed_rubric_refuses",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_result_required_and_retry_counts_once_with_fail_closed_findings",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_uncommitted_valid_response_and_missing_pin_refuse"
+      ],
+      "count": 13,
+      "log": "rounds/vnext-18-8-phase2-advice-001/regression-tests.log",
+      "sha256": "5c010988dce8de93d82ab713c746d4bbfd563084918a740b3a92e75dc50e34d8",
+      "elapsed_seconds": 65.44
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-advice-001/source-manifest.json",
+    "sha256": "8460334f8ff2c7cfe0d0693d44636328e6a0cd7fa43c91e263148e817cfe656f"
+  },
+  "source_scope": "Both final passing batches ran on the same final production, contract and test source bytes. Final source-manifest hashes were rechecked after execution. Earlier failing fixture/expectation runs and an earlier passing regression batch are retained separately and excluded from counts.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "shipping_maps_empty": true,
+  "index_empty": true,
+  "implemented": "Explicit untrusted advisory attachment, exact classification replay, fenced immutable publication and prefix recovery for the first consumed Phase 2 result.",
+  "limitations": [
+    "No automated advice producer or assertion of Reviewer authorship.",
+    "No canonical Phase 2 round admission, mutation plan, operator authorization, candidate work or subsequent request.",
+    "Scripted clients and process-local faults on macOS/APFS; no live transmission, promoted-entry advice campaign, process-death, power-loss or full-product qualification.",
+    "All four 18.8 tasks remain incomplete."
+  ],
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true,
+  "checkpoint_followup": {
+    "authorization": "User requested a local commit after validation. Push remains deferred.",
+    "precommit_head": "2cac435151a9ad4fc42f78ffb9d4d79673fc1e30",
+    "verification": "All recorded source-manifest entries and passing test-log hashes match current bytes; git diff --check passes. No additional tests run.",
+    "historical_scope": "Original status, index_empty and no_commit fields describe the original validation checkpoint and are retained unchanged."
+  }
+}
