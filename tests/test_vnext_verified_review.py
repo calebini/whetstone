@@ -25,7 +25,8 @@ class VerifiedReviewTests(unittest.TestCase):
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
                 closeout_contract=False, operator_status_contract=False, phase2_eligibility_contract=False,
-                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False):
+                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False):
+        phase2_client_contract = phase2_client_contract or phase2_consumption_contract
         phase2_review_contract = phase2_review_contract or phase2_client_contract
         phase2_entry_contract = phase2_entry_contract or phase2_review_contract
         phase2_binding_contract = phase2_binding_contract or phase2_entry_contract
@@ -53,13 +54,15 @@ class VerifiedReviewTests(unittest.TestCase):
         if phase2_entry_contract: algorithms += ('vnext_verified_phase2_entry_v1',)
         if phase2_review_contract: algorithms += ('vnext_verified_phase2_review_v1',)
         if phase2_client_contract: algorithms += ('vnext_verified_phase2_client_v1',)
+        if phase2_consumption_contract: algorithms += ('vnext_verified_phase2_consumption_v1',)
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,
                 extra_schemas={'vnext_review_request_v2'} | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set())
                     | ({'vnext_phase2_configuration_v1', 'vnext_phase2_entry_request_v1'} if phase2_binding_contract else set())
                     | ({'vnext_phase2_entry_v1'} if phase2_entry_contract else set())
                     | ({'vnext_phase2_review_request_v1', 'phase2_reviewer_feedback_input', 'controlled_vocabulary'} if phase2_review_contract else set())
-                    | ({'vnext_phase2_review_result_v1','phase2_reviewer_feedback'} if phase2_client_contract else set()),
+                    | ({'vnext_phase2_review_result_v1','phase2_reviewer_feedback'} if phase2_client_contract else set())
+                    | ({'vnext_phase2_consumption_v1'} if phase2_consumption_contract else set()),
                 register_candidate=False)
         refs = f.admission._refs
         constraints = json.loads(f.store.read(refs['rounds'][1]['path']))['constraints']

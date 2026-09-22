@@ -1,0 +1,92 @@
+{
+  "date": "2026-09-22",
+  "starting_head": "fd4f39d4f31eedee354b2b2a020d0cba6f6e1c4c",
+  "status": "validated_uncommitted",
+  "distinct_tests": 27,
+  "batches": [
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_consumption.Phase2ConsumptionTests -v",
+      "exit_code": 0,
+      "methods": [
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_clean_result_uncertain_publication_and_replay_barrier",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_result_required_and_retry_counts_once_with_fail_closed_findings",
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_uncommitted_valid_response_and_missing_pin_refuse"
+      ],
+      "count": 3,
+      "log": "rounds/vnext-18-8-phase2-consumption-001/focused-tests.log",
+      "sha256": "e7672dfaaefa637f0f7ead47c32906f750640495b68272cbe8f45e9a744cfaf2"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_mirror_recovery_ends_call_and_changed_rubric_refuses test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer -v",
+      "exit_code": 0,
+      "methods": [
+        "test_vnext_verified_phase2_consumption.Phase2ConsumptionTests.test_mirror_recovery_ends_call_and_changed_rubric_refuses",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer"
+      ],
+      "count": 2,
+      "log": "rounds/vnext-18-8-phase2-consumption-001/boundary-tests.log",
+      "sha256": "4d1c227ba65f807d0cc0270a03e9a1c7d146dd6de2a521bc1ee4e11d706f4fb1"
+    },
+    {
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_scheduler test_vnext_classification -v",
+      "exit_code": 0,
+      "methods": [
+        "test_scheduler.SchedulerTests.test_default_focus_anchor_matches_versioned_section_id_suffix",
+        "test_scheduler.SchedulerTests.test_default_phase_1_order",
+        "test_scheduler.SchedulerTests.test_duplicate_profile_steps_have_independent_state",
+        "test_scheduler.SchedulerTests.test_force_advance_marks_residual_status",
+        "test_scheduler.SchedulerTests.test_mutated_focus_invalidates_clean_profile",
+        "test_scheduler.SchedulerTests.test_phase_1_profile_sets_preserve_final_profile_always_run_behavior",
+        "test_scheduler.SchedulerTests.test_phase_complete_requires_all_clean_and_accepted_draft",
+        "test_scheduler.SchedulerTests.test_profile_prompt_guidance_is_defined_for_light_profile",
+        "test_scheduler.SchedulerTests.test_repeats_blocker_profile_until_budget_then_advances",
+        "test_scheduler.SchedulerTests.test_repeats_major_profile_for_clean_verification",
+        "test_scheduler.SchedulerTests.test_resolve_focus_anchors_requires_exactly_one_suffix_match",
+        "test_scheduler.SchedulerTests.test_utility_mvp_phase_2_omits_adversarial",
+        "test_scheduler.SchedulerTests.test_utility_mvp_profile_set_uses_lightweight_profiles",
+        "test_vnext_classification.ClassificationTests.test_blocking_frozen_section_requires_a_new_job",
+        "test_vnext_classification.ClassificationTests.test_bounded_correction_resolves_display_anchor_to_stable_identity",
+        "test_vnext_classification.ClassificationTests.test_deferred_destructive_work_stays_excluded_unless_it_conflicts_with_a_blocking_invariant",
+        "test_vnext_classification.ClassificationTests.test_destructive_or_policy_triggers_override_editor_fixable_advice",
+        "test_vnext_classification.ClassificationTests.test_missing_or_stale_advice_cannot_admit_editor_work",
+        "test_vnext_classification.ClassificationTests.test_non_normative_reference_cannot_supply_requirement_authority",
+        "test_vnext_classification.ClassificationTests.test_prospective_compatibility_introduction_is_forbidden_but_cleanup_is_distinct",
+        "test_vnext_classification.ClassificationTests.test_repeated_issue_retains_sources_and_conflicting_recommendations_pause",
+        "test_vnext_classification.ClassificationTests.test_unknown_targets_and_scope_surfaces_do_not_expand_scope"
+      ],
+      "count": 22,
+      "log": "rounds/vnext-18-8-phase2-consumption-001/regression-tests.log",
+      "sha256": "ae1f547a7ae37aa8cd6deba14127b771b6910a5ec5c0ba18f36daa8bb151b6af"
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-consumption-001/source-manifest.json",
+    "sha256": "3f3870a67f18115b19b29e6e7dadaf2abb228abf2c04ab26b2e818592a7f20a0"
+  },
+  "source_scope": "Final source inventory. Final production/contract bytes were unchanged across passing focused and boundary batches. The fourth focused method was appended and its fixture path corrected after the three-method batch loaded; those first three method bodies did not change. Scheduler/classification regression consumers were unchanged. No whole-repository unchanged-snapshot claim.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "shipping_maps_empty": true,
+  "index_empty": true,
+  "limitations": [
+    "Scripted clients only; process-local fault hooks on macOS/APFS.",
+    "No live provider, process-death, power-loss, promoted-entry consumption campaign or full-product regression.",
+    "Only first-result accounting and conservative finding projection; no advice admission, candidate or subsequent request authorization.",
+    "Concurrent docs/site/content.js and docs/site/styles.css edits were observed after clean start and preserved outside this slice."
+  ],
+  "retained_nonpassing_evidence": [
+    "assertion-failure-tests.log",
+    "boundary-fixture-failure-tests.log",
+    "owner-failure-tests.log",
+    "schema-failure-tests.log",
+    "initial-interrupted-tests.log"
+  ],
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true,
+  "checkpoint_followup": {
+    "authorization": "User requested local commit after validation. Push remains deferred.",
+    "precommit_head": "19917c02c7e84f27817c938412a0031ae83ab1c2",
+    "verification": "All recorded source-manifest entries and passing test-log hashes match current bytes; git diff --check passes. No additional tests run.",
+    "historical_scope": "Original status, index_empty and no_commit fields describe the original validation checkpoint; they are retained unchanged."
+  }
+}

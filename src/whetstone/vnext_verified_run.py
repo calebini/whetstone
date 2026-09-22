@@ -163,6 +163,12 @@ class VerifiedRun:
     def run_phase2_review(self, *, client=None, continuation=False):
         from whetstone.vnext_verified_phase2_client import run_phase2_review
         return run_phase2_review(self, client=client, continuation=continuation)
+    def consume_phase2_result(self):
+        from whetstone.vnext_verified_phase2_consumption import consume_phase2_result
+        return consume_phase2_result(self)
+    def phase2_consumption_status(self):
+        from whetstone.vnext_verified_phase2_consumption import phase2_consumption_status
+        return phase2_consumption_status(self)
     def phase2_review_status(self):
         from whetstone.vnext_verified_phase2_client import phase2_review_status
         return phase2_review_status(self)
