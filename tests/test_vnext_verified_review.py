@@ -25,7 +25,8 @@ class VerifiedReviewTests(unittest.TestCase):
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
                 closeout_contract=False, operator_status_contract=False, phase2_eligibility_contract=False,
-                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False):
+                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False, phase2_round_contract=False):
+        phase2_advice_contract = phase2_advice_contract or phase2_round_contract
         phase2_consumption_contract = phase2_consumption_contract or phase2_advice_contract
         phase2_client_contract = phase2_client_contract or phase2_consumption_contract
         phase2_review_contract = phase2_review_contract or phase2_client_contract
@@ -56,6 +57,7 @@ class VerifiedReviewTests(unittest.TestCase):
         if phase2_review_contract: algorithms += ('vnext_verified_phase2_review_v1',)
         if phase2_client_contract: algorithms += ('vnext_verified_phase2_client_v1',)
         if phase2_consumption_contract: algorithms += ('vnext_verified_phase2_consumption_v1',)
+        if phase2_round_contract: algorithms += ('vnext_verified_phase2_round_v1',)
         if phase2_advice_contract: algorithms += ('vnext_verified_phase2_advice_v1', 'vnext_mutation_preparation_v1')
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,

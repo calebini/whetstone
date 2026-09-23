@@ -1,0 +1,24 @@
+"""Pure Phase 2 profile context check; provenance remains the storage owner's duty."""
+from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, require, sha256_bytes
+
+
+def validate_phase2_context(context, *, job, review, feedback, base_pointer_ref, suite):
+    path = 'algorithms/vnext_verified_phase2_round_v1.md'
+    pins = {row['path']: row for row in suite.manifest['algorithms']}
+    require(path in pins and pins[path]['sha256'] == sha256_bytes(confined_file(CONTRACT_ROOT, path).read_bytes()),
+            'Phase 2 proposal context is outside supported suite')
+    require(job['editing_mode'] == 'verified_promotion' and set(context) == {'configuration', 'request'},
+            'invalid Phase 2 proposal context')
+    config, request = context['configuration'], context['request']
+    suite.registry.validate(config, 'vnext_phase2_configuration_v1')
+    suite.registry.validate(request, 'vnext_phase2_review_request_v1')
+    require(config['job_id'] == job['job_id'] == request['job_id']
+            and config['review_configuration']['hash'] == job['review_configuration_hash']
+            and request['configuration']['hash'] == sha256_bytes(canonical_json_bytes(config))
+            and all(config[key] == review[key] for key in ('workflow','review_mode','profile_set','reviewer','editor','verifier')),
+            'Phase 2 proposal changes immutable configuration')
+    require(request['base_pointer'] == base_pointer_ref and request['round_number'] == feedback['round_number']
+            and request['step'] == dict(index=1, profile=config['profiles'][0]['name'],
+                round_budget=config['profiles'][0]['budget'], rounds_used=0, pass_number=1)
+            and feedback['profile'] == request['step']['profile'], 'Phase 2 proposal feedback differs from first request')
+    return config['profiles']

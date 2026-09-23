@@ -116,6 +116,11 @@ def validate_round_review(proof, number, record):
 
 
 def validate_current_sequence(proof):
+    from whetstone.vnext_verified_phase2_round import supported, current_sequence, BINDING_PATH
+    if supported(proof):
+        try: proof.store.read(BINDING_PATH)
+        except FileNotFoundError: pass
+        else: return current_sequence(proof)
     run = proof.owner.run
     try: claims = proof.store.list_directory('rounds/review_index')
     except FileNotFoundError: claims = ()
@@ -150,6 +155,10 @@ class VerifiedReview(VerifiedWork):
     def next(self, *, client=None, continuation=False):
         require(type(continuation) is bool, 'V Reviewer continuation must be an explicit boolean')
         def perform(store, proof):
+            from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
+            try: store.read(ENTRY_PATH)
+            except FileNotFoundError: pass
+            else: require(False, 'Phase 1 Reviewer cannot run after committed Phase 2 entry')
             frames, gate, profile = _sequence(proof)
             # Readable receipts may follow a lost durability acknowledgement.
             # Reestablish the completed prefix before any later claim or exit.

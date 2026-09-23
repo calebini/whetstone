@@ -44,13 +44,14 @@ class UnitProposalPreflight:
 
 def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_map,review,
                            feedback,feedback_ref,advice,constraints,context,suite,
-                           base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None):
+                           base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None,phase2=None):
     if semantic_followup is not None:
-        arguments={key:value for key,value in locals().copy().items() if key!='semantic_followup'}
+        require(phase2 is None, "Phase 2 semantic followups are not implemented")
+        arguments={key:value for key,value in locals().copy().items() if key not in {'semantic_followup','phase2'}}
         from whetstone.vnext_semantic_followup_preflight import prepare_followup_preflight
         return prepare_followup_preflight(arguments,semantic_followup)
     # Omitting the new optional consumer retains the exact original preimage.
-    raw_arguments={key:value for key,value in locals().copy().items() if key not in {'suite','semantic_followup'}}
+    raw_arguments={key:value for key,value in locals().copy().items() if key not in {'suite','semantic_followup'} and (key != 'phase2' or phase2 is not None)}
     digest=sha256_bytes(canonical_json_bytes(input_projection({**raw_arguments,
         'suite_version':suite.version,'suite_digest':suite.digest})))
     rules=discovery_rules(invariants)
@@ -67,7 +68,12 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
     require(len(mutable)==1,'preflight requires one mutable target')
     require(seed_map==seed_section_map(seed,job,mutable[0]['binding_id']),'preflight seed map does not reproduce')
     validate_assertion_program(invariants,seed,seed_map)
-    require(feedback['reviewer']==review['reviewer'] and feedback['profile'] in {p['name'] for p in review['profiles']},
+    profiles = review['profiles']
+    if phase2 is not None:
+        from whetstone.vnext_verified_phase2_preflight import validate_phase2_context
+        profiles = validate_phase2_context(phase2, job=job, review=review, feedback=feedback,
+            base_pointer_ref=base_pointer_ref, suite=suite)
+    require(feedback['reviewer']==review['reviewer'] and feedback['profile'] in {p['name'] for p in profiles},
             'preflight feedback differs from pinned Reviewer or profile')
     require(scope is None or (scope['status']=='approved' and scope['approval']['approved']), 'preflight scope must be approved')
     if base_inventory is None:
@@ -107,6 +113,7 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
                                    context=context,finding_details=details,scope=scope)
     packet.update(base_inventory=inventory,discovery_rules=rules,editor=deepcopy(review['editor']),
         operator_unit_decisions=[{'request':b.request,'response':b.response} for b in bindings])
+    if phase2 is not None: packet['phase2'] = deepcopy(phase2)
     prompt=(
         'Produce one JSON object with schema_version = vnext-proposal-response-v2, patch and payloads.\n'
         'The patch follows patch-set-client-v2. proposal_id is null, operation IDs are local labels, '

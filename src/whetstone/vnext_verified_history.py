@@ -94,7 +94,8 @@ class _ReplayAdmission:
         require(type(number) is int and number in selectors, 'unselected historical Reviewer round')
         record = self.proof.reader.json(selectors[number], 'vnext_proposal_round_input_v1')
         values = self.proof.values(record['base_pointer'])
-        self.proof.owner._validate_round_review(self.proof, number, record)
+        phase2 = self.proof.owner._validate_round_review(self.proof, number, record)
+        if phase2 is not None: values['phase2'] = phase2
         return self.proof.owner._round_inputs(self.proof.reader, values, number)
 
 

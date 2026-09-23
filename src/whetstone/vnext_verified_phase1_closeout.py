@@ -51,8 +51,10 @@ class _Closeout(VerifiedReview):
 
     def _report(self, proof, *, terminal, reason):
         registry = proof.router.registry()
-        journal = VerifiedSemanticDecisionJournal(registry, admission=proof.router)
-        views = [journal._state(creation)[0] for creation in proof.view.creations]
+        views = []
+        if proof.view.creations:
+            journal = VerifiedSemanticDecisionJournal(registry, admission=proof.router)
+            views = [journal._state(creation)[0] for creation in proof.view.creations]
         promoted = {p['source_candidate_id']: p for p in proof.pointers[1:]}
         latest = views[-1] if views else None
         fields = registry.schemas.load('terminal_report_v2')['properties']['latest_candidate']['properties']
