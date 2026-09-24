@@ -146,6 +146,9 @@ class _Round(_Advice):
         _pins(proof)
         return proof
 
+    def _validate_round(self, proof, number, packet):
+        return validate_round(proof, number, packet)
+
     def admit(self):
         def perform(store, proof):
             # Live publication requires the actual current entry prerequisites.
@@ -159,7 +162,7 @@ class _Round(_Advice):
             raw = canonical_json_bytes(packet)
             reference = _ref(path, packet)
             def preflight():
-                context = validate_round(proof, number, packet)
+                context = self._validate_round(proof, number, packet)
                 reader = ArtifactReader(None, proof.reader.suite, read=lambda name: raw if name == path else store.read(name))
                 admission = ProposalAdmission(store, suite_path=self.run.suite_path,
                     descriptor_ref=self.run._record['descriptor'], review_ref=self.run._record['review_configuration'],
@@ -171,7 +174,7 @@ class _Round(_Advice):
             self._synchronize_request(store, proof, bound)
             journal.synchronize(store._token, bound.request, outcomes)
             for ref in (view['binding']['feedback'], consumption['result'], view['binding']['consumption'],
-                        view['binding']['advice'], _ref(BINDING_PATH, view['binding'])):
+                        view['binding']['advice'], _ref(self.binding_path, view['binding'])):
                 self.store.synchronize_existing(store._token, ref['path'], expected=proof.reader.raw(ref))
             preflight()
             store.publish(store._token, path, raw)

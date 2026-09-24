@@ -17,6 +17,9 @@ BINDING_PATH = JOURNAL_PATH + '/advice_binding.json'
 
 
 class _Advice(_Consumption):
+    advice_path = ADVICE_PATH
+    binding_path = BINDING_PATH
+
     def _proof(self, read):
         proof = super()._proof(read)
         pins = {row['path']: row for family in ('algorithms', 'schemas')
@@ -33,12 +36,12 @@ class _Advice(_Consumption):
     def _advice_view(self, proof, supplied):
         bound, journal, outcomes, consumption, committed = self._consumption_view(proof)
         require(committed, 'Phase 2 advice requires committed result consumption')
-        existing_advice, existing_binding = self._optional(ADVICE_PATH), self._optional(BINDING_PATH)
+        existing_advice, existing_binding = self._optional(self.advice_path), self._optional(self.binding_path)
         require(existing_binding is None or existing_advice is not None,
                 'committed Phase 2 advice binding is missing its advice')
         advice = deepcopy(supplied)
         if existing_advice is not None:
-            retained = proof.reader.json(dict(path=ADVICE_PATH, hash=sha256_bytes(existing_advice)),
+            retained = proof.reader.json(dict(path=self.advice_path, hash=sha256_bytes(existing_advice)),
                                          'vnext_finding_advice_v1')
             require(advice is None or advice == retained, 'Phase 2 advice conflicts with immutable attachment')
             advice = retained
@@ -53,15 +56,15 @@ class _Advice(_Consumption):
             base=inputs['draft'].encode('utf-8'), section_map=inputs['base_map'], scope=inputs['scope'])
         packet = dict(schema_version='vnext-phase2-advice-binding-v1',
             request=deepcopy(bound.request_ref), result=deepcopy(consumption['result']),
-            consumption=_ref(CONSUMPTION_PATH, consumption), base_pointer=deepcopy(bound.request['base_pointer']),
-            feedback=deepcopy(receipt['feedback']), advice=_ref(ADVICE_PATH, advice),
+            consumption=_ref(self.consumption_path, consumption), base_pointer=deepcopy(bound.request['base_pointer']),
+            feedback=deepcopy(receipt['feedback']), advice=_ref(self.advice_path, advice),
             findings=findings, evidence=evidence, next_gate='canonical_round_admission_not_implemented',
             candidate_authorized=False, next_review_authorized=False, phase_complete=False)
         journal.schemas.validate(packet, SCHEMA)
         if existing_binding is not None:
-            stored = proof.reader.json(dict(path=BINDING_PATH, hash=sha256_bytes(existing_binding)), SCHEMA)
+            stored = proof.reader.json(dict(path=self.binding_path, hash=sha256_bytes(existing_binding)), SCHEMA)
             require(stored == packet, 'Phase 2 advice binding differs from exact classification replay')
-        pending = tuple(path for path, raw in ((ADVICE_PATH, existing_advice), (BINDING_PATH, existing_binding))
+        pending = tuple(path for path, raw in ((self.advice_path, existing_advice), (self.binding_path, existing_binding))
                         if raw is None)
         journal.recheck()
         proof.guard(self.store.read)
@@ -87,9 +90,9 @@ class _Advice(_Consumption):
                 self.store.synchronize_existing(store._token, reference['path'], expected=proof.reader.raw(reference))
             require(self._advice_view(proof, packet)[-1] == view, 'Phase 2 advice inputs changed during barriers')
             # A retained prefix fixes the attachment. Replay may never substitute it.
-            store.publish(store._token, ADVICE_PATH, packet)
+            store.publish(store._token, self.advice_path, packet)
             self._advice_view(proof, packet)
-            store.publish(store._token, BINDING_PATH, view['binding'])
+            store.publish(store._token, self.binding_path, view['binding'])
             result = self._advice_view(proof, packet)[-1]
             require(result['status'] == 'bound', 'Phase 2 advice publication incomplete')
             return deepcopy(result)

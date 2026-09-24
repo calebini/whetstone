@@ -50,7 +50,19 @@ class _FirstReview(_Entry):
         binding = self._committed_binding(proof)
         entry = self._entry_view(proof, binding)
         require(entry.committed and entry.state_current, 'Phase 2 Reviewer requires committed entry and recovered state')
+        closeout = proof.reader.json(entry.entry['phase1_closeout'], 'vnext_verified_phase1_closeout_v1')
+        number = max(row['round_number'] for row in closeout['review_receipts']) + 1
         config = binding.configuration
+        step = dict(index=1, profile=config['profiles'][0]['name'], round_budget=config['profiles'][0]['budget'],
+                    rounds_used=0, pass_number=1)
+        return self._render_review(proof, transport, binding, entry, number, step)
+
+    def _render_review(self, proof, transport, binding, entry, number, step, *, directory=DIRECTORY,
+                       previous_consumption=None):
+        # Internal renderer only. The selecting owner must prove the base and schedule.
+        config = binding.configuration
+        schema = SCHEMA if previous_consumption is None else 'vnext_phase2_review_request_v2'
+        input_path, prompt_path, request_path = (directory+'/'+name for name in ('inputs.json','prompt.txt','request.json'))
         proof.reader.suite.registry.validate(transport, 'vnext_review_request_transport_v1')
         schemas = {name: dict(path='schemas/' + name + '.schema.json',
             hash=sha256_bytes(confined_file(CONTRACT_ROOT, 'schemas/' + name + '.schema.json').read_bytes()))
@@ -75,10 +87,6 @@ class _FirstReview(_Entry):
             references.append(reference)
             context.append(dict(binding=deepcopy(row), content=proof.reader.raw(reference).decode('utf-8')))
         for reference in references: proof.reader.raw(reference)
-        closeout = proof.reader.json(entry.entry['phase1_closeout'], 'vnext_verified_phase1_closeout_v1')
-        number = max(row['round_number'] for row in closeout['review_receipts']) + 1
-        step = dict(index=1, profile=config['profiles'][0]['name'], round_budget=config['profiles'][0]['budget'],
-                    rounds_used=0, pass_number=1)
         inputs = dict(schema_version='vnext-phase2-review-inputs-v1', phase='phase_2',
             suite_digest=proof.reader.suite.digest, entry=entry.entry, configuration=config,
             round_number=number, step=step, vocabulary=vocabulary, response_schemas=schemas,
@@ -86,30 +94,34 @@ class _FirstReview(_Entry):
             **{key:deepcopy(values[key]) for key in ('job', 'authority', 'invariants', 'scope', 'base_map', 'seed_map')},
             draft=values['base'].decode('utf-8'), seed=values['seed'].decode('utf-8'),
             rubric=proof.reader.raw(config['rubric']['artifact']).decode('utf-8'))
+        if previous_consumption is not None:
+            inputs.update(schema_version='vnext-phase2-review-inputs-v2', previous_consumption=deepcopy(previous_consumption),
+                current_verified_draft=dict(path=proof.pointers[-1]['verified_draft_path'], hash=sha256_bytes(values['base'])))
         prompt = render_reviewer_prompt(profile=step['profile'], draft=inputs['draft'], rubric=inputs['rubric'],
             phase='phase_2', section_ids=[row['canonical_section_id'] for row in values['base_map']['sections']],
-            round_number=number, draft_hash_value=entry.entry['current_verified_draft']['hash'])
+            round_number=number, draft_hash_value=sha256_bytes(values['base']))
         prompt += '\nAll bound inputs are embedded below. Preserve their declared authority and scope; excluded sources are unavailable.\n'
         prompt += 'Use the exact configured Reviewer identity. Return Phase 2 feedback only; no declaration review is active.\n'
         prompt += canonical_json_bytes(inputs).decode('utf-8')
-        request = dict(schema_version='vnext-phase2-review-request-v1', phase='phase_2',
+        request = dict(schema_version=schema.replace('_','-'), phase='phase_2',
             job_id=config['job_id'], entry=entry.entry_ref, configuration=binding.configuration_ref,
             base_pointer=deepcopy(proof.latest), round_number=number, step=step, transport=deepcopy(transport),
-            response_schema=schemas[RESPONSE_SCHEMA], inputs=_ref(INPUT_PATH, inputs),
-            prompt=dict(path=PROMPT_PATH, hash=sha256_bytes(prompt.encode('utf-8'))))
-        proof.reader.suite.registry.validate(request, SCHEMA)
-        expected = ((INPUT_PATH, canonical_json_bytes(inputs)), (PROMPT_PATH, prompt.encode('utf-8')),
-                    (REQUEST_PATH, canonical_json_bytes(request)))
+            response_schema=schemas[RESPONSE_SCHEMA], inputs=_ref(input_path, inputs),
+            prompt=dict(path=prompt_path, hash=sha256_bytes(prompt.encode('utf-8'))))
+        if previous_consumption is not None: request['previous_consumption'] = deepcopy(previous_consumption)
+        proof.reader.suite.registry.validate(request, schema)
+        expected = ((input_path, canonical_json_bytes(inputs)), (prompt_path, prompt.encode('utf-8')),
+                    (request_path, canonical_json_bytes(request)))
         pending = []
         for path, raw in expected:
             existing = self._optional(path)
             require(existing is None or existing == raw, 'Phase 2 Reviewer request conflicts with frozen inputs', path)
             if existing is None: pending.append(path)
-        committed = REQUEST_PATH not in pending
+        committed = request_path not in pending
         require(not committed or not pending, 'committed Phase 2 Reviewer request is missing its dependencies')
         proof.guard(self.store.read)
         self.run._guard(self.store.read)
-        return Phase2ReviewRequest(request, _ref(REQUEST_PATH, request), inputs, prompt, tuple(pending), committed)
+        return Phase2ReviewRequest(request, _ref(request_path, request), inputs, prompt, tuple(pending), committed)
 
     def prepare_review(self, transport):
         proof = self._proof(self.store.read)

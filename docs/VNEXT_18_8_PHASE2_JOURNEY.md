@@ -89,3 +89,8 @@ terminal reporting, apply-back safeguards and 18.9 qualification/activation. All
 specification apply-back is included. The next functional milestone is continuing
 review on the newly verified Phase 2 draft through the supported profile sequence;
 this milestone alone does not authorize that work or advertise convergence.
+
+Follow-up (2026-09-24): [Phase 2 continuation](VNEXT_18_8_PHASE2_SEQUENCE.md) now
+validates later reviews, another correction/promotion and ordered profile advancement
+under a separate pin. This first-only checkpoint retains its original scope; the
+next open functional boundary is current-lineage closeout/declaration handling.

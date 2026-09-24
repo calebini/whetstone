@@ -25,8 +25,9 @@ class _Journal(_Request):
         self.schemas = VNextSchemaRegistry()
         self.number, self.profile = bound.request['round_number'], bound.request['step']['profile']
         self.id = content_identifier('req', 'whetstone-phase2-review-request-v1', [bound.request_ref])
-        self.directory, self.index_path = JOURNAL_PATH, REQUEST_PATH
-        self.feedback_path = JOURNAL_PATH + '/reviewer_feedback.json'
+        self.index_path = bound.request_ref['path']
+        self.directory = self.index_path.rsplit('/', 1)[0] + '/execution'
+        self.feedback_path = self.directory + '/reviewer_feedback.json'
         self.preflight = ReviewPreflight(bound.request_ref['hash'],
             dict(job=deepcopy(bound.inputs['job']), review=deepcopy(bound.inputs['configuration'])), bound.prompt)
         self.successful_attempt = None
@@ -46,7 +47,7 @@ class _Journal(_Request):
         except ValueError as exc:
             raise ReviewShapeError(str(exc)) from exc
         expected = dict(round_number=self.number, profile=self.profile,
-            draft_hash=self.bound.inputs['entry']['current_verified_draft']['hash'],
+            draft_hash=sha256_bytes(self.bound.inputs['draft'].encode('utf-8')),
             reviewer=self.bound.inputs['configuration']['reviewer'])
         for key, value in expected.items():
             if key in packet:

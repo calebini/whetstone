@@ -80,6 +80,9 @@ class _RunHistory(VerifiedHistoryAdmission):
 
     def _validate_round_review(self, proof, number, record):
         from whetstone.vnext_verified_phase2_round import FEEDBACK_PATH, validate_round
+        if record['feedback']['path'].startswith('rounds/phase2/review_requests/pass-'):
+            from whetstone.vnext_verified_phase2_sequence import validate_round as validate_sequence_round
+            return validate_sequence_round(proof, number, record)
         if record['feedback']['path'] == FEEDBACK_PATH:
             return validate_round(proof, number, record)
         # Historical staged sources remain readable during Stage 1 recovery.
@@ -166,6 +169,15 @@ class VerifiedRun:
     def run_phase2_review(self, *, client=None, continuation=False):
         from whetstone.vnext_verified_phase2_client import run_phase2_review
         return run_phase2_review(self, client=client, continuation=continuation)
+    def phase2_sequence_status(self):
+        from whetstone.vnext_verified_phase2_sequence import _Continuation
+        return _Continuation(self).status()
+    def bind_phase2_next_review(self, transport):
+        from whetstone.vnext_verified_phase2_sequence import _Continuation
+        return _Continuation(self).bind_next(transport)
+    def continue_phase2_pass(self, pass_number, *, action, **options):
+        from whetstone.vnext_verified_phase2_sequence import _Continuation
+        return _Continuation(self).operation(pass_number, action, **options)
     def admit_phase2_round(self):
         from whetstone.vnext_verified_phase2_round import admit_phase2_round
         return admit_phase2_round(self)

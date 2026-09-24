@@ -116,6 +116,17 @@ def validate_round_review(proof, number, record):
 
 
 def validate_current_sequence(proof):
+    from whetstone.vnext_verified_phase2_sequence import supported as continuation_supported, sequence
+    from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
+    if continuation_supported(proof):
+        try: proof.store.read(ENTRY_PATH)
+        except FileNotFoundError: pass
+        else:
+            from whetstone.vnext_verified_phase2_review import REQUEST_PATH
+            try: proof.store.read(REQUEST_PATH)
+            except FileNotFoundError: pass
+            else: return sequence(proof)
+
     from whetstone.vnext_verified_phase2_round import supported, current_sequence, BINDING_PATH
     if supported(proof):
         try: proof.store.read(BINDING_PATH)

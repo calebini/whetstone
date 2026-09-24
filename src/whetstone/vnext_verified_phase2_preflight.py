@@ -11,14 +11,23 @@ def validate_phase2_context(context, *, job, review, feedback, base_pointer_ref,
             'invalid Phase 2 proposal context')
     config, request = context['configuration'], context['request']
     suite.registry.validate(config, 'vnext_phase2_configuration_v1')
-    suite.registry.validate(request, 'vnext_phase2_review_request_v1')
+    later = request.get('schema_version') == 'vnext-phase2-review-request-v2'
+    if later:
+        from whetstone.vnext_verified_phase2_sequence import ALGORITHM
+        require(ALGORITHM in pins and pins[ALGORITHM]['sha256'] == sha256_bytes(confined_file(CONTRACT_ROOT,ALGORITHM).read_bytes()),
+                'Phase 2 continuation preflight is outside supported suite')
+    suite.registry.validate(request, 'vnext_phase2_review_request_v2' if later else 'vnext_phase2_review_request_v1')
     require(config['job_id'] == job['job_id'] == request['job_id']
             and config['review_configuration']['hash'] == job['review_configuration_hash']
             and request['configuration']['hash'] == sha256_bytes(canonical_json_bytes(config))
             and all(config[key] == review[key] for key in ('workflow','review_mode','profile_set','reviewer','editor','verifier')),
             'Phase 2 proposal changes immutable configuration')
+    index = request['step']['index']-1 if later else 0
+    require(0 <= index < len(config['profiles']), 'Phase 2 step is outside configuration')
+    used = request['step']['rounds_used'] if later else 0
+    require(used < config['profiles'][index]['budget'], 'Phase 2 request exceeds profile budget')
     require(request['base_pointer'] == base_pointer_ref and request['round_number'] == feedback['round_number']
-            and request['step'] == dict(index=1, profile=config['profiles'][0]['name'],
-                round_budget=config['profiles'][0]['budget'], rounds_used=0, pass_number=1)
-            and feedback['profile'] == request['step']['profile'], 'Phase 2 proposal feedback differs from first request')
+            and request['step'] == dict(index=index+1, profile=config['profiles'][index]['name'],
+                round_budget=config['profiles'][index]['budget'], rounds_used=used, pass_number=used+1)
+            and feedback['profile'] == request['step']['profile'], 'Phase 2 proposal feedback differs from bound request')
     return config['profiles']

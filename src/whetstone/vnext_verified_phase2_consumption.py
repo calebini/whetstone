@@ -13,15 +13,16 @@ SCHEMA = 'vnext_phase2_consumption_v1'
 PATH = JOURNAL_PATH + '/consumption.json'
 
 
-def _projection(bound, review, receipt):
+def _projection(bound, review, receipt, *, scheduler=None):
     """Rebuild once from the logical receipt, never increment persisted counters."""
     inputs = bound.inputs
     feedback = review['feedback']
     findings, evidence = classify_feedback(feedback=feedback, feedback_ref=receipt['feedback'],
         advice=None, job=inputs['job'], authority=inputs['authority'], invariants=inputs['invariants'],
         base=inputs['draft'].encode('utf-8'), section_map=inputs['base_map'], scope=inputs['scope'])
-    scheduler = PhaseScheduler(ProfileStep(row['name'], round_budget=row['budget'], repeat_if_blockers=True)
-                               for row in inputs['configuration']['profiles'])
+    scheduler = deepcopy(scheduler) if scheduler is not None else PhaseScheduler(
+        ProfileStep(row['name'], round_budget=row['budget'], repeat_if_blockers=True)
+        for row in inputs['configuration']['profiles'])
     counts = {severity: sum(row['in_scope'] and row['normalized_severity'] == severity
                           for row in feedback['feedback']) for severity in ('blocker', 'major')}
     scheduler.record_result(bound.request['step']['profile'],
@@ -38,6 +39,12 @@ def _projection(bound, review, receipt):
 
 
 class _Consumption(_Client):
+    consumption_path = PATH
+    consumption_schema = SCHEMA
+
+    def _project(self, bound, review, receipt):
+        return _projection(bound, review, receipt)
+
     def _proof(self, read):
         proof = super()._proof(read)
         pins = {row['path']: row for family in ('algorithms', 'schemas')
@@ -53,11 +60,11 @@ class _Consumption(_Client):
         journal = _Journal(self, proof, self.store, bound)
         outcomes, review, receipt = journal.inspect(bound.request)
         require(receipt is not None, 'Phase 2 consumption requires a committed result; recover its journal first')
-        packet = _projection(bound, review, receipt)
-        journal.schemas.validate(packet, SCHEMA)
-        existing = self._optional(PATH)
+        packet = self._project(bound, review, receipt)
+        journal.schemas.validate(packet, self.consumption_schema)
+        existing = self._optional(self.consumption_path)
         if existing is not None:
-            stored = proof.reader.json(dict(path=PATH, hash=sha256_bytes(existing)), SCHEMA)
+            stored = proof.reader.json(dict(path=self.consumption_path, hash=sha256_bytes(existing)), self.consumption_schema)
             require(stored == packet, 'Phase 2 consumption differs from exact result replay')
         journal.recheck()
         return bound, journal, outcomes, packet, existing is not None
@@ -80,7 +87,7 @@ class _Consumption(_Client):
                 raw = proof.reader.raw(ref)
                 self.store.synchronize_existing(store._token, ref['path'], expected=raw)
             require(self._consumption_view(proof)[3] == packet, 'Phase 2 result changed during consumption barriers')
-            self.store.publish(store._token, PATH, packet)
+            self.store.publish(store._token, self.consumption_path, packet)
             require(self._consumption_view(proof)[3] == packet, 'Phase 2 consumption changed after publication')
             return deepcopy(packet)
         return self._execute(perform)
