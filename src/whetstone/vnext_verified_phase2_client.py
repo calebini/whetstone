@@ -58,8 +58,11 @@ class _Journal(_Request):
         except (ValueError, TypeError) as exc:
             raise ReviewShapeError(str(exc)) from exc
         packet = canonicalize_reviewer_input(packet)
-        packet = canonicalize_phase2_feedback(packet,
-            [row['canonical_section_id'] for row in self.bound.inputs['base_map']['sections']])
+        sections = [row['canonical_section_id'] for row in self.bound.inputs['base_map']['sections']]
+        if self.bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
+            from whetstone.declaration import DECLARATION_ARTIFACTS
+            sections += sorted(DECLARATION_ARTIFACTS | {'target-matrix-precedence'})
+        packet = canonicalize_phase2_feedback(packet, sections)
         ids = [item['feedback_id'] for item in packet['feedback']]
         require(len(ids) == len(set(ids)), 'Phase 2 Reviewer repeats a feedback ID')
         self.schemas.validate(packet, 'phase2_reviewer_feedback')

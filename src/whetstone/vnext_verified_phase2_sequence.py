@@ -88,7 +88,8 @@ class _Pass(_HistoricalAdvice, _Round):
 
     def _committed_request(self, proof):
         raw = self.store.read(self.request_path)
-        schema = 'vnext_phase2_review_request_v1' if self.ordinal == 1 else 'vnext_phase2_review_request_v2'
+        schema = getattr(self, 'request_schema',
+                         'vnext_phase2_review_request_v1' if self.ordinal == 1 else 'vnext_phase2_review_request_v2')
         request = proof.reader.json(dict(path=self.request_path, hash=sha256_bytes(raw)), schema)
         result = self._build_review(proof, request['transport'])
         require(result.committed, 'Phase 2 continuation requires complete request dependencies')
@@ -193,6 +194,8 @@ def sequence(proof, *, through=None):
         owner = _Pass(proof.owner.run,evidence,baseproof,binding,entry,ordinal=ordinal,
             number=first.request['round_number']+ordinal-1,step=step_record,previous=previous,
             scheduler=scheduler,snapshot=snapshot)
+        from whetstone.vnext_verified_phase2_closeout import declaration_owner
+        owner = declaration_owner(owner, frames, clean)
         raw=owner._optional(owner.request_path)
         if raw is None:
             require(ordinal==len(claims)+2 or ordinal==len(claims)+1, 'missing Phase 2 request before successor')
@@ -210,6 +213,13 @@ def sequence(proof, *, through=None):
             gate='result_consumption_required';break
         if through == owner.number:
             return dict(frames=frames,gate='historical',owner=owner)
+        if bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
+            serious = any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'}
+                          for r in review['feedback']['feedback'])
+            scheduler.record_result(step.profile,blocker_count=int(serious),major_count=0)
+            if not serious: clean.add(step.profile)
+            gate='declaration_closeout_required'
+            break
         previous=_ref(owner.consumption_path,consumption)
         finding_rows=consumption['findings']
         advice_raw=owner._optional(owner.binding_path)
@@ -222,11 +232,16 @@ def sequence(proof, *, through=None):
         # Use only proven successors: during historical replay the current candidate is not proven yet.
         index=next(i for i,p in enumerate(proof.pointers) if _snapshot(p)==reference)
         successor=proof.pointers[index+1] if index+1<len(proof.pointers) and _snapshot(proof.pointers[index+1])['path'] in proof.bases else None
+        if successor is not None:
+            creation=tracked.reader.json(dict(path=successor['source_candidate_creation_event_path'],
+                hash=successor['source_candidate_creation_event_hash']),'candidate_creation_event_v1')
+            require(creation['round_number']>=owner.number,'Phase 2 promotion source precedes sequence cursor')
+            # Several clean reviews may share a base before a later step edits it.
+            # Consume the proven successor only at its actual source review.
+            if creation['round_number']>owner.number:successor=None
         mutated=False
         if successor is not None:
             require(actionable and not unknown and advice_raw is not None, 'Phase 2 promotion bypasses unresolved advice')
-            creation=tracked.reader.json(dict(path=successor['source_candidate_creation_event_path'],
-                hash=successor['source_candidate_creation_event_hash']),'candidate_creation_event_v1')
             require(creation['round_number']==owner.number and successor['previous_verified_pointer_hash']==reference['hash'],
                     'Phase 2 successor is not this review correction')
             newref=_snapshot(successor)
@@ -245,12 +260,15 @@ def sequence(proof, *, through=None):
         scheduler.record_result(step.profile,blocker_count=int(serious),major_count=int(not serious and mutated))
         if scheduler.states[step_index].residual_status is not None and gate=='review': gate='budget_exhausted'
         # Existing declarations require their own maintenance/verification owner.
-        if any(owner._optional(path) is not None for path in ('rounds/convergence_declaration.md','convergence_declaration.md')): gate='declaration_maintenance_required'
+        from whetstone.vnext_verified_phase2_closeout import supported as closeout_supported
+        if not closeout_supported(proof) and any(owner._optional(path) is not None for path in
+                ('rounds/convergence_declaration.md','convergence_declaration.md')):
+            gate='declaration_maintenance_required'
     else:
         raise ValueError('Phase 2 sequence scan did not reach a boundary')
     if through is not None: require(False,'Phase 2 round lacks committed sequence consumption')
     # A suffix cannot lurk beyond a pending result or a terminal gate.
-    if frames and gate not in {'review','closeout_required'}:
+    if frames and gate != 'review':
         require(len(claims)+1<=len(frames),'Phase 2 successor bypasses incomplete predecessor')
     require(reference==proof.latest,'Phase 2 sequence has not accounted for current authority')
     proof.guard(proof.store.read)
@@ -303,6 +321,8 @@ class _Continuation(_HistoricalAdvice):
             owner.snapshot[STATE_PATH] = self.store.read(STATE_PATH)
             expected=owner._build_review(owner.proof,deepcopy(transport))
             owner.store.synchronize(store._token,owner.snapshot,self.run._record['descriptor']['path'])
+            if getattr(owner,'request_schema',None)=='vnext_phase2_review_request_v3':
+                owner._synchronize_declaration(store)
             for ref in expected.inputs['sources']+[expected.request['entry'],expected.request['configuration'],
                     expected.inputs['configuration']['rubric']['artifact'],expected.request['base_pointer']]:
                 if ref != self.run._record['descriptor']:
@@ -328,6 +348,8 @@ class _Continuation(_HistoricalAdvice):
             owner._execute=lambda operation: operation(store,owner.proof)
             if action=='execute': return owner.execute(**kwargs)
             if action=='consume': return owner.consume()
+            if getattr(owner,'request_schema',None)=='vnext_phase2_review_request_v3':
+                require(False,'declaration review is read-only; no correction admission is supported')
             if action=='advice': return owner.bind(**kwargs)
             if action=='admit':
                 require(state['gate']=='correction_required','Phase 2 round is blocked by sequence gate')

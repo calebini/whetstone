@@ -58,10 +58,11 @@ class _FirstReview(_Entry):
         return self._render_review(proof, transport, binding, entry, number, step)
 
     def _render_review(self, proof, transport, binding, entry, number, step, *, directory=DIRECTORY,
-                       previous_consumption=None):
+                       previous_consumption=None, declaration=None):
         # Internal renderer only. The selecting owner must prove the base and schedule.
         config = binding.configuration
-        schema = SCHEMA if previous_consumption is None else 'vnext_phase2_review_request_v2'
+        schema = ('vnext_phase2_review_request_v3' if declaration is not None else
+                  SCHEMA if previous_consumption is None else 'vnext_phase2_review_request_v2')
         input_path, prompt_path, request_path = (directory+'/'+name for name in ('inputs.json','prompt.txt','request.json'))
         proof.reader.suite.registry.validate(transport, 'vnext_review_request_transport_v1')
         schemas = {name: dict(path='schemas/' + name + '.schema.json',
@@ -97,11 +98,19 @@ class _FirstReview(_Entry):
         if previous_consumption is not None:
             inputs.update(schema_version='vnext-phase2-review-inputs-v2', previous_consumption=deepcopy(previous_consumption),
                 current_verified_draft=dict(path=proof.pointers[-1]['verified_draft_path'], hash=sha256_bytes(values['base'])))
+        if declaration is not None:
+            inputs.update(schema_version='vnext-phase2-review-inputs-v3', declaration=deepcopy(declaration))
+        section_ids=[row['canonical_section_id'] for row in values['base_map']['sections']]
+        if declaration is not None:
+            from whetstone.declaration import DECLARATION_ARTIFACTS
+            section_ids += sorted(DECLARATION_ARTIFACTS | {'target-matrix-precedence'})
         prompt = render_reviewer_prompt(profile=step['profile'], draft=inputs['draft'], rubric=inputs['rubric'],
-            phase='phase_2', section_ids=[row['canonical_section_id'] for row in values['base_map']['sections']],
+            phase='phase_2', section_ids=section_ids,
             round_number=number, draft_hash_value=sha256_bytes(values['base']))
         prompt += '\nAll bound inputs are embedded below. Preserve their declared authority and scope; excluded sources are unavailable.\n'
-        prompt += 'Use the exact configured Reviewer identity. Return Phase 2 feedback only; no declaration review is active.\n'
+        prompt += ('Use the exact configured Reviewer identity. Return Phase 2 feedback only; no declaration review is active.\n'
+                   if declaration is None else
+                   'Verify the bound convergence declaration, current draft, rubric identity/hash, target matrix, unresolved issues and rubric gaps. Return Phase 2 feedback only. Declaration artifacts are Orchestrator-owned; no Editor mutation is authorized.\n')
         prompt += canonical_json_bytes(inputs).decode('utf-8')
         request = dict(schema_version=schema.replace('_','-'), phase='phase_2',
             job_id=config['job_id'], entry=entry.entry_ref, configuration=binding.configuration_ref,
@@ -109,6 +118,7 @@ class _FirstReview(_Entry):
             response_schema=schemas[RESPONSE_SCHEMA], inputs=_ref(input_path, inputs),
             prompt=dict(path=prompt_path, hash=sha256_bytes(prompt.encode('utf-8'))))
         if previous_consumption is not None: request['previous_consumption'] = deepcopy(previous_consumption)
+        if declaration is not None: request['declaration'] = deepcopy(declaration['binding'])
         proof.reader.suite.registry.validate(request, schema)
         expected = ((input_path, canonical_json_bytes(inputs)), (prompt_path, prompt.encode('utf-8')),
                     (request_path, canonical_json_bytes(request)))

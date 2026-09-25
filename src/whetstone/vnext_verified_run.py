@@ -169,6 +169,18 @@ class VerifiedRun:
     def run_phase2_review(self, *, client=None, continuation=False):
         from whetstone.vnext_verified_phase2_client import run_phase2_review
         return run_phase2_review(self, client=client, continuation=continuation)
+    def prepare_phase2_declaration(self):
+        from whetstone.vnext_verified_phase2_closeout import _Declaration
+        return _Declaration(self).prepare()
+    def phase2_closeout(self):
+        from whetstone.vnext_verified_phase2_closeout import _Declaration
+        return _Declaration(self).status()
+    def finish_phase2(self):
+        from whetstone.vnext_verified_phase2_closeout import _Declaration
+        return _Declaration(self).finish()
+    def reconcile_phase2_state(self):
+        from whetstone.vnext_verified_phase2_closeout import _Declaration
+        return _Declaration(self).reconcile()
     def phase2_sequence_status(self):
         from whetstone.vnext_verified_phase2_sequence import _Continuation
         return _Continuation(self).status()

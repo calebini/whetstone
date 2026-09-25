@@ -25,7 +25,8 @@ class VerifiedReviewTests(unittest.TestCase):
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
                 closeout_contract=False, operator_status_contract=False, phase2_eligibility_contract=False,
-                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False, phase2_round_contract=False, phase2_sequence_contract=False):
+                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False, phase2_round_contract=False, phase2_sequence_contract=False, phase2_closeout_contract=False):
+        phase2_sequence_contract = phase2_sequence_contract or phase2_closeout_contract
         phase2_round_contract = phase2_round_contract or phase2_sequence_contract
         phase2_advice_contract = phase2_advice_contract or phase2_round_contract
         phase2_consumption_contract = phase2_consumption_contract or phase2_advice_contract
@@ -58,12 +59,14 @@ class VerifiedReviewTests(unittest.TestCase):
         if phase2_review_contract: algorithms += ('vnext_verified_phase2_review_v1',)
         if phase2_client_contract: algorithms += ('vnext_verified_phase2_client_v1',)
         if phase2_consumption_contract: algorithms += ('vnext_verified_phase2_consumption_v1',)
+        if phase2_closeout_contract: algorithms += ('vnext_verified_phase2_closeout_v1',)
         if phase2_sequence_contract: algorithms += ('vnext_verified_phase2_sequence_v1',)
         if phase2_round_contract: algorithms += ('vnext_verified_phase2_round_v1',)
         if phase2_advice_contract: algorithms += ('vnext_verified_phase2_advice_v1', 'vnext_mutation_preparation_v1')
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,
-                extra_schemas={'vnext_review_request_v2'} | ({'vnext_phase2_review_request_v2','vnext_phase2_consumption_v2'} if phase2_sequence_contract else set()) | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set())
+                extra_schemas={'vnext_review_request_v2'} | ({'vnext_phase2_declaration_v1','vnext_phase2_closeout_v1',
+                    'vnext_phase2_review_request_v3','vnext_phase2_consumption_v3','unresolved_issues','rubric_gaps'} if phase2_closeout_contract else set()) | ({'vnext_phase2_review_request_v2','vnext_phase2_consumption_v2'} if phase2_sequence_contract else set()) | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set())
                     | ({'vnext_phase2_configuration_v1', 'vnext_phase2_entry_request_v1'} if phase2_binding_contract else set())
                     | ({'vnext_phase2_entry_v1'} if phase2_entry_contract else set())
                     | ({'vnext_phase2_review_request_v1', 'phase2_reviewer_feedback_input', 'controlled_vocabulary'} if phase2_review_contract else set())

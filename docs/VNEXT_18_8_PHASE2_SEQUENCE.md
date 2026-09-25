@@ -110,3 +110,8 @@ The next functional milestone is verified Phase 2 closeout/declaration handling 
 the current lineage, including maintenance and final review evidence, before any
 convergence claim. Other remaining boundaries above stay explicit. All four 18.8
 tasks and 18.9 qualification remain incomplete.
+
+Subsequent work (2026-09-25, after local checkpoint `7fc003f`): the authorized
+[declaration/closeout milestone](VNEXT_18_8_PHASE2_CLOSEOUT.md) is validated separately
+and has subsequent local checkpoint authorization. The evidence and limits above describe this continuation
+checkpoint; they do not qualify the subsequent closeout owner.
