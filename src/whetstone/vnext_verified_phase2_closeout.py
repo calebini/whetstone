@@ -189,8 +189,13 @@ class _Declaration(_Continuation):
         require(bound.request['base_pointer']==proof.latest,'declaration review is stale')
         package=_bundle(owner,owner.source_frames,owner.source_clean)
         rows=_latest_issues(state['frames'],proof.latest)
+        from whetstone.vnext_verified_phase2_findings import supported as findings_supported, assessment
+        findings=assessment(self,proof,state,package,rows) if findings_supported(proof) else None
         blockers=[]
-        if frame['review']['feedback']['feedback']:blockers.append('final_findings_require_reconciliation')
+        if findings is not None:
+            if not findings['committed']:blockers.append('final_findings_reconciliation_uncommitted')
+            if findings['packet']['route']!='closeout_eligible':blockers.append(findings['packet']['route'])
+        elif frame['review']['feedback']['feedback']:blockers.append('final_findings_require_reconciliation')
         required={r['name'] for r in owner.binding.configuration['profiles']}
         if not required<=set(state['clean']):blockers.append('current_profile_verification_missing')
         if any(r['normalized_severity'] in {'blocker','major'} for r in rows):blockers.append('serious_findings')
@@ -232,7 +237,12 @@ class _Declaration(_Continuation):
             terminal_state=terminal,accepted=accepted,reviewer_final_status=status,declaration_status=status,blockers=blockers,
             profiles=[dict(step_index=i,**r) for i,r in enumerate(state['scheduler'].status()['profiles'],1)],
             clean_profiles=state['clean'],apply_back_permitted=False)
-        proof.reader.suite.registry.validate(packet,CLOSEOUT_SCHEMA)
+        schema=CLOSEOUT_SCHEMA
+        if findings is not None:
+            packet.update(schema_version='vnext-phase2-closeout-v2',finding_reconciliation=findings['reference'],
+                          unresolved_issues=findings['packet']['unresolved_issues'])
+            schema='vnext_phase2_closeout_v2'
+        proof.reader.suite.registry.validate(packet,schema)
         ref=_ref(directory+'/commit.json',packet)
         assets=((final_ref['path'],final.encode()),(report_ref['path'],canonical_json_bytes(report)))
         pending=[]
@@ -267,6 +277,9 @@ class _Declaration(_Continuation):
         frame['journal'].synchronize(store._token,frame['bound'].request,frame['outcomes'])
         for ref in (view['packet']['review_result'],view['packet']['review_consumption'],frame['receipt']['feedback']):
             self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
+        if 'finding_reconciliation' in view['packet']:
+            for ref in (view['packet']['unresolved_issues'],view['packet']['finding_reconciliation']):
+                self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
         require(self._closeout(proof)['packet']==view['packet'],'Phase 2 closeout changed during source barriers')
 
     def finish(self):

@@ -175,6 +175,12 @@ class VerifiedRun:
     def phase2_closeout(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).status()
+    def phase2_final_findings(self):
+        from whetstone.vnext_verified_phase2_findings import _Findings
+        return _Findings(self).inspect()
+    def reconcile_phase2_findings(self):
+        from whetstone.vnext_verified_phase2_findings import _Findings
+        return _Findings(self).reconcile_findings()
     def finish_phase2(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).finish()

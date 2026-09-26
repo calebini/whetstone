@@ -1,0 +1,188 @@
+{
+  "date": "2026-09-26",
+  "status": "validated_uncommitted",
+  "baseline_head": "7a90a85a99d8253a8a313567130c5f8e2fc4f135",
+  "scope": "Separately pinned final-review nonblocking residual reconciliation and explicit blocking routes; no actual declaration repair.",
+  "distinct_passing_methods": 72,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-findings-001/findings-validation.log",
+      "sha256": "ddc18a1c049cf00f028180536bbd6ded991e20e10a61b44789a33949c8eeef02",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_findings -v -f",
+      "methods": [
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_empty_review_still_requires_new_pin_receipt_and_old_suite_refuses",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_minor_and_nit_residuals_close_only_after_reconciliation_and_state_recovery",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_reconciliation_and_closeout_lost_writes_repeat_exact_barriers",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_serious_hash_claim_and_mixed_source_findings_remain_blocked",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_sources_caches_and_committed_dependencies_cannot_be_substituted"
+      ],
+      "method_count": 8,
+      "elapsed_seconds": 225.748
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-findings-001/closeout-regressions.log",
+      "sha256": "2164acc2880886bf6fd7f8c04b5d7c1f111300f9cd99f5178b7f5d2e9f0c287c",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_closeout -v",
+      "methods": [
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_declaration_regeneration_after_verified_correction_retains_old_package",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_final_findings_remain_blocked_work_not_terminal_or_edit_permission",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_final_review_and_closeout_lost_writes_recover_without_duplicate_credit",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_package_prefixes_recover_and_sources_are_barriers_before_request",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_stale_evidence_and_unowned_mirrors_cannot_confer_completion",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_unpinned_completed_sequence_cannot_invent_declaration_review"
+      ],
+      "method_count": 7,
+      "elapsed_seconds": 492.77
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-findings-001/shared-regressions.log",
+      "sha256": "0bf0c99a469eee0a61dece5234eaaf27ac8482df4df0d0f14ec0b71e7d772c9e",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_review test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_clean_sequence_has_distinct_repeated_steps_and_no_convergence -v",
+      "methods": [
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority",
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_clean_sequence_has_distinct_repeated_steps_and_no_convergence"
+      ],
+      "method_count": 13,
+      "elapsed_seconds": 254.745
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-findings-001/contracts-evaluation.log",
+      "sha256": "74eae0b7b5c2881d8ca62dd47b38802146e4aca7089b74ef6076ccf98addd2a3",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_contracts test_vnext_suite_verified_bytes test_evaluation test_declaration -v",
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_fixture_evaluation_uses_the_exact_hash_checked_bytes",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_schema_parsing_uses_the_exact_hash_checked_bytes",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_detects_declaration_only_work",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_prefers_source_spec_work",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_contains_required_fields",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_rejects_conditional_status",
+        "test_declaration.DeclarationTests.test_validate_convergence_declaration_checks_hashes_and_counts"
+      ],
+      "method_count": 44,
+      "elapsed_seconds": 4.07
+    }
+  ],
+  "pending_cohorts": [],
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-phase2-findings-001/validation-source-manifest.json",
+      "sha256": "58f5344b9a278c030dc9f09de4761451f268ec6cd8c0aa474c3778c4a1514f09"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-findings-001/assertion-source-manifest.json",
+      "sha256": "1148a25a25a0bfca2635c6332d4e37e1f2181c37351f4306ae511889afea24b2"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-findings-001/final-source-manifest.json",
+      "sha256": "40318850f369a12663d102fe0c60366fdde5b2b312fdf196e7e832499b717a01"
+    }
+  ],
+  "final_source_hashes": {
+    "contracts/algorithms/vnext_verified_phase2_findings_v1.md": "6b5c22411be6b8d77598851780c218504ceaa0087305a0701a37fe722f7d750f",
+    "contracts/schemas/vnext_phase2_closeout_v2.schema.json": "04fa6091acdb21791bb0a077dd53c699b11ad1af8819ab7ce21cf8775223fc3d",
+    "contracts/schemas/vnext_phase2_finding_reconciliation_v1.schema.json": "779dacea7eb7753819c239479f0eb17ceeb2054542ab4d8b26dfeabd1d871797",
+    "src/whetstone/vnext_verified_phase2_closeout.py": "9f50f7814fb4a0260fa31e35fe674fcd05dbd539e83290e1785efebaa4f38333",
+    "src/whetstone/vnext_verified_phase2_findings.py": "03b26d22f7b254b4f33d3c4f2e23d33dcd92c5f4f34281b2f278afa856c243ad",
+    "src/whetstone/vnext_verified_run.py": "4569e8da15bc996d6b52358f557f353cb843ed25704e71f044086721dfeb2c79",
+    "tests/test_vnext_verified_phase2_findings.py": "df5c9ae3673b6e72417b0cfe4fbbbe9601d235be12def121ad5f622edbfc2c8d",
+    "tests/test_vnext_verified_review.py": "c6e49d6313d165910337c1dc97b02662ac5e2ec8de0df078ca47abc506eeb126"
+  },
+  "source_scope": "Production, contracts and existing test files were fixed before validation and remain unchanged. The new test file changed only its fresh-process JSON projection comparison. The full eight-method findings cohort runs on the final source snapshot; compatibility cohorts exercise unchanged test/dependency bytes.",
+  "baseline_evidence_recheck": "Before editing, all prior closeout final source hashes and six test-log hashes matched its recorded 110-test checkpoint.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "shipping_maps_empty": true,
+  "index_empty": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true,
+  "completed_scope": [
+    "Read-only final finding inspection and D8-fenced residual snapshot/commit publication, with recovery-only reentry.",
+    "Minor/nit and out-of-scope residuals retained separately from the immutable reviewed issue file, with full source feedback references.",
+    "Closeout v2 binds committed reconciliation and residual issues; ordinary acceptance checks and separate state recovery remain required.",
+    "Serious source/declaration, authority, rubric, oscillation and profile gates do not grant edits, extra review or an unsupported terminal.",
+    "Remaining ordinary step budget stays explicit; no Reviewer prose or mismatch label is accepted as proof of repair.",
+    "Source drift, stale/corrupt dependencies and mutable state cannot confer completion; lost publication/state acknowledgements recover without duplicate work.",
+    "Fresh-process reopened residual closeout and old-suite refusal/compatibility."
+  ],
+  "exploratory_evidence": [
+    "initial-smoke.log",
+    "focused-validation.log",
+    "focused-corrected.log"
+  ],
+  "corrected_findings": [
+    "Initial helper name _view shadowed the work owner method; renamed it _finding_view before the validation snapshot.",
+    "The fresh-process projection assertion needed ordinary JSON normalization for its tuple/list presentation difference; strict artifact canonicalization correctly rejects non-JSON tuples. Production behavior was unchanged by the assertion correction."
+  ],
+  "limitations": [
+    "New v2 reconciliation integration journeys use seed-entry fixtures. Promoted-lineage closeout is rechecked through the prior v1 owner; a separate promoted v2 residual journey is not qualified.",
+    "Authority/rubric/oscillation routing combinations have focused unit coverage; serious mixed source/declaration routing also has full runtime coverage.",
+    "Scripted clients and local fault hooks on macOS/APFS, plus fresh-process readback. No live-provider run, physical power loss or process kill during these writes.",
+    "No actual declaration repair, gap resolution, final-review source correction, subsequent review scheduling, complete halt/failure reporting, version maintenance, external apply-back or public activation.",
+    "No full repository suite or new legacy/bridge campaign in this slice. Existing legacy code is unchanged; prior compatibility evidence is not counted as fresh qualification.",
+    "Runtime performance remains unqualified; test durations include concurrent local verification."
+  ],
+  "remaining_feature_tasks": "All four 18.8 tasks and 18.9 qualification remain incomplete.",
+  "next_boundary": "Proven declaration-only revision/review path for blocking final findings, including repair evidence, remaining ordinary budget selection and interruption recovery; source edits must stay behind the V candidate protocol.",
+  "checkpoint_followup": {
+    "date": "2026-09-26",
+    "authorization": "Subsequent user instruction: ok let's commit. Local checkpoint only; pushing remains deferred until feature completion.",
+    "precommit_head": "7a90a85a99d8253a8a313567130c5f8e2fc4f135",
+    "source_and_evidence_recheck": "All eight final source hashes, three source-manifest hashes, the complete 533-file final source snapshot and all four test-log hashes match recorded validation evidence. All 72 passing test identities match. Frozen suite 1 and empty shipping qualification maps are unchanged.",
+    "tests_rerun": false,
+    "changes_since_validation": "Documentation checkpoint metadata only; production, contract and test bytes remain as validated.",
+    "historical_fields": "status, index_empty and no_commit describe the original validation boundary before subsequent checkpoint authorization.",
+    "push_authorized": false
+  }
+}

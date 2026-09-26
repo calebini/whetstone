@@ -112,3 +112,10 @@ Keep source corrections behind the V candidate protocol. Complete terminal/halt
 precedence and failure reports, optional missing-profile closeout, other scheduler
 modes, version maintenance, operator/semantic followups and external apply-back
 remain open. All four 18.8 tasks and 18.9 qualification remain incomplete.
+
+Subsequent bounded slice (2026-09-26, after checkpoint `7a90a85`):
+[nonblocking final findings](VNEXT_18_8_PHASE2_FINDINGS.md) adds a separately pinned
+reconciliation receipt and residual snapshot, validated by 72 targeted tests.
+A subsequent local checkpoint was authorized on 2026-09-26 after source/evidence
+revalidation. Its evidence is separate from the 110-test checkpoint above.
+Declaration repair remains open.
