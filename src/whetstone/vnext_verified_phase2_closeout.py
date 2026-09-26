@@ -309,7 +309,12 @@ class _Declaration(_Continuation):
         target=raw if state==decode_json(raw) else canonical_json_bytes(state)
         mirror=self._optional(view.get('mirror_path',MIRROR))
         # Never overwrite unowned user/external declaration text as recovery.
-        require(mirror is None or mirror==view['assets'][0][1],
+        owned_failure=False
+        if 'failure_report' in view['packet'] and mirror is not None and mirror!=view['assets'][0][1]:
+            from whetstone.vnext_verified_phase2_failure import supported as failure_supported, owned_failure_mirror
+            if failure_supported(self._proof(self.store.read)):
+                owned_failure=owned_failure_mirror(self.run,mirror)
+        require(mirror is None or mirror==view['assets'][0][1] or owned_failure,
                 'root failure report conflicts with committed closeout' if 'failure_report' in view['packet']
                 else 'root declaration conflicts with committed closeout')
         return raw,target,mirror
@@ -335,7 +340,16 @@ class _Declaration(_Continuation):
                     validate(self.store.read,path,new)
                     # Terminal projection is create-only. The frozen storage
                     # materialization whitelist does not include declarations.
-                    self.store.publish(store._token,path,new)
+                    if old is not None and 'failure_report' in view['packet']:
+                        from whetstone.vnext_verified_phase2_failure import _Failure
+                        failure=_Failure(self.run);failure._sync(store,proof,failure._failure_view(proof))
+                        def transition(before,after):
+                            require(before==old and after==new,'failure projection changed')
+                            validate(self.store.read,path,new)
+                            require(failure._failure_view(proof)['records'],'failure projection lacks historical ownership')
+                        self.store.replace_pointer(store._token,path,expected=old,
+                            snapshot=view['packet']['failure_report'],validate_transition=transition)
+                    else:self.store.publish(store._token,path,new)
                 elif old!=new:self.store.materialize(store._token,path,new,validate_target=validate)
                 else:self.store.synchronize_existing(store._token,path,expected=new)
             result=self._public(proof,self._closeout(proof))

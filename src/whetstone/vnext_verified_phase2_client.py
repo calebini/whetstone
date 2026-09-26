@@ -227,7 +227,11 @@ class _Client(_FirstReview):
 
 
 def run_phase2_review(run, *, client=None, continuation=False):
-    return _Client(run).execute(client=client,continuation=continuation)
+    from whetstone.vnext_verified_phase2_failure import supported, _Failure
+    owner=_Client(run)
+    if supported(owner._proof(owner.store.read)):
+        return _Failure(run).execute_review(1,client=client,continuation=continuation)
+    return owner.execute(client=client,continuation=continuation)
 
 
 def phase2_review_status(run):

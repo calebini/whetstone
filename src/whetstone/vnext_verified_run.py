@@ -172,6 +172,15 @@ class VerifiedRun:
     def prepare_phase2_declaration(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).prepare()
+    def phase2_failure_status(self):
+        from whetstone.vnext_verified_phase2_failure import _Failure
+        return _Failure(self).status_failure()
+    def publish_phase2_failure(self):
+        from whetstone.vnext_verified_phase2_failure import _Failure
+        return _Failure(self).publish_failure()
+    def reconcile_phase2_failure_state(self):
+        from whetstone.vnext_verified_phase2_failure import _Failure
+        return _Failure(self).recover_failure()
     def phase2_closeout(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).status()

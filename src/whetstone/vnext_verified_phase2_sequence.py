@@ -335,6 +335,10 @@ class _Continuation(_HistoricalAdvice):
         return self._execute(perform)
 
     def operation(self, ordinal, action, **kwargs):
+        from whetstone.vnext_verified_phase2_failure import supported as failure_supported, _Failure
+        if action=='execute' and failure_supported(self._proof(self.store.read)):
+            require(type(ordinal) is int and ordinal>1,'continuation operations require an explicit later pass')
+            return _Failure(self.run).execute_review(ordinal,**kwargs)
         require(type(ordinal) is int and ordinal>1,'continuation operations require an explicit later pass')
         def perform(store,proof):
             state=sequence(proof)
