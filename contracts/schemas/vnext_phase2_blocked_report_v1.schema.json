@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "report_kind",
+    "job_id",
+    "reconciliation",
+    "sources",
+    "declaration",
+    "reviewed_issues",
+    "reviewed_gaps",
+    "route",
+    "blocking_reasons",
+    "findings",
+    "comparisons",
+    "budget",
+    "automatic_repair_established",
+    "findings_resolved",
+    "repair_authorized",
+    "candidate_authorized",
+    "next_review_authorized",
+    "phase_complete"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-phase2-blocked-report-v1"
+    },
+    "report_kind": {
+      "const": "status_only"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "reconciliation": {
+      "$ref": "#/$defs/ref"
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_verified_pointer",
+        "configuration",
+        "declaration_binding",
+        "review_request",
+        "review_result",
+        "review_consumption",
+        "unresolved_issues"
+      ],
+      "properties": {
+        "current_verified_pointer": {
+          "$ref": "#/$defs/ref"
+        },
+        "configuration": {
+          "$ref": "#/$defs/ref"
+        },
+        "declaration_binding": {
+          "$ref": "#/$defs/ref"
+        },
+        "review_request": {
+          "$ref": "#/$defs/ref"
+        },
+        "review_result": {
+          "$ref": "#/$defs/ref"
+        },
+        "review_consumption": {
+          "$ref": "#/$defs/ref"
+        },
+        "unresolved_issues": {
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "declaration": {
+      "$ref": "#/$defs/ref"
+    },
+    "reviewed_issues": {
+      "$ref": "#/$defs/ref"
+    },
+    "reviewed_gaps": {
+      "$ref": "#/$defs/ref"
+    },
+    "route": {
+      "enum": [
+        "authority_resolution_required",
+        "rubric_resolution_required",
+        "source_revision_required",
+        "declaration_revision_required",
+        "oscillation_resolution_required",
+        "profile_verification_required"
+      ]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "authority_resolution_required",
+          "rubric_resolution_required",
+          "source_revision_required",
+          "declaration_revision_required",
+          "oscillation_resolution_required",
+          "profile_verification_required"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding",
+          "sources",
+          "disposition"
+        ],
+        "properties": {
+          "finding": {
+            "$ref": "reviewer_feedback.schema.json#/properties/feedback/items"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "feedback",
+                "consumption"
+              ],
+              "properties": {
+                "feedback": {
+                  "$ref": "#/$defs/ref"
+                },
+                "consumption": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            },
+            "minItems": 1
+          },
+          "disposition": {
+            "const": "unresolved"
+          }
+        }
+      }
+    },
+    "comparisons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewed_inputs",
+        "current_residuals"
+      ],
+      "properties": {
+        "reviewed_inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "observed",
+              "expected",
+              "matches"
+            ],
+            "properties": {
+              "field": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              },
+              "matches": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "current_residuals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "observed",
+              "expected",
+              "matches"
+            ],
+            "properties": {
+              "field": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              },
+              "matches": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_index",
+        "profile",
+        "round_budget",
+        "rounds_used",
+        "remaining"
+      ],
+      "properties": {
+        "step_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "round_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rounds_used": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "remaining": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "automatic_repair_established": {
+      "const": false
+    },
+    "findings_resolved": {
+      "const": false
+    },
+    "repair_authorized": {
+      "const": false
+    },
+    "candidate_authorized": {
+      "const": false
+    },
+    "next_review_authorized": {
+      "const": false
+    },
+    "phase_complete": {
+      "const": false
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "date": "2026-09-26",
+  "status": "validated_uncommitted",
+  "baseline_head": "9ad04a3dcb6c047c177a7af7349ca3bd88cfba10",
+  "initial_dirty_paths": [
+    "IMPLEMENTATION_PLAN.md",
+    "docs/VNEXT_18_8_PHASE2_FINDINGS.md"
+  ],
+  "authorization": "User approved the evidence-backed blocked-status reporting recommendation; findings stay unresolved. No automatic re-review or per-run approval policy added.",
+  "scope": "Separately pinned read-only final-review report from committed reconciliation, with complete feedback provenance, reviewed/current field comparisons and remaining ordinary budget.",
+  "distinct_passing_methods": 68,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-blocked-report-001/blocked-validation.log",
+      "sha256": "21dfb61f9ce52377ce8946de2c1bfdfcc3283cdc0fb6308f7d87b121f11ee8f5",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_blocked -v -f",
+      "methods": [
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_clean_and_unpinned_reviews_do_not_become_blocked_reports",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_corrupt_missing_and_changed_evidence_refuse_and_cache_cannot_resolve",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_exact_evidence_and_counts_stay_unresolved_without_writes_or_extra_work",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_mixed_findings_keep_authority_rubric_and_source_reasons"
+      ],
+      "method_count": 4,
+      "elapsed_seconds": 133.909
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-blocked-report-001/shared-regressions.log",
+      "sha256": "11413576ecd2485f933adb0b0f0038e47c0af9394cb941d74a61897e229b4208",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_findings test_vnext_verified_review -v",
+      "methods": [
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_empty_review_still_requires_new_pin_receipt_and_old_suite_refuses",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_minor_and_nit_residuals_close_only_after_reconciliation_and_state_recovery",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_reconciliation_and_closeout_lost_writes_repeat_exact_barriers",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_serious_hash_claim_and_mixed_source_findings_remain_blocked",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_sources_caches_and_committed_dependencies_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority"
+      ],
+      "method_count": 20,
+      "elapsed_seconds": 361.825
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-blocked-report-001/contracts-corrected.log",
+      "sha256": "8220bac3a3e6e905d5a8e40c70ed6a70888d4e2157e051f745c286f4f0e30abc",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_contracts test_vnext_suite_verified_bytes test_evaluation test_declaration -v",
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_fixture_evaluation_uses_the_exact_hash_checked_bytes",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_schema_parsing_uses_the_exact_hash_checked_bytes",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_detects_declaration_only_work",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_prefers_source_spec_work",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_contains_required_fields",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_rejects_conditional_status",
+        "test_declaration.DeclarationTests.test_validate_convergence_declaration_checks_hashes_and_counts"
+      ],
+      "method_count": 44,
+      "elapsed_seconds": 1.639
+    }
+  ],
+  "pending_cohorts": [],
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-phase2-blocked-report-001/validation-source-manifest.json",
+      "sha256": "3f7ec5482b5833c83cb5e9a60daa5d431a0420186bc3227c4d80397cc469922b"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-blocked-report-001/corrected-source-manifest.json",
+      "sha256": "080b16f13fbb90a884dd5df0dc478b9105ae4854f6882405bf330f90014b78b0"
+    }
+  ],
+  "source_snapshot_files": 540,
+  "final_source_hashes": {
+    "contracts/algorithms/vnext_verified_phase2_blocked_v1.md": "028f236ea0d76406dd29541b473c1a502620a78411d399a9f4ea6db7b2369172",
+    "contracts/schemas/vnext_phase2_blocked_report_v1.schema.json": "0dfc23a0a7a6617ed63539ae2eb7a426364b791bf9122e5782bb944a606ece12",
+    "src/whetstone/vnext_verified_phase2_blocked.py": "f0b7e160f6d0f22231055f8912abf0fe4cb92092798c1a524c248916149ca121",
+    "src/whetstone/vnext_verified_run.py": "ec21fa1cf003dac426b8f7a3dd32411249e0156722973d7906e1e44925d7ad5c",
+    "tests/test_vnext_verified_phase2_blocked.py": "7d3f1ec536cbdea47fda79a226ddcb4939b95df3da0bcbf1ca6afab699e670a9",
+    "tests/test_vnext_verified_review.py": "632a246cc030d218c343be0376f5039129c5a353c49bc7d27fd569a4117bf517"
+  },
+  "source_scope": "All final passing cohorts used the corrected snapshot; no production, contract or test bytes changed during those runs. Later edits were documentation only.",
+  "exploratory_evidence": [
+    {
+      "path": "rounds/vnext-18-8-phase2-blocked-report-001/initial-smoke.log",
+      "sha256": "856d1f6da8037ab444c416bf4e7b3e75a3965a7745c9e362b53726b79e50117c"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-blocked-report-001/contracts-evaluation.log",
+      "sha256": "7e2116ea3110f6e7747d42129cb08523f5026abc5180b96c88d07eb0c15bc169"
+    }
+  ],
+  "corrected_findings": [
+    "Initial smoke exposed unsupported nullable type-array syntax in the new schema. Replaced it with the existing anyOf form before all final validation cohorts. Earlier exploratory results are excluded from the final count."
+  ],
+  "prior_authority_investigation": "Five existing tests passed before this implementation; not added to the 68-method implementation validation count. Evidence remains under rounds/vnext-18-8-declaration-repair-authority-001/.",
+  "completed_scope": [
+    "Read-only report requiring separately pinned contract, consumed final review and committed reconciliation; existing recovery precedence preserved.",
+    "Every current residual finding retained with full original feedback and exact feedback/consumption references; no claim declared false.",
+    "Verified declaration fields compared separately with reviewed inputs and post-review blocker/major counts; no current rubric-gap count fabricated.",
+    "Primary and additional blocking routes preserved; final ordered profile budget reported without repair, candidate, next-review, terminal or convergence grants.",
+    "Source corruption, missing dependencies, source drift and forged mutable completion cache cannot establish resolution; no writer fence or filesystem writes.",
+    "Exact fresh-process readback, clean-review refusal and unpinned-suite refusal."
+  ],
+  "limitations": [
+    "Four new scripted runtime journeys use seed-entry fixtures. A promoted-lineage blocked report is not separately qualified.",
+    "Invocation-local read-only projection, not a durable report commit, atomic snapshot after return or future mutation authority.",
+    "No repair, automatic re-review, rubric resolution, complete halt/failure reporting, public CLI activation or external apply-back.",
+    "No new report writer exists; no new write-interruption protocol is claimed. Existing reconciliation/closeout interruption tests ran as regressions.",
+    "Local macOS/APFS with scripted clients and fresh-process readback. No live provider, physical power loss, process kill or performance qualification.",
+    "No full repository or new legacy/bridge qualification campaign. Legacy implementations and frozen contracts remain unchanged."
+  ],
+  "remaining_feature_tasks": "All four 18.8 tasks and 18.9 qualification remain incomplete.",
+  "next_boundary": "Recommended: final-step terminal/failure reporting only for demonstrably exhausted ordinary budget under existing halt precedence. Unused-budget unsupported repair work remains blocked; no automatic re-review.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "shipping_maps_empty": true,
+  "index_empty": true,
+  "diff_check_passed": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true,
+  "checkpoint_followup": {
+    "date": "2026-09-26",
+    "authorization": "Subsequent user instruction: Let\u2019s commit. Local checkpoint only; pushing remains deferred until feature completion.",
+    "precommit_head": "9ad04a3dcb6c047c177a7af7349ca3bd88cfba10",
+    "source_and_evidence_recheck": "All six final source hashes, both manifest hashes, the complete 540-file corrected snapshot, three final passing log hashes and all 68 test identities match validation evidence. Exploratory log hashes also match. Frozen suite 1 and empty shipping qualification maps are unchanged.",
+    "tests_rerun": false,
+    "changes_since_validation": "Documentation checkpoint metadata only; production, contract and test bytes remain as validated.",
+    "historical_fields": "status, index_empty and no_commit describe the original validation boundary before subsequent checkpoint authorization.",
+    "push_authorized": false
+  }
+}

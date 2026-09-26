@@ -178,6 +178,9 @@ class VerifiedRun:
     def phase2_final_findings(self):
         from whetstone.vnext_verified_phase2_findings import _Findings
         return _Findings(self).inspect()
+    def phase2_blocked_report(self):
+        from whetstone.vnext_verified_phase2_blocked import _BlockedReport
+        return _BlockedReport(self).inspect_report()
     def reconcile_phase2_findings(self):
         from whetstone.vnext_verified_phase2_findings import _Findings
         return _Findings(self).reconcile_findings()

@@ -98,3 +98,59 @@ recovery. Source corrections continue to require the V candidate protocol. Broad
 gap resolution, operator/semantic followups, complete halt/failure reporting, other
 scheduler modes, version maintenance and external apply-back remain open. All four
 18.8 tasks and 18.9 qualification remain incomplete.
+
+
+## Declaration repair authority investigation (2026-09-26)
+
+Starting from clean checkpoint `9ad04a3`, the proposed declaration-only repair slice
+encountered an unresolved product choice before runtime implementation. This is an
+implementation decision for the maintainer, not a new per-run approval requirement.
+
+The scheduler spec (lines 358–406) authorizes Orchestrator-owned regeneration when
+a declaration becomes stale after a draft change, and removal of hash-binding
+findings only when that regeneration fully repairs them. Its state transitions
+(lines 915–931) distinguish declaration work from source work and give source
+revision precedence. The Phase 2 acceptance spec (lines 139–160) still requires
+zero serious declaration findings from the verification review. Neither provision
+defines how an unchanged, mechanically valid declaration can override a contrary
+serious Reviewer finding.
+
+The current `_bundle` owner reproduces its immutable package from the verified
+pointer, configuration, rubric and consumed review prefix; mismatching stored bytes
+refuse. `_DeclarationPass._build_review` requires that package and zero existing
+serious debt. Source-promotion regeneration already has a dedicated integration
+test. Consequently, that stale-hash case is not evidence that an arbitrary serious
+finding from the final v3 review has a supported automatic repair. This does not
+prove that the renderer can never have a defect; a real defect must be demonstrated
+and corrected under the versioned contract, not hidden by rewriting old evidence.
+
+The investigation presented one decision: when no deterministic repair is established, retain
+the serious finding and implement an evidence-backed blocked-status report, or
+design budgeted re-review of the unchanged declaration with explicit disagreement
+resolution rules. The user subsequently approved retaining the finding and implementing
+the report (2026-09-26).
+The report should bind the reviewed declaration, current pointer/configuration,
+source feedback and field comparisons, identify the remaining review budget, and
+state that no repair or successor review is authorized. It must not call the claim
+false merely because the mechanical fields match; semantic concerns can remain.
+It must not introduce a terminal, operator override, or new acceptance rule.
+
+No runtime, contract, test or authoritative-spec change is made by this
+investigation itself. The subsequent user instruction, not this note, ratifies the
+reporting scope. The current
+reconciliation receipt remains unchanged; arbitrary declaration repair, further
+review selection and complete failure/terminal reporting remain open. Evidence is
+under `rounds/vnext-18-8-declaration-repair-authority-001/`; the prior 72-test record
+remains historical and is not counted as a fresh full rerun. No commit, push,
+public activation, live client or external apply-back is included.
+
+Investigation verification: **five existing tests pass** (three finding-route unit
+checks, the mixed serious-finding runtime refusal, and regeneration after a verified
+source correction). The regeneration journey uses the existing v1 closeout owner;
+this is not new v2 promoted-reconciliation qualification or a declaration-repair
+implementation. All 533 prior source snapshot files still match; the investigation
+snapshot additionally binds the three authority specs. Exact command, test identities,
+source/log hashes and limitations are in the local `evidence.json` beside the log.
+`git diff --check` passed at the investigation boundary, when only this handoff and
+`IMPLEMENTATION_PLAN.md` had changed. The authorized implementation follows in
+[the blocked-report handoff](VNEXT_18_8_PHASE2_BLOCKED_REPORT.md).
