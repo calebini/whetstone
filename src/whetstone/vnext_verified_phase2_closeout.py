@@ -182,6 +182,9 @@ class _Declaration(_Continuation):
         return self._execute(publish)
 
     def _closeout(self,proof):
+        from whetstone.vnext_verified_phase2_termination import supported as termination_supported, pins as termination_pins, exhausted_closeout
+        termination = termination_supported(proof)
+        if termination: termination_pins(proof)
         state=sequence(proof)
         if state['gate']!='declaration_closeout_required':
             return dict(gate='declaration_review_not_completed',sequence_gate=state['gate'],committed=False,phase_complete=False)
@@ -215,6 +218,8 @@ class _Declaration(_Continuation):
         # review-only closeout. Findings may require repair/review within its
         # remaining budget; unsupported repair must not become a terminal.
         if blockers:
+            if termination:
+                return exhausted_closeout(self,proof,state,package,findings,rows,blockers)
             return dict(gate='declaration_reconciliation_required',blockers=blockers,
                         committed=False,phase_complete=False)
         accepted=True
@@ -263,6 +268,8 @@ class _Declaration(_Continuation):
             before,target,mirror=self._targets(view)
             result.update(state_current=before==target,mirror_current=mirror==view['assets'][0][1])
             result['phase_complete']=result['phase_complete'] and result['state_current'] and result['mirror_current']
+            if 'failure_report' in view['packet']:
+                result['halt_complete']=result['state_current'] and result['mirror_current']
         proof.guard(self.store.read)
         return result
 
@@ -284,6 +291,8 @@ class _Declaration(_Continuation):
 
     def finish(self):
         def publish(store,proof):
+            from datetime import datetime, timezone
+            self._publication_time=datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00','Z')
             view=self._closeout(proof)
             require('packet' in view,'Phase 2 declaration acceptance is incomplete; no terminal may be published')
             self._synchronize(store,proof,view)
@@ -298,9 +307,11 @@ class _Declaration(_Continuation):
         raw=self.store.read(STATE_PATH);state=decode_json(raw)
         state[STATE_FIELD]=deepcopy(view['reference'])
         target=raw if state==decode_json(raw) else canonical_json_bytes(state)
-        mirror=self._optional(MIRROR)
+        mirror=self._optional(view.get('mirror_path',MIRROR))
         # Never overwrite unowned user/external declaration text as recovery.
-        require(mirror is None or mirror==view['assets'][0][1], 'root declaration conflicts with committed closeout')
+        require(mirror is None or mirror==view['assets'][0][1],
+                'root failure report conflicts with committed closeout' if 'failure_report' in view['packet']
+                else 'root declaration conflicts with committed closeout')
         return raw,target,mirror
 
     def reconcile(self):
@@ -312,14 +323,15 @@ class _Declaration(_Continuation):
                 self.store.synchronize_existing(store._token,path,expected=raw)
             before,target,mirror=self._targets(view)
             declaration=view['assets'][0][1]
-            for path,old,new in ((MIRROR,mirror,declaration),(STATE_PATH,before,target)):
+            mirror_path=view.get('mirror_path',MIRROR)
+            for path,old,new in ((mirror_path,mirror,declaration),(STATE_PATH,before,target)):
                 def validate(read,name,value,path=path,old=old,new=new):
                     proof.guard(read);self.run._guard(read)
                     try: existing=read(path)
                     except FileNotFoundError:existing=None
                     require(name==path and value==new and existing==old,'Phase 2 derived target changed')
                     require(read(view['reference']['path'])==canonical_json_bytes(view['packet']),'Phase 2 closeout commit changed')
-                if path==MIRROR and old!=new:
+                if path==mirror_path and old!=new:
                     validate(self.store.read,path,new)
                     # Terminal projection is create-only. The frozen storage
                     # materialization whitelist does not include declarations.

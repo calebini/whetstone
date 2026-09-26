@@ -1,0 +1,256 @@
+{
+  "date": "2026-09-26",
+  "status": "validated_uncommitted",
+  "baseline_head": "804a6f023966dad0f7f730d7ceafb3362b0f2def",
+  "initial_worktree_clean": true,
+  "scope": "Bounded consumed final-review exits: clean convergence, genuine final-step exhaustion, complete failure report publication and separate recovery. Not generic Phase 2 termination.",
+  "acceptance_matrix": {
+    "clean_at_budget_limit": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_clean_last_budgeted_review_keeps_convergence"
+    ],
+    "exhausted_failure_and_current_lineage": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance",
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_failure_after_verified_phase2_promotion_binds_current_draft_and_prior_acceptance"
+    ],
+    "unused_budget_and_competing_resolution": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_unused_budget_and_higher_resolution_gates_cannot_publish_exhaustion",
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_observed_oscillation_does_not_get_hidden_by_exhaustion"
+    ],
+    "incomplete_and_unpinned_evidence": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_unpinned_exhausted_final_review_and_pending_result_keep_existing_gates",
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_missing_reconciliation_corrupt_sources_and_unowned_mirror_refuse"
+    ],
+    "source_barriers_and_corrupt_dependencies": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_missing_reconciliation_corrupt_sources_and_unowned_mirror_refuse",
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_interrupted_reports_commit_mirror_and_final_state_recover_exactly"
+    ],
+    "publication_prefix_and_uncertain_final_state_recovery": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_interrupted_reports_commit_mirror_and_final_state_recover_exactly"
+    ],
+    "fresh_process_readback_and_recovery": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance",
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_interrupted_reports_commit_mirror_and_final_state_recover_exactly"
+    ],
+    "unowned_mirror_and_forged_cache": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_missing_reconciliation_corrupt_sources_and_unowned_mirror_refuse"
+    ],
+    "last_reviewer_summary_scope": [
+      "test_vnext_verified_phase2_termination.FinalTerminationTests.test_last_reviewer_summary_filters_ids_without_dropping_preserved_findings"
+    ]
+  },
+  "distinct_passing_methods": 72,
+  "passing_method_executions": 73,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-termination-001/termination-validation.log",
+      "sha256": "881c76e531f8821469b356228ce8a55838eb26a6d534a79b83faafd8b06470c1",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_termination.FinalTerminationTests.test_unpinned_exhausted_final_review_and_pending_result_keep_existing_gates test_vnext_verified_phase2_termination.FinalTerminationTests.test_unused_budget_and_higher_resolution_gates_cannot_publish_exhaustion test_vnext_verified_phase2_termination.FinalTerminationTests.test_clean_last_budgeted_review_keeps_convergence test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance test_vnext_verified_phase2_termination.FinalTerminationTests.test_failure_after_verified_phase2_promotion_binds_current_draft_and_prior_acceptance test_vnext_verified_phase2_termination.FinalTerminationTests.test_interrupted_reports_commit_mirror_and_final_state_recover_exactly test_vnext_verified_phase2_termination.FinalTerminationTests.test_missing_reconciliation_corrupt_sources_and_unowned_mirror_refuse -v -f",
+      "methods": [
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_unpinned_exhausted_final_review_and_pending_result_keep_existing_gates",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_unused_budget_and_higher_resolution_gates_cannot_publish_exhaustion",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_clean_last_budgeted_review_keeps_convergence",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_failure_after_verified_phase2_promotion_binds_current_draft_and_prior_acceptance",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_interrupted_reports_commit_mirror_and_final_state_recover_exactly",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_missing_reconciliation_corrupt_sources_and_unowned_mirror_refuse"
+      ],
+      "method_count": 7,
+      "elapsed_seconds": 435.503
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-termination-001/oscillation-focused.log",
+      "sha256": "bdf23654a886ef76459051fe459aaa582f114971ab55299f56daf168c929e74d",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_termination.FinalTerminationTests.test_observed_oscillation_does_not_get_hidden_by_exhaustion -v -f",
+      "methods": [
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_observed_oscillation_does_not_get_hidden_by_exhaustion"
+      ],
+      "method_count": 1,
+      "elapsed_seconds": 28.846
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-termination-001/closeout-regressions.log",
+      "sha256": "6bee5b32d3c08cb30780a479a07c285ae891464c1765e1e9d00c71ca3f467163",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_closeout test_vnext_verified_phase2_findings test_vnext_verified_phase2_blocked -v",
+      "methods": [
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_declaration_regeneration_after_verified_correction_retains_old_package",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_final_findings_remain_blocked_work_not_terminal_or_edit_permission",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_final_review_and_closeout_lost_writes_recover_without_duplicate_credit",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_package_prefixes_recover_and_sources_are_barriers_before_request",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_stale_evidence_and_unowned_mirrors_cannot_confer_completion",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_unpinned_completed_sequence_cannot_invent_declaration_review",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_empty_review_still_requires_new_pin_receipt_and_old_suite_refuses",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_minor_and_nit_residuals_close_only_after_reconciliation_and_state_recovery",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_reconciliation_and_closeout_lost_writes_repeat_exact_barriers",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_serious_hash_claim_and_mixed_source_findings_remain_blocked",
+        "test_vnext_verified_phase2_findings.FinalFindingsTests.test_sources_caches_and_committed_dependencies_cannot_be_substituted",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_clean_and_unpinned_reviews_do_not_become_blocked_reports",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_corrupt_missing_and_changed_evidence_refuse_and_cache_cannot_resolve",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_exact_evidence_and_counts_stay_unresolved_without_writes_or_extra_work",
+        "test_vnext_verified_phase2_blocked.BlockedReportTests.test_mixed_findings_keep_authority_rubric_and_source_reasons"
+      ],
+      "method_count": 19,
+      "elapsed_seconds": 698.123
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-termination-001/contracts-evaluation.log",
+      "sha256": "6f91a9fa2f247504b9a14c0d612bfef52405b4e213f5abeafe3d11686899d299",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_contracts test_vnext_suite_verified_bytes test_evaluation test_declaration -v",
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_fixture_evaluation_uses_the_exact_hash_checked_bytes",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_schema_parsing_uses_the_exact_hash_checked_bytes",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_detects_declaration_only_work",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_prefers_source_spec_work",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_contains_required_fields",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_rejects_conditional_status",
+        "test_declaration.DeclarationTests.test_validate_convergence_declaration_checks_hashes_and_counts"
+      ],
+      "method_count": 44,
+      "elapsed_seconds": 1.769
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-termination-001/summary-filter-validation.log",
+      "sha256": "83cca95776257ce26dbefaebcc5aea64a31a4b7aaf401384c7c7abda98ab3db2",
+      "command": "PYTHONPATH=src:tests python3 -m unittest test_vnext_verified_phase2_termination.FinalTerminationTests.test_last_reviewer_summary_filters_ids_without_dropping_preserved_findings test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance -v -f",
+      "methods": [
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_last_reviewer_summary_filters_ids_without_dropping_preserved_findings",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance"
+      ],
+      "method_count": 2,
+      "elapsed_seconds": 67.691
+    }
+  ],
+  "pending_cohorts": [],
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/validation-source-manifest.json",
+      "sha256": "0514242e7a1079a7e877bf2c5c8bcef1fcdb2a55285a5e4274f8b3614e03a63c"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/corrected-source-manifest.json",
+      "sha256": "2a83f04e90d000da2da53c8e529aa8c5f618593ee9cb92b9b1dd15d9c5a82d40"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/advice-source-manifest.json",
+      "sha256": "3660c6bc760adeeb435ef1789e304519bf1dae0fcce7ab1d71a3e7d1a52e7cd3"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/final-source-manifest.json",
+      "sha256": "6690a1889c227ca955f78f6c0bb814e3b96de43e1bf320b01c351547e2d0c4c5"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/summary-fixture-source-manifest.json",
+      "sha256": "eb2a44dbab651fb23e59c56fba88bfd5a7bbf124722170f30687f0af9ce50d59"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/delivered-source-manifest.json",
+      "sha256": "3f1d4ccdde6dbef7ec0308219053f3d974afb6642625a88a38a65579d040720f"
+    }
+  ],
+  "source_snapshot_files": 544,
+  "final_source_hashes": {
+    "contracts/algorithms/vnext_verified_phase2_termination_v1.md": "f33461ac4ab3ea8653342b45a9ad0acf783657e29593bd5ff8ed71ad2b19f5e1",
+    "contracts/schemas/vnext_phase2_failure_closeout_v1.schema.json": "e3facbedb24ac5f5371e49e47b7bc288a7293ec200e665827fbce119982f4cc8",
+    "src/whetstone/vnext_verified_phase2_termination.py": "e2b63d70b5402f0bb20f2147e8b218413f29cf9e78324406e204862e6fc1fd8a",
+    "src/whetstone/vnext_verified_phase2_closeout.py": "5f929d72994b1618ea1a78fcd7dd9cf35959682e7e18db30a4d65671060f98cf",
+    "tests/test_vnext_verified_phase2_termination.py": "bdd1621b3931afdc80b202858e231d7b106e9556c555d5ab9e0f145c7b71a2e0",
+    "tests/test_vnext_verified_review.py": "d012aedb05d7f4bcf093edcef91a029dd1b27528b421fb5c70d13471a519d2ac"
+  },
+  "source_scope": "The first four cohorts passed 71 distinct methods before the final feedback-ID filter correction. Production, contracts and compatibility bytes stayed fixed during those cohorts; only the new termination fixtures were corrected. The final spec cross-check narrowed last_reviewer_findings.feedback_ids to in-scope major/blocker feedback. Only the new termination module and test changed after that 71-test checkpoint. The fifth cohort passed on delivered bytes: a new mixed-feedback journey and the existing full failure publication/recovery journey, including fresh-process readback. This is 72 distinct methods across 73 successful executions, not a claim that all 72 were rerun on final bytes. All final source hashes match delivered-source-manifest.json; subsequent edits were documentation only.",
+  "baseline_evidence_recheck": "Six prior blocked-report source hashes and all three passing log hashes match the 68-test checkpoint.",
+  "exploratory_evidence": [
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/initial-smoke.log",
+      "sha256": "d58ea8a4b930a8ae5ec6c87734eeab80b16bac93decbf0742d8a125a7ea05b78"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/promoted-fixture-exploratory.log",
+      "sha256": "16380722bd61110a9458b1d0e92b8b6ef755176fe2391e62001bd3b577689351"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/oscillation-fixture-exploratory.log",
+      "sha256": "4df5a6de066170cf5278268e04b4a4237b36a98b5c5369e3d9e0904631ed7a0a"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/oscillation-anchor-exploratory.log",
+      "sha256": "7e98472085f9213d32f99032e11f58cb2054f3b1d3805892f0a9fc25693a27cc"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-termination-001/summary-fixture-exploratory.log",
+      "sha256": "786cbbe84bc7d76fdb401195d65de3b740748bb9d7a89febba2081858e62b03a"
+    }
+  ],
+  "exploratory_limits": "Initial smoke passed before adding the promoted-lineage test and retaining all reconciliation reasons in the withheld-terminal projection. The first focused batch correctly refused a stale entry-draft hash emitted by the promoted test callback; the fixture was corrected. The next batch correctly stopped the oscillation fixture at missing finding admission, so its existing bound-advice prerequisite was supplied. Its legacy display anchor was also replaced with the current map canonical anchor; the final focused oscillation journey passes. The first mixed-feedback summary fixture reused one oscillation identity three times and correctly hit the existing churn gate; distinct concern identities were supplied before validating summary filtering. Exploratory successes are excluded from the final count.",
+  "completed_scope": [
+    "Existing closeout APIs select clean convergence before final-step exhaustion; new failure extension is separately pinned.",
+    "Unused final-step budget, unsupported authority/rubric/oscillation resolution and incomplete evidence do not become failure terminals.",
+    "Full convergence failure report and terminal-report-v2 bind current verified lineage, original Phase 1 acceptance, reviewed declaration and preserved findings/budgets.",
+    "Report publication, immutable evidence commit and recovery-only mirror/state projection use existing D8 closeout infrastructure.",
+    "Seed and Phase 2 promoted-lineage failures; exact report/commit replay, fresh-process readback and recovery after uncertain final state write.",
+    "Frozen contracts, materialization whitelist, existing success receipts, legacy state and empty public qualification maps preserved."
+  ],
+  "limitations": [
+    "Only consumed final scheduled v3 review in the current standard horizontal unversioned V path. Not generic Phase 2 halt/failure handling.",
+    "Earlier client timeout/artifact-invalid terminal reports, conflict/oscillation terminal publication and decision/rubric resolution remain unsupported by this owner; their gates are not reduced to exhaustion.",
+    "No declaration repair, final-review source correction, extra review scheduling, new mode, version maintenance, external apply-back or public activation.",
+    "Local macOS/APFS, scripted clients, injected source/write/barrier failures and fresh subprocess. No live provider, physical power loss or process kill during a write.",
+    "No full repository or new legacy/bridge campaign. Existing implementation bytes remain unchanged outside the internal closeout extension and test setup.",
+    "Historical replay costs and concurrent test durations do not qualify performance."
+  ],
+  "remaining_feature_tasks": "All four 18.8 tasks and 18.9 qualification remain incomplete.",
+  "next_boundary": "Earlier Phase 2 client-failure terminal/report lifecycle and explicit technical continuation, preserving prior terminal history; resolve supported publication/recovery boundaries before broadening.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "shipping_maps_empty": true,
+  "index_empty": true,
+  "diff_check_passed": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true,
+  "subsequent_checkpoint": {
+    "authorization": "User requested: Let\u2019s commit",
+    "revalidation": "All 544 delivered source hashes, final source hashes, five passing cohort logs, manifests and exploratory logs match; baseline HEAD, initially empty index, frozen suite and empty qualification maps rechecked.",
+    "validation_snapshot_preserved": true,
+    "new_test_execution": false,
+    "push_authorized": false
+  }
+}
