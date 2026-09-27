@@ -109,12 +109,24 @@ class OscillationTracker:
         reviewer_feedback: Mapping[str, object],
         resolved_opposition_keys: set[str] | None = None,
     ) -> OscillationDetection | None:
+        return _highest_precedence_detection(self.record_phase2_detections(
+            round_number=round_number, reviewer_feedback=reviewer_feedback,
+            resolved_opposition_keys=resolved_opposition_keys))
+
+    def record_phase2_detections(
+        self,
+        *,
+        round_number: int,
+        reviewer_feedback: Mapping[str, object],
+        resolved_opposition_keys: set[str] | None = None,
+    ) -> list[OscillationDetection]:
+        """Retain all simultaneous reasons; the legacy API still selects one."""
         for key in resolved_opposition_keys or set():
             self._churn[key] = 0
 
         feedback_items = reviewer_feedback.get("feedback")
         if not isinstance(feedback_items, list):
-            return None
+            return []
 
         current_fingerprints = set()
         detections: list[OscillationDetection] = []
@@ -207,7 +219,7 @@ class OscillationTracker:
                 state.present = False
                 state.removed_once = True
 
-        return _highest_precedence_detection(detections)
+        return detections
 
 
 def canonicalize_phase2_feedback(artifact: Mapping[str, object], allowed_section_ids: Iterable[str]) -> dict:

@@ -218,6 +218,17 @@ class _Declaration(_Continuation):
         # review-only closeout. Findings may require repair/review within its
         # remaining budget; unsupported repair must not become a terminal.
         if blockers:
+            if state.get('signals_enabled'):
+                signal=frame['signals']
+                if signal['terminal_state'] or 'freeze_prior_decision' in signal['recommendations']:
+                    prerequisites=['final_findings_reconciliation_uncommitted','authority_resolution_required',
+                                   'rubric_resolution_required','declaration_identity_mismatch']
+                    reasons=blockers+(findings['packet']['blocking_reasons'] if findings else [])
+                    withheld=[r for r in prerequisites if r in reasons]
+                    return dict(gate='signal_preconditions_required' if withheld else 'signal_reporting_required',
+                        blockers=list(dict.fromkeys(reasons)),signal_preconditions=withheld,
+                        proposed_terminal_state=None if withheld else signal['terminal_state'],
+                        committed=False,phase_complete=False)
             if termination:
                 return exhausted_closeout(self,proof,state,package,findings,rows,blockers)
             return dict(gate='declaration_reconciliation_required',blockers=blockers,

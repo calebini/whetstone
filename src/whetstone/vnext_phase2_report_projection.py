@@ -4,10 +4,11 @@ from whetstone.vnext_contracts import canonical_json_bytes, require
 MIRRORS = {'error':'rounds/artifact_validation_error.json', 'failure':'rounds/convergence_failure_report.json'}
 
 
-def projections(owner, proof, *, reviewer=None, correction=None):
+def projections(owner, proof, *, reviewer=None, correction=None, signals=None):
     from whetstone.vnext_verified_phase2_failure import _Failure, supported as reviewer_supported
     from whetstone.vnext_verified_phase2_correction_failure import _CorrectionFailure, supported as correction_supported
-    records=[]; sources=[]; state=None; correction_reader=None; correction_proof=None
+    records=[]; sources=[]; state=None; correction_reader=None; correction_proof=None; signal_reader=None
+    mirrors=dict(MIRRORS)
     if reviewer_supported(proof):
         reader=_Failure(owner.run)
         view=reviewer if reviewer is not None else reader._failure_view(proof)
@@ -24,13 +25,23 @@ def projections(owner, proof, *, reviewer=None, correction=None):
         correction_reader,correction_proof=reader,checked
         for r in view['records']:
             if r['committed']:records.append((r['order'],r))
+    from whetstone.vnext_phase2_signals import supported as signals_supported
+    if signals_supported(proof):
+        from whetstone.vnext_verified_phase2_signals import _Signals, MIRRORS as signal_mirrors
+        signal_reader=owner if isinstance(owner,_Signals) else _Signals(owner.run)
+        checked=proof if signal_reader is owner else signal_reader._proof(signal_reader.store.read)
+        if signal_reader is not owner:checked.inspect_registry()
+        view=signals if signals is not None else signal_reader._view_signals(checked)
+        state=view['state'];mirrors.update(signal_mirrors)
+        for r in view['records']:
+            if r['committed']:records.append((r['order'],r))
     records.sort(key=lambda pair:pair[0]); plan={}
     dependencies=[]
     for _,r in records:
         dependencies.extend(r['assets'].items())
         dependencies.append((r['reference']['path'],canonical_json_bytes(r['packet'])))
-        for key,path in MIRRORS.items():
-            ref=r['packet'][key]
+        for key,path in mirrors.items():
+            ref=r['packet'].get(key)
             if ref is None:continue
             raw=r['assets'][ref['path']]
             allowed=plan[path]['allowed'] if path in plan else []
@@ -45,6 +56,8 @@ def projections(owner, proof, *, reviewer=None, correction=None):
             plan[path]=dict(ref=ref,raw=raw,allowed=allowed+[raw],dependencies=dependencies,sources=sources)
     if correction_reader is not None:
         sources.append((correction_reader,correction_reader._sources()))
+    if signal_reader is not None and signal_reader is not correction_reader:
+        sources.append((signal_reader,signal_reader._sources()))
     return plan
 
 

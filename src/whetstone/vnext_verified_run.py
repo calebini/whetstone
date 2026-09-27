@@ -193,6 +193,15 @@ class VerifiedRun:
     def phase2_closeout(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).status()
+    def phase2_signal_status(self):
+        from whetstone.vnext_verified_phase2_signals import _Signals
+        return _Signals(self).status()
+    def publish_phase2_signals(self):
+        from whetstone.vnext_verified_phase2_signals import _Signals
+        return _Signals(self).publish()
+    def reconcile_phase2_signal_state(self):
+        from whetstone.vnext_verified_phase2_signals import _Signals
+        return _Signals(self).recover()
     def phase2_final_findings(self):
         from whetstone.vnext_verified_phase2_findings import _Findings
         return _Findings(self).inspect()

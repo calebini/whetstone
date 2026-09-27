@@ -1,0 +1,190 @@
+{
+  "date": "2026-09-27",
+  "status": "validated_uncommitted",
+  "baseline_head": "63806a87727b002c5fb995bc22aa30a1bc7a907e",
+  "initial_worktree": "Only the existing IMPLEMENTATION_PLAN.md conflict/oscillation authorization handoff was modified; it was preserved and updated with this milestone.",
+  "authority": "User authorized the bounded implementation. Existing identity/oscillation/conflict, scheduler D7/precedence and Phase 2 companion-report specs supply reporting authority. No new resolution authority assumed.",
+  "scope": "Separately pinned standard horizontal unversioned verified Phase 2 signal classification, diagnostics, terminal reports and recovery-only projections. Explicit internal APIs; no automatic recommendation resolution or new client/repair/retry admission.",
+  "distinct_passing_methods": 65,
+  "passing_executions": 65,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/delivered-core-validation.log",
+      "sha256": "5665456499b8160b585814b006d6568df5fda985c6e2e4caf02fc3bbb169c1c3",
+      "count": 5,
+      "methods": [
+        "test_vnext_verified_phase2_signals.SignalRulesTests.test_conflict_history_counts_absence_and_preserves_severity",
+        "test_vnext_verified_phase2_signals.SignalRulesTests.test_normalized_cycle_and_draft_feedback_reasons_survive_together",
+        "test_vnext_verified_phase2_signals.SignalRulesTests.test_readdition_freeze_and_simultaneous_terminal_precedence",
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_freeze_is_distinct_and_blocker_conflict_reports_without_clients",
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_report_prefixes_final_state_loss_and_source_tampering"
+      ],
+      "scope": "Delivered runtime, contracts and tests: three signal rule methods, freeze/blocker reporting, interrupted publication/state and source/tampering refusal."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/delivered-final-review-validation.log",
+      "sha256": "ad2bb32c86c1be6c327423ae7be747b2ad5cbae3ab40cba19928fdd89a42716b",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_final_conflict_precedes_budget_and_nonblocking_churn_can_converge"
+      ],
+      "scope": "Delivered runtime, contracts and tests: final finding preconditions, clean convergence with nonblocking churn and conflict before exhausted final budget."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/delivered-promotion-validation.log",
+      "sha256": "ab8cd15f1f912f12aee5f41d1b40af818d35df0abda491d2e4fde8ce5884a5ad",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_nonblocking_conflict_survives_promotion_and_clean_closeout"
+      ],
+      "scope": "Credit only the completed nonblocking conflict history method across promotion/clean closeout. The redundant second method was interrupted after the first passed because it retained an obsolete CANDIDATE_VERIFIED assertion; its corrected CANDIDATE_PROMOTED assertion and retained-finding checks are covered by the separate final cycle run."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/final-cycle-validation.log",
+      "sha256": "4e07897cbdd0af31144bd42d393fb5294c040903be23b69135aadc55ab8a4b0d",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_committed_draft_cycle_halts_at_verified_authority"
+      ],
+      "scope": "Delivered runtime/contracts and corrected assertion: a real two-promotion normalized draft cycle, current promoted disposition, evaluated root diagnostic and retained findings."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/shared-validation.log",
+      "sha256": "c1d48134008e42c2aa397d893d81c05d01d221ec66e9c771630995f57ecbf233",
+      "count": 53,
+      "methods": [
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_computes_identity_fields",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_controlled_terms",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_section_id",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_draft_cycle_after_real_change",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_churn_after_three_cumulative_appearances",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_flip_flop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_mechanical_churn_without_stop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_readdition_and_then_repeated_readdition_stop",
+        "test_conflicts.ConflictTrackerTests.test_absent_round_resets_consecutive_count_but_preserves_total",
+        "test_conflicts.ConflictTrackerTests.test_conflict_severity_is_computed_from_participating_issues_when_available",
+        "test_conflicts.ConflictTrackerTests.test_conflict_state_round_trips_and_preserves_escalation_counters",
+        "test_conflicts.ConflictTrackerTests.test_consecutive_conflict_escalates_on_second_round",
+        "test_conflicts.ConflictTrackerTests.test_nonconsecutive_conflict_escalates_on_third_appearance",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates"
+      ],
+      "scope": "53 existing oscillation/conflict/evaluation/contract/finding-route methods. Executed before isolated signal terminal-report refinements; all code paths they select are unchanged on delivered source."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-signals-001/compatibility-validation.log",
+      "sha256": "102ca5ece8b4e2372ad82a65834e225fee2e513495d5535a6b97dfb21cd9bb1e",
+      "count": 4,
+      "methods": [
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_later_correction_promotes_and_replays_original_bases",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_timeout_publication_recovery_and_success_preserve_history",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_publication_projection_and_uncertain_state_recovery",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance"
+      ],
+      "scope": "Four existing original-suite runtime journeys: later correction/promotion history, Reviewer failure continuation, correction report/state recovery and final exhaustion. The later signal-contract/report refinements are outside these suites; selected implementation remains unchanged."
+    }
+  ],
+  "delivered_source_count": 556,
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/source-manifest.json",
+      "sha256": "809f73b86f99d81e2074f33473952af54e49b444e0b747d50ed15fef3c9da786"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/pre-cycle-assertion-source-manifest.json",
+      "sha256": "c905a272694e383cf452a868b2587642132986871807aa877a89cc77775431d9"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/delivered-source-manifest.json",
+      "sha256": "c968bfbeb25ed89764f43ee3181ccc615b1416c1681a88d1f9bfc348b5a7a198"
+    }
+  ],
+  "source_scope": "All eight new methods passed on delivered runtime/contract bytes. The final test-file change corrected only the cycle disposition assertion and is covered by its separate passing rerun; the other methods and helpers are unchanged. The 57 existing methods exercised unchanged selected implementations. No full-repository or public-mode qualification is claimed.",
+  "exploratory_logs": [
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/initial.log",
+      "sha256": "b25cbd3784a0b1e5c625517a93279094b7fa65e622bb744e99b8513827a7aed8"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/report-validation.log",
+      "sha256": "22820cbdfd25dbe237a7b9793a09d3c8578584278b607ebc7437cc0a623e3c40"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/promotion-validation.log",
+      "sha256": "94f7c8251919435f83c51742e0fbc4833b5177c60e6d94875fb46a7364bb3fc2"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/core-validation.log",
+      "sha256": "41dc2cff7642a359ad619c65536f043f10f917923dd23ebf6c7e41d05f334ae9"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/final-review-validation.log",
+      "sha256": "a3a013d09753f5d6e0fab401f72f5bcca5fe3b125a76b2a98195e7050efd36d0"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-signals-001/delivered-cycle-validation.log",
+      "sha256": "c763a0a2c708ed86e59874a2fd94caf4516239329bdeeab6c20a13463f696678"
+    }
+  ],
+  "exploratory_limits": "Initial fixtures reused a canonical issue identity with contradictory severity/oscillation metadata; existing integrity checks correctly refused. Fixtures now carry distinct semantic claims. Source review retained triggering findings after cycle promotion and added output durability checks before commit. Final terminal commits also bind evaluated diagnostic copies with the selected halt, preserving initial nonterminal diagnostics. An early cycle assertion expected the pre-promotion verified disposition; it was corrected to the actual promoted disposition and rerun, including retained-finding assertions. Only the individually passing history method is credited from the interrupted delivered-promotion cohort; its redundant obsolete-assertion cycle run was stopped with SIGINT after that method passed. The corrected standalone cycle run supplies the cycle acceptance evidence. The contract refinement invalidated already-admitted older test fixtures by design; superseded runs and earlier duplicate passes are excluded from the credited counts.",
+  "completed": [
+    "Normalized committed-draft cycles and canonical consumed-feedback signals retain simultaneous reasons, conflict severity/history and existing runtime precedence.",
+    "Freeze remains an explicit gate; continue-once and nonblocking conflicts retain ordinary gates/budgets; blocker conflict and oscillation stop are distinct terminals.",
+    "Original-pointer feedback diagnostics and promoted-pointer draft diagnostics remain immutable; terminal eligibility is separate from diagnostic publication.",
+    "Final declaration reconciliation remains a precondition; clean convergence outranks signals and signal halts outrank budget exhaustion.",
+    "D8 source/output barriers and owned shared report projections recover interrupted publication and uncertain final state writes without clients."
+  ],
+  "limitations": [
+    "Freeze resolution and intervening-resolution admission are not implemented. Promotion and missing feedback alone cannot clear churn.",
+    "No new Phase 2 operator followup/new repair admission, declaration repair, rubric resolution, general resume, version maintenance, broader modes or strop/readback.",
+    "Local scripted clients and injected faults on macOS/APFS; no live providers, process death during a write, physical power-loss, performance or full repository qualification.",
+    "Continue-once and cumulative conflict thresholds have focused rule coverage; not every combination has a complete runtime journey.",
+    "Corrupt authority or unsafe persistence refuses; no failure evidence is fabricated when publication cannot safely proceed."
+  ],
+  "remaining": "All four 18.8 tasks and 18.9 remain open.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "qualification_maps_empty": true,
+  "index_empty": true,
+  "diff_check_passed": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true
+}

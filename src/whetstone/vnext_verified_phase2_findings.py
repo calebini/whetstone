@@ -37,11 +37,14 @@ def _route(state,rows):
         reasons.append('source_revision_required')
     elif serious:
         reasons.append('declaration_revision_required')
-    tracker=OscillationTracker()
-    for frame in state['frames']:
-        if tracker.record_phase2_feedback(round_number=frame['bound'].request['round_number'],
-                                         reviewer_feedback=frame['review']['feedback']) is not None:
-            reasons.append('oscillation_resolution_required');break
+    if not state.get('signals_enabled'):
+        tracker=OscillationTracker()
+        for frame in state['frames']:
+            if tracker.record_phase2_feedback(round_number=frame['bound'].request['round_number'],
+                                             reviewer_feedback=frame['review']['feedback']) is not None:
+                reasons.append('oscillation_resolution_required');break
+    # The separately pinned signal owner evaluates current runtime conditions
+    # after declaration preconditions. Historical diagnostics are not blockers.
     required={r['name'] for r in state['frames'][-1]['owner'].binding.configuration['profiles']}
     if not required<=set(state['clean']):reasons.append('profile_verification_required')
     return reasons

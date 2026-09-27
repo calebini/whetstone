@@ -167,6 +167,11 @@ def sequence(proof, *, through=None):
     binding = original._committed_binding(prefix)
     entry = original._entry_view(prefix,binding)
     first = original._committed_request(prefix)
+    from whetstone.vnext_phase2_signals import supported as signals_supported, pins as signal_pins, SignalTracker, gate_for
+    signals = None
+    if signals_supported(proof):
+        signal_pins(proof)
+        signals = SignalTracker(first.request['round_number'], prefix.values(prefix.latest)['base'])
     scheduler = PhaseScheduler(ProfileStep(r['name'],round_budget=r['budget'],repeat_if_blockers=True)
                                for r in binding.configuration['profiles'])
     claims = _claims(evidence) if through is None else list(range(2,through-first.request['round_number']+2))
@@ -212,12 +217,18 @@ def sequence(proof, *, through=None):
         if not consumed:
             gate='result_consumption_required';break
         if through == owner.number:
+            if signals is not None:
+                frame['signals'] = signals.record(owner.number, review['feedback'])
             return dict(frames=frames,gate='historical',owner=owner)
         if bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
             serious = any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'}
                           for r in review['feedback']['feedback'])
             scheduler.record_result(step.profile,blocker_count=int(serious),major_count=0)
             if not serious: clean.add(step.profile)
+            if signals is not None:
+                frame['signals'] = signals.record(owner.number, review['feedback'])
+                frame['signal_reference'] = deepcopy(reference)
+                frame['signal_profiles'] = deepcopy(scheduler.status())
             gate='declaration_closeout_required'
             break
         previous=_ref(owner.consumption_path,consumption)
@@ -240,6 +251,7 @@ def sequence(proof, *, through=None):
             # Consume the proven successor only at its actual source review.
             if creation['round_number']>owner.number:successor=None
         mutated=False
+        oldbase=newbase=None
         if successor is not None:
             require(actionable and not unknown and advice_raw is not None, 'Phase 2 promotion bypasses unresolved advice')
             require(creation['round_number']==owner.number and successor['previous_verified_pointer_hash']==reference['hash'],
@@ -249,16 +261,22 @@ def sequence(proof, *, through=None):
             mutated=oldbase!=newbase
             detection=draft_tracker.record_draft(round_number=owner.number,draft_hash_value=sha256_bytes(newbase),
                 semantic_changes=semantic_changes(oldbase.decode(),newbase.decode()))
-            if detection is not None: gate='oscillation_requires_resolution'
+            if detection is not None and signals is None: gate='oscillation_requires_resolution'
             reference=newref
             if mutated: clean.clear()
         elif actionable:
             gate='operator_or_advice_required' if unknown else 'correction_required'
         feedback_detection=feedback_tracker.record_phase2_feedback(round_number=owner.number,reviewer_feedback=review['feedback'])
-        if feedback_detection is not None: gate='oscillation_requires_resolution'
+        if feedback_detection is not None and signals is None: gate='oscillation_requires_resolution'
         if not serious and not mutated: clean.add(step.profile)
         scheduler.record_result(step.profile,blocker_count=int(serious),major_count=int(not serious and mutated))
         if scheduler.states[step_index].residual_status is not None and gate=='review': gate='budget_exhausted'
+        if signals is not None:
+            frame['signals'] = signals.record(owner.number, review['feedback'], before=oldbase, after=newbase)
+            frame['signal_reference'] = deepcopy(reference)
+            frame['signal_profiles'] = deepcopy(scheduler.status())
+            frame['ordinary_gate'] = gate
+            gate = gate_for(frame['signals'], gate)
         # Existing declarations require their own maintenance/verification owner.
         from whetstone.vnext_verified_phase2_closeout import supported as closeout_supported
         if not closeout_supported(proof) and any(owner._optional(path) is not None for path in
@@ -273,11 +291,16 @@ def sequence(proof, *, through=None):
     require(reference==proof.latest,'Phase 2 sequence has not accounted for current authority')
     proof.guard(proof.store.read)
     return dict(frames=frames,gate=gate,owner=next_owner,reference=reference,scheduler=scheduler,
+                signals_enabled=signals is not None,
                 clean=sorted(clean),accepted_passes=sum(bool(f.get('receipt')) for f in frames))
 
 
 def validate_round(proof, number, record):
     state=sequence(proof,through=number)
+    if 'signals' in state['frames'][-1]:
+        from whetstone.vnext_phase2_signals import gate_for
+        require(gate_for(state['frames'][-1]['signals'], 'correction_required') == 'correction_required',
+                'Phase 2 signal gate prevents correction admission')
     return _validate_frame(proof,state['owner'],number,record)
 
 
