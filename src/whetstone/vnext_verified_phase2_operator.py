@@ -29,6 +29,14 @@ def admission_preflight(proof, bound, binding, decisions):
         constraints=_constraints(proof), phase2=dict(configuration=deepcopy(bound.inputs['configuration']),
         request=deepcopy(bound.request)), context={b['binding_id']: proof.reader.raw(dict(path=b['path'], hash=b['content_hash']))
             for b in values['authority']['bindings'] if b['role'] not in {'mutable_target', 'excluded'}})
+    if 'rubric_catalogue' in bound.inputs:
+        from whetstone.vnext_phase2_rubric import proposal_context
+        from whetstone.vnext_verified_phase2_client import _Journal
+        from types import SimpleNamespace
+        journal = _Journal(SimpleNamespace(),proof,proof.store,bound)
+        receipt = proof.reader.json(binding['result'],'vnext_phase2_review_result_v1')
+        review_result = journal.decode_review(proof.reader.raw(receipt['response']))
+        values['phase2'] = proposal_context(bound,review_result)
     require(len({r['finding_id'] for r in decisions}) == len(decisions), 'duplicate Phase 2 finding decisions')
     require(all(r['finding_id'] in binding['evidence'] for r in decisions), 'unknown Phase 2 finding decision')
     values['decisions'] = [dict(finding_id=r['finding_id'], feedback_refs=binding['evidence'][r['finding_id']]['feedback_refs'],

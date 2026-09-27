@@ -178,7 +178,13 @@ class VerifiedWork:
                 return VerifiedWorkView('registration_recovered', deepcopy(proof.pointers[-1]), value.latest, value=value)
             elif view.outcome == 'promotion_required': return view
             else:
-                return operation(_BorrowedFence(self.store, token), proof)
+                fence = _BorrowedFence(self.store, token)
+                result = operation(fence, proof)
+                from whetstone.vnext_phase2_source_correction import supported as source_supported
+                from whetstone.vnext_phase2_repair import supported as repair_supported
+                if source_supported(proof.reader.suite) or repair_supported(proof.reader.suite):
+                    fence.read_descriptor()
+                return result
         # A distinct fence and fresh current head own mirror repair. Never
         # proceed to the requested work after recovering materializations.
         repaired = self.promotion.materialization.repair()

@@ -86,9 +86,15 @@ def record(proof, frames, successor, advice):
         path = round_input_path(owner.number)
         inputs = proof.reader.json(dict(path=path, hash=sha256_bytes(proof.store.read(path))), 'vnext_proposal_round_input_v1')
         operator_decisions = inputs['decision_refs']
-    if operator_decisions:
+    from whetstone.vnext_phase2_repair import supported as repair_supported
+    if operator_decisions or repair_supported(proof.reader.suite):
         from whetstone.vnext_verified_phase2_operator import admission_preflight
-        preflight = admission_preflight(proof, bound, advice, operator_decisions)
+        if repair_supported(proof.reader.suite):
+            from whetstone.vnext_unit_preflight import prepare_unit_preflight
+            router=proof.transactions(creation['candidate_creation_ordinal'])
+            preflight=prepare_unit_preflight(**router.load_inputs.for_proposal(proof.store.read,owner.number,creation['proposal_id']))
+        else:
+            preflight = admission_preflight(proof, bound, advice, operator_decisions)
         all_admitted = {r['finding_id'] for r in preflight.plan['finding_dispositions'] if r['admitted_to_editing']}
         results = semantic['finding_results']; identifiers = [r['finding_id'] for r in results]
         require(semantic['verdict'] == 'pass' and len(identifiers) == len(set(identifiers))

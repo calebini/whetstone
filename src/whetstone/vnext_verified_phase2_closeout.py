@@ -71,16 +71,30 @@ def _fields(config, manifest_path, raw, counts):
         unresolved_major_issues_count=counts['major_issues'],unresolved_rubric_gaps_count=counts['rubric_gaps'])
 
 
+def _policy_rows(proof, rows):
+    from whetstone.vnext_phase2_source_correction import supported as source_supported
+    return [row for row in rows if row['in_scope']] if source_supported(proof.reader.suite) else rows
+
+
 def _bundle(owner, frames, clean):
     """Derive a new immutable package; existing bytes are checked, never adopted."""
     proof=owner.proof;_pins(proof)
-    require(owner.ordinal>1, 'declaration preparation requires a consumed Phase 2 predecessor')
+    from whetstone.vnext_phase2_targets import supported as target_supported
+    targets=target_supported(proof.reader.suite)
+    require(owner.ordinal>1 or targets, 'declaration preparation requires a consumed Phase 2 predecessor')
     issues=_latest_issues(frames,proof.latest)
+    policy_issues = _policy_rows(proof,issues)
     # No gap-resolution receipts exist in this bounded owner. A later clean
     # review or promotion alone cannot erase an earlier explicit gap signal.
     retained=[r for f in frames if f.get('consumed') for r in f['review']['feedback']['feedback']]
-    require(not any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in retained),
-            'rubric-gap evidence requires its separately implemented resolution owner')
+    from whetstone.vnext_phase2_rubric import supported as rubric_supported, retained as retained_gaps, pins as rubric_pins
+    gap_rows = []
+    if rubric_supported(proof.reader.suite):
+        rubric_pins(proof.reader.suite)
+        gap_rows = retained_gaps(frames,proof.latest)
+    else:
+        require(not any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in retained),
+                'rubric-gap evidence requires its separately implemented resolution owner')
     config=owner.binding.configuration
     raw=proof.values(proof.latest)['base']
     directory=owner.directory+'/declaration'
@@ -88,16 +102,19 @@ def _bundle(owner, frames, clean):
         workflow=config['workflow'],rubric_profile=config['rubric']['profile'],rubric_source=config['rubric']['source'],
         rubric_label=None,rubric_path=config['rubric']['artifact']['path'],rubric_content_hash=config['rubric']['artifact']['hash'],
         target_phase=config['target_phase'],target_mode=config['target_mode'])
+    from whetstone.vnext_phase2_gap_acceptance import bind_manifest
+    bind_manifest(manifest,proof,frames,proof.latest)
     unresolved=dict(round_number=owner.number,draft_hash=draft_hash(raw.decode()),unresolved_issues=[dict(
         issue_id=r['issue_id'],issue_fingerprint=r['issue_fingerprint'],normalized_severity=r['normalized_severity'],
         affected_sections=deepcopy(r['affected_sections']),claim=r['claim'],in_scope=r['in_scope'],
-        blocking_acceptance=r['normalized_severity'] in {'major','blocker'}) for r in issues])
+        blocking_acceptance=r in policy_issues and r['normalized_severity'] in {'major','blocker'}) for r in issues])
     gaps=dict(round_number=owner.number,draft_hash=unresolved['draft_hash'],
-              rubric_content_hash=manifest['rubric_content_hash'],rubric_gaps=[])
+              rubric_content_hash=manifest['rubric_content_hash'],rubric_gaps=gap_rows)
     proof.reader.suite.registry.validate(unresolved,'unresolved_issues')
     proof.reader.suite.registry.validate(gaps,'rubric_gaps')
-    counts=dict(blockers=sum(r['normalized_severity']=='blocker' for r in issues),
-                major_issues=sum(r['normalized_severity']=='major' for r in issues),rubric_gaps=0)
+    counts=dict(blockers=sum(r['normalized_severity']=='blocker' for r in policy_issues),
+                major_issues=sum(r['normalized_severity']=='major' for r in policy_issues),
+                rubric_gaps=sum(r['blocking_convergence'] for r in gap_rows))
     text=render_convergence_declaration(**_fields(config,directory+'/rubric_manifest.json',raw,counts),
                                        reviewer_final_status='not_run',declaration_status='rejected')
     # Bind the exact V pointer/map lineage in addition to the normalized compatibility hash.
@@ -108,13 +125,19 @@ def _bundle(owner, frames, clean):
             'unresolved_issues':(directory+'/unresolved_issues.json',canonical_json_bytes(unresolved)),
             'rubric_gaps':(directory+'/rubric_gaps.json',canonical_json_bytes(gaps)),
             'declaration':(directory+'/convergence_declaration.md',text.encode())}
-    packet=dict(schema_version='vnext-phase2-declaration-v1',job_id=config['job_id'],
+    packet=dict(schema_version='vnext-phase2-declaration-v2' if targets else 'vnext-phase2-declaration-v1',job_id=config['job_id'],
         current_verified_pointer=deepcopy(proof.latest),configuration=deepcopy(owner.binding.configuration_ref),
         previous_consumption=deepcopy(owner.previous),round_number=owner.number,
         source_consumptions=[_ref(f['owner'].consumption_path,f['consumption']) for f in frames],
         counts=counts,final_draft_hash=unresolved['draft_hash'],final_draft_sha256=sha256_bytes(raw),clean_profiles=sorted(clean),
         **{key:dict(path=path,hash=sha256_bytes(value)) for key,(path,value) in assets.items()})
-    proof.reader.suite.registry.validate(packet,DECLARATION_SCHEMA)
+    schema = 'vnext_phase2_declaration_v2' if targets else DECLARATION_SCHEMA
+    from whetstone.vnext_phase2_gap_acceptance import supported as acceptance_supported, pins as acceptance_pins, references
+    if acceptance_supported(proof.reader.suite):
+        acceptance_pins(proof.reader.suite)
+        packet.update(schema_version='vnext-phase2-declaration-v3',gap_acceptances=references(frames,proof.latest))
+        schema = 'vnext_phase2_declaration_v3'
+    proof.reader.suite.registry.validate(packet,schema)
     ref=_ref(directory+'/commit.json',packet)
     pending=[]
     for path,value in list(assets.values())+[(ref['path'],canonical_json_bytes(packet))]:
@@ -136,17 +159,30 @@ class _DeclarationPass(_Pass):
         package=_bundle(self,self.source_frames,self.source_clean)
         require(package['committed'],'final strict review requires a committed declaration package')
         required={r['name'] for r in self.binding.configuration['profiles']}-{'convergence_strict_check'}
-        require(required<=set(self.source_clean),'final declaration review lacks current prior-profile cleanliness')
-        require(not any(package['packet']['counts'].values()), 'final declaration review has unresolved serious debt')
+        from whetstone.vnext_phase2_source_correction import supported as source_supported
+        if not source_supported(proof.reader.suite):
+            require(required<=set(self.source_clean),'final declaration review lacks current prior-profile cleanliness')
+        from whetstone.vnext_phase2_targets import supported as target_supported, counts_allowed, matrix
+        targets=target_supported(proof.reader.suite)
+        require(counts_allowed(package['packet']['counts'],self.binding.configuration) if targets else
+                not any(package['packet']['counts'].values()), 'final declaration review has unresolved serious debt')
         context=dict(binding=package['reference'],packet=package['packet'],target_matrix=dict(
             target_phase='final',target_mode='strict',blockers_allowed=False,major_issues_allowed=False,
             unresolved_rubric_gaps_allowed=False,declaration_required=True),
             artifacts={key:dict(reference=package['packet'][key],content=value.decode())
                        for key,(_,value) in package['assets'].items()})
+        if targets:context['target_matrix']=matrix(self.binding.configuration)
         return self._render_review(proof,transport,self.binding,self.entry,self.number,self.step,
             directory=self.directory,previous_consumption=self.previous,declaration=context)
 
     def _project(self,bound,review,receipt):
+        if bound.request['schema_version'] in {'vnext-phase2-review-request-v4','vnext-phase2-review-request-v6'}:
+            from whetstone.vnext_phase2_source_correction import source_findings
+            packet = _Pass._project(self, bound, review, receipt)
+            packet['schema_version'] = 'vnext-phase2-consumption-v6' if bound.request['schema_version'].endswith('-v6') else 'vnext-phase2-consumption-v4'
+            if not source_findings(bound, review):
+                packet['next_gate'] = 'declaration_closeout_required'
+            return packet
         scheduler=deepcopy(self.scheduler)
         rows=review['feedback']['feedback']
         scheduler.record_result(self.step['profile'],blocker_count=sum(r['in_scope'] and r['normalized_severity']=='blocker' for r in rows),
@@ -162,6 +198,8 @@ class _DeclarationPass(_Pass):
     def _synchronize_declaration(self,store):
         package=_bundle(self,self.source_frames,self.source_clean)
         self.store.synchronize(store._token,self.snapshot,self.run._record['descriptor']['path'])
+        for ref in package['packet'].get('gap_acceptances',[]):
+            self.store.synchronize_existing(store._token,ref['path'],expected=self.proof.reader.raw(ref))
         for path,raw in list(package['assets'].values())+[(package['reference']['path'],canonical_json_bytes(package['packet']))]:
             self.store.synchronize_existing(store._token,path,expected=raw)
 
@@ -171,12 +209,22 @@ class _DeclarationPass(_Pass):
 
 
 def declaration_owner(owner,frames,clean):
-    if not supported(owner.proof) or owner.step['index']!=3:return owner
+    from whetstone.vnext_phase2_targets import supported as target_supported
+    targets=target_supported(owner.proof.reader.suite)
+    if not supported(owner.proof) or (owner.step['index']!=3 and not(targets and owner.step['profile']=='convergence_strict_check')):return owner
     _pins(owner.proof)
     replacement=_DeclarationPass(owner.run,owner.store,owner.proof,owner.binding,owner.entry,ordinal=owner.ordinal,
         number=owner.number,step=owner.step,previous=owner.previous,scheduler=owner.scheduler,snapshot=owner.snapshot)
     # _Pass initialization preserves its old schemas; this owner has its own receipt projection.
     replacement.consumption_schema='vnext_phase2_consumption_v3'
+    from whetstone.vnext_phase2_source_correction import supported as source_supported, pins as source_pins
+    if source_supported(owner.proof.reader.suite):
+        source_pins(owner.proof.reader.suite)
+        replacement.request_schema = 'vnext_phase2_review_request_v4'
+        replacement.consumption_schema = 'vnext_phase2_consumption_v4'
+    if targets:
+        replacement.request_schema='vnext_phase2_review_request_v6'
+        replacement.consumption_schema='vnext_phase2_consumption_v6'
     replacement.source_frames=list(frames);replacement.source_clean=set(clean)
     return replacement
 
@@ -187,12 +235,25 @@ class _Declaration(_Continuation):
 
     def prepare(self):
         def publish(store,proof):
-            state=sequence(proof)
+            from whetstone.vnext_phase2_targets import supported as target_supported, initial_owner
+            from whetstone.vnext_verified_phase2_review import REQUEST_PATH
+            if target_supported(proof.reader.suite) and self._optional(REQUEST_PATH) is None:
+                binding=self._committed_binding(proof);entry=self._entry_view(proof,binding)
+                self._synchronize_entry_sources(store,proof,binding)
+                closeout=proof.reader.json(entry.entry['phase1_closeout'],'vnext_verified_phase1_closeout_v1')
+                number=max(row['round_number'] for row in closeout['review_receipts'])+1
+                state=dict(gate='review',owner=initial_owner(self.run,proof,binding,entry,number),frames=[],clean=[])
+            else:
+                state=sequence(proof)
+                if target_supported(proof.reader.suite) and state['gate'] in {'budget_exhausted','closeout_required'}:
+                    from whetstone.vnext_verified_phase2_halt import maintenance_owner
+                    state=dict(state,owner=maintenance_owner(self.run,proof,state),gate='review')
             require(state['gate']=='review','declaration preparation needs an eligible scheduled request, not an extra pass')
             owner=state['owner'];owner.snapshot[STATE_PATH]=self.store.read(STATE_PATH)
             package=_bundle(owner,state['frames'],state['clean'])
             owner.store.synchronize(store._token,owner.snapshot,self.run._record['descriptor']['path'])
-            for ref in (owner.binding.configuration_ref,owner.binding.configuration['rubric']['artifact'],proof.latest):
+            for ref in (owner.binding.configuration_ref,owner.binding.configuration['rubric']['artifact'],proof.latest,
+                        *package['packet'].get('gap_acceptances',[])):
                 self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
             require(_bundle(owner,state['frames'],state['clean'])==package,'declaration sources changed during barriers')
             for path,raw in package['assets'].values():store.publish(store._token,path,raw)
@@ -207,12 +268,18 @@ class _Declaration(_Continuation):
         termination = termination_supported(proof)
         if termination: termination_pins(proof)
         state=sequence(proof)
+        from whetstone.vnext_phase2_targets import supported as target_supported
+        if target_supported(proof.reader.suite) and state['gate'] in {'budget_exhausted','closeout_required'}:
+            from whetstone.vnext_verified_phase2_halt import view
+            return view(self,proof,state)
         if state['gate']!='declaration_closeout_required':
             return dict(gate='declaration_review_not_completed',sequence_gate=state['gate'],committed=False,phase_complete=False)
         frame=state['frames'][-1];owner=frame['owner'];bound=frame['bound']
         require(bound.request['base_pointer']==proof.latest,'declaration review is stale')
-        package=_bundle(owner,owner.source_frames,owner.source_clean)
+        from whetstone.vnext_verified_phase2_review_only import package_for
+        package=package_for(owner)
         rows=_latest_issues(state['frames'],proof.latest)
+        policy_rows = _policy_rows(proof,rows)
         from whetstone.vnext_verified_phase2_findings import supported as findings_supported, assessment
         findings=assessment(self,proof,state,package,rows) if findings_supported(proof) else None
         blockers=[]
@@ -221,12 +288,24 @@ class _Declaration(_Continuation):
             if findings['packet']['route']!='closeout_eligible':blockers.append(findings['packet']['route'])
         elif frame['review']['feedback']['feedback']:blockers.append('final_findings_require_reconciliation')
         required={r['name'] for r in owner.binding.configuration['profiles']}
+        from whetstone.vnext_phase2_targets import supported as target_supported, required_profiles, serious, counts_allowed
+        targets=target_supported(proof.reader.suite)
+        if targets:required=required_profiles(owner.binding.configuration)
         if not required<=set(state['clean']):blockers.append('current_profile_verification_missing')
-        if any(r['normalized_severity'] in {'blocker','major'} for r in rows):blockers.append('serious_findings')
-        if any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in rows):blockers.append('rubric_resolution_required')
+        if any(serious(r,owner.binding.configuration) if targets else r['normalized_severity'] in {'blocker','major'} for r in policy_rows):blockers.append('serious_findings')
+        rubric_blocked = any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in policy_rows)
+        from whetstone.vnext_phase2_gap_acceptance import supported as acceptance_supported, blocks, references
+        if acceptance_supported(proof.reader.suite):
+            rubric_blocked = blocks(state['frames'],proof.latest,policy_rows)
+            if package['packet']['gap_acceptances'] != references(state['frames'],proof.latest):
+                blockers.append('declaration_gap_acceptance_changed')
+        if (not targets or owner.binding.configuration['target_phase']=='final') and rubric_blocked:
+            blockers.append('rubric_resolution_required')
         counts=package['packet']['counts']
-        current_counts=dict(blockers=sum(r['normalized_severity']=='blocker' for r in rows),
-            major_issues=sum(r['normalized_severity']=='major' for r in rows),rubric_gaps=0)
+        from whetstone.vnext_phase2_rubric import supported as rubric_supported, retained as retained_gaps
+        gap_rows = retained_gaps(state['frames'],proof.latest) if rubric_supported(proof.reader.suite) else []
+        current_counts=dict(blockers=sum(r['normalized_severity']=='blocker' for r in policy_rows),
+            major_issues=sum(r['normalized_severity']=='major' for r in policy_rows),rubric_gaps=sum(r['blocking_convergence'] for r in gap_rows))
         if counts!=current_counts:blockers.append('declaration_counts_changed')
         config=owner.binding.configuration;raw=proof.values(proof.latest)['base']
         fields=_fields(config,package['packet']['rubric_manifest']['path'],raw,counts)
@@ -234,7 +313,8 @@ class _Declaration(_Continuation):
         if not validate_convergence_declaration(package['assets']['declaration'][1].decode(),**validation):
             blockers.append('declaration_identity_mismatch')
         if not target_matrix_satisfied(target_phase=config['target_phase'],target_mode=config['target_mode'],
-                issues=rows,declaration_accepted=not blockers):blockers.append('target_not_satisfied')
+                issues=policy_rows,unresolved_rubric_gaps=[r for r in gap_rows if r['blocking_convergence']],
+                declaration_accepted=not blockers):blockers.append('target_not_satisfied')
         # This is an ordinary scheduled review, not the optional post-sequence
         # review-only closeout. Findings may require repair/review within its
         # remaining budget; unsupported repair must not become a terminal.
@@ -311,12 +391,18 @@ class _Declaration(_Continuation):
         return self._public(proof,self._closeout(proof))
 
     def _synchronize(self,store,proof,view):
+        if view.get('general_halt'):
+            from whetstone.vnext_verified_phase2_halt import synchronize
+            return synchronize(self,store,proof,view)
         owner= view['owner'];frame=view['frame']
         owner._synchronize_request(store,owner.proof,frame['bound'])
         frame['journal'].synchronize(store._token,frame['bound'].request,frame['outcomes'])
         for ref in (view['packet']['review_result'],view['packet']['review_consumption'],frame['receipt']['feedback']):
             self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
         if 'finding_reconciliation' in view['packet']:
+            finding = proof.reader.json(view['packet']['finding_reconciliation'])
+            for ref in finding.get('gap_acceptances',[]):
+                self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
             for ref in (view['packet']['unresolved_issues'],view['packet']['finding_reconciliation']):
                 self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
         require(self._closeout(proof)['packet']==view['packet'],'Phase 2 closeout changed during source barriers')

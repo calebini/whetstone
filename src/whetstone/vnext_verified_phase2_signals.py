@@ -73,13 +73,14 @@ class _Signals(_CorrectionFailure):
             # A cycle may be observed immediately after promotion. The new
             # pointer has no review yet; promotion does not resolve its findings.
             rows = _latest_issues(prior, bound.request['base_pointer'])
-            require(not any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections']
-                for f in prior if f.get('consumed') for r in f['review']['feedback']['feedback']),
-                'signal terminal requires rubric resolution')
+            from whetstone.vnext_phase2_rubric import report_gaps
+            gaps = report_gaps(proof,prior,bound.request['base_pointer'])
             manifest = dict(schema_version='vnext-bound-rubric-v1', configuration=owner.binding.configuration_ref,
                 workflow=config['workflow'], rubric_profile=config['rubric']['profile'], rubric_source=config['rubric']['source'],
                 rubric_label=None, rubric_path=config['rubric']['artifact']['path'], rubric_content_hash=config['rubric']['artifact']['hash'],
                 target_phase=config['target_phase'], target_mode=config['target_mode'])
+            from whetstone.vnext_phase2_gap_acceptance import bind_manifest
+            bind_manifest(manifest,proof,prior,bound.request['base_pointer'])
             path = directory+'/rubric_manifest.json'; assets[path] = canonical_json_bytes(manifest); refs['rubric_manifest'] = _ref(path,manifest)
             profile_status = deepcopy(frame['signal_profiles'])
             latest = {f['bound'].request['step']['profile']: f for f in prior
@@ -99,7 +100,7 @@ class _Signals(_CorrectionFailure):
                 target_phase=config['target_phase'],target_mode=config['target_mode'],workflow=config['workflow'],
                 rubric_profile=config['rubric']['profile'],rubric_source=config['rubric']['source'],rubric_label=None,
                 rubric_manifest_path=refs['rubric_manifest']['path'], unresolved_blockers=issues('blocker'),
-                unresolved_major_issues=issues('major'), unresolved_rubric_gaps=[],
+                unresolved_major_issues=issues('major'), unresolved_rubric_gaps=gaps,
                 reviewer_final_status='rejected' if declaration else 'not_run',
                 last_accepted_draft_hash=draft_hash(proof.reader.raw(owner.entry.entry['current_verified_draft']).decode()),
                 last_draft_hash=draft_hash(raw.decode()),exit_reason=reason,recommendation='manual_review_required',
@@ -159,7 +160,8 @@ class _Signals(_CorrectionFailure):
                         blocked=closeout['signal_preconditions'];chosen=None
                 if chosen:
                     rows=[r for f in state['frames'] if f.get('consumed') for r in f['review']['feedback']['feedback']]
-                    if any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in rows):
+                    from whetstone.vnext_phase2_rubric import supported as rubric_supported
+                    if not rubric_supported(proof.reader.suite) and any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections'] for r in rows):
                         blocked.append('rubric_resolution_required');chosen=None
                 if chosen:
                     cause=dict(conditions=signal['conditions'],recommendations=signal['recommendations'],

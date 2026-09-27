@@ -111,10 +111,10 @@ class SemanticFollowupAdmission:
 
     def _derive(self,read,record):
         self._base(read)
-        values=self.original.load_inputs(read,record['round_number'])
+        event=self._source(read,record)
+        values=self._original_inputs(read,record,event)
         require(record['job_id']==values['job']['job_id'] and record['base_pointer']==values['base_pointer_ref'],
                 'follow-up admission has stale job or base bindings')
-        event=self._source(read,record)
         historical=type(self)(_ReadOnlyStore(self.store),original=self.original,
                                              history_limit=event['candidate_creation_ordinal'])
         evidence=self._read_evidence(historical, event['candidate_id'], record['answer_receipt'])
@@ -126,6 +126,9 @@ class SemanticFollowupAdmission:
                 and sha256_bytes(canonical_json_bytes(preflight.plan))==record['mutation_plan_hash'],
                 'follow-up transaction does not reproduce from its exact sources')
         return arguments,preflight,event
+
+    def _original_inputs(self,read,record,event):
+        return self.original.load_inputs(read,record['round_number'])
 
     def _read_evidence(self, historical, candidate_id, reference):
         return read_followup_evidence(historical.store, admission=historical,
@@ -221,7 +224,7 @@ def _admit_semantic_followup(store, *, original, router, source_admission, sourc
         if selection is not None:
             reference=selection['transaction_input']
             record=router._json(store.read,reference['path'],'vnext_semantic_followup_input_v1',reference['hash'])
-            require(record['answer_receipt']==answer_reference and record['source_creation']==_ref(
+            require(record.get('answer_receipt')==answer_reference and record['source_creation']==_ref(
                 f"rounds/candidate_index/creation-{event['candidate_creation_ordinal']}.json",event),
                 'source candidate already selected a different follow-up')
             router._transaction(store.read,record['round_number'],record['transaction_id'])

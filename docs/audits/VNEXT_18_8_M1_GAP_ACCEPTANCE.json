@@ -1,0 +1,198 @@
+{
+  "recorded_at": "2026-09-27T17:11:50.430347+00:00",
+  "status": "documented_internal_m1_acceptance_complete_uncommitted",
+  "baseline_head": "d17a52977b4cd7021d3d60ab8c51156af44c3238",
+  "authority": "User Ok approved the immediately preceding explicit operator-only, exact gap/rubric/target/current-draft acceptance recommendation. Draft changes require renewal; ordinary source and invariant findings remain independent. No commit, push, activation, external transmission/apply-back or normative specification edit authorized.",
+  "scope": "Final/permissive explicit rubric-gap acceptance, current-lineage renewal, D8 publication/recovery, declaration and successor/report binding, source-debt preservation and exhausted-budget halt. Completes the documented internal standard/horizontal/stateful-system/fixed-builtin-rubric M1 boundary with the prior evidence, not all of 18.8.",
+  "distinct_passing_methods": 61,
+  "passing_executions": 61,
+  "new_methods": 11,
+  "existing_methods": 50,
+  "cohorts": [
+    {
+      "path": "rounds/vnext-18-8-m1-003/delivery-journeys.log",
+      "sha256": "3a278c22d766a86ae3b19ced0e7d7dc1977032c3f053f9408540bb9825c4ba34",
+      "count": 4,
+      "elapsed_seconds": 294.813,
+      "methods": [
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_requires_new_declaration_review_and_preserves_source_finding",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_new_promotion_invalidates_acceptance_and_requires_explicit_current_draft_renewal",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_failure_report_preserves_acceptance_and_prepared_successor_seals_decision",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_after_last_review_does_not_grant_extra_budget_or_convergence"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-003/delivery-source-manifest.json",
+        "sha256": "28c3a7b0cc5a79edcacb9cf5664fc9c18541953ab9c9881ad2cf99e6ebfaf7af"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/delivery-faults.log",
+      "sha256": "aa2a3c86953385558db4246f133ba1575c97656ad856dbef86120bfda8af7f03",
+      "count": 6,
+      "elapsed_seconds": 224.541,
+      "methods": [
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_wrong_bindings_duplicate_selection_and_implicit_acceptance_refuse_without_writes",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_publication_lost_ack_and_final_ownership_loss_recover_exact_decision",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_does_not_waive_major_source_debt_or_authorize_replacement",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_refuses_after_advice_and_on_strict_or_unpinned_suites",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_source_drift_and_consumer_tampering_fail_without_new_authority",
+        "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_freeze_cannot_be_released_by_gap_acceptance"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-003/delivery-source-manifest.json",
+        "sha256": "28c3a7b0cc5a79edcacb9cf5664fc9c18541953ab9c9881ad2cf99e6ebfaf7af"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/delivery-compatibility.log",
+      "sha256": "383b5ca368312419a83dba925c5a0b7738788ab5c39306ee81443931554b0a1f",
+      "count": 51,
+      "elapsed_seconds": 160.091,
+      "methods": [
+        "test_vnext_phase2_gap_acceptance.GapAcceptanceRulesTests.test_exact_draft_gap_and_requirement_are_required_and_resolution_wins",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_exact_requirement_and_canonical_order",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_mid_target_rejects_inapplicable_requirements_without_severity_authority",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_missing_duplicate_unknown_or_changed_attribution_refuses",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_resolution_covers_only_requirements_in_that_verified_review",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_retained_gap_prevents_review_only_plan_despite_out_of_scope_source",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_silence_partial_and_future_resolution_cannot_clear_debt",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_source_scope_cannot_waive_an_applicable_unresolved_requirement",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_verified_phase2_source_correction.SourceRulesTests.test_only_whole_source_findings_can_enter_correction",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles",
+        "test_vnext_verified_phase2_rubric.RubricRuntimeTests.test_editor_failure_reports_retained_gap_without_waiving_it"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-003/delivery-source-manifest.json",
+        "sha256": "28c3a7b0cc5a79edcacb9cf5664fc9c18541953ab9c9881ad2cf99e6ebfaf7af"
+      }
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-m1-003/delivery-source-manifest.json",
+    "sha256": "28c3a7b0cc5a79edcacb9cf5664fc9c18541953ab9c9881ad2cf99e6ebfaf7af"
+  },
+  "source_files_verified": 605,
+  "boundary_check": {
+    "path": "rounds/vnext-18-8-m1-003/boundary-check.json",
+    "sha256": "e514ecc6bc9ce8b7e814248549eae65283f442634fbf61b047c71bebf3c3eeee"
+  },
+  "prior_evidence": [
+    {
+      "path": "docs/audits/VNEXT_18_8_M1_OPERATOR.json",
+      "sha256": "75127bbb7a714bdf551130de79eaf9491e66cc789a60981fa1221a3e96890e59"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M1_CONTINUATION.json",
+      "sha256": "f6267f5bca526aa8c5f169c55013955ec6ae95dabd7f52b09c4ff09a50a6bf91"
+    }
+  ],
+  "source_limits": "All three disjoint delivery cohorts ran the same frozen 605-file source snapshot. Prior operator/continuation audits remain historical evidence at their recorded snapshots and are not counted again or represented as rerun on current sources. The final compatibility cohort includes four clean target journeys, old-pin rubric failure reporting, contract vectors, evaluation and source/finding rules.",
+  "completion_bundles": [
+    "Operator choices/interpretation follow-ups and narrower explicit semantic-rejection repair with independent verification and retained parent history.",
+    "Approved evidence-preserving blocked freeze, with report/state recovery only.",
+    "Source/declaration correction, finite further review, preserved unchanged declaration disagreement and explicit exhaustion.",
+    "Exact rubric attribution/resolution, approved current-draft acceptance and renewal, independent source debt, bound reports and four standard target outcomes."
+  ],
+  "remaining": [
+    "M2 focused/vertical scheduling, Phase 1 budget extension and specifically supported continuation.",
+    "M3 version maintenance through V candidate transactions.",
+    "M4 verified readback/strop; full source-write lifecycle still requires its normative scheduler amendment.",
+    "M5 integrated cross-milestone acceptance; all original 18.8 and 18.9 items remain open."
+  ],
+  "limitations": [
+    "Narrower semantic-rejection repair only; preservation/assembly-failure repair remains unsupported.",
+    "Repeated/mixed child chains are not exhaustively qualified.",
+    "Standard/horizontal stateful-system profile order and fixed builtin standard rubric only; other profiles/custom rubrics are not supplied.",
+    "Injected local clients and simulated filesystem faults; no physical power-loss, actual process-death, live-provider, performance or full-repository qualification."
+  ],
+  "excluded_runs": [
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-compatibility.log",
+      "sha256": "eddcea9e0670a75061615cddce1b9214040d26604a0a56dfbd77a2371fb121cd",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-faults-final.log",
+      "sha256": "1e2d48565ee8cbccbb044e11dcbb7ba4ce932809b49d8b0b72f7d355be411595",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-faults.log",
+      "sha256": "116eea2515f57e307a37898da05280f42f429859a234369afd7a9db5cac39a96",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-journey-development.log",
+      "sha256": "3b231705f2c8c0b481f03518097ba0e7946c8c6f3c19ce67c7e55ae598d2a0c8",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-journeys-final.log",
+      "sha256": "45735ef2a4790e13d580932211477b90784dda9ba65637c8ff61903741e59efd",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-journeys.log",
+      "sha256": "bec6237f002a910d9bdb0cd605559a18623999b056c0448799ef410a633dd827",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/acceptance-routing-diagnostic.log",
+      "sha256": "4edacdc8bcfe7bfb6e7fdfc79572923749c7ac6186b36d4becdd691df141d3af",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/policy-development.log",
+      "sha256": "c9a1103072425cbe288485f940db28dd589956d237390931b2a6d09cb859ea2d",
+      "credited": false,
+      "reason": "Development/diagnostic or superseded snapshot; only delivery cohorts receive current-source credit."
+    }
+  ]
+}

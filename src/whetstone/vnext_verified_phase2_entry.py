@@ -44,7 +44,8 @@ class _Entry(_Binding):
         raw = self._optional(REQUEST_PATH)
         require(raw is not None, 'Phase 2 entry requires a committed immutable request')
         request = proof.reader.json(dict(path=REQUEST_PATH, hash=sha256_bytes(raw)), REQUEST_SCHEMA)
-        config = proof.reader.json(request['configuration'], CONFIG_SCHEMA)
+        from whetstone.vnext_phase2_targets import read_configuration
+        config = read_configuration(proof.reader,request['configuration'])
         binding = self._build(proof, config)
         require(binding.materialized, 'Phase 2 entry requires a complete committed binding')
         return binding

@@ -35,7 +35,7 @@ def _prepare(store,round_number,load_inputs,proposal_id=None):
     require(receipt is not None and proposal is not None,'proposal handoff requires a completed durable request')
     prefix=f"rounds/round-{round_number}/proposals/{proposal.patch['proposal_id']}"
     plan_path=f'rounds/round-{round_number}/mutation_plan.json'
-    if journal.preflight.plan['schema_version']=='mutation-plan-v3':
+    if journal.preflight.plan['schema_version']=='mutation-plan-v3' or journal.arguments.get('phase2_repair') is not None:
         plan_path=f"rounds/round-{round_number}/transactions/{journal.preflight.plan['transaction_id']}/mutation_plan.json"
     artifacts={plan_path:canonical_json_bytes(journal.preflight.plan)}
     artifacts.update({prefix+'/'+path:raw for path,raw in sorted(proposal.payloads.items())})
@@ -99,7 +99,8 @@ def registry_for_proposal_requests(store,*,load_inputs,validate_authority):
         require(_existing(store,round_number,path=_handoff_path(expected))==expected,'registration lacks its exact completed-request handoff')
         for path,raw in artifacts.items():require(read(path)==raw,'registered round input changed after handoff',path)
         values=journal.arguments
-        return {**({'plan_reference':expected['plan']} if journal.preflight.plan['schema_version']=='mutation-plan-v3' else {}),
+        return {**({'plan_reference':expected['plan']} if journal.preflight.plan['schema_version']=='mutation-plan-v3' or values.get('phase2_repair') is not None else {}),
+            **({'repair_plan':True} if values.get('phase2_repair') is not None and journal.preflight.plan['schema_version']=='mutation-plan-v2' else {}),
             **{key:values[key] for key in ('authority','invariants','seed','seed_map','base','base_map','review')},
             'base_inventory':journal.preflight.inventory,'bindings':journal.preflight.bindings,'rules':journal.preflight.rules}
     class RequestCandidateRegistry(CandidateRegistry):

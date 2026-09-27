@@ -41,9 +41,15 @@ class _Journal(_Request):
         return deepcopy(self.bound.request)
 
     def decode_review(self, raw):
+        annotations = None
         try:
             packet = decode_json(raw)
             require(isinstance(packet, dict), 'Phase 2 Reviewer response must be an object')
+            if 'rubric_catalogue' in self.bound.inputs:
+                from whetstone.vnext_phase2_rubric import RESPONSE_SCHEMA as rubric_schema, pins as rubric_pins
+                rubric_pins(self.proof.reader.suite)
+                self.schemas.validate(packet, rubric_schema)
+                annotations = packet['rubric_findings'];packet = packet['review']
         except ValueError as exc:
             raise ReviewShapeError(str(exc)) from exc
         expected = dict(round_number=self.number, profile=self.profile,
@@ -59,14 +65,23 @@ class _Journal(_Request):
             raise ReviewShapeError(str(exc)) from exc
         packet = canonicalize_reviewer_input(packet)
         sections = [row['canonical_section_id'] for row in self.bound.inputs['base_map']['sections']]
-        if self.bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
+        if self.bound.request['schema_version'] in {'vnext-phase2-review-request-v3', 'vnext-phase2-review-request-v4', 'vnext-phase2-review-request-v5', 'vnext-phase2-review-request-v6'}:
             from whetstone.declaration import DECLARATION_ARTIFACTS
             sections += sorted(DECLARATION_ARTIFACTS | {'target-matrix-precedence'})
         packet = canonicalize_phase2_feedback(packet, sections)
         ids = [item['feedback_id'] for item in packet['feedback']]
         require(len(ids) == len(set(ids)), 'Phase 2 Reviewer repeats a feedback ID')
         self.schemas.validate(packet, 'phase2_reviewer_feedback')
-        return dict(feedback=packet)
+        result = dict(feedback=packet)
+        if annotations is not None:
+            from whetstone.vnext_phase2_rubric import attribute
+            try:
+                result['rubric_findings'] = attribute(annotations, packet, self.bound.inputs['rubric'].encode(),
+                    [row['canonical_section_id'] for row in self.bound.inputs['base_map']['sections']],
+                    target_phase=self.bound.inputs['configuration']['target_phase'])
+            except (ValueError, TypeError, KeyError) as exc:
+                raise ReviewShapeError(str(exc)) from exc
+        return result
 
     def decode(self, attempt, raw):
         outcome, review = super().decode(attempt, raw)
@@ -171,7 +186,9 @@ class _Client(_FirstReview):
     def _committed_request(self, proof):
         raw=self._optional(REQUEST_PATH)
         require(raw is not None, 'Phase 2 client requires a committed Reviewer request')
-        request=proof.reader.json(dict(path=REQUEST_PATH,hash=sha256_bytes(raw)),SCHEMA)
+        from whetstone.vnext_phase2_targets import supported as target_supported
+        schema='vnext_phase2_review_request_v6' if target_supported(proof.reader.suite) else SCHEMA
+        request=proof.reader.json(dict(path=REQUEST_PATH,hash=sha256_bytes(raw)),schema)
         bound=self._build_review(proof,request['transport'])
         require(bound.committed, 'Phase 2 client requires complete request dependencies')
         return bound
@@ -179,6 +196,9 @@ class _Client(_FirstReview):
     def _synchronize_request(self, store, proof, bound):
         self._synchronize_entry_sources(store,proof,self._committed_binding(proof))
         references=bound.inputs['sources']+[bound.request['entry'],bound.request['inputs'],bound.request['prompt'],bound.request_ref]
+        if bound.inputs['declaration'] is not None:
+            context=bound.inputs['declaration']
+            references += [context['binding']]+[row['reference'] for row in context['artifacts'].values()]
         for ref in references:
             raw=proof.reader.raw(ref)
             if ref != self.run._record['descriptor']:

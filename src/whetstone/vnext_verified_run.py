@@ -279,6 +279,22 @@ class VerifiedRun:
     def answers(self, **options): return self._operator().answers(**options)
     def submit_answer(self, **options): return self._operator().submit_answer(**options)
     def select_followup(self, **options): return self._operator().select_followup(**options)
+
+    def phase2_repair_context(self, **options):
+        from whetstone.vnext_verified_phase2_repair import Phase2Repair
+        return Phase2Repair(self).context(**options)
+
+    def phase2_gap_acceptance_context(self):
+        from whetstone.vnext_verified_phase2_gap_acceptance import GapAcceptance
+        return GapAcceptance(self).context()
+
+    def accept_phase2_gaps(self, packet, **options):
+        from whetstone.vnext_verified_phase2_gap_acceptance import GapAcceptance
+        return GapAcceptance(self).accept(packet, **options)
+
+    def admit_phase2_repair(self, packet, **options):
+        from whetstone.vnext_verified_phase2_repair import Phase2Repair
+        return Phase2Repair(self).admit(packet, **options)
     def promote(self, **options): return _RunPromotion(self.store, history=self._history()).promote(**options)
     def review_status(self):
         from whetstone.vnext_verified_review import VerifiedReview

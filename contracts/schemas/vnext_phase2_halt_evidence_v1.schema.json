@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "current_verified_pointer", "configuration", "declaration", "sequence_gate", "source_consumptions", "resolutions", "unresolved_issues", "rubric_gaps"],
+  "properties": {
+    "schema_version": {"const": "vnext-phase2-halt-evidence-v1"},
+    "current_verified_pointer": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/current_verified_pointer"},
+    "configuration": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/configuration"},
+    "declaration": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/declaration"},
+    "sequence_gate": {"enum": ["budget_exhausted", "closeout_required"]},
+    "source_consumptions": {"type": "array", "minItems": 1, "items": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/current_verified_pointer"}},
+    "resolutions": {"type": "array", "items": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/current_verified_pointer"}},
+    "unresolved_issues": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/unresolved_issues"},
+    "rubric_gaps": {"$ref": "vnext_phase2_declaration_v2.schema.json#/properties/rubric_gaps"}
+  }
+}

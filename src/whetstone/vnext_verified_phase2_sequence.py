@@ -126,6 +126,10 @@ def _validate_frame(proof, owner, number, record):
     bound, _, _, _, _, view = owner._advice_view(owner.proof, None)
     require(view['status']=='bound', 'Phase 2 correction requires committed advice')
     binding = view['binding']
+    if bound.request['schema_version'] in {'vnext-phase2-review-request-v4','vnext-phase2-review-request-v6'}:
+        from whetstone.vnext_phase2_source_correction import source_findings
+        _, review, _ = owner._consumption_view(owner.proof)[1].inspect(bound.request)
+        require(source_findings(bound, review), 'declaration review has no wholly source correction')
     require(number == bound.request['round_number'] == record['round_number']
         and record['base_pointer'] == bound.request['base_pointer']
         and record['feedback'] == binding['feedback'] and record['advice'] == binding['advice']
@@ -141,6 +145,11 @@ def _validate_frame(proof, owner, number, record):
     # Stamping versioned corrections is a separate candidate-protocol milestone.
     from whetstone.versioning import _find_version_target
     require(_find_version_target(bound.inputs['draft']) is None, 'Phase 2 version maintenance is not implemented')
+    from whetstone.vnext_phase2_rubric import proposal_context
+    if 'rubric_catalogue' in bound.inputs:
+        _, journal, _, _, _ = owner._consumption_view(owner.proof)
+        _, review, _ = journal.inspect(bound.request)
+        return proposal_context(bound, review)
     return dict(configuration=deepcopy(bound.inputs['configuration']),request=deepcopy(bound.request))
 
 
@@ -165,6 +174,11 @@ def sequence(proof, *, through=None):
     tracked = copy(proof)
     tracked.store = evidence
     tracked.reader = ArtifactReader(None,proof.reader.suite,read=evidence.read)
+    from whetstone.vnext_phase2_repair import supported as repair_supported
+    from whetstone.vnext_phase2_source_correction import supported as source_supported
+    if repair_supported(proof.reader.suite) or source_supported(proof.reader.suite):
+        from whetstone.vnext_verified_history import _ReplayAdmission
+        tracked.admission = _ReplayAdmission(tracked)
     prefix = _entry_prefix(tracked)
     original = _HistoricalAdvice(proof.owner.run)
     original.store = evidence
@@ -196,10 +210,14 @@ def sequence(proof, *, through=None):
             require(ordinal > len(claims)+1, 'Phase 2 successor bypasses predecessor gate')
             break
         step_index = scheduler.index
-        if step_index >= len(scheduler.steps):
-            gate='closeout_required';break
-        step = scheduler.steps[step_index];state=scheduler.states[step_index]
-        step_record=dict(index=step_index+1,profile=step.profile,round_budget=step.effective_round_budget,
+        review_only = step_index >= len(scheduler.steps)
+        if review_only:
+            from whetstone.vnext_verified_phase2_review_only import supported as only_supported
+            if not only_supported(proof.reader.suite):
+                gate='closeout_required';break
+        safe_index = min(step_index, len(scheduler.steps)-1)
+        step = scheduler.steps[safe_index];state=scheduler.states[safe_index]
+        step_record=dict(index=safe_index+1,profile=step.profile,round_budget=step.effective_round_budget,
                          rounds_used=state.rounds_used,pass_number=state.rounds_used+1)
         baseproof = _at(tracked,reference)
         directory = DIRECTORY if ordinal==1 else ROOT+f'/pass-{ordinal}'
@@ -208,7 +226,15 @@ def sequence(proof, *, through=None):
             number=first.request['round_number']+ordinal-1,step=step_record,previous=previous,
             scheduler=scheduler,snapshot=snapshot)
         from whetstone.vnext_verified_phase2_closeout import declaration_owner
-        owner = declaration_owner(owner, frames, clean)
+        if review_only:
+            from whetstone.vnext_verified_phase2_review_only import owner as only_owner
+            owner = only_owner(owner, frames, scheduler)
+            if owner is None:
+                gate='declaration_closeout_required';break
+        else:
+            owner = declaration_owner(owner, frames, clean)
+        from whetstone.vnext_phase2_gap_acceptance import supported as acceptance_supported, references as acceptance_refs
+        if acceptance_supported(proof.reader.suite):owner.gap_acceptances = acceptance_refs(frames,reference)
         raw=owner._optional(owner.request_path)
         if raw is None:
             require(ordinal==len(claims)+2 or ordinal==len(claims)+1, 'missing Phase 2 request before successor')
@@ -225,22 +251,60 @@ def sequence(proof, *, through=None):
         if not consumed:
             gate='result_consumption_required';break
         if through == owner.number:
+            require(not review_only, 'review-only closeout cannot admit a correction')
             if signals is not None:
                 frame['signals'] = signals.record(owner.number, review['feedback'], resolved_opposition_keys=pending_resets)
             return dict(frames=frames,gate='historical',owner=owner)
-        if bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
-            serious = any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'}
-                          for r in review['feedback']['feedback'])
-            scheduler.record_result(step.profile,blocker_count=int(serious),major_count=0)
-            if not serious: clean.add(step.profile)
+        if review_only:
+            serious = any(row['in_scope'] and row['normalized_severity'] in {'major','blocker'}
+                          for row in review['feedback']['feedback'])
+            if not serious: clean.add(owner.step['profile'])
             if signals is not None:
                 frame['signals'] = signals.record(owner.number, review['feedback'], resolved_opposition_keys=pending_resets)
                 frame['signal_reference'] = deepcopy(reference)
                 frame['signal_profiles'] = deepcopy(scheduler.status())
+            previous = _ref(owner.consumption_path,consumption)
+            if serious or owner.closeout_plan['index'] == len(owner.closeout_plan['profiles']):
+                gate='declaration_closeout_required';break
+            continue
+        routing_review = review
+        if acceptance_supported(proof.reader.suite):
+            from whetstone.vnext_phase2_gap_acceptance import effective_review
+            routing_review = effective_review(frames,reference)
+        declaration = bound.request['schema_version'] in {'vnext-phase2-review-request-v3', 'vnext-phase2-review-request-v4','vnext-phase2-review-request-v6'}
+        from whetstone.vnext_phase2_source_correction import source_findings
+        source_correction = bound.request['schema_version'] in {'vnext-phase2-review-request-v4','vnext-phase2-review-request-v6'} and source_findings(bound, routing_review)
+        if declaration and not source_correction:
+            serious = any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'}
+                          for r in review['feedback']['feedback'])
+            scheduler.record_result(step.profile,blocker_count=int(serious),major_count=0)
+            if not serious: clean.add(step.profile)
+            frame['clean_after'] = sorted(clean)
+            if signals is not None:
+                frame['signals'] = signals.record(owner.number, review['feedback'], resolved_opposition_keys=pending_resets)
+                frame['signal_reference'] = deepcopy(reference)
+                frame['signal_profiles'] = deepcopy(scheduler.status())
+            if bound.request['schema_version']=='vnext-phase2-review-request-v6':
+                from whetstone.vnext_phase2_targets import cycle_gate
+                target_gate=cycle_gate(frames,reference,clean,scheduler)
+                if target_gate=='declaration_closeout_required':
+                    gate=target_gate;break
+                signal_stop = signals is not None and (frame['signals']['terminal_state']
+                    or 'freeze_prior_decision' in frame['signals']['recommendations'])
+                if not signal_stop and (target_gate=='review' or (not serious and scheduler.index<len(scheduler.steps))):
+                    previous=_ref(owner.consumption_path,consumption)
+                    continue
+            if bound.request['schema_version'] in {'vnext-phase2-review-request-v4','vnext-phase2-review-request-v6'} and not serious:
+                from whetstone.vnext_verified_phase2_review_only import supported as only_supported, plan as only_plan
+                if only_supported(proof.reader.suite) and only_plan(frames,reference,scheduler) is not None:
+                    previous = _ref(owner.consumption_path,consumption)
+                    continue
             gate='declaration_closeout_required'
             break
         previous=_ref(owner.consumption_path,consumption)
         finding_rows=consumption['findings']
+        if routing_review != review:
+            finding_rows = _projection(bound,routing_review,receipt,scheduler=owner.scheduler)['findings']
         advice_raw=owner._optional(owner.binding_path)
         if advice_raw is not None:
             view=owner._advice_view(baseproof,None)[-1]
@@ -248,6 +312,9 @@ def sequence(proof, *, through=None):
         serious=any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'} for r in review['feedback']['feedback'])
         actionable=any(r['classification']!='deferable' for r in finding_rows)
         unknown=any(r['classification'] not in {'deferable','editor_fixable'} for r in finding_rows)
+        gap_sources = {row['source_issue_id'] for row in routing_review.get('rubric_findings',[]) if row['gap']['blocking_convergence']}
+        if gap_sources and not any(row['finding_id'] in gap_sources and row['classification']=='editor_fixable' for row in finding_rows):
+            actionable = unknown = True
         from whetstone.vnext_phase2_operator import supported as operator_supported
         if operator_supported(proof.reader.suite) and advice_raw is not None:
             from whetstone.vnext_proposal_run import round_input_path
@@ -319,6 +386,10 @@ def sequence(proof, *, through=None):
         if not closeout_supported(proof) and any(owner._optional(path) is not None for path in
                 ('rounds/convergence_declaration.md','convergence_declaration.md')):
             gate='declaration_maintenance_required'
+        from whetstone.vnext_phase2_targets import supported as target_supported, cycle_gate
+        if target_supported(proof.reader.suite) and gate=='review':
+            target_gate=cycle_gate(frames,reference,clean,scheduler)
+            if target_gate is not None:gate=target_gate
     else:
         raise ValueError('Phase 2 sequence scan did not reach a boundary')
     if through is not None: require(False,'Phase 2 round lacks committed sequence consumption')
@@ -384,7 +455,7 @@ class _Continuation(_HistoricalAdvice):
             owner.snapshot[STATE_PATH] = self.store.read(STATE_PATH)
             expected=owner._build_review(owner.proof,deepcopy(transport))
             owner.store.synchronize(store._token,owner.snapshot,self.run._record['descriptor']['path'])
-            if getattr(owner,'request_schema',None)=='vnext_phase2_review_request_v3':
+            if getattr(owner,'request_schema',None) in {'vnext_phase2_review_request_v3', 'vnext_phase2_review_request_v4', 'vnext_phase2_review_request_v5','vnext_phase2_review_request_v6'}:
                 owner._synchronize_declaration(store)
             for ref in expected.inputs['sources']+[expected.request['entry'],expected.request['configuration'],
                     expected.inputs['configuration']['rubric']['artifact'],expected.request['base_pointer']]:
@@ -415,8 +486,14 @@ class _Continuation(_HistoricalAdvice):
             owner._execute=lambda operation: operation(store,owner.proof)
             if action=='execute': return owner.execute(**kwargs)
             if action=='consume': return owner.consume()
+            if getattr(owner,'request_schema',None)=='vnext_phase2_review_request_v5':
+                require(False,'review-only closeout cannot admit advice or correction')
             if getattr(owner,'request_schema',None)=='vnext_phase2_review_request_v3':
                 require(False,'declaration review is read-only; no correction admission is supported')
+            if getattr(owner,'request_schema',None) in {'vnext_phase2_review_request_v4','vnext_phase2_review_request_v6'}:
+                from whetstone.vnext_phase2_source_correction import source_findings
+                require(frame['review'] is not None and source_findings(frame['bound'],frame['review']),
+                        'declaration review has no wholly source correction')
             if action=='advice': return owner.bind(**kwargs)
             if action=='admit':
                 require(state['gate']=='correction_required','Phase 2 round is blocked by sequence gate')

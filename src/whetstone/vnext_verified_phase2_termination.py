@@ -29,14 +29,20 @@ def exhausted_closeout(owner,proof,state,package,findings,rows,blockers):
     blocked=dict(gate='declaration_reconciliation_required',blockers=blockers,committed=False,phase_complete=False)
     # Undefined maintenance/intervention must never be silently reduced to exhaustion.
     withheld={'authority_resolution_required','rubric_resolution_required','oscillation_resolution_required'}
+    from whetstone.vnext_phase2_rubric import supported as rubric_supported, report_gaps
+    if rubric_supported(proof.reader.suite):withheld.discard('rubric_resolution_required')
     if not findings['committed'] or withheld.intersection(findings['packet']['blocking_reasons']):
         return blocked
     frame=state['frames'][-1];step=frame['bound'].request['step'];pass_owner=frame['owner']
     profiles=state['scheduler'].status()
     profile=profiles['profiles'][step['index']-1]
-    if step['index']!=len(pass_owner.binding.configuration['profiles']) or profile['rounds_used']<profile['round_budget']:
-        return blocked
-    require(profile['rounds_used']==profile['round_budget'],'final profile exceeds its configured budget')
+    review_only=frame['bound'].request['schema_version']=='vnext-phase2-review-request-v5'
+    from whetstone.vnext_phase2_targets import supported as target_supported
+    sweep_end=target_supported(proof.reader.suite) and state['scheduler'].index>=len(state['scheduler'].steps)
+    if not review_only and not sweep_end:
+        if step['index']!=len(pass_owner.binding.configuration['profiles']) or profile['rounds_used']<profile['round_budget']:
+            return blocked
+        require(profile['rounds_used']==profile['round_budget'],'final profile exceeds its configured budget')
     directory='rounds/phase2/closeouts/closeout-'+frame['receipt']['request']['hash']
     path=directory+'/convergence_failure_report.json'
     existing=owner._optional(path)
@@ -68,10 +74,13 @@ def exhausted_closeout(owner,proof,state,package,findings,rows,blockers):
         target_phase=config['target_phase'],target_mode=config['target_mode'],workflow=config['workflow'],
         rubric_profile=config['rubric']['profile'],rubric_source=config['rubric']['source'],rubric_label=None,
         rubric_manifest_path=package['packet']['rubric_manifest']['path'],
-        unresolved_blockers=issues('blocker'),unresolved_major_issues=issues('major'),unresolved_rubric_gaps=[],
+        unresolved_blockers=issues('blocker'),unresolved_major_issues=issues('major'),
+        unresolved_rubric_gaps=report_gaps(proof,state['frames'],proof.latest) if rubric_supported(proof.reader.suite) else [],
         reviewer_final_status='rejected',
         last_accepted_draft_hash=draft_hash(proof.reader.raw(pass_owner.entry.entry['current_verified_draft']).decode()),
-        last_draft_hash=current_hash,exit_reason='vnext_phase2_final_step_budget_exhausted',
+        last_draft_hash=current_hash,exit_reason=('vnext_phase2_review_only_verification_debt' if review_only else
+            'vnext_phase2_sequence_exhausted' if sweep_end and profile['rounds_used']<profile['round_budget'] else
+            'vnext_phase2_final_step_budget_exhausted'),
         recommendation='manual_review_required',profile_status=profiles,
         last_reviewer_findings=dict(round_number=frame['bound'].request['round_number'],profile=step['profile'],
             blocker_count=sum(r['in_scope'] and r['normalized_severity']=='blocker' for r in last_rows),

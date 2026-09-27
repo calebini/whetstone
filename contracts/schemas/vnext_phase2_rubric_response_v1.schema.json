@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["review", "rubric_findings"],
+  "properties": {
+    "review": {"$ref": "phase2_reviewer_feedback_input.schema.json"},
+    "rubric_findings": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["feedback_id", "rubric_anchor", "requirement_hash"],
+        "properties": {
+          "feedback_id": {"type": "string", "minLength": 1},
+          "rubric_anchor": {"type": "string", "minLength": 1},
+          "requirement_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

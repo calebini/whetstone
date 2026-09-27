@@ -1,0 +1,474 @@
+{
+  "recorded_at": "2026-09-27T16:44:32.152374+00:00",
+  "status": "validated_scoped_m1_continuation_uncommitted_m1_incomplete",
+  "baseline_head": "d17a52977b4cd7021d3d60ab8c51156af44c3238",
+  "authority": "User authorized resuming the full M1 pursuit. Approved blocked freeze and settled declaration-disagreement policy are retained. No new commit, push, public activation, external transmission or apply-back.",
+  "scope": "Internal standard/horizontal Phase 2 semantic-repair, declaration/source correction, finite reviewer-only closeout, exact rubric resolution, four-target routing and ordinary exhaustion/report recovery. Not general M1 completion.",
+  "distinct_passing_methods": 101,
+  "passing_executions": 142,
+  "new_methods": 29,
+  "existing_methods": 72,
+  "cohorts": [
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-repair.log",
+      "sha256": "d783682a7ae776ab5ef2d722b939c9f9eeae36c4d7b47ef1972b7af2350f77a5",
+      "count": 6,
+      "elapsed_seconds": 981.709,
+      "methods": [
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_admission_and_selection_lost_ack_recover_without_clients",
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_approved_freeze_preserves_evidence_and_allows_only_report_recovery",
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_invalid_repair_selection_and_budgets_refuse_without_writes",
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_repair_child_promotes_and_preserves_parent_report",
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_source_barrier_and_final_write_ownership_loss",
+        "test_vnext_verified_phase2_repair.Phase2RepairTests.test_unpinned_repair_refuses_before_work"
+      ],
+      "scope": "Narrower semantic repair admission, full promotion/resolution journey, parent report preservation, stale sources, lost acknowledgements, ownership loss, approved blocked freeze and unpinned refusal.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-source-manifest.json",
+        "sha256": "94bd3f00a0146a902bfa14c26781b31d318203167af15b7ef573e7109fef3395"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-declaration.log",
+      "sha256": "ccd30bd92cabd32c2c60ca97b2d56587e40e9b477ecb8cc9d9981892fb7706be",
+      "count": 5,
+      "elapsed_seconds": 1130.894,
+      "methods": [
+        "test_vnext_verified_phase2_source_correction.SourceCorrectionTests.test_declaration_disagreement_cannot_be_admitted_as_source",
+        "test_vnext_verified_phase2_source_correction.SourceCorrectionTests.test_source_correction_regenerates_declaration_and_requires_current_profile_reviews",
+        "test_vnext_verified_phase2_source_correction.SourceRulesTests.test_only_whole_source_findings_can_enter_correction",
+        "test_vnext_verified_phase2_review_only.ReviewOnlyTests.test_closeout_source_finding_halts_and_cannot_select_more_work",
+        "test_vnext_verified_phase2_review_only.ReviewOnlyTests.test_late_correction_closeout_converges_with_no_editor_or_budget_extension"
+      ],
+      "scope": "Source/declaration boundaries, source correction and regeneration, finite reviewer-only convergence/recovery and serious-finding halt.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-source-manifest.json",
+        "sha256": "94bd3f00a0146a902bfa14c26781b31d318203167af15b7ef573e7109fef3395"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-compatibility.log",
+      "sha256": "908fca5b57a0efbaf85d9a9d1eee37c874a4e1414d2ea630915dd183f4f266ad",
+      "count": 72,
+      "elapsed_seconds": 358.559,
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_altered_scope_or_source_bindings_refuse_before_any_client",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_decline_and_stale_receipt_cannot_supply_followup_evidence",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_editor_receives_interpretation_without_effect_grants_or_reclassified_findings",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_followup_has_distinct_stable_identity_and_exact_original_editing_scope",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_new_plan_drives_distinct_patch_candidate_and_independent_deterministic_assessment",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_unextended_preflight_remains_byte_identical_and_contract_support_is_explicit",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_verifier_context_carries_same_interpretation_and_cannot_reuse_source_response",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_creation_locator_candidate_or_map_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_payload_or_report_cannot_enter_a_plausible_context",
+        "test_vnext_semantic_context.SemanticContextTests.test_complete_registered_context_contains_independent_evidence_and_no_writes",
+        "test_vnext_semantic_context.SemanticContextTests.test_rehashed_foreign_round_or_transaction_creation_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_snapshot_is_deterministic_and_nested_mutation_cannot_change_its_hash",
+        "test_vnext_semantic_context.SemanticContextTests.test_unbound_context_and_changed_pinned_verifier_refuse",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_bad_transport_and_timeout_are_retained_and_never_replayed",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_candidate_base_cannot_be_silently_reseeded",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_changed_plan_before_call_is_detected_without_invoking_editor",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_exact_named_decision_reaches_the_editor_as_a_bound_derived_task",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_full_inventory_rules_and_actual_findings_are_frozen_before_client",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_invalid_assertion_program_makes_zero_editor_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_mid_call_rule_drift_retains_raw_and_prevents_canonical_publication",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_new_rule_content_changes_job_and_plan_without_upgrading_frozen_admission",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_policy_and_role_gates_make_zero_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_unbound_or_duplicate_discovery_rules_fail_before_client",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_partial_rejected_duplicate_and_unrelated_findings_never_resolve",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_reset_is_key_specific_and_does_not_clear_readdition_or_flip_flop",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_residuals_require_verified_coverage_and_recurrence_reopens",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_final_findings_remain_blocked_work_not_terminal_or_edit_permission",
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_clean_sequence_has_distinct_repeated_steps_and_no_convergence",
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_budget_exhaustion_after_last_correction_does_not_grant_another_review",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_timeout_publication_recovery_and_success_preserve_history",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_editor_timeout_success_and_promotion_preserve_history"
+      ],
+      "scope": "Selected contract, evaluation, semantic context/follow-up, unit preflight, resolution, prior Phase 2 closeout/sequence and Reviewer/Editor failure-history compatibility.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-source-manifest.json",
+        "sha256": "94bd3f00a0146a902bfa14c26781b31d318203167af15b7ef573e7109fef3395"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-rubric-corrected.log",
+      "sha256": "1dd4743511ec2d1501690cca6eba2909cd9510d8ab62b9fbb2b723633c8cb7d3",
+      "count": 10,
+      "elapsed_seconds": 397.489,
+      "methods": [
+        "test_vnext_phase2_rubric.RubricRulesTests.test_exact_requirement_and_canonical_order",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_mid_target_rejects_inapplicable_requirements_without_severity_authority",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_missing_duplicate_unknown_or_changed_attribution_refuses",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_resolution_covers_only_requirements_in_that_verified_review",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_retained_gap_prevents_review_only_plan_despite_out_of_scope_source",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_silence_partial_and_future_resolution_cannot_clear_debt",
+        "test_vnext_phase2_rubric.RubricRulesTests.test_source_scope_cannot_waive_an_applicable_unresolved_requirement",
+        "test_vnext_verified_phase2_rubric.RubricRuntimeTests.test_editor_failure_reports_retained_gap_without_waiving_it",
+        "test_vnext_verified_phase2_rubric.RubricRuntimeTests.test_gap_resolves_only_after_verified_promotion_and_resolution_receipt",
+        "test_vnext_verified_phase2_rubric.RubricRuntimeTests.test_invalid_requirement_is_bounded_invalid_output_without_candidate"
+      ],
+      "scope": "Exact attribution, mid applicability refusal, independent gap debt, review-only eligibility, verified resolution, recurrence, retained failure evidence and full timeout-continuation/recovery/convergence journey.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-corrected-source-manifest.json",
+        "sha256": "9b0a95e11cad5be707c02701f29e8866322365edcd9235c9f6fa15df8272845b"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-targets-corrected.log",
+      "sha256": "fcd3b1cd9a855bf4cb9b64e92169e87ffaaba4863d45e9940edcbb7e0442f090",
+      "count": 8,
+      "elapsed_seconds": 383.804,
+      "methods": [
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_initial_declaration_lost_ack_and_final_ownership_loss_recover",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_last_pass_promotion_maintains_current_declaration_then_halts_and_recovers",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_mid_permissive_documents_major_and_rereviews_changed_declaration_counts",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_mid_target_rubric_claim_is_bounded_invalid_output",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_nonpermissive_major_stays_source_work_not_convergence",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_out_of_scope_adversarial_finding_is_retained_without_an_edit_gate",
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_target_path_preserves_approved_freeze_and_recovery_only_boundary"
+      ],
+      "scope": "Four clean targets, fresh-process readback, documented mid/permissive majors, other-target source gates, out-of-scope retention, mid invalid rubric output, ownership loss, final-state halt recovery and blocked freeze.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-corrected-source-manifest.json",
+        "sha256": "9b0a95e11cad5be707c02701f29e8866322365edcd9235c9f6fa15df8272845b"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-policy-compatibility.log",
+      "sha256": "716fb0ea189edbe27baaa9213ea290de037fbfb33f6f6a46b0edb23626ceb7ca",
+      "count": 41,
+      "elapsed_seconds": 1.938,
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_declaration_claim_is_not_repair_and_mixed_serious_source_takes_precedence",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_final_review_cannot_hide_observed_feedback_oscillation",
+        "test_vnext_verified_phase2_findings.FinalFindingRouteTests.test_nonblocking_severity_does_not_override_authority_rubric_or_profile_gates",
+        "test_vnext_verified_phase2_source_correction.SourceRulesTests.test_only_whole_source_findings_can_enter_correction"
+      ],
+      "scope": "Contract/schema, legacy evaluation, finding routing and source-correction policy compatibility after the targeted corrections.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-002/acceptance-corrected-source-manifest.json",
+        "sha256": "9b0a95e11cad5be707c02701f29e8866322365edcd9235c9f6fa15df8272845b"
+      }
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-m1-002/acceptance-corrected-source-manifest.json",
+    "sha256": "9b0a95e11cad5be707c02701f29e8866322365edcd9235c9f6fa15df8272845b"
+  },
+  "source_files_verified": 597,
+  "source_limits": "Six credited cohorts span two frozen snapshots. Repair, declaration/reviewer-only and broad compatibility were not rerun wholesale after the targeted policy corrections. The corrected rubric/target cohorts and 41 policy/contract checks cover the changed behavior. Schema-title changes are metadata only. No cohort crossed a source edit. Earlier passing development runs are not counted again.",
+  "changes_between_snapshots": [
+    {
+      "path": "contracts/algorithms/vnext_verified_phase2_rubric_v1.md",
+      "before": "3c884b56ec5f9e280baea76350fe744ee53ae5eb9420ea864be54157b15f18c2",
+      "after": "70939aeebbf51d48aaf6ddd4e0ca42d79909b4effbf1d3fc6096a33b31e14138"
+    },
+    {
+      "path": "contracts/algorithms/vnext_verified_phase2_targets_v1.md",
+      "before": "17a151fc8a3784c89d80900f9874b82beb52a272cce77fdb0f19af5996d18fff",
+      "after": "f0ea5fdb644d45040de0ae0498420ce441d190924d1b1ee96ed1413fc69c0167"
+    },
+    {
+      "path": "contracts/schemas/vnext_phase2_configuration_v2.schema.json",
+      "before": "661ea4b06c0540981d86517071edacdb3a5fe5f154bb02dedabb3b524133e885",
+      "after": "d61539bfc19128cd6e07d4e8376a0b31809b3491942c18f31b70ca106450b180"
+    },
+    {
+      "path": "contracts/schemas/vnext_phase2_review_request_v4.schema.json",
+      "before": "619d2dff7c9553ce81fd96a07cc32f1bd11072a8f82a18c6ba701062f7df1a46",
+      "after": "ab5456f676815e9089c1e55c300db76f5ae19e37279a4d99d004e0f3c44e458a"
+    },
+    {
+      "path": "contracts/schemas/vnext_phase2_review_request_v5.schema.json",
+      "before": "b7ef1620d51fa5d79b1e806c426a4dbc3c13cfbdfe1a8f46c9bffb231191d1c1",
+      "after": "efa630d8f10ee9f3c7ea0a2feebf384fba8e1727f2075128098952e023df97a9"
+    },
+    {
+      "path": "contracts/schemas/vnext_phase2_review_request_v6.schema.json",
+      "before": "8cd4e4e6e01f95b4218e3f23c138c0e7a8043e691afce05254b71d405b5578d6",
+      "after": "8ad01ab0e9747bbe94ad3b57000dd305ad4e7dba29da33ff50b002403c89333d"
+    },
+    {
+      "path": "src/whetstone/vnext_phase2_rubric.py",
+      "before": "a4201b8932e2eed1fce88f835236b63ee59d805274673ef5239ff0adb9e09893",
+      "after": "d8344a0541d2e0578be1ad7d24db50a8b7d9c7d625ffbc7fe1c9484514e24b35"
+    },
+    {
+      "path": "src/whetstone/vnext_phase2_targets.py",
+      "before": "dd437fe249bd32add6508b204ef002bdef62921752a3445e7549362cc9b529d4",
+      "after": "142f172671fada00c668bf6be3f0c0dd0d0ec85628f4479c2b78ad8fe184a9fc"
+    },
+    {
+      "path": "src/whetstone/vnext_verified_phase2_review.py",
+      "before": "54d7e5469f8105b55b8ce0cfb49df4b4330f991b81699c6f3c26bccfa7b2d33e",
+      "after": "1332e150ad3bd1ff3ee4de88e9a3ba62870a0461f6b7410f497fa3d08754221c"
+    },
+    {
+      "path": "src/whetstone/vnext_verified_phase2_review_only.py",
+      "before": "88e1180f587e5f97f26f8a4babf84778e9c18cc8d2f504c78a6afac630835263",
+      "after": "20db39c5def6756a6f1bb487bc5b55449cb2114394c511b0f449aacd97cb8a4c"
+    },
+    {
+      "path": "tests/test_vnext_phase2_rubric.py",
+      "before": "a84fa6aab34d4ca6200b4bd2c9203b4e765c51bff7f21fc28a8cc0359a7aec55",
+      "after": "fe48a5f3fa9771c2206557c39c03c629c4c013f0edf2828e13c1713042ee7dc6"
+    },
+    {
+      "path": "tests/test_vnext_verified_phase2_rubric.py",
+      "before": "dccbaa0c92b4c8457f3166137971df28fd3101db3fd4df03035d4402d84d6d1a",
+      "after": "0a48094b409ab07e4f06e31c31797c736d127a1f8a64ba78e188321fbad805cb"
+    },
+    {
+      "path": "tests/test_vnext_verified_phase2_targets.py",
+      "before": "6a5f7603725d9dc5d11fe5813696c7e901529bb51c5249e44c79143f728a583c",
+      "after": "fd0bc4cafdee820879d10df0733ab40cbe27c86abd66e9d2eeb984ac2fd2c2a5"
+    }
+  ],
+  "boundary_check": {
+    "path": "rounds/vnext-18-8-m1-002/boundary-check.json",
+    "sha256": "a8bf69d8c47bf9a39f562b1595ac4384ba26a6c9b10e2df6bdc979f951f5df57"
+  },
+  "completed": [
+    "Narrower semantic repair admission, full promotion/resolution journey, parent report preservation, stale sources, lost acknowledgements, ownership loss, approved blocked freeze and unpinned refusal.",
+    "Source/declaration boundaries, source correction and regeneration, finite reviewer-only convergence/recovery and serious-finding halt.",
+    "Exact attribution, mid applicability refusal, independent gap debt, review-only eligibility, verified resolution, recurrence, retained failure evidence and full timeout-continuation/recovery/convergence journey.",
+    "Four clean targets, fresh-process readback, documented mid/permissive majors, other-target source gates, out-of-scope retention, mid invalid rubric output, ownership loss, final-state halt recovery and blocked freeze.",
+    "Contract/schema, legacy evaluation, finding routing and source-correction policy compatibility after the targeted corrections."
+  ],
+  "pending_decision": {
+    "status": "asked_no_answer_received",
+    "subject": "Permissive rubric-gap acceptance authority and lifetime",
+    "recommendation": "Explicit operator decision bound to exact gap, rubric, target and current verified draft; require renewed acceptance after draft change. No model-granted acceptance; ordinary source and invariant debt remain independent.",
+    "implemented": false
+  },
+  "remaining": [
+    "Resolve the pending gap-acceptance authority/lifetime decision before implementing that route.",
+    "Implement and verify the authorized acceptance route, then reconcile full M1 acceptance without treating this checkpoint as completion.",
+    "Keep M2/M3/M4/M5 separate; M4 full source-write lifecycle still needs its normative scheduler amendment."
+  ],
+  "limitations": [
+    "Semantic-rejection repair only; preservation/assembly-failure repair is not implemented by this owner.",
+    "Repeated and mixed repair/interpretation child-chain combinations are not fully qualified.",
+    "Fixed builtin standard rubric, standard/horizontal stateful-system profiles and immutable roles only.",
+    "Injected local clients and simulated filesystem faults; no physical power loss, actual process death during writes, live-provider, performance or full-repository qualification."
+  ],
+  "excluded_runs": [
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-rubric-targets.log",
+      "sha256": "d1051a70f46b7d59852c39e54a8bd2552c3a0cc63a7cf9fb01bcd89e37ecb20c",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/contracts-and-policy.log",
+      "sha256": "3b0dbf398a720ebfa65960307ff9d98851bd8649b25d98b68f4a241228421bf2",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/freeze-acceptance.log",
+      "sha256": "7ba0d20816eda9aeafc6a197439470d3d6e5ae58dd2932ea4493ed6f9143161d",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-admission.log",
+      "sha256": "d0ac1def1f4be4f842e3990c2d51248e54765b553b052c7d26e980c42e6f5fb8",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-faults.log",
+      "sha256": "c1fe8a23cbb91e5224b4ce2a3117b11bcdc157d6783b1c181b0742d53e10ff4a",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-journey-final.log",
+      "sha256": "79cb7dfd4d84c22ec78dfdaea6aa4dab3ce8a16cadb133dae4e90021f5596dd8",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-journey-tracked.log",
+      "sha256": "b0d5724298fe30467f5a6d961ef50c95eb441f39887239729ec7a3f0368519d7",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-journey.log",
+      "sha256": "515c43b7d334a7d2bec8eb9aa05392d6e4296af891160da2934f1f99a929135f",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/repair-preflight.log",
+      "sha256": "ddb275a34132c28dbe7c52566a9bf38bb889bfdb05acf80358dd4e3e7cc8edae",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/review-only-corrected.log",
+      "sha256": "d643ccb9119faded04fdc14795e40837e0ce789cea193626793cb384fb624e06",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/review-only-journey.log",
+      "sha256": "0d24ae99e0030e380ea6102acd115f580e9f934bd14e35793abc79cc084f69b7",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/rubric-boundaries.log",
+      "sha256": "b7ab56afb4aacfff78780defbe48d8b1428399fe7538cd04efdb4ddbebe6b674",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/rubric-integrated.log",
+      "sha256": "ee46220aaf6799d76661dd81cdbf2e41ab2742020bbed812122094f306ac76a3",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/rubric-policy-corrected.log",
+      "sha256": "03bcbb63b62ea091b983955651028fd4435b7e275492dd6c0e9c8568eac96b69",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/shared-expanded.log",
+      "sha256": "8a87c5c6f76e8424a7224ee0f842f63dd47a53cb97d47cc0613757baa1421592",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/shared-regression.log",
+      "sha256": "6b8c61304b8f720911e67dd9db4c071acd2416d999abe6a122377f654475b273",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/source-boundaries-corrected.log",
+      "sha256": "16b509f88592d08f15b448c7d77da46a615c8adaf59b20f6e7b140c2d798e02b",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/source-boundaries.log",
+      "sha256": "08f085d5fde3b447798987d7344e56ae34f499ad02b3c64d5d0c4355b2fc3c4f",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/source-journey.log",
+      "sha256": "9418df8ac45a0831f9f13dca6aca9a5814b43bf93e4050819a5ec4b4fb586802",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/target-faults.log",
+      "sha256": "b1db71bc915bc39c9748d9c795bb28321a6526bd7b8d19456babf893df3cc154",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/target-owned.log",
+      "sha256": "da0101a48384ef219cb7aea17b9f0a761da7ac9cfb21a6ea8984e14bb08b34e3",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/target-replay.log",
+      "sha256": "d46c0dfd49081c0d04a26c752fa05afa23a214e7f95029800e459565de013fdf",
+      "result": "superseded_passing_development",
+      "credited": false
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/target-smoke.log",
+      "sha256": "30ac9c20057ec3ad7aa4dec4b4d2481c1f653751d535d55efc1db7c356653a25",
+      "result": "failed_or_interrupted_development",
+      "credited": false
+    }
+  ]
+}

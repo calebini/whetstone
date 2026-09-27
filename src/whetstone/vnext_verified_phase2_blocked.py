@@ -58,7 +58,8 @@ class _BlockedReport(_Findings):
         require(receipt['blocking_reasons'], 'blocked report requires a blocked final review')
         final = state['frames'][-1]
         owner = final['owner']
-        package = _bundle(owner, owner.source_frames, owner.source_clean)
+        from whetstone.vnext_verified_phase2_review_only import package_for
+        package = package_for(owner)
         rows = _latest_issues(state['frames'], proof.latest)
         latest = {f['bound'].request['step']['profile']: f for f in state['frames']
                   if f.get('consumed') and f['bound'].request['base_pointer'] == proof.latest}

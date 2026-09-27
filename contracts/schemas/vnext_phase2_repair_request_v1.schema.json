@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-phase2-repair-request-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "round_number",
+    "base_pointer",
+    "source_creation",
+    "source_verification",
+    "schema_version",
+    "operation_ids",
+    "finding_ids",
+    "limits",
+    "decided_by",
+    "rationale",
+    "decided_at"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "source_creation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "source_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "schema_version": {
+      "const": "vnext-phase2-repair-request-v1"
+    },
+    "operation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^op_[0-9a-f]{64}$"
+      }
+    },
+    "finding_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_operations",
+        "max_changed_sections",
+        "max_changed_normative_units"
+      ],
+      "properties": {
+        "max_operations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_changed_sections": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_changed_normative_units": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-phase2-repair-request-v1",
+    "producer": "orchestrator",
+    "consumer": "unactivated-phase2-repair",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "new consuming suite only; frozen first suite unchanged"
+  }
+}

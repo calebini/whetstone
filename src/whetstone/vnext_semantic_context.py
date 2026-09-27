@@ -117,6 +117,8 @@ def prepare_semantic_context(*, proposal_inputs, proposal, creation, creation_re
         # Include identical interpretation evidence for the independent role.
         prompt_packet=decode_json(preflight.prompt.rsplit('\n',1)[1].encode('utf-8'))
         packet['semantic_interpretation']=prompt_packet['semantic_interpretation']
+    if proposal_inputs.get('phase2_repair') is not None:
+        packet['repair'] = decode_json(proposal_inputs['phase2_repair'])
     # Canonical immutable bytes prevent a caller mutating nested dictionaries
     # after a request records the input hash. Each packet read is detached.
     return SemanticContext(canonical_json_bytes(packet))

@@ -50,7 +50,8 @@ class _Binding(_Eligibility):
         require(eligible.phase1_prerequisites_met, 'Phase 2 binding requires current complete Phase 1 prerequisites: '
                 + ', '.join(eligible.phase1_blockers))
         config = deepcopy(configuration)
-        proof.reader.suite.registry.validate(config, CONFIG_SCHEMA)
+        from whetstone.vnext_phase2_targets import configuration_schema
+        proof.reader.suite.registry.validate(config, configuration_schema(proof.reader.suite))
         review = proof.seed_values['review']
         require(config['job_id'] == proof.seed_values['job']['job_id']
                 and config['review_configuration'] == self.run._record['review_configuration'],
@@ -92,7 +93,8 @@ class _Binding(_Eligibility):
             return self._evaluate_eligibility(proof)
         reference = dict(path=REQUEST_PATH, hash=sha256_bytes(raw))
         request = proof.reader.json(reference, REQUEST_SCHEMA)
-        configuration = proof.reader.json(request['configuration'], CONFIG_SCHEMA)
+        from whetstone.vnext_phase2_targets import read_configuration
+        configuration = read_configuration(proof.reader,request['configuration'])
         return self._build(proof, configuration)
 
     def bind(self, configuration):

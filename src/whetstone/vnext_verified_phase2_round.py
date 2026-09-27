@@ -113,6 +113,10 @@ def validate_round(proof, number, record):
     prefix, owner, data = replay(proof)
     bound, _, _, _, _, view = data
     binding = view['binding']
+    if bound.request['schema_version']=='vnext-phase2-review-request-v6':
+        from whetstone.vnext_phase2_source_correction import source_findings
+        _,review,_=data[1].inspect(bound.request)
+        require(source_findings(bound,review),'declaration review has no wholly source correction')
     require(number == bound.request['round_number'] and record['round_number'] == number
             and record['base_pointer'] == prefix.latest and record['feedback'] == binding['feedback']
             and record['advice'] == binding['advice'] and record['constraints'] == _constraints(proof)
@@ -124,7 +128,9 @@ def validate_round(proof, number, record):
         require(binding['findings'] and any(row['classification'] == 'editor_fixable' for row in binding['findings'])
                 and all(row['classification'] in {'editor_fixable', 'deferable'} for row in binding['findings']),
                 'Phase 2 round requires admitted advice without unresolved choices')
-    return dict(configuration=deepcopy(bound.inputs['configuration']), request=deepcopy(bound.request))
+    from whetstone.vnext_phase2_rubric import proposal_context
+    _, review, _ = data[1].inspect(bound.request)
+    return proposal_context(bound, review)
 
 
 def current_sequence(proof):

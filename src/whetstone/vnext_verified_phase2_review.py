@@ -55,21 +55,45 @@ class _FirstReview(_Entry):
         config = binding.configuration
         step = dict(index=1, profile=config['profiles'][0]['name'], round_budget=config['profiles'][0]['budget'],
                     rounds_used=0, pass_number=1)
+        from whetstone.vnext_phase2_targets import supported as target_supported, initial_owner
+        if target_supported(proof.reader.suite):
+            return initial_owner(self.run,proof,binding,entry,number)._build_review(proof,transport)
         return self._render_review(proof, transport, binding, entry, number, step)
 
     def _render_review(self, proof, transport, binding, entry, number, step, *, directory=DIRECTORY,
-                       previous_consumption=None, declaration=None):
+                       previous_consumption=None, declaration=None, review_only=None):
         # Internal renderer only. The selecting owner must prove the base and schedule.
         config = binding.configuration
         schema = ('vnext_phase2_review_request_v3' if declaration is not None else
                   SCHEMA if previous_consumption is None else 'vnext_phase2_review_request_v2')
+        if declaration is not None:
+            from whetstone.vnext_phase2_source_correction import supported, pins
+            if supported(proof.reader.suite):
+                pins(proof.reader.suite)
+                schema = 'vnext_phase2_review_request_v4'
+            from whetstone.vnext_phase2_targets import supported as target_supported, pins as target_pins
+            if target_supported(proof.reader.suite):
+                target_pins(proof.reader.suite)
+                schema = 'vnext_phase2_review_request_v6'
+        if review_only is not None:
+            from whetstone.vnext_verified_phase2_review_only import pins
+            pins(proof.reader.suite)
+            require(declaration is not None, 'review-only closeout requires its verified declaration context')
+            schema = 'vnext_phase2_review_request_v5'
         input_path, prompt_path, request_path = (directory+'/'+name for name in ('inputs.json','prompt.txt','request.json'))
         proof.reader.suite.registry.validate(transport, 'vnext_review_request_transport_v1')
         schemas = {name: dict(path='schemas/' + name + '.schema.json',
             hash=sha256_bytes(confined_file(CONTRACT_ROOT, 'schemas/' + name + '.schema.json').read_bytes()))
             for name in sorted(SCHEMAS)}
+        response_schema = RESPONSE_SCHEMA
+        from whetstone.vnext_phase2_rubric import supported as rubric_supported, pins as rubric_pins, catalogue
+        if rubric_supported(proof.reader.suite):
+            from whetstone.vnext_phase2_rubric import RESPONSE_SCHEMA as response_schema
+            rubric_pins(proof.reader.suite)
+            path = 'schemas/'+response_schema+'.schema.json'
+            schemas[response_schema] = dict(path=path, hash=sha256_bytes(confined_file(CONTRACT_ROOT,path).read_bytes()))
         require(transport['reviewer'] == config['reviewer'], 'Phase 2 Reviewer transport changes pinned role')
-        require(transport['output_schema_hash'] == schemas[RESPONSE_SCHEMA]['hash'],
+        require(transport['output_schema_hash'] == schemas[response_schema]['hash'],
                 'Phase 2 Reviewer transport output schema differs')
         vocabulary = controlled_vocabulary_packet()
         proof.reader.suite.registry.validate(vocabulary, 'controlled_vocabulary')
@@ -78,6 +102,10 @@ class _FirstReview(_Entry):
         values = proof.values(proof.latest)
         references = [deepcopy(self.run._record[key]) for key in ('descriptor', 'review_configuration', 'seed_section_map')]
         references.append(deepcopy(values['job']['seed_draft']))
+        from whetstone.vnext_phase2_gap_acceptance import supported as acceptance_supported, pins as acceptance_pins
+        if acceptance_supported(proof.reader.suite):
+            acceptance_pins(proof.reader.suite)
+            references.extend(deepcopy(getattr(self,'gap_acceptances',[])))
         for key in ('authority_map', 'protected_invariants', 'scope_contract'):
             if values['job'][key + '_hash']:
                 references.append(dict(path=values['job'][key + '_path'], hash=values['job'][key + '_hash']))
@@ -95,11 +123,19 @@ class _FirstReview(_Entry):
             **{key:deepcopy(values[key]) for key in ('job', 'authority', 'invariants', 'scope', 'base_map', 'seed_map')},
             draft=values['base'].decode('utf-8'), seed=values['seed'].decode('utf-8'),
             rubric=proof.reader.raw(config['rubric']['artifact']).decode('utf-8'))
+        if rubric_supported(proof.reader.suite):
+            inputs['rubric_catalogue'] = catalogue(inputs['rubric'].encode(), target_phase=config['target_phase'])
         if previous_consumption is not None:
             inputs.update(schema_version='vnext-phase2-review-inputs-v2', previous_consumption=deepcopy(previous_consumption),
                 current_verified_draft=dict(path=proof.pointers[-1]['verified_draft_path'], hash=sha256_bytes(values['base'])))
         if declaration is not None:
             inputs.update(schema_version='vnext-phase2-review-inputs-v3', declaration=deepcopy(declaration))
+            if schema == 'vnext_phase2_review_request_v4':
+                inputs['schema_version'] = 'vnext-phase2-review-inputs-v4'
+            if schema == 'vnext_phase2_review_request_v6':
+                inputs['schema_version'] = 'vnext-phase2-review-inputs-v6'
+        if review_only is not None:
+            inputs.update(schema_version='vnext-phase2-review-inputs-v5', review_only=deepcopy(review_only))
         section_ids=[row['canonical_section_id'] for row in values['base_map']['sections']]
         if declaration is not None:
             from whetstone.declaration import DECLARATION_ARTIFACTS
@@ -111,14 +147,21 @@ class _FirstReview(_Entry):
         prompt += ('Use the exact configured Reviewer identity. Return Phase 2 feedback only; no declaration review is active.\n'
                    if declaration is None else
                    'Verify the bound convergence declaration, current draft, rubric identity/hash, target matrix, unresolved issues and rubric gaps. Return Phase 2 feedback only. Declaration artifacts are Orchestrator-owned; no Editor mutation is authorized.\n')
+        if rubric_supported(proof.reader.suite):
+            prompt += ('Return the bound rubric response envelope: review plus rubric_findings. '
+                       'Attribute every rubric-impact finding to exact catalogue anchors and hashes; do not assign acceptance or resolution.\n')
+            if config['target_phase'] == 'mid':
+                prompt += ('The bound standard rubric has no explicit mid-target requirements. '
+                           'Return no rubric annotations or rubric-impact claims; ordinary source findings remain available.\n')
         prompt += canonical_json_bytes(inputs).decode('utf-8')
         request = dict(schema_version=schema.replace('_','-'), phase='phase_2',
             job_id=config['job_id'], entry=entry.entry_ref, configuration=binding.configuration_ref,
             base_pointer=deepcopy(proof.latest), round_number=number, step=step, transport=deepcopy(transport),
-            response_schema=schemas[RESPONSE_SCHEMA], inputs=_ref(input_path, inputs),
+            response_schema=schemas[response_schema], inputs=_ref(input_path, inputs),
             prompt=dict(path=prompt_path, hash=sha256_bytes(prompt.encode('utf-8'))))
         if previous_consumption is not None: request['previous_consumption'] = deepcopy(previous_consumption)
         if declaration is not None: request['declaration'] = deepcopy(declaration['binding'])
+        if review_only is not None: request['review_only'] = deepcopy(review_only)
         proof.reader.suite.registry.validate(request, schema)
         expected = ((input_path, canonical_json_bytes(inputs)), (prompt_path, prompt.encode('utf-8')),
                     (request_path, canonical_json_bytes(request)))
@@ -145,6 +188,10 @@ class _FirstReview(_Entry):
             expected = self._build_review(proof, transport)
             binding = self._committed_binding(proof)
             self._synchronize_entry_sources(store, proof, binding)
+            if expected.inputs['declaration'] is not None:
+                context=expected.inputs['declaration']
+                for ref in [context['binding']]+[row['reference'] for row in context['artifacts'].values()]:
+                    self.store.synchronize_existing(store._token,ref['path'],expected=proof.reader.raw(ref))
             for reference in expected.inputs['sources'] + [expected.request['entry']]:
                 # Descriptor durability belongs to storage initialization; consumer
                 # synchronization cannot touch storage control artifacts.

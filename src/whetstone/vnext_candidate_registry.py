@@ -79,8 +79,10 @@ class CandidateRegistry:
         require(isinstance(proposal_id,str) and re.fullmatch(r'pro_[0-9a-f]{64}',proposal_id),'invalid registration proposal')
         inputs=self.load_inputs(self.store.read,round_number,proposal_id)
         required={'authority','invariants','seed','seed_map','base','base_map','base_inventory','review'}
-        require(required<=inputs.keys() and inputs.keys()<=required|{'bindings','rules','plan_reference'},'invalid registration assessment inputs')
+        require(required<=inputs.keys() and inputs.keys()<=required|{'bindings','rules','plan_reference','repair_plan'},'invalid registration assessment inputs')
         inputs=dict(inputs);review=inputs.pop('review');plan_reference=inputs.pop('plan_reference',None)
+        repair_plan=inputs.pop('repair_plan',False)
+        require(type(repair_plan) is bool and (not repair_plan or plan_reference is not None), 'invalid repair plan handoff')
         require(inputs['base_map']['job_id']==inputs['base_inventory']['job_id']==self.job['job_id'],
                 'registration base lineage belongs to another job')
         require(inputs['base_map']['parser_contract_version']==self.job['parser_contract_version'],
@@ -91,7 +93,7 @@ class CandidateRegistry:
             plan,_=self._json(f'rounds/round-{round_number}/mutation_plan.json','mutation_plan_v2')
         else:
             require(isinstance(plan_reference,dict) and set(plan_reference)=={'path','hash'},'invalid transaction plan reference')
-            plan,raw=self._json(plan_reference['path'],'mutation_plan_v3')
+            plan,raw=self._json(plan_reference['path'],'mutation_plan_v2' if repair_plan else 'mutation_plan_v3')
             require(sha256_bytes(raw)==plan_reference['hash'],'transaction plan reference changed')
             require(plan_reference['path']==f"rounds/round-{round_number}/transactions/{plan['transaction_id']}/mutation_plan.json",
                     'transaction plan path differs from its identity')

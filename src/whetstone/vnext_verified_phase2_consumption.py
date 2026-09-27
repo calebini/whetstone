@@ -20,6 +20,12 @@ def _projection(bound, review, receipt, *, scheduler=None):
     findings, evidence = classify_feedback(feedback=feedback, feedback_ref=receipt['feedback'],
         advice=None, job=inputs['job'], authority=inputs['authority'], invariants=inputs['invariants'],
         base=inputs['draft'].encode('utf-8'), section_map=inputs['base_map'], scope=inputs['scope'])
+    gap_sources = {row['source_issue_id'] for row in review.get('rubric_findings',[]) if row['gap']['blocking_convergence']}
+    for row in findings:
+        if row['finding_id'] in gap_sources and row['classification']=='deferable':
+            row['classification']='operator_decision_required'
+    from whetstone.vnext_phase2_targets import defer_allowed
+    defer_allowed(findings,feedback,inputs['configuration'],[row['canonical_section_id'] for row in inputs['base_map']['sections']])
     scheduler = deepcopy(scheduler) if scheduler is not None else PhaseScheduler(
         ProfileStep(row['name'], round_budget=row['budget'], repeat_if_blockers=True)
         for row in inputs['configuration']['profiles'])
@@ -31,10 +37,14 @@ def _projection(bound, review, receipt, *, scheduler=None):
     # Scheduler selection is descriptive only: this owner grants no next invocation.
     for row in profiles:
         del row['active']
-    return dict(schema_version='vnext-phase2-consumption-v1', request=deepcopy(bound.request_ref),
+    next_gate='finding_admission' if findings else 'subsequent_request_not_implemented'
+    if bound.request['schema_version']=='vnext-phase2-review-request-v6':
+        from whetstone.vnext_phase2_source_correction import source_findings
+        if not source_findings(bound,review):next_gate='declaration_closeout_required'
+    return dict(schema_version='vnext-phase2-consumption-v6' if bound.request['schema_version']=='vnext-phase2-review-request-v6' else 'vnext-phase2-consumption-v1', request=deepcopy(bound.request_ref),
         result=_ref(JOURNAL_PATH+'/result.json', receipt), base_pointer=deepcopy(bound.request['base_pointer']),
         accepted_passes=1, profiles=profiles, findings=findings, evidence=evidence,
-        next_gate='finding_admission' if findings else 'subsequent_request_not_implemented',
+        next_gate=next_gate,
         candidate_authorized=False, next_review_authorized=False, phase_complete=False)
 
 
@@ -61,10 +71,11 @@ class _Consumption(_Client):
         outcomes, review, receipt = journal.inspect(bound.request)
         require(receipt is not None, 'Phase 2 consumption requires a committed result; recover its journal first')
         packet = self._project(bound, review, receipt)
-        journal.schemas.validate(packet, self.consumption_schema)
+        schema='vnext_phase2_consumption_v6' if bound.request['schema_version']=='vnext-phase2-review-request-v6' else self.consumption_schema
+        journal.schemas.validate(packet, schema)
         existing = self._optional(self.consumption_path)
         if existing is not None:
-            stored = proof.reader.json(dict(path=self.consumption_path, hash=sha256_bytes(existing)), self.consumption_schema)
+            stored = proof.reader.json(dict(path=self.consumption_path, hash=sha256_bytes(existing)), schema)
             require(stored == packet, 'Phase 2 consumption differs from exact result replay')
         journal.recheck()
         return bound, journal, outcomes, packet, existing is not None

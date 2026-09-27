@@ -54,6 +54,8 @@ class _Advice(_Consumption):
         findings, evidence = classify_feedback(feedback=review['feedback'], feedback_ref=receipt['feedback'],
             advice=advice, job=inputs['job'], authority=inputs['authority'], invariants=inputs['invariants'],
             base=inputs['draft'].encode('utf-8'), section_map=inputs['base_map'], scope=inputs['scope'])
+        from whetstone.vnext_phase2_targets import defer_allowed
+        defer_allowed(findings,review['feedback'],inputs['configuration'],[row['canonical_section_id'] for row in inputs['base_map']['sections']])
         packet = dict(schema_version='vnext-phase2-advice-binding-v1',
             request=deepcopy(bound.request_ref), result=deepcopy(consumption['result']),
             consumption=_ref(self.consumption_path, consumption), base_pointer=deepcopy(bound.request['base_pointer']),

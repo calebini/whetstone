@@ -133,13 +133,14 @@ class _CorrectionFailure(_Declaration):
         base = owner.proof; pointer = base.pointers[-1]
         normalized = draft_hash(base.values(base.latest)['base'].decode())
         prior = frames[:index+1]; rows = _latest_issues(prior, base.latest)
-        require(not any(r['rubric_impact'] is not None or 'rubric_gaps.json' in r['affected_sections']
-                        for f in prior if f.get('consumed') for r in f['review']['feedback']['feedback']),
-                'correction failure cannot invent rubric-gap resolution')
+        from whetstone.vnext_phase2_rubric import report_gaps
+        gaps = report_gaps(proof,prior,base.latest)
         manifest = dict(schema_version='vnext-bound-rubric-v1', configuration=owner.binding.configuration_ref,
             workflow=config['workflow'], rubric_profile=config['rubric']['profile'], rubric_source=config['rubric']['source'],
             rubric_label=None, rubric_path=config['rubric']['artifact']['path'], rubric_content_hash=config['rubric']['artifact']['hash'],
             target_phase=config['target_phase'], target_mode=config['target_mode'])
+        from whetstone.vnext_phase2_gap_acceptance import bind_manifest
+        bind_manifest(manifest,proof,prior,base.latest)
         manifest_ref = _ref(directory+'/rubric_manifest.json', manifest)
         scheduler = deepcopy(owner.scheduler)
         feedback = frame['review']['feedback']['feedback']
@@ -159,7 +160,7 @@ class _CorrectionFailure(_Declaration):
             target_phase=config['target_phase'], target_mode=config['target_mode'], workflow=config['workflow'],
             rubric_profile=config['rubric']['profile'], rubric_source=config['rubric']['source'], rubric_label=None,
             rubric_manifest_path=manifest_ref['path'], unresolved_blockers=issues('blocker'), unresolved_major_issues=issues('major'),
-            unresolved_rubric_gaps=[], reviewer_final_status='not_run',
+            unresolved_rubric_gaps=gaps, reviewer_final_status='not_run',
             last_accepted_draft_hash=draft_hash(proof.reader.raw(owner.entry.entry['current_verified_draft']).decode()),
             last_draft_hash=normalized, exit_reason=reason, recommendation='manual_review_required', profile_status=profiles,
             last_reviewer_findings=dict(round_number=owner.number, profile=frame['bound'].request['step']['profile'],

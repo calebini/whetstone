@@ -65,7 +65,15 @@ class VerifiedOperator(VerifiedWork):
         frozen = deepcopy(answer_reference)
         def perform(store, proof):
             creation, _ = self._source(proof, candidate_id, current=True)
-            admission = _Admission(store, proof, creation['round_number'])
+            selected_ref = None
+            from whetstone.vnext_phase2_repair import supported
+            if supported(proof.reader.suite):
+                from whetstone.vnext_semantic_followup_admission import _input_path
+                arguments = proof.router.load_inputs.for_proposal(store.read, creation['round_number'], creation['proposal_id'])
+                if arguments.get('phase2_repair') is not None:
+                    path = _input_path(creation['round_number'],creation['transaction_id'])
+                    selected_ref = dict(path=path,hash=sha256_bytes(store.read(path)))
+            admission = _Admission(store, proof, creation['round_number'], selected_ref)
             reference = _admit_semantic_followup(store, original=admission, router=proof.router,
                 source_admission=admission, source_type=_VerifiedAnswerSource,
                 candidate_id=candidate_id, answer_reference=frozen)

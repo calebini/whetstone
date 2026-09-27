@@ -42,6 +42,28 @@ class _VerifiedTransactions(SemanticFollowupAdmission):
         super().__init__(store, original=original, selected_ref=selected_ref, history_limit=history_limit)
         self.load_inputs.request_journal = self._request_journal
 
+    def _json(self, read, path, schema, digest=None):
+        if schema == 'vnext_semantic_followup_input_v1':
+            from whetstone.vnext_contracts import decode_json
+            if decode_json(read(path)).get('schema_version') == 'vnext-phase2-repair-input-v1':
+                from whetstone.vnext_phase2_repair import pins, SCHEMA
+                pins(self.original._base(read)[0].suite)
+                schema = SCHEMA
+        return super()._json(read,path,schema,digest)
+
+    def _derive(self, read, record):
+        if record['schema_version'] == 'vnext-phase2-repair-input-v1':
+            from whetstone.vnext_verified_phase2_repair import derive
+            return derive(self,read,record)
+        return super()._derive(read,record)
+
+    def _original_inputs(self, read, record, event):
+        from whetstone.vnext_phase2_repair import supported
+        if supported(self.original._base(read)[0].suite):
+            parent = type(self)(self.store,original=self.original,history_limit=event['candidate_creation_ordinal'])
+            return parent.load_inputs.for_proposal(read,event['round_number'],event['proposal_id'])
+        return super()._original_inputs(read,record,event)
+
     def _request_journal(self, store, number, identifier):
         proof = self.original.proof
         _same_store(store, proof.store)
