@@ -240,8 +240,8 @@ class _Declaration(_Continuation):
             if target_supported(proof.reader.suite) and self._optional(REQUEST_PATH) is None:
                 binding=self._committed_binding(proof);entry=self._entry_view(proof,binding)
                 self._synchronize_entry_sources(store,proof,binding)
-                closeout=proof.reader.json(entry.entry['phase1_closeout'],'vnext_verified_phase1_closeout_v1')
-                number=max(row['round_number'] for row in closeout['review_receipts'])+1
+                from whetstone.vnext_phase2_routes import first_round
+                number=first_round(proof,entry.entry)
                 state=dict(gate='review',owner=initial_owner(self.run,proof,binding,entry,number),frames=[],clean=[])
             else:
                 state=sequence(proof)

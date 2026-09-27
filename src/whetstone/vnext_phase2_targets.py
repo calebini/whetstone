@@ -24,6 +24,10 @@ def pins(suite):
 
 
 def configuration_schema(suite):
+    from whetstone.vnext_phase2_routes import supported as routes_supported, pins as route_pins
+    if routes_supported(suite):
+        route_pins(suite)
+        return 'vnext_phase2_configuration_v3'
     if supported(suite):
         pins(suite)
         return 'vnext_phase2_configuration_v2'
@@ -61,7 +65,7 @@ def matrix(config):
 
 
 def defer_allowed(findings, feedback, config, sections):
-    if config['schema_version']!='vnext-phase2-configuration-v2':return findings
+    if config['schema_version'] not in {'vnext-phase2-configuration-v2','vnext-phase2-configuration-v3'}:return findings
     rows={row['issue_id']:row for row in feedback['feedback']}
     for finding in findings:
         row=rows[finding['finding_id']]

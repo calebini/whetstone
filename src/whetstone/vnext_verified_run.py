@@ -136,6 +136,10 @@ class VerifiedRun:
     def phase1_status(self):
         from whetstone.vnext_verified_phase1_status import inspect_verified_phase1
         return inspect_verified_phase1(self)
+
+    def extend_phase1_budget(self, *, added_rounds_per_profile, **options):
+        from whetstone.vnext_verified_phase1_budget import extend
+        return extend(self, added_rounds_per_profile=added_rounds_per_profile, **options)
     def phase1_closeout(self):
         from whetstone.vnext_verified_phase1_closeout import inspect_verified_phase1_closeout
         return inspect_verified_phase1_closeout(self)

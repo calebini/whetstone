@@ -46,6 +46,13 @@ class _ReviewInputs:
 
 
 class _VerifiedReviewRequest(_Request):
+    def schema(self):
+        from whetstone.vnext_verified_phase1_budget import supported, pins
+        if supported(self.run.proof.reader.suite):
+            pins(self.run.proof.reader.suite)
+            return 'vnext_review_request_v3'
+        return 'vnext_review_request_v2'
+
     def synchronize(self, token, header, outcomes):
         super().synchronize(token, header, outcomes)
         from whetstone.vnext_verified_focused_phase1 import round_assets
@@ -67,12 +74,16 @@ class _VerifiedReviewRequest(_Request):
     def header(self, transport, previous):
         header = super().header(transport, previous)
         header.update(schema_version='vnext-review-request-v2', base_pointer=deepcopy(self.run.base_reference))
-        self.schemas.validate(header, 'vnext_review_request_v2')
+        if self.schema() == 'vnext_review_request_v3':
+            from whetstone.vnext_verified_phase1_budget import records
+            header.update(schema_version='vnext-review-request-v3',
+                          budget_extensions=[r[0] for r in records(self.run.proof, through_round=self.number)])
+        self.schemas.validate(header, self.schema())
         return header
 
     def inspect(self, header):
         if header is not None:
-            self.schemas.validate(header, 'vnext_review_request_v2')
+            self.schemas.validate(header, self.schema())
             require(header == self.header(header['transport'], header['previous_request_hash']),
                     'V Reviewer claim differs from its original base and inputs')
         result = super().inspect(header)
@@ -91,7 +102,7 @@ class _VerifiedReviewRequest(_Request):
         header = decode_json(raw) if raw is not None else None
         if header is not None:
             require(raw == canonical_json_bytes(header), 'noncanonical V Reviewer claim')
-            self.schemas.validate(header, 'vnext_review_request_v2')
+            self.schemas.validate(header, self.schema())
             require(header['previous_request_hash'] == previous, 'V Reviewer predecessor claim differs')
         return header, *self.inspect(header)
 
@@ -142,7 +153,9 @@ def _read_review_prefix(proof, *, through_round=None, require_complete=False):
     for number in numbers:
         path = f'rounds/review_index/request-{number}.json'
         raw = proof.store.read(path)
-        header = proof.reader.json({'path': path, 'hash': sha256_bytes(raw)}, 'vnext_review_request_v2')
+        from whetstone.vnext_verified_phase1_budget import supported
+        schema = 'vnext_review_request_v3' if supported(proof.reader.suite) else 'vnext_review_request_v2'
+        header = proof.reader.json({'path': path, 'hash': sha256_bytes(raw)}, schema)
         request = _VerifiedReviewRequest(_ReviewInputs(proof.store, proof, header['base_pointer']), number, header['profile'])
         replayed, outcomes, review, receipt = request.read_claim(previous)
         require(replayed == header and canonical_json_bytes(replayed) == raw, 'V Reviewer claim changed during replay')

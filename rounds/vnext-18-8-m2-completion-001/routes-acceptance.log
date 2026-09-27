@@ -1,0 +1,7 @@
+test_extended_horizontal_and_vertical_finish_phase2_with_preserved_phase1_history (test_vnext_verified_m2_routes.M2RoutesTests.test_extended_horizontal_and_vertical_finish_phase2_with_preserved_phase1_history) ... ok
+test_final_synthetic_noop_is_counted_before_entry_and_recovery (test_vnext_verified_m2_routes.M2RoutesTests.test_final_synthetic_noop_is_counted_before_entry_and_recovery) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 1050.951s
+
+OK

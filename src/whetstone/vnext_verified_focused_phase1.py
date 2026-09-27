@@ -51,7 +51,8 @@ def round_assets(request, review=None):
     values = request.preflight.arguments
     from whetstone.vnext_verified_vertical_phase1 import enabled
     vertical = enabled(values['review'])
-    if focused_profile(values['review']) is None and not vertical: return {}
+    from whetstone.vnext_verified_phase1_budget import supported
+    if focused_profile(values['review']) is None and not vertical and not supported(request.run.proof.reader.suite): return {}
     from whetstone.scheduler import REVIEW_PROFILE_DEFINITIONS
     prefix = f'rounds/round-{request.number}'
     raw = values['base']
@@ -59,7 +60,7 @@ def round_assets(request, review=None):
     # Full draft review plus conservative invalidation: pin all actual section IDs.
     metadata = dict(profile=request.profile, round_kind='review_only' if vertical else 'review_editor',
         focus=list(profile.focus), resolved_focus_anchors=[r['canonical_section_id'] for r in values['base_map']['sections']],
-        focused=not vertical)
+        focused=focused_profile(values['review']) is not None)
     assets = {prefix+'/draft_before.md': raw, prefix+'/profile_used.yaml': canonical_json_bytes(metadata),
         prefix+'/prompt_snapshot.json': canonical_json_bytes(dict(request_id=request.id,
             input_hash=request.preflight.input_hash, base_pointer=values['base_pointer_ref'],

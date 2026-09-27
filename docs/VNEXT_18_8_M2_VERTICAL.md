@@ -1,5 +1,9 @@
 # M2 vertical Phase 1 integration
 
+This is the historical vertical checkpoint record (`a09a6c5`). The
+[M2 completion campaign](VNEXT_18_8_M2_COMPLETION.md) tracks the subsequent
+budget/continuation and cross-route Phase 2 work; use it for current handoff status.
+
 Implemented and validated from `1d39057` under the user's next-slice authorization.
 This is internal standard V Phase 1 integration. The user subsequently authorized
 a local checkpoint. No public mode, external provider, source apply-back or push

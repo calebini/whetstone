@@ -29,7 +29,7 @@ def source_findings(bound, review):
     config=bound.inputs.get('configuration')
     actionable = [row for row in rows if row['in_scope']
                   and (row['normalized_severity'] in {'major', 'blocker'} or row['issue_id'] in gap_sources)
-                  and not (config and config['schema_version']=='vnext-phase2-configuration-v2' and allowed_major(row,config))]
+                  and not (config and config['schema_version'] in {'vnext-phase2-configuration-v2','vnext-phase2-configuration-v3'} and allowed_major(row,config))]
     return bool(actionable) and all(row['affected_sections']
         and set(row['affected_sections']) <= sections
         and all(row[key] is None for key in ('authority_impact', 'determinism_impact', 'invariant_violated'))

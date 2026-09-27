@@ -158,8 +158,20 @@ class _Closeout(VerifiedReview):
                         vertical_merges=[_ref(f"rounds/round-{m[0]['round_number']}/vertical_merge.json", m[0]) for m in vertical_state.merges])
                     evidence_schema = 'vnext_verified_phase1_closeout_v3'
             proof.reader.suite.registry.validate(evidence, evidence_schema)
+            from whetstone.vnext_verified_phase1_budget import supported, records
+            if supported(proof.reader.suite):
+                grants = records(proof)
+                number = completed_round(sequence(proof)) if vertical else frames[-1].request.number
+                evidence.update(schema_version='vnext-verified-phase1-closeout-v4',
+                    review_configuration=deepcopy(self.run._record['review_configuration']),
+                    focused_profile=focused, technical_failure=technical_ref,
+                    round_number=number, vertical_merges=evidence.get('vertical_merges', []),
+                    review_round_budget=sum(p.round_budget for p in progress) + (max(p.round_budget for p in progress) if vertical else 0),
+                    budget_extensions=[r[0] for r in grants])
+                proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v4')
+                prefix = f"rounds/phase1_closeouts/grants-{len(grants)}-{proof.latest['hash']}-{number}"
             evidence_ref = _ref('rounds/phase1_closeouts/closeout-' + sha256_bytes(canonical_json_bytes(evidence)) + '.json', evidence)
-            if focused or vertical: evidence_ref = _ref(prefix+'/closeout.json', evidence)
+            if focused or vertical or supported(proof.reader.suite): evidence_ref = _ref(prefix+'/closeout.json', evidence)
             stored_report = self._optional(report_ref['path'])
             stored_evidence = self._optional(evidence_ref['path'])
             require(stored_report is None or stored_report == canonical_json_bytes(report), 'Phase 1 terminal report conflicts with replay')
@@ -186,8 +198,11 @@ class _Closeout(VerifiedReview):
         return self.evaluate(proof)
 
     def _synchronize_sources(self, store, proof, closeout):
+        from whetstone.vnext_verified_phase1_budget import synchronize
+        synchronize(store, proof)
         frames, _, _ = _sequence(proof)
         for frame in frames:
+            if frame.receipt is None: break
             request = _VerifiedReviewRequest(_ReviewInputs(store, proof, frame.header['base_pointer']),
                                              frame.request.number, frame.request.profile)
             request.synchronize(store._token, frame.header, frame.outcomes)

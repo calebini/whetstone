@@ -39,7 +39,7 @@ class _OperatorStatus(_Closeout):
                 'installed verified operator status contract differs from pinned suite')
         return proof
 
-    def _state_target(self, closeout):
+    def _state_target(self, closeout, proof=None):
         raw = self.store.read(STATE_PATH)  # Base mirror recovery owns absence/malformed state.
         state = decode_json(raw)
         require(isinstance(state, dict), 'Phase 1 state projection requires a JSON object')
@@ -51,7 +51,8 @@ class _OperatorStatus(_Closeout):
         else:
             changed = state.get(STATE_FIELD) != reference
             state[STATE_FIELD] = deepcopy(reference)
-            vertical = 'vertical_merges' in closeout.evidence
+            vertical = ('vertical_merges' in closeout.evidence and closeout.evidence['schema_version'] != 'vnext-verified-phase1-closeout-v4') or (
+                proof is not None and proof.seed_values['review']['review_mode'] == 'vertical')
             if closeout.evidence.get('focused_profile') is not None or vertical:
                 focused_state = dict(terminal_state=closeout.report['terminal_state'],
                     ready_for_phase_2=False, current_draft_status='not_accepted',
@@ -65,10 +66,31 @@ class _OperatorStatus(_Closeout):
                         last_accepted_draft_hash=closeout.report['current_verified_draft_hash'] if stable else None)
                 changed = changed or any(state.get(key) != value for key, value in focused_state.items())
                 state.update(focused_state)
+        if proof is not None:
+            from whetstone.vnext_verified_phase1_budget import supported, records, effective_profiles
+            if supported(proof.reader.suite):
+                from whetstone.vnext_verified_review import _contract, _sequence
+                from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, completed_round
+                grants = records(proof)
+                profiles = effective_profiles(proof, _contract(proof))
+                frames, _, _ = _sequence(proof)
+                vertical = enabled(proof.seed_values['review'])
+                number = completed_round(sequence(proof)) if vertical and frames else max(
+                    [f.request.number for f in frames if f.receipt is not None], default=0)
+                stable = bool(reference and closeout.report['terminal_state'] == 'PHASE_1_STABLE')
+                values = dict(budget_extensions=[v['event'] for _,v in grants], phase='phase_1', current_round=number,
+                    current_draft_hash=proof.pointers[-1]['verified_draft_hash'],
+                    review_profile_budgets={p['name']:p['budget'] for p in profiles},
+                    review_round_budget=sum(p['budget'] for p in profiles)+(max(p['budget'] for p in profiles) if vertical else 0),
+                    terminal_state=closeout.report['terminal_state'] if reference else None,
+                    ready_for_phase_2=stable, current_draft_status='phase_1_stable' if stable else 'not_accepted',
+                    last_accepted_draft_hash=proof.pointers[-1]['verified_draft_hash'] if stable else None)
+                changed = changed or any(state.get(k) != v for k,v in values.items())
+                state.update(values)
         return raw, canonical_json_bytes(state) if changed else raw, stale
 
     def _status(self, proof, closeout):
-        raw, target, stale = self._state_target(closeout)
+        raw, target, stale = self._state_target(closeout, proof)
         from whetstone.vnext_verified_focused_phase1 import FAILURE_MIRROR
         mirror_pending = bool(closeout.materialized and closeout.technical_failure is not None
             and self._optional(FAILURE_MIRROR) != canonical_json_bytes(closeout.technical_failure))
@@ -100,8 +122,15 @@ class _OperatorStatus(_Closeout):
 
     def reconcile(self):
         def synchronize(store, proof):
+            from whetstone.vnext_phase2_routes import supported as routes_supported
+            from whetstone.vnext_verified_phase1_budget import supported as budget_supported
+            if routes_supported(proof.reader.suite) or budget_supported(proof.reader.suite):
+                require(self._optional('rounds/phase2/review_requests/first/request.json') is None,
+                        'Phase 1 state recovery cannot supersede bound Phase 2 work')
             closeout = self.evaluate(proof)
-            before, target, _ = self._state_target(closeout)
+            before, target, _ = self._state_target(closeout, proof)
+            if budget_supported(proof.reader.suite) and not closeout.materialized:
+                self._synchronize_sources(store, proof, closeout)
             if closeout.materialized:
                 checked = self._synchronize_sources(store, proof, closeout)
                 require(checked.materialized, 'committed Phase 1 closeout disappeared during recovery')
@@ -112,13 +141,25 @@ class _OperatorStatus(_Closeout):
                     packet = canonical_json_bytes(checked.technical_failure)
                     self.store.synchronize_existing(store._token, checked.technical_failure_ref['path'], expected=packet)
                     existing = self._optional(FAILURE_MIRROR)
-                    require(existing is None or existing == packet, 'unowned focused failure report conflicts')
+                    from whetstone.vnext_verified_phase1_budget import records
+                    historical = [proof.reader.json(v['closeout'], 'vnext_verified_phase1_closeout_v4')
+                                  for _,v in records(proof)]
+                    owned = any(c['technical_failure'] is not None and existing == proof.reader.raw(c['technical_failure'])
+                                for c in historical)
+                    require(existing is None or existing == packet or owned, 'unowned focused failure report conflicts')
                     proof.guard(self.store.read)
                     self.run._guard(self.store.read)
                     if existing is None:
                         store.publish(store._token, FAILURE_MIRROR, packet)
-                    else:
+                    elif existing == packet:
                         self.store.synchronize_existing(store._token, FAILURE_MIRROR, expected=packet)
+                    else:
+                        # Reports are immutable; only their established compatibility mirror changes.
+                        def validate_report(read, path, raw):
+                            proof.guard(read); self.run._guard(read)
+                            require(path == FAILURE_MIRROR and raw == packet and read(path) == existing,
+                                    'historical failure mirror changed during projection')
+                        self.store.materialize(store._token, FAILURE_MIRROR, packet, validate_target=validate_report)
             # Standard runs keep their namespaced projection. Focused runs also
             # project their terminal and explicit lack of Phase 2 readiness.
             def validate_target(read, path, raw):

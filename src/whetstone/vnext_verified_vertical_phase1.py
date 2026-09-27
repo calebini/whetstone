@@ -111,18 +111,23 @@ def sequence(proof, *, through_round=None):
     from whetstone.vnext_verified_review import _contract
     from whetstone.vnext_verified_review_requests import _read_review_prefix
     profiles = _contract(proof)
+    from whetstone.vnext_verified_phase1_budget import Timeline
+    timeline = Timeline(proof, profiles, through_round=through_round)
+    profiles = timeline.profiles
     frames = _read_review_prefix(proof, through_round=through_round, require_complete=through_round is not None)
     counts = {r['name']: 0 for r in profiles}
     clean = dict.fromkeys(counts, False)
     base, cursor, number, merges = _snapshot(proof.pointers[0]), 0, 1, []
 
     def done(gate, profile=None):
+        timeline.finish()
         require(cursor == len(frames), 'vertical journal continues beyond its eligible boundary')
         require(through_round is None, 'selected round is not a completed vertical consolidation')
         require(base == proof.latest, 'vertical reviews do not explain the current promotion')
         return VerticalSequence(frames, gate, profile, number, tuple(merges))
 
     while True:
+        timeline.advance(number, counts, clean, base, frames[:cursor], merges)
         eligible = [p for p in profiles if counts[p['name']] < p['budget']]
         if not eligible: return done('review_complete' if all(clean.values()) else 'budget_exhausted')
         cycle = []
@@ -143,6 +148,7 @@ def sequence(proof, *, through_round=None):
             packet, assets, actionable, present = merge(proof, cycle, number)
             merges.append((packet, assets, actionable, present))
             if through_round == number:
+                timeline.finish()
                 require(present and actionable, 'vertical proposal lacks its committed actionable merge')
                 require(cursor == len(frames), 'vertical bounded replay includes later reviews')
                 return VerticalSequence(frames, 'finding_admission', 'vertical', number, tuple(merges))

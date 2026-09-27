@@ -183,7 +183,9 @@ class VerifiedWork:
                 from whetstone.vnext_phase2_source_correction import supported as source_supported
                 from whetstone.vnext_phase2_repair import supported as repair_supported
                 from whetstone.vnext_review_configuration import focused_profile
+                from whetstone.vnext_verified_phase1_budget import supported as budget_supported
                 if (source_supported(proof.reader.suite) or repair_supported(proof.reader.suite)
+                        or budget_supported(proof.reader.suite)
                         or focused_profile(proof.seed_values['review']) is not None
                         or proof.seed_values['review']['review_mode'] == 'vertical'):
                     fence.read_descriptor()

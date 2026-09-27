@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-phase2-configuration-v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "review_configuration",
+    "workflow",
+    "review_mode",
+    "profile_set",
+    "target_phase",
+    "target_mode",
+    "rubric",
+    "profiles",
+    "reviewer",
+    "editor",
+    "verifier"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-phase2-configuration-v3"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "review_configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ]
+    },
+    "workflow": {
+      "const": "standard"
+    },
+    "review_mode": {
+      "enum": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    "profile_set": {
+      "const": "stateful_system"
+    },
+    "target_phase": {
+      "enum": [
+        "mid",
+        "final"
+      ]
+    },
+    "target_mode": {
+      "enum": [
+        "strict",
+        "permissive"
+      ]
+    },
+    "rubric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "source",
+        "artifact"
+      ],
+      "properties": {
+        "profile": {
+          "const": "standard-v1"
+        },
+        "source": {
+          "const": "builtin"
+        },
+        "artifact": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "hash"
+          ]
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "budget"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "convergence_strict_check",
+              "adversarial"
+            ]
+          },
+          "budget": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

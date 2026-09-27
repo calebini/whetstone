@@ -1,0 +1,9 @@
+test_dependency_flush_and_lost_ownership_block_then_recover_without_duplicate_grant (test_vnext_verified_phase1_budget.BudgetTests.test_dependency_flush_and_lost_ownership_block_then_recover_without_duplicate_grant) ... ok
+test_grant_commit_and_state_acknowledgement_recover_once_before_any_client (test_vnext_verified_phase1_budget.BudgetTests.test_grant_commit_and_state_acknowledgement_recover_once_before_any_client) ... ok
+test_horizontal_vertical_and_focused_extensions_finish_without_replaying_prior_work (test_vnext_verified_phase1_budget.BudgetTests.test_horizontal_vertical_and_focused_extensions_finish_without_replaying_prior_work) ... ok
+test_second_vertical_grant_preserves_both_exhaustion_reports_and_two_promotions (test_vnext_verified_phase1_budget.BudgetTests.test_second_vertical_grant_preserves_both_exhaustion_reports_and_two_promotions) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1075.563s
+
+OK

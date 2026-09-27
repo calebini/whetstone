@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-phase1-budget-extension-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "vnext-phase1-budget-extension-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "review_configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "closeout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "previous": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "extension_ordinal": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "pattern": "^bxe_[0-9a-f]{16}$"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "phase": {
+          "const": "phase_1"
+        },
+        "previous_terminal_state": {
+          "enum": [
+            "TARGET_NOT_REACHED",
+            "PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS"
+          ]
+        },
+        "previous_current_round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_current_draft_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "previous_review_profile_budgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "new_review_profile_budgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "added_rounds_per_profile": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "event_id",
+        "generated_at",
+        "phase",
+        "previous_terminal_state",
+        "previous_current_round",
+        "previous_current_draft_hash",
+        "previous_review_profile_budgets",
+        "new_review_profile_budgets",
+        "added_rounds_per_profile",
+        "reason"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "review_configuration",
+    "base_pointer",
+    "closeout",
+    "previous",
+    "extension_ordinal",
+    "event"
+  ]
+}

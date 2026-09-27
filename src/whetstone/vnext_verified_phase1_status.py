@@ -49,6 +49,8 @@ class VerifiedPhase1Status:
 
 
 def _profiles(proof, profiles, frames):
+    from whetstone.vnext_verified_phase1_budget import effective_profiles
+    profiles = effective_profiles(proof, profiles)
     progress = []
     for profile in profiles:
         completed = [frame for frame in frames

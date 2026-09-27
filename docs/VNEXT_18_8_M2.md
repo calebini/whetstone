@@ -7,6 +7,10 @@ specification edit is included. The unrelated notes edit is preserved unchanged.
 The first bounded focused integration bundle is implemented and validated below;
 M2 as a whole remains incomplete.
 
+## Completion campaign — 2026-09-28
+
+The user authorized completing the remaining M2 outcome. The [completion record](VNEXT_18_8_M2_COMPLETION.md) supersedes the next-step directions below; those sections retain the historical focused/vertical evidence and checkpoint scope. M2 is now implemented and validated at its documented internal API scope; the completion record owns final acceptance and remaining boundaries.
+
 ## Route and authority matrix
 
 | Route | Authority | Current integration / delivery boundary |

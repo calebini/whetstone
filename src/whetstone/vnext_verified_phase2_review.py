@@ -50,8 +50,8 @@ class _FirstReview(_Entry):
         binding = self._committed_binding(proof)
         entry = self._entry_view(proof, binding)
         require(entry.committed and entry.state_current, 'Phase 2 Reviewer requires committed entry and recovered state')
-        closeout = proof.reader.json(entry.entry['phase1_closeout'], 'vnext_verified_phase1_closeout_v1')
-        number = max(row['round_number'] for row in closeout['review_receipts']) + 1
+        from whetstone.vnext_phase2_routes import first_round
+        number = first_round(proof, entry.entry)
         config = binding.configuration
         step = dict(index=1, profile=config['profiles'][0]['name'], round_budget=config['profiles'][0]['budget'],
                     rounds_used=0, pass_number=1)

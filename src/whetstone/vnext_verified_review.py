@@ -75,12 +75,15 @@ def _sequence(proof, *, through_round=None):
         state = sequence(proof, through_round=through_round)
         return state.frames if through_round is not None else (state.frames, state.gate, state.profile)
     profiles = _contract(proof)
+    from whetstone.vnext_verified_phase1_budget import Timeline
+    timeline = Timeline(proof, profiles, through_round=through_round)
+    profiles = timeline.profiles
     frames = _read_review_prefix(proof, through_round=through_round, require_complete=through_round is not None)
     counts = {row['name']: 0 for row in profiles}
     clean = {name: False for name in counts}
     base = _snapshot(proof.pointers[0])
     previous = None
-    for frame in frames:
+    for index, frame in enumerate(frames):
         reference = frame.header['base_pointer']
         if reference != base:
             require(previous is not None, 'first V review must use the seed pointer')
@@ -90,6 +93,7 @@ def _sequence(proof, *, through_round=None):
         else:
             require(previous is None or not _actionable(previous),
                     'Reviewer sequence bypassed unresolved findings without promotion')
+        timeline.advance(frame.request.number, counts, clean, base, frames[:index])
         gate, profile = _gate(profiles, counts, clean)
         require(gate == 'review' and frame.request.profile == profile,
                 'V Reviewer claim differs from eligible profile or budget')
@@ -98,8 +102,11 @@ def _sequence(proof, *, through_round=None):
             clean[profile] = not any(row['in_scope'] and row['normalized_severity'] in {'major', 'blocker'}
                                      for row in frame.review['feedback']['feedback'])
         previous = frame
-    if through_round is not None: return frames
+    if through_round is not None:
+        timeline.finish()
+        return frames
     if frames and frames[-1].receipt is None:
+        timeline.finish()
         require(base == proof.latest, 'pending Reviewer request differs from current pointer')
         return frames, 'pending', frames[-1].request.profile
     if proof.latest != base:
@@ -107,7 +114,10 @@ def _sequence(proof, *, through_round=None):
         _advance(proof, previous, proof.latest)
         clean = dict.fromkeys(clean, False)
     elif previous is not None and _actionable(previous):
+        timeline.finish()
         return frames, 'finding_admission', previous.request.profile
+    timeline.advance(len(frames)+1, counts, clean, proof.latest, frames)
+    timeline.finish()
     gate, profile = _gate(profiles, counts, clean)
     return frames, gate, profile
 
@@ -192,6 +202,9 @@ class VerifiedReview(VerifiedWork):
     def next(self, *, client=None, continuation=False):
         require(type(continuation) is bool, 'V Reviewer continuation must be an explicit boolean')
         def perform(store, proof):
+            from whetstone.vnext_verified_phase1_budget import require_projected, synchronize as sync_budget
+            require_projected(proof)
+            sync_budget(store, proof)
             from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
             try: store.read(ENTRY_PATH)
             except FileNotFoundError: pass
@@ -234,7 +247,12 @@ class VerifiedReview(VerifiedWork):
             return _run_bound_review(request, store._token,
                 previous=sha256_bytes(canonical_json_bytes(previous)) if previous else None,
                 client=client, continuation=continuation)
-        return self._execute(perform)
+        def checkpoint(store, proof):
+            result = perform(store, proof)
+            from whetstone.vnext_verified_phase1_budget import project_review_state
+            project_review_state(self.run, store, proof)
+            return result
+        return self._execute(checkpoint)
 
     def admit(self, *, decision_refs=()):
         decisions = deepcopy(list(decision_refs))
