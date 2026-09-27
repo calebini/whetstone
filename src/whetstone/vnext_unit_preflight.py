@@ -9,6 +9,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import re
 
+from whetstone.vnext_review_configuration import validate as validate_review_configuration
 from whetstone.vnext_assertions import validate_assertion_program
 from whetstone.vnext_classification import classify_feedback
 from whetstone.vnext_contracts import VNextSchemaRegistry, canonical_json_bytes, require, sha256_bytes
@@ -63,7 +64,7 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
     digest=sha256_bytes(canonical_json_bytes(input_projection({**raw_arguments,
         'suite_version':suite.version,'suite_digest':suite.digest})))
     rules=discovery_rules(invariants)
-    registry=VNextSchemaRegistry();registry.validate(review,'review_configuration_v1')
+    registry=VNextSchemaRegistry();validate_review_configuration(review, registry)
     require(job['editing_mode'] in {'proposal_only','verified_promotion'},'job mode prohibits Editor work')
     require(sha256_bytes(canonical_json_bytes(review))==job['review_configuration_hash'], 'preflight role configuration changed')
     require(sha256_bytes(seed)==job['seed_draft']['hash'],'preflight seed bytes changed')

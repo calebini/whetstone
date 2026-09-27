@@ -1,0 +1,265 @@
+{
+  "recorded_at": "2026-09-27T18:23:21.016495+00:00",
+  "status": "focused_phase1_bundle_validated_uncommitted_m2_incomplete",
+  "baseline_head": "bd6c7da607f8b0bd00f7f3f79231a42d2335d1b4",
+  "authority": "User authorized proceeding to M2 implementation. First bounded bundle follows the documented route order and scheduler focused/D7 rules. No new commit, push, activation, external transmission or apply-back.",
+  "scope": "Separately pinned internal standard/horizontal V focused Phase 1: descriptor-bound selected profile; existing guarded review/admission/verification/promotion; selected-profile re-review and budgets; scoped terminal/failure reporting and D8 recovery. Vertical scheduling and extension integration remain open.",
+  "distinct_passing_methods": 111,
+  "passing_executions": 118,
+  "new_methods": 12,
+  "existing_methods": 99,
+  "cohorts": [
+    {
+      "path": "rounds/vnext-18-8-m2-001/core-delivery.log",
+      "sha256": "ab9febb5a95a8faeeb1c7a140aa7e994cdfe742980370141b931b94c47c6978d",
+      "count": 61,
+      "elapsed_seconds": 29.629,
+      "methods": [
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_bad_transport_and_timeout_are_retained_and_never_replayed",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_candidate_base_cannot_be_silently_reseeded",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_changed_plan_before_call_is_detected_without_invoking_editor",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_exact_named_decision_reaches_the_editor_as_a_bound_derived_task",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_full_inventory_rules_and_actual_findings_are_frozen_before_client",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_invalid_assertion_program_makes_zero_editor_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_mid_call_rule_drift_retains_raw_and_prevents_canonical_publication",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_new_rule_content_changes_job_and_plan_without_upgrading_frozen_admission",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_policy_and_role_gates_make_zero_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_unbound_or_duplicate_discovery_rules_fail_before_client",
+        "test_vnext_proposal_package.ProposalPackageTests.test_bound_context_is_copied_but_excluded_special_file_is_never_opened",
+        "test_vnext_proposal_package.ProposalPackageTests.test_changed_source_after_preflight_cannot_create_a_root",
+        "test_vnext_proposal_package.ProposalPackageTests.test_corrupt_package_or_limits_is_detected_on_every_read",
+        "test_vnext_proposal_package.ProposalPackageTests.test_existing_destination_or_child_of_source_cannot_be_upgraded",
+        "test_vnext_proposal_package.ProposalPackageTests.test_no_limits_or_unknown_fields_fail_before_any_destination",
+        "test_vnext_proposal_package.ProposalPackageTests.test_non_input_namespace_paths_and_descriptor_locators_are_preserved",
+        "test_vnext_proposal_package.ProposalPackageTests.test_non_normalized_seed_refuses_in_package_preflight",
+        "test_vnext_proposal_package.ProposalPackageTests.test_packaged_limits_feed_live_reviewer_to_editor_without_implicit_grants",
+        "test_vnext_proposal_package.ProposalPackageTests.test_preflight_is_read_only_and_copies_only_referenced_inputs",
+        "test_vnext_proposal_package.ProposalPackageTests.test_reopening_cannot_rehash_limits_past_the_committed_reviewer_binding",
+        "test_vnext_proposal_package.ProposalPackageTests.test_reserved_runtime_paths_symlinks_and_special_files_refuse",
+        "test_vnext_proposal_package.ProposalPackageTests.test_sensitive_advice_still_requires_an_operator_response",
+        "test_vnext_proposal_package.ProposalPackageTests.test_unknown_or_excluded_required_context_cannot_be_packaged",
+        "test_vnext_native_editor.NativeEditorTests.test_claude_has_no_tools_or_session_and_preserves_structured_token_span",
+        "test_vnext_native_editor.NativeEditorTests.test_codex_receives_read_only_arguments_and_preserves_exact_response",
+        "test_vnext_native_editor.NativeEditorTests.test_contract_drift_is_detected_before_any_process_invocation",
+        "test_vnext_native_editor.NativeEditorTests.test_native_process_connects_to_pinned_preflight_and_retains_telemetry",
+        "test_vnext_native_editor.NativeEditorTests.test_provider_hint_is_structural_and_canonical_validator_retains_value_rules",
+        "test_vnext_native_editor.NativeEditorTests.test_timeout_nonzero_exit_and_provider_error_stay_transport_failures"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m2-001/delivery-source-manifest.json",
+        "sha256": "a8f829a42eb9f5bee496ef9cfde7724c0274aa17fa999072b741a2f35eb2a8c2"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/compatibility-runtime.log",
+      "sha256": "273f60b5e46e34ddf589712113bae97431cd8f02721216eefcd6ed97db443311",
+      "count": 38,
+      "elapsed_seconds": 525.317,
+      "methods": [
+        "test_vnext_verified_review.VerifiedReviewTests.test_budget_survives_promotion_and_clean_review_does_not_admit_editing",
+        "test_vnext_verified_review.VerifiedReviewTests.test_clean_result_lost_ack_repeats_barriers_before_next_claim",
+        "test_vnext_verified_review.VerifiedReviewTests.test_committed_mirror_repair_precedes_malformed_future_review",
+        "test_vnext_verified_review.VerifiedReviewTests.test_findings_and_technical_interruption_cannot_allocate_another_round",
+        "test_vnext_verified_review.VerifiedReviewTests.test_fresh_process_reopens_genuine_runtime_review_history",
+        "test_vnext_verified_review.VerifiedReviewTests.test_original_reviewer_raw_missing_refuses_promoted_history_before_writes",
+        "test_vnext_verified_review.VerifiedReviewTests.test_pending_review_and_round_publication_recover_without_duplicate_calls",
+        "test_vnext_verified_review.VerifiedReviewTests.test_production_round_admission_promotion_and_new_base_review_reopen",
+        "test_vnext_verified_review.VerifiedReviewTests.test_round_constraints_and_feedback_cannot_be_substituted",
+        "test_vnext_verified_review.VerifiedReviewTests.test_same_bytes_promotion_still_selects_new_pointer_and_consumes_budget",
+        "test_vnext_verified_review.VerifiedReviewTests.test_unsupported_sequence_and_missing_pin_refuse_before_reviewer",
+        "test_vnext_verified_review.VerifiedReviewTests.test_valid_journal_with_wrong_profile_is_not_sequence_authority",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_clean_profiles_are_bound_detached_readonly_observations_not_phase_readiness",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_incomplete_review_does_not_spend_logical_budget_or_publish_clean_evidence",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_new_status_pin_and_original_review_evidence_are_required",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_orphan_registration_is_reported_without_recovery_or_extra_review",
+        "test_vnext_verified_phase1_status.VerifiedPhase1StatusTests.test_promotion_invalidates_clean_evidence_preserves_budgets_and_gates_mirror_repair",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_materialization_recovery_ends_before_closeout_and_missing_pin_refuses",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_profile_cleanliness_cannot_erase_global_nonfocus_major_debt",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_promotion_requires_new_review_and_budget_failure_uses_committed_promotion_event",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_publication_prefixes_and_lost_final_ack_replay_without_clients",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_seed_acceptance_requires_every_profile_and_publishes_bound_terminal_without_phase2",
+        "test_vnext_verified_phase1_closeout.VerifiedPhase1CloseoutTests.test_source_barrier_failure_and_corrupt_committed_evidence_do_not_fabricate_success",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_final_state_interruption_and_visible_lost_ack_require_full_barrier_replay",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_mirror_recovery_precedes_projection_and_ends_invocation",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_missing_pin_and_malformed_state_refuse_before_writes",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_only_committed_closeout_selects_terminal_and_projection_preserves_legacy_fields",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_promoted_budget_failure_overrides_stale_success_and_preserves_report_history",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_source_barrier_failure_and_damaged_committed_artifacts_refuse_without_state_write",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_stale_cached_success_and_newest_report_cannot_close_an_unreviewed_run",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_bound_operator_choice_is_exposed_and_final_rejection_cannot_grant_entry",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_candidate_verification_and_promotion_do_not_replace_current_review_evidence",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_complete_current_profile_coverage_committed_closeout_and_state_are_required",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_exhausted_post_promotion_budget_and_pending_review_do_not_grant_readiness",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_global_nonfocus_debt_cannot_supply_phase2_prerequisites",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_mirror_and_orphan_recovery_precede_readiness_without_repair",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_missing_consumer_pin_and_unsupported_review_mode_refuse_readonly",
+        "test_vnext_verified_phase2_eligibility.VerifiedPhase2EligibilityTests.test_stale_success_and_corrupt_current_map_or_closeout_never_supply_readiness"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m2-001/corrected-source-manifest.json",
+        "sha256": "cda082e2da83a6017112849060281d6c8270e16f4ea4c04e50f7f31bd3c7493e"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/focused-delivery.log",
+      "sha256": "95e5e577c4d142dffbc0e6660797f1bf46e5f099a2b726251387e65eeab726be",
+      "count": 12,
+      "elapsed_seconds": 130.273,
+      "methods": [
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_closeout_publication_and_round_receipt_lost_ack_are_client_free_recovery",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_exhaustion_after_promotion_reports_only_focused_debt_and_recovers_state",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_final_ownership_loss_and_source_barriers_cannot_report_success",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_missing_pin_and_invalid_selection_refuse_before_runtime_work",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_out_of_focus_major_remains_global_debt_without_falsifying_focused_cleanliness",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_selected_profile_cleanliness_is_never_full_phase1_or_phase2_entry",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_single_profile_configuration_still_cannot_grant_phase2_and_unselected_request_refuses",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_source_drift_and_round_artifact_tampering_refuse_without_new_authority",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_timeout_and_shape_retry_keep_request_budget_across_reopen",
+        "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_verified_promotion_requires_selected_profile_rereview_and_retains_history",
+        "test_vnext_verified_focused_phase1.ReviewConfigurationTests.test_malformed_version_dispatch_has_a_contract_error",
+        "test_vnext_verified_focused_phase1.ReviewConfigurationTests.test_v1_cannot_silently_gain_selection_and_v2_requires_valid_phase1_selection"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m2-001/delivery-source-manifest.json",
+        "sha256": "a8f829a42eb9f5bee496ef9cfde7724c0274aa17fa999072b741a2f35eb2a8c2"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/operator-delivery.log",
+      "sha256": "308a77c97d2dd1056964ec59fca2a0192d4e8172642d17ef2f1ffd6826caaae6",
+      "count": 7,
+      "elapsed_seconds": 61.023,
+      "methods": [
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_final_state_interruption_and_visible_lost_ack_require_full_barrier_replay",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_mirror_recovery_precedes_projection_and_ends_invocation",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_missing_pin_and_malformed_state_refuse_before_writes",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_only_committed_closeout_selects_terminal_and_projection_preserves_legacy_fields",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_promoted_budget_failure_overrides_stale_success_and_preserves_report_history",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_source_barrier_failure_and_damaged_committed_artifacts_refuse_without_state_write",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_stale_cached_success_and_newest_report_cannot_close_an_unreviewed_run"
+      ],
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m2-001/delivery-source-manifest.json",
+        "sha256": "a8f829a42eb9f5bee496ef9cfde7724c0274aa17fa999072b741a2f35eb2a8c2"
+      }
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-m2-001/delivery-source-manifest.json",
+    "sha256": "a8f829a42eb9f5bee496ef9cfde7724c0274aa17fa999072b741a2f35eb2a8c2"
+  },
+  "source_files_verified": 611,
+  "boundary_check": {
+    "path": "rounds/vnext-18-8-m2-001/boundary-check.json",
+    "sha256": "34e6de8041dfdf7200151a4503d780aead810fdc38bb756c16a9909bfa32be91"
+  },
+  "changes_between_snapshots": [
+    {
+      "path": "src/whetstone/vnext_review_configuration.py",
+      "before": "f4090d702445afeb62de68698cb26a7ac30703dafe40df6fccd4a757c6a953c3",
+      "after": "1e2c04b3d9dc211113ddf2459313944a3b8119e639d59d7569b7de3a23dea977"
+    },
+    {
+      "path": "src/whetstone/vnext_verified_phase1_operator.py",
+      "before": "84843e58affcb62c9a0c5258ef4a38564e20e8d5caabe0baeea7352db62a5ea4",
+      "after": "1d7c1a11389a9087a3e3cf1f73d2f069f8f84718865203e6a064c5d65d1cdfdc"
+    },
+    {
+      "path": "src/whetstone/vnext_verified_review.py",
+      "before": "d69fc17a4d0d6e8aa17d9e3a137bc0a8f96ef82241bf300a4a67536e115d4b47",
+      "after": "614a8ba6007a2cc922c8b43e5f9f4812dcd8fc775ca0c32c7a51735b29bf3162"
+    },
+    {
+      "path": "src/whetstone/vnext_verified_review_requests.py",
+      "before": "78eb2e7ff058062d60d984b91954be614583628d78f28bb230616c5f1087187d",
+      "after": "4c4a3e8bd3996b1b3a3de6500bd45b36f3727586dd271f9c93d63cff043b49f9"
+    },
+    {
+      "path": "tests/test_vnext_verified_focused_phase1.py",
+      "before": "4f4094789121be71e3bc55b034d72b41e456d7f141a82239a35e221d12d44f84",
+      "after": "445c23c42777ba0e3f78744aa0f3493053c081add0913d86385936b5cd22cd2c"
+    }
+  ],
+  "source_limits": "Broad horizontal compatibility passed the corrected snapshot. Core, focused and Phase 1 operator cohorts reran the delivered snapshot after the focused report-publication correction, selected-profile/version guards and removal of a redundant standard-path Reviewer recheck. Exact source deltas are listed; prior cohorts are not represented as a whole-suite rerun on final bytes.",
+  "completed": [
+    "Explicit versioned selection requires a new immutable job/root; unsupported pins, invalid selections and staged runtime rounds refuse.",
+    "Only the selected profile is reviewed; ordinary V promotion invalidates its cleanliness without resetting budgets.",
+    "Focused stability never establishes global acceptance or Phase 2 entry, including a single-profile configuration; independent global findings survive.",
+    "Canonical round artifacts, fixed-path focused closeout, residual technical failure report, state projection and recovery retain exact evidence and source barriers.",
+    "Timeout/shape retry accounting, retained-response recovery, source drift, tampering, publication lost acknowledgement and final ownership loss covered with injected local clients."
+  ],
+  "remaining": [
+    "M2 vertical independent-review cycles, deterministic provenance-preserving consolidation, verified correction and all-profile re-review.",
+    "M2 explicit Phase 1 budget-extension event integration with immutable baseline configuration and supported continuation.",
+    "M2 cross-route acceptance; M3-M5 and 18.9 remain separate."
+  ],
+  "limitations": [
+    "Internal standard horizontal V focus only; no public CLI/suite activation, in-place selection changes or vertical route.",
+    "No new automatic retry slots, generic Phase 2 resume or budget-extension API.",
+    "Local injected clients and simulated faults, not physical process-death/power-loss, live-provider, performance or full-repository qualification."
+  ],
+  "excluded_runs": [
+    {
+      "path": "rounds/vnext-18-8-m2-001/compatibility-core.log",
+      "sha256": "0077b94464dbc54beafbf70cacd48ff767a8a45d1260dbb94a5b982d207d7f0f",
+      "credited": false,
+      "reason": "Development, failed or superseded snapshot; no delivery credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/focused-artifacts-smoke.log",
+      "sha256": "711505e535039ba26ec63aaa2d9bea7508a4ced5bebb1d3eba93414ba983dbb7",
+      "credited": false,
+      "reason": "Development, failed or superseded snapshot; no delivery credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/focused-corrected.log",
+      "sha256": "45447062b27407aba8dfb28a96c84354b0c7b26715b0ed661deee4b2e260f303",
+      "credited": false,
+      "reason": "Development, failed or superseded snapshot; no delivery credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/focused-development.log",
+      "sha256": "3d21e265a513560f5c0b0acc90a3f5dfed969336d6e32c1db2aa8bf59225741c",
+      "credited": false,
+      "reason": "Development, failed or superseded snapshot; no delivery credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-001/focused-smoke.log",
+      "sha256": "2a15c4e3252b8c258558f85b9e79d3d6a8177e22535d3256f67f505c1867a52e",
+      "credited": false,
+      "reason": "Development, failed or superseded snapshot; no delivery credit."
+    }
+  ]
+}

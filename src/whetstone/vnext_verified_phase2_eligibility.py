@@ -1,5 +1,7 @@
 """Read-only Phase 2 prerequisites, without a Phase 2 configuration or execution grant."""
 from copy import deepcopy
+
+from whetstone.vnext_review_configuration import focused_profile
 from dataclasses import dataclass
 
 from whetstone.vnext_contracts import CONTRACT_ROOT, confined_file, require, sha256_bytes
@@ -89,6 +91,8 @@ class _Eligibility(_OperatorStatus):
         closeout = self.evaluate(proof)
         status = self._status(proof, closeout)
         blockers = []
+        if focused_profile(proof.seed_values['review']) is not None:
+            blockers.append('focused_profile_is_not_full_phase1')
         if closeout.review_gate != 'review_complete': blockers.append('phase1_' + closeout.review_gate)
         if not closeout.accepted: blockers.append('phase1_acceptance_not_established')
         if closeout.unclean_profiles: blockers.append('phase1_profiles_not_clean')

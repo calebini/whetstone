@@ -51,11 +51,20 @@ class _OperatorStatus(_Closeout):
         else:
             changed = state.get(STATE_FIELD) != reference
             state[STATE_FIELD] = deepcopy(reference)
+            if closeout.evidence.get('focused_profile') is not None:
+                focused_state = dict(terminal_state=closeout.report['terminal_state'],
+                    ready_for_phase_2=False, current_draft_status='not_accepted',
+                    last_accepted_draft_hash=None)
+                changed = changed or any(state.get(key) != value for key, value in focused_state.items())
+                state.update(focused_state)
         return raw, canonical_json_bytes(state) if changed else raw, stale
 
     def _status(self, proof, closeout):
         raw, target, stale = self._state_target(closeout)
-        current = raw == target
+        from whetstone.vnext_verified_focused_phase1 import FAILURE_MIRROR
+        mirror_pending = bool(closeout.materialized and closeout.technical_failure is not None
+            and self._optional(FAILURE_MIRROR) != canonical_json_bytes(closeout.technical_failure))
+        current = raw == target and not mirror_pending
         committed = closeout.materialized
         action = ('reconcile_phase1_state' if not current else
                   'phase1_complete' if committed else
@@ -65,7 +74,8 @@ class _OperatorStatus(_Closeout):
             deepcopy(closeout.report_ref) if committed else None,
             deepcopy(closeout.evidence_ref) if committed else None,
             closeout.accepted, current, stale,
-            ((STATE_PATH,) if not current else ()) + closeout.pending_paths, action)
+            ((FAILURE_MIRROR,) if mirror_pending else ())
+            + ((STATE_PATH,) if raw != target else ()) + closeout.pending_paths, action)
         proof.guard(self.store.read)
         self.run._guard(self.store.read)
         return result
@@ -89,7 +99,20 @@ class _OperatorStatus(_Closeout):
                 require(checked.materialized, 'committed Phase 1 closeout disappeared during recovery')
                 for reference, value in ((checked.report_ref, checked.report), (checked.evidence_ref, checked.evidence)):
                     self.store.synchronize_existing(store._token, reference['path'], expected=canonical_json_bytes(value))
-            # Only this namespaced reference changes. Never trust or follow cached paths.
+                if checked.technical_failure_ref:
+                    from whetstone.vnext_verified_focused_phase1 import FAILURE_MIRROR
+                    packet = canonical_json_bytes(checked.technical_failure)
+                    self.store.synchronize_existing(store._token, checked.technical_failure_ref['path'], expected=packet)
+                    existing = self._optional(FAILURE_MIRROR)
+                    require(existing is None or existing == packet, 'unowned focused failure report conflicts')
+                    proof.guard(self.store.read)
+                    self.run._guard(self.store.read)
+                    if existing is None:
+                        store.publish(store._token, FAILURE_MIRROR, packet)
+                    else:
+                        self.store.synchronize_existing(store._token, FAILURE_MIRROR, expected=packet)
+            # Standard runs keep their namespaced projection. Focused runs also
+            # project their terminal and explicit lack of Phase 2 readiness.
             def validate_target(read, path, raw):
                 proof.guard(read)
                 self.run._guard(read)

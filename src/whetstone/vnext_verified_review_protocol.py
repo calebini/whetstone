@@ -28,6 +28,9 @@ def prepare_verified_review(inputs, *, round_number, profile):
     validate_verified_review_contract(reader.suite)
     require(type(round_number) is int and round_number > 0, 'invalid verified Reviewer round')
     require(profile in {row['name'] for row in values['review']['profiles']}, 'Reviewer profile is outside pinned configuration')
+    from whetstone.vnext_review_configuration import focused_profile
+    focused = focused_profile(values['review'])
+    require(focused is None or profile == focused, 'Reviewer profile differs from immutable focused selection')
     context = []
     for binding in values['authority']['bindings']:
         if binding['role'] in {'mutable_target', 'excluded'}: continue

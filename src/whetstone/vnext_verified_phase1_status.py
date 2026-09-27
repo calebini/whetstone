@@ -4,6 +4,8 @@ This projection is not an accepted-draft decision, phase terminal, resume grant
 or Phase 2 admission. Mutating owners still select work under their own fence.
 """
 from copy import deepcopy
+
+from whetstone.vnext_review_configuration import focused_profile
 from dataclasses import dataclass
 
 from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, require, sha256_bytes
@@ -41,6 +43,8 @@ class VerifiedPhase1Status:
     review_round: int | None
     pending_review_attempts: int | None
     all_profiles_clean: bool | None
+    focused_profile: str | None = None
+    focused_profile_clean: bool | None = None
 
 
 def _profiles(proof, profiles, frames):
@@ -82,6 +86,8 @@ def inspect_verified_phase1(run):
         if gate == 'pending': attempts = len(frames[-1].outcomes)
     proof.guard(run.store.read)
     run._guard(run.store.read)
+    focused = focused_profile(proof.seed_values['review'])
     return VerifiedPhase1Status(deepcopy(work.current_pointer), work.outcome,
         deepcopy(work.latest_candidate), deepcopy(work.promotion_candidate), work.pending_paths,
-        orphans, profiles, gate, selected, number, attempts, clean)
+        orphans, profiles, gate, selected, number, attempts,
+        False if focused and clean is not None else clean, focused, clean if focused else None)

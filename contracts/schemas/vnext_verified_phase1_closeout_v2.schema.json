@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-verified-phase1-closeout-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "current_verified_pointer",
+    "review_receipts",
+    "accepted",
+    "missing_review_profiles",
+    "unclean_profiles",
+    "global_blocking_findings",
+    "terminal_report",
+    "review_configuration",
+    "focused_profile",
+    "technical_failure"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-verified-phase1-closeout-v2"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "current_verified_pointer": {
+      "$ref": "#/$defs/reference"
+    },
+    "review_receipts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "round_number",
+          "profile",
+          "base_pointer",
+          "receipt"
+        ],
+        "properties": {
+          "round_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "profile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "base_pointer": {
+            "$ref": "#/$defs/reference"
+          },
+          "receipt": {
+            "$ref": "#/$defs/reference"
+          }
+        }
+      }
+    },
+    "accepted": {
+      "type": "boolean"
+    },
+    "missing_review_profiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "unclean_profiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "global_blocking_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "round_number",
+          "feedback_id",
+          "severity"
+        ],
+        "properties": {
+          "round_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "feedback_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "enum": [
+              "major",
+              "blocker"
+            ]
+          }
+        }
+      }
+    },
+    "terminal_report": {
+      "$ref": "#/$defs/reference"
+    },
+    "review_configuration": {
+      "$ref": "#/$defs/reference"
+    },
+    "focused_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "technical_failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/reference"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-verified-phase1-closeout-v2",
+    "producer": "orchestrator",
+    "consumer": "verified-focused-phase1",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separately pinned unactivated consumer"
+  }
+}

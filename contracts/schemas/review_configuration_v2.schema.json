@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "review-configuration-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workflow",
+    "review_mode",
+    "profile_set",
+    "profiles",
+    "reviewer",
+    "editor",
+    "verifier",
+    "phase1_selection"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "review-configuration-v2"
+    },
+    "workflow": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_mode": {
+      "enum": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    "profile_set": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "budget"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "budget": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "phase1_selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "profile"
+      ],
+      "properties": {
+        "kind": {
+          "const": "focused"
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "review-configuration-v2",
+    "producer": "orchestrator",
+    "consumer": "verified-focused-phase1",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separately pinned focused selection requires a new job/root",
+    "identity_algorithm": "vnext-identity-v1",
+    "ownership": "All fields orchestrator-owned unless explicitly marked client-proposed by the identity/ownership contract."
+  }
+}

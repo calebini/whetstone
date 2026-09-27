@@ -182,7 +182,9 @@ class VerifiedWork:
                 result = operation(fence, proof)
                 from whetstone.vnext_phase2_source_correction import supported as source_supported
                 from whetstone.vnext_phase2_repair import supported as repair_supported
-                if source_supported(proof.reader.suite) or repair_supported(proof.reader.suite):
+                from whetstone.vnext_review_configuration import focused_profile
+                if (source_supported(proof.reader.suite) or repair_supported(proof.reader.suite)
+                        or focused_profile(proof.seed_values['review']) is not None):
                     fence.read_descriptor()
                 return result
         # A distinct fence and fresh current head own mirror repair. Never

@@ -6,6 +6,7 @@ They do not create a candidate, verify semantics, or authorize promotion.
 from pathlib import Path
 import re
 
+from whetstone.vnext_review_configuration import read as read_review_configuration, focused_profile
 from whetstone.vnext_contracts import (
     ValidatedSuite, canonical_json_bytes, confined_file, decode_json, require,
     sha256_bytes, validate_contract_suite, _validate_descriptor_in_fresh_suite,
@@ -81,7 +82,9 @@ def _validate_bootstrap_in_fresh_suite(reader, descriptor_ref, *, review_configu
     job = reader.json(descriptor_ref, 'job_descriptor_v2')
     _validate_descriptor_in_fresh_suite(job, suite)
     require(review_configuration_ref['hash'] == job['review_configuration_hash'], 'review configuration hash mismatch')
-    reader.json(review_configuration_ref, 'review_configuration_v1')
+    review = read_review_configuration(reader, review_configuration_ref)
+    if focused_profile(review) is not None:
+        require(job['editing_mode'] == 'verified_promotion', 'focused configuration requires V mode')
     seed = reader.raw(job['seed_draft'])
     require(seed.decode('utf-8').encode('utf-8') == seed, 'invalid UTF-8 seed')
     authority = reader.json({'path': job['authority_map_path'], 'hash': job['authority_map_hash']}, 'authority_map_v1')

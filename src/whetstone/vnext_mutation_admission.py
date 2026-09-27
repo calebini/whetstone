@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
+from whetstone.vnext_review_configuration import read as read_review_configuration
 from whetstone import vnext_identity as ids
 from whetstone.preservation_inventory import build_inventory
 from whetstone.vnext_classification import classify_feedback
@@ -68,7 +69,7 @@ def inspect_admission(root,*,descriptor_ref,review_ref,feedback_ref,advice_ref=N
     suite=validate_contract_suite()
     reader,job,authority,invariants=validate_bootstrap(root,descriptor_ref,suite,review_configuration_ref=review_ref)
     require(job['editing_mode'] in {'proposal_only','verified_promotion'}, 'job mode prohibits a proposal')
-    review=reader.json(review_ref,'review_configuration_v1')
+    review=read_review_configuration(reader, review_ref)
     path='rounds/current_verified.json';raw=confined_file(reader.root,path).read_bytes()
     pointer_ref={'path':path,'hash':sha256_bytes(raw)}
     pointer=validate_pointer_snapshot(reader,pointer_ref)

@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from whetstone.vnext_review_configuration import validate as validate_review_configuration
 from whetstone.clients import _run_codex_exec, _run_claude_print
 from whetstone.contracts import SCHEMA_DIR
 from whetstone.vnext_contracts import VNextSchemaRegistry, require, sha256_bytes
@@ -44,7 +45,7 @@ class NativePatchProposalClient:
     canonical_schema='vnext_proposal_response_v2'
     schema_title='Whetstone vNext Unit Proposal Response For Native Clients'
     def __init__(self,*,review,command=None,cwd='.',timeout_seconds=360):
-        VNextSchemaRegistry().validate(review,'review_configuration_v1')
+        validate_review_configuration(review, VNextSchemaRegistry())
         self.identity=deepcopy(review[self.role])
         require(self.identity['name'] in {'codex','claude-code'},'unsupported native patch Editor')
         require(type(timeout_seconds) is int and timeout_seconds>0,'patch Editor timeout must be a positive integer')

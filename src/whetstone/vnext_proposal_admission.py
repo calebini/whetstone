@@ -7,6 +7,7 @@ to the later promotion consumer and is deliberately not inferred from bytes.
 from copy import deepcopy
 from pathlib import PurePosixPath
 
+from whetstone.vnext_review_configuration import read as read_review_configuration
 from whetstone.vnext_assembly import ASSEMBLER_VERSION, NORMALIZATION_VERSION
 from whetstone.vnext_assertions import validate_assertion_program
 from whetstone.hashing import normalize_draft
@@ -100,7 +101,7 @@ class ProposalAdmission:
         require(mapping == seed_section_map(seed, job, mutable['binding_id']), 'admission seed map does not reproduce')
         scope = reader.json({'path':job['scope_contract_path'], 'hash':job['scope_contract_hash']},
                             'scope_contract') if job['scope_contract_hash'] else None
-        review=reader.json(self._refs['review'], 'review_configuration_v1')
+        review=read_review_configuration(reader, self._refs['review'])
         names=[p['name'] for p in review['profiles']]
         require(bool(names) and len(names)==len(set(names)) and all(p['budget']>0 for p in review['profiles']),
                 'review profiles must be nonempty, unique, and have positive budgets')

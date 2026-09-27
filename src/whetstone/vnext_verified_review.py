@@ -1,9 +1,11 @@
-"""Unactivated horizontal V review selection and canonical round admission.
+"""Unactivated standard/focused horizontal V review and round admission.
 
-This owner exposes one review at a time. Phase terminals, vertical aggregation,
-focused/closeout work and budget extensions remain separate integration gates.
+This owner exposes one review at a time. The focused route needs its separate
+configuration pin. Vertical aggregation and extensions remain separate gates.
 """
 from copy import deepcopy
+
+from whetstone.vnext_review_configuration import focused_profile
 
 from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, require, sha256_bytes
 from whetstone.vnext_proposal_admission import ProposalAdmission
@@ -30,7 +32,8 @@ def _contract(proof):
     review = proof.seed_values['review']
     require(review['review_mode'] == 'horizontal' and review['workflow'] == 'standard',
             'verified review sequence currently supports standard horizontal review only')
-    return review['profiles']
+    selected = focused_profile(review)
+    return [row for row in review['profiles'] if selected is None or row['name'] == selected]
 
 
 def _actionable(frame):

@@ -9,6 +9,7 @@ import os,stat,unicodedata
 from pathlib import Path,PurePosixPath
 from types import MappingProxyType
 
+from whetstone.vnext_review_configuration import read as read_review_configuration
 from whetstone.vnext_contracts import (CONTRACT_ROOT,VNextSchemaRegistry,canonical_json_bytes,decode_json,
     require,sha256_bytes,validate_contract_suite,validate_job_descriptor)
 from whetstone.vnext_proposal_admission import initialize_proposal_storage,prepare_proposal_storage_inputs
@@ -71,7 +72,7 @@ def validate_launch_package(reader,reference,*,descriptor_ref,review_ref,authori
     require(package['job_descriptor']['hash']==descriptor_ref['hash'],'package selects a different descriptor')
     require(package['review_configuration']['hash']==review_ref['hash'],'package selects a different review configuration')
     reader.json(package['job_descriptor'],'job_descriptor_v2')
-    reader.json(package['review_configuration'],'review_configuration_v1')
+    read_review_configuration(reader, package['review_configuration'])
     packet=reader.json(package['mutation_constraints'],'vnext_mutation_constraints_v1')
     constraints=packet['constraints']
     allowed={b['binding_id'] for b in authority['bindings'] if b['role']!='excluded'}

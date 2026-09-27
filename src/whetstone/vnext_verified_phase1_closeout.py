@@ -3,6 +3,8 @@
 No clients, global pointer updates, mutable scheduler state or Phase 2 entry.
 """
 from copy import deepcopy
+
+from whetstone.vnext_review_configuration import focused_profile
 from dataclasses import dataclass
 
 from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, require, sha256_bytes
@@ -35,6 +37,8 @@ class Phase1Closeout:
     evidence_ref: dict | None
     pending_paths: tuple
     materialized: bool
+    technical_failure: dict | None = None
+    technical_failure_ref: dict | None = None
 
 
 class _Closeout(VerifiedReview):
@@ -93,7 +97,7 @@ class _Closeout(VerifiedReview):
             self.store.read_descriptor()
             return None
 
-    def evaluate(self, proof):
+    def evaluate(self, proof, *, generated_at=None):
         frames, gate, _ = _sequence(proof)
         configured = _contract(proof)
         progress = _profiles(proof, configured, frames)
@@ -107,14 +111,19 @@ class _Closeout(VerifiedReview):
                          for frame in sorted(current.values(), key=lambda f: f.request.number)
                          for row in frame.review['feedback']['feedback']
                          if row['normalized_severity'] in {'major', 'blocker'})
-        accepted = not missing and not blocking
+        focused = focused_profile(proof.seed_values['review'])
+        accepted = focused is None and not missing and not blocking
         report = report_ref = evidence = evidence_ref = None
         pending = ()
+        technical = technical_ref = None
         if gate in {'review_complete', 'budget_exhausted'}:
-            stable = accepted and not unclean
-            terminal = 'PHASE_1_STABLE' if stable else 'TARGET_NOT_REACHED'
+            stable = not missing and not unclean and (focused is not None or not blocking)
+            terminal = ('FOCUSED_PROFILE_STABLE' if stable else 'PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS') if focused else (
+                'PHASE_1_STABLE' if stable else 'TARGET_NOT_REACHED')
             reason = ('vnext_phase1_review_complete' if stable else
                       'vnext_review_budget_exhausted' if gate == 'budget_exhausted' else 'vnext_global_acceptance_not_established')
+            if focused:
+                reason = 'vnext_focused_profile_complete' if stable else 'vnext_focused_profile_residuals'
             report = self._report(proof, terminal=terminal, reason=reason)
             report_ref = _ref('rounds/terminal_reports/terminal-' + sha256_bytes(canonical_json_bytes(report)) + '.json', report)
             evidence = dict(schema_version='vnext-verified-phase1-closeout-v1', job_id=proof.seed_values['job']['job_id'],
@@ -123,18 +132,37 @@ class _Closeout(VerifiedReview):
                     receipt=_ref(f.request.directory + '/result.json', f.receipt)) for f in frames],
                 accepted=accepted, missing_review_profiles=list(missing), unclean_profiles=list(unclean),
                 global_blocking_findings=list(blocking), terminal_report=report_ref)
-            proof.reader.suite.registry.validate(evidence, SCHEMA)
+            evidence_schema = SCHEMA
+            if focused:
+                from whetstone.vnext_verified_focused_phase1 import directory, failure
+                prefix = directory(proof, frames)
+                if not stable:
+                    path = prefix+'/technical_failure_report.json'
+                    technical = failure(proof, frames, progress, existing=self._optional(path), generated_at=generated_at)
+                    technical_ref = _ref(path, technical)
+                evidence.update(schema_version='vnext-verified-phase1-closeout-v2',
+                    review_configuration=deepcopy(self.run._record['review_configuration']),
+                    focused_profile=focused, technical_failure=technical_ref)
+                evidence_schema = 'vnext_verified_phase1_closeout_v2'
+            proof.reader.suite.registry.validate(evidence, evidence_schema)
             evidence_ref = _ref('rounds/phase1_closeouts/closeout-' + sha256_bytes(canonical_json_bytes(evidence)) + '.json', evidence)
+            if focused: evidence_ref = _ref(prefix+'/closeout.json', evidence)
             stored_report = self._optional(report_ref['path'])
             stored_evidence = self._optional(evidence_ref['path'])
             require(stored_report is None or stored_report == canonical_json_bytes(report), 'Phase 1 terminal report conflicts with replay')
             require(stored_evidence is None or stored_evidence == canonical_json_bytes(evidence), 'Phase 1 closeout evidence conflicts with replay')
             require(stored_evidence is None or stored_report is not None, 'committed Phase 1 closeout is missing its report')
-            pending = tuple(ref['path'] for ref, raw in ((report_ref, stored_report), (evidence_ref, stored_evidence)) if raw is None)
+            sources = [(report_ref, stored_report), (evidence_ref, stored_evidence)]
+            if technical_ref:
+                stored_technical = self._optional(technical_ref['path'])
+                require(stored_evidence is None or stored_technical is not None,
+                        'committed focused closeout is missing its technical report')
+                sources.insert(0, (technical_ref, stored_technical))
+            pending = tuple(ref['path'] for ref, raw in sources if raw is None)
         proof.guard(self.store.read)
         self.run._guard(self.store.read)
         return Phase1Closeout(gate, accepted, missing, unclean, blocking, report, report_ref, evidence, evidence_ref,
-                              pending, evidence is not None and not pending)
+                              pending, evidence is not None and not pending, technical, technical_ref)
 
     def inspect_closeout(self):
         proof = self._proof(self.store.read)
@@ -151,7 +179,7 @@ class _Closeout(VerifiedReview):
                                              frame.request.number, frame.request.profile)
             request.synchronize(store._token, frame.header, frame.outcomes)
             request.finish(store._token, frame.review)
-        checked = self.evaluate(proof)
+        checked = self.evaluate(proof, generated_at=(closeout.technical_failure or {}).get('generated_at'))
         require(checked.evidence == closeout.evidence, 'Phase 1 closeout changed during source synchronization')
         return checked
 
@@ -161,6 +189,8 @@ class _Closeout(VerifiedReview):
             require(closeout.report is not None, 'Phase 1 has no eligible review terminal to publish')
             checked = self._synchronize_sources(store, proof, closeout)
             # Exact replay repeats barriers even when a lost ack left both visible.
+            if checked.technical_failure_ref:
+                store.publish(store._token, checked.technical_failure_ref['path'], checked.technical_failure)
             store.publish(store._token, checked.report_ref['path'], checked.report)
             store.publish(store._token, checked.evidence_ref['path'], checked.evidence)
             result = self.evaluate(proof)

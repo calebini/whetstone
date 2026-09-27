@@ -46,6 +46,18 @@ class _ReviewInputs:
 
 
 class _VerifiedReviewRequest(_Request):
+    def synchronize(self, token, header, outcomes):
+        super().synchronize(token, header, outcomes)
+        from whetstone.vnext_verified_focused_phase1 import round_assets
+        for path, raw in round_assets(self).items(): self.store.publish(token, path, raw)
+
+    def finish(self, token, review):
+        from whetstone.vnext_verified_focused_phase1 import round_assets
+        assets = round_assets(self, review)
+        if assets: self.recheck()
+        for path, raw in assets.items(): self.store.publish(token, path, raw)
+        return super().finish(token, review)
+
     def prepare(self, run, *, round_number, profile):
         return prepare_verified_review(run, round_number=round_number, profile=profile)
 
@@ -63,7 +75,15 @@ class _VerifiedReviewRequest(_Request):
             self.schemas.validate(header, 'vnext_review_request_v2')
             require(header == self.header(header['transport'], header['previous_request_hash']),
                     'V Reviewer claim differs from its original base and inputs')
-        return super().inspect(header)
+        result = super().inspect(header)
+        outcomes, review, receipt = result
+        from whetstone.vnext_verified_focused_phase1 import round_assets
+        for path, expected in round_assets(self, review).items():
+            try: raw = self.store.read(path)
+            except FileNotFoundError: raw = None
+            require((raw is None and receipt is None) or raw == expected,
+                    'focused round evidence conflicts or is missing', path)
+        return result
 
     def read_claim(self, previous):
         try: raw = self.store.read(self.index_path)

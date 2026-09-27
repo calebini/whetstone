@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import re
 
+from whetstone.vnext_review_configuration import validate as validate_review_configuration
 from whetstone import vnext_identity as ids
 from whetstone.vnext_assembly import ASSEMBLER_VERSION, NORMALIZATION_VERSION, assemble_bytes
 from whetstone.vnext_candidate_validation import assess_candidate
@@ -87,7 +88,7 @@ class CandidateRegistry:
                 'registration base lineage belongs to another job')
         require(inputs['base_map']['parser_contract_version']==self.job['parser_contract_version'],
                 'registration base parser differs from descriptor')
-        self.schemas.validate(review,'review_configuration_v1')
+        validate_review_configuration(review, self.schemas)
         require(sha256_bytes(canonical_json_bytes(review))==self.job['review_configuration_hash'],'registration role configuration changed')
         if plan_reference is None:
             plan,_=self._json(f'rounds/round-{round_number}/mutation_plan.json','mutation_plan_v2')

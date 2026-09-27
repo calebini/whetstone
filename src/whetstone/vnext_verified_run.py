@@ -71,6 +71,9 @@ class _RunHistory(VerifiedHistoryAdmission):
         self.run._guard(read)
         self._refs['rounds'].guard()
         reader, values = super()._seed_inputs(read, expected_mode=expected_mode)
+        from whetstone.vnext_review_configuration import focused_profile
+        require(focused_profile(values['review']) is None or not self.run._staged,
+                'focused V runs cannot import staged rounds')
         require(values['job']['job_id'] == self.run._record['job_id'], 'V run selectors belong to another job')
         entries = {entry['path']: entry for entry in reader.suite.manifest['algorithms']}
         require(ALGORITHM in entries, 'verified run algorithm is outside supported suite')
