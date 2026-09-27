@@ -107,6 +107,11 @@ def prepare_semantic_context(*, proposal_inputs, proposal, creation, creation_re
         },
         'preservation_report': report, 'semantic_obligations': obligations,
     }
+    if proposal_inputs.get('phase2') is not None:
+        from whetstone.vnext_phase2_operator import supported, pins
+        if supported(proposal_inputs['suite']):
+            pins(proposal_inputs['suite'])
+            packet['phase2'] = proposal_inputs['phase2']
     if proposal_inputs.get('semantic_followup') is not None:
         # The qualified preflight has reproduced the exact selected answer.
         # Include identical interpretation evidence for the independent role.

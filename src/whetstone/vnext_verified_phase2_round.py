@@ -117,10 +117,13 @@ def validate_round(proof, number, record):
             and record['base_pointer'] == prefix.latest and record['feedback'] == binding['feedback']
             and record['advice'] == binding['advice'] and record['constraints'] == _constraints(proof)
             and record['job_id'] == proof.seed_values['job']['job_id'], 'Phase 2 round differs from bound original evidence')
-    require(not record['decision_refs'], 'Phase 2 operator round decisions are not implemented')
-    require(binding['findings'] and any(row['classification'] == 'editor_fixable' for row in binding['findings'])
-            and all(row['classification'] in {'editor_fixable', 'deferable'} for row in binding['findings']),
-            'Phase 2 round requires admitted advice without unresolved choices')
+    if record['decision_refs']:
+        from whetstone.vnext_verified_phase2_operator import admission_preflight
+        admission_preflight(proof, bound, binding, record['decision_refs'])
+    else:
+        require(binding['findings'] and any(row['classification'] == 'editor_fixable' for row in binding['findings'])
+                and all(row['classification'] in {'editor_fixable', 'deferable'} for row in binding['findings']),
+                'Phase 2 round requires admitted advice without unresolved choices')
     return dict(configuration=deepcopy(bound.inputs['configuration']), request=deepcopy(bound.request))
 
 
@@ -149,7 +152,8 @@ class _Round(_Advice):
     def _validate_round(self, proof, number, packet):
         return validate_round(proof, number, packet)
 
-    def admit(self):
+    def admit(self, *, decision_refs=()):
+        decisions = deepcopy(list(decision_refs))
         def perform(store, proof):
             # Live publication requires the actual current entry prerequisites.
             bound, journal, outcomes, consumption, advice, view = self._advice_view(proof, None)
@@ -157,7 +161,7 @@ class _Round(_Advice):
             number = bound.request['round_number']
             packet = dict(schema_version='vnext-proposal-round-input-v1', job_id=bound.request['job_id'],
                 round_number=number, base_pointer=deepcopy(proof.latest), feedback=view['binding']['feedback'],
-                advice=view['binding']['advice'], decision_refs=[], constraints=_constraints(proof))
+                advice=view['binding']['advice'], decision_refs=decisions, constraints=_constraints(proof))
             path = round_input_path(number)
             raw = canonical_json_bytes(packet)
             reference = _ref(path, packet)
@@ -176,6 +180,10 @@ class _Round(_Advice):
             for ref in (view['binding']['feedback'], consumption['result'], view['binding']['consumption'],
                         view['binding']['advice'], _ref(self.binding_path, view['binding'])):
                 self.store.synchronize_existing(store._token, ref['path'], expected=proof.reader.raw(ref))
+            for decision in decisions:
+                for key in ('request', 'response'):
+                    ref = decision[key]
+                    self.store.synchronize_existing(store._token, ref['path'], expected=proof.reader.raw(ref))
             preflight()
             store.publish(store._token, path, raw)
             proof.admission.load_inputs(store.read, number)

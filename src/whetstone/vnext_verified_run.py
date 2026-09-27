@@ -238,6 +238,22 @@ class VerifiedRun:
     def admit_phase2_round(self):
         from whetstone.vnext_verified_phase2_round import admit_phase2_round
         return admit_phase2_round(self)
+
+    def phase2_operator_context(self):
+        from whetstone.vnext_verified_phase2_operator import Phase2Operator
+        return Phase2Operator(self).context()
+
+    def prepare_phase2_operator_requests(self, packet, *, dry_run=False):
+        from whetstone.vnext_verified_phase2_operator import Phase2Operator
+        return Phase2Operator(self).publish(packet, dry_run=dry_run)
+
+    def submit_phase2_operator_responses(self, packet, *, dry_run=False):
+        from whetstone.vnext_verified_phase2_operator import Phase2Operator
+        return Phase2Operator(self).publish(packet, responses=True, dry_run=dry_run)
+
+    def admit_phase2_operator_round(self, selection):
+        from whetstone.vnext_verified_phase2_operator import Phase2Operator
+        return Phase2Operator(self).admit(selection)
     def prepare_phase2_advice(self, advice=None):
         from whetstone.vnext_verified_phase2_advice import prepare_phase2_advice
         return prepare_phase2_advice(self, advice)

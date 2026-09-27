@@ -1,7 +1,8 @@
 # Phase 2 evidence-backed churn resolution
 
 Implemented and validated from `68a8f6f`, authorized on 2026-09-27. The user
-subsequently authorized a local checkpoint after source and evidence revalidation.
+subsequently authorized a local checkpoint after source and evidence revalidation;
+the slice is committed at `25c1825`.
 This completes the bounded churn-resolution slice, not general Phase 2 or 18.8.
 No release qualification is claimed.
 The pre-existing `notes/future-improvements.md` edit is unrelated and preserved.
@@ -65,6 +66,14 @@ and release qualification remain open. All four 18.8 checklist items and 18.9
 remain open. No product decision is introduced by this bounded verified-evidence
 projection; it grants no new mutation or operator authority.
 
+The [five remaining 18.8 delivery milestones](../IMPLEMENTATION_PLAN.md#188-delivery-milestones)
+now define execution order, bounded bundles, authority dependencies and acceptance.
+The next packet covers Phase 2 operator follow-ups and explicit new repair
+admission after the M1 authority/coverage preflight. The approved declaration
+disagreement gate remains in force; full vNext strop/apply-back policy still needs
+its normative scheduler amendment. These are planning boundaries, not additional
+capabilities delivered by this resolution slice.
+
 ## Verification and handoff
 
 The [evidence record](audits/VNEXT_18_8_PHASE2_RESOLUTION.json) credits **59 distinct
@@ -101,6 +110,6 @@ are not represented as passing cohorts.
 Validation used injected clients and local macOS/APFS storage faults. It does not
 qualify physical power loss, process death during a write, live providers,
 performance or the full repository. No further runtime change is pending for this
-bounded slice. The local checkpoint is authorized; the remaining feature
+bounded slice. The local checkpoint is `25c1825`; the remaining feature
 boundaries above remain open. The audit JSON retains the historical pre-checkpoint
 validation status and scope.

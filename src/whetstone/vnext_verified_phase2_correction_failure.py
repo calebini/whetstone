@@ -44,12 +44,17 @@ class _CorrectionFailure(_Declaration):
                     'Phase 2 correction failure contract is absent or changed', path)
         return proof
 
-    def _terminal(self, proof, frame, stage, candidate, terminal, reason):
+    def _terminal(self, proof, frame, stage, candidate, terminal, reason, predecessor=None):
         """Render original failure-time disposition, never a later intended state."""
         number = frame['owner'].number
         creations = [c for c in proof.view.creations if c['round_number'] < number]
         if candidate is not None:
             creations.append(candidate)
+        from whetstone.vnext_phase2_operator import supported as operator_supported
+        if operator_supported(proof.reader.suite) and (candidate is not None or predecessor is not None):
+            last = candidate or predecessor
+            creations = [c for c in proof.view.creations
+                         if c['candidate_creation_ordinal'] <= last['candidate_creation_ordinal']]
         views = []
         for c in creations:
             router = proof.transactions(c['candidate_creation_ordinal'])
@@ -101,9 +106,12 @@ class _CorrectionFailure(_Declaration):
         validate_terminal(report, pointer, creation, creation_ref, event, event_ref, decision, decision_ref)
         return report
 
-    def _record(self, proof, frames, index, stage, attempt, cause, candidate, active, stamp):
+    def _record(self, proof, frames, index, stage, attempt, cause, candidate, active, stamp,
+                *, suffix='', predecessor=None, transaction_order=None):
         frame = frames[index]; owner = frame['owner']; config = owner.binding.configuration
-        directory = ROOT+f'/round-{owner.number}/{stage}-{attempt}'
+        directory = ROOT+f'/round-{owner.number}/{suffix}{stage}-{attempt}'
+        order = ((owner.ordinal, STAGES.index(stage)+1, attempt) if transaction_order is None else
+                 (owner.ordinal, 1, transaction_order, STAGES.index(stage)+1, attempt))
         existing = self._optional(directory+'/failure.json')
         committed = self._optional(directory+'/commit.json')
         if existing is not None:
@@ -121,7 +129,7 @@ class _CorrectionFailure(_Declaration):
         if stamp is None:
             require(committed is None, 'committed correction failure lacks report')
             return dict(directory=directory, active=active, pending=True, committed=False,
-                        reference=None, terminal_state=terminal, order=(owner.ordinal, STAGES.index(stage)+1, attempt))
+                        reference=None, terminal_state=terminal, order=order)
         base = owner.proof; pointer = base.pointers[-1]
         normalized = draft_hash(base.values(base.latest)['base'].decode())
         prior = frames[:index+1]; rows = _latest_issues(prior, base.latest)
@@ -160,7 +168,7 @@ class _CorrectionFailure(_Declaration):
         job = proof.seed_values['job']; descriptor = self.run._record['descriptor']
         failure['run_artifact_pointers'] = dict(job_descriptor=dict(path=descriptor['path'], exists=True, sha256=descriptor['hash']),
             scope_contract=dict(path=job['scope_contract_path'], exists=job['scope_contract_path'] is not None, sha256=job['scope_contract_hash']))
-        report = self._terminal(proof, frame, stage, candidate, terminal, reason)
+        report = self._terminal(proof, frame, stage, candidate, terminal, reason, predecessor)
         assets = {directory+'/failure.json':canonical_json_bytes(failure), directory+'/terminal.json':canonical_json_bytes(report),
                   manifest_ref['path']:canonical_json_bytes(manifest)}
         error_ref = None
@@ -195,7 +203,45 @@ class _CorrectionFailure(_Declaration):
             pending = pending or observed is None
         require(committed is None or not pending, 'committed correction failure lacks dependencies')
         return dict(directory=directory, packet=packet, assets=assets, reference=reference, committed=committed is not None,
-                    pending=pending, active=active, terminal_state=terminal, order=(owner.ordinal, STAGES.index(stage)+1, attempt))
+                    pending=pending, active=active, terminal_state=terminal, order=order)
+
+    def _transactions(self, proof, frame):
+        """Follow explicit selected children; never infer a transaction from order."""
+        number = frame['owner'].number
+        journal = _HistoricalJournal(proof, lambda read: proof.admission.load_inputs(read, number))
+        candidates = [c for c in proof.view.creations if c['round_number'] == number]
+        from whetstone.vnext_phase2_operator import supported as operator_supported, pins as operator_pins
+        if not operator_supported(proof.reader.suite):
+            require(len(candidates) <= 1, 'Phase 2 correction followup reporting requires separate admission support')
+            return [(journal, candidates[0] if candidates else None, None, '', None)]
+        operator_pins(proof.reader.suite)
+        from whetstone.vnext_verified_history import _VerifiedTransactions
+        tasks = []; seen = set(); predecessor = None
+        while True:
+            transaction = journal.preflight.plan['transaction_id']
+            require(transaction not in seen, 'cyclic Phase 2 correction transaction chain')
+            seen.add(transaction)
+            matches = [c for c in candidates if c['transaction_id'] == transaction]
+            require(len(matches) <= 1, 'ambiguous Phase 2 transaction candidate')
+            candidate = matches[0] if matches else None
+            suffix = '' if not tasks else transaction+'--'
+            tasks.append((journal, candidate, predecessor, suffix, len(tasks)))
+            if candidate is None: break
+            path = candidate['candidate_path'].rsplit('/', 1)[0]+'/followup_transaction.json'
+            raw = self._optional(path)
+            if raw is None: break
+            selection = proof.reader.json(dict(path=path, hash=sha256_bytes(raw)), 'vnext_semantic_followup_selection_v1')
+            require(selection['candidate_id'] == candidate['candidate_id'] and selection['job_id'] == candidate['job_id'],
+                    'Phase 2 child selection belongs to another parent')
+            router = _VerifiedTransactions(proof.store, original=proof.admission, selected_ref=selection['transaction_input'])
+            record = router.selected_record(proof.store.read)
+            require(record['source_creation'] == _ref(f"rounds/candidate_index/creation-{candidate['candidate_creation_ordinal']}.json", candidate),
+                    'Phase 2 child selects another source creation')
+            journal = _HistoricalJournal(proof, lambda read, r=router: r.load_inputs(read, number))
+            predecessor = candidate
+        require({c['candidate_id'] for _, c, _, _, _ in tasks if c} == {c['candidate_id'] for c in candidates},
+                'Phase 2 candidate lacks its explicit predecessor selection')
+        return tasks
 
     def _view_failures(self, proof, stamp=None):
         state = sequence(proof); records = []; expected = set(); recovery = None
@@ -203,52 +249,52 @@ class _CorrectionFailure(_Declaration):
             owner = frame['owner']; number = owner.number
             if not frame.get('consumed') or self._optional(f'rounds/round-{number}/proposal_input.json') is None:
                 continue
-            journal = _HistoricalJournal(proof, lambda read, n=number: proof.admission.load_inputs(read, n))
-            header, outcomes, proposal, receipt = journal.inspect()
-            current = index == len(state['frames'])-1 and owner.proof.latest == proof.latest and state['gate']=='correction_required'
-            candidates = [c for c in proof.view.creations if c['round_number']==number]
-            require(len(candidates)<=1, 'Phase 2 correction followup reporting requires separate admission support')
-            candidate = candidates[0] if candidates else None
-            def add(stage, attempt, cause, creation, active):
-                directory = ROOT+f'/round-{number}/{stage}-{attempt}'
-                expected.add(directory)
-                present = self._optional(directory+'/failure.json') is not None or self._optional(directory+'/commit.json') is not None
-                # Partial directory publication is also a recovery claim.
-                try: present = present or bool(self.store.list_directory(directory))
-                except FileNotFoundError: pass
-                if present or active:
-                    records.append(self._record(proof, state['frames'], index, stage, attempt, cause, creation, active, stamp))
-            def technical(stage, js, os, result, creation):
-                for count, outcome in enumerate(os, 1):
-                    kind = outcome['classification']
-                    if kind.startswith('valid_') or (kind=='shape_invalid' and count<2): continue
-                    add(stage, count, dict(classification=kind, directory=js.directory, outcomes=os[:count],
-                        request=decode_json(js.read('request.json')),
-                        invocations=[decode_json(js.read(f"attempts/{o['attempt']}/invocation.json")) for o in os[:count]]), creation,
-                        current and result is None and count==len(os))
-            technical('editor', journal, outcomes, proposal, None)
-            if receipt is not None:
-                path = f"rounds/round-{number}/proposals/{proposal.patch['proposal_id']}/assembly_failure.json"
-                raw = self._optional(path)
-                if raw is not None:
-                    registry = proof.router.registry()
-                    try: registry._material(number, proposal.patch['proposal_id'])
-                    except CandidateAssemblyFailure as exc: expected_failure = exc.evidence
-                    else: raise ValueError('assembly failure no longer reproduces')
-                    require(raw == canonical_json_bytes(expected_failure) and candidate is None,
-                            'assembly failure differs from evidence or fabricated registration')
-                    add('assembly', 0, dict(classification='assembly_invalid', evidence=expected_failure), None, current)
-            if candidate is not None:
-                router = proof.transactions(candidate['candidate_creation_ordinal'])
-                decision_owner = VerifiedSemanticDecisionJournal(router.registry(), admission=router)
-                view = decision_owner._state(candidate)[0]
-                if view.prepared and current: recovery = 'verification_commit_recovery_required'
-                if view.decision is not None and view.decision['deterministic_result']=='pass':
-                    js = VerifiedSemanticRequestJournal(router.store, admission=router, candidate_id=candidate['candidate_id'])
-                    _, os, result, _ = js.inspect()
-                    technical('verifier', js, os, result, candidate)
-                if view.decision is not None and view.decision['decision_final'] and view.decision['candidate_disposition']=='CANDIDATE_REJECTED':
-                    add('candidate', 0, dict(classification='rejected', **view.decision), candidate, current)
+            tasks = self._transactions(proof, frame)
+            for task_index, (journal, candidate, predecessor, suffix, transaction_order) in enumerate(tasks):
+                header, outcomes, proposal, receipt = journal.inspect()
+                current = (task_index == len(tasks)-1 and index == len(state['frames'])-1
+                           and owner.proof.latest == proof.latest and state['gate'] == 'correction_required')
+                def add(stage, attempt, cause, creation, active):
+                    directory = ROOT+f'/round-{number}/{suffix}{stage}-{attempt}'
+                    expected.add(directory)
+                    present = self._optional(directory+'/failure.json') is not None or self._optional(directory+'/commit.json') is not None
+                    # Partial directory publication is also a recovery claim.
+                    try: present = present or bool(self.store.list_directory(directory))
+                    except FileNotFoundError: pass
+                    if present or active:
+                        records.append(self._record(proof, state['frames'], index, stage, attempt, cause, creation, active, stamp,
+                            suffix=suffix, predecessor=predecessor, transaction_order=transaction_order))
+                def technical(stage, js, os, result, creation):
+                    for count, outcome in enumerate(os, 1):
+                        kind = outcome['classification']
+                        if kind.startswith('valid_') or (kind=='shape_invalid' and count<2): continue
+                        add(stage, count, dict(classification=kind, directory=js.directory, outcomes=os[:count],
+                            request=decode_json(js.read('request.json')),
+                            invocations=[decode_json(js.read(f"attempts/{o['attempt']}/invocation.json")) for o in os[:count]]), creation,
+                            current and result is None and count==len(os))
+                technical('editor', journal, outcomes, proposal, None)
+                if receipt is not None:
+                    path = f"rounds/round-{number}/proposals/{proposal.patch['proposal_id']}/assembly_failure.json"
+                    raw = self._optional(path)
+                    if raw is not None:
+                        registry = proof.router.registry()
+                        try: registry._material(number, proposal.patch['proposal_id'])
+                        except CandidateAssemblyFailure as exc: expected_failure = exc.evidence
+                        else: raise ValueError('assembly failure no longer reproduces')
+                        require(raw == canonical_json_bytes(expected_failure) and candidate is None,
+                                'assembly failure differs from evidence or fabricated registration')
+                        add('assembly', 0, dict(classification='assembly_invalid', evidence=expected_failure), None, current)
+                if candidate is not None:
+                    router = proof.transactions(candidate['candidate_creation_ordinal'])
+                    decision_owner = VerifiedSemanticDecisionJournal(router.registry(), admission=router)
+                    view = decision_owner._state(candidate)[0]
+                    if view.prepared and current: recovery = 'verification_commit_recovery_required'
+                    if view.decision is not None and view.decision['deterministic_result']=='pass':
+                        js = VerifiedSemanticRequestJournal(router.store, admission=router, candidate_id=candidate['candidate_id'])
+                        _, os, result, _ = js.inspect()
+                        technical('verifier', js, os, result, candidate)
+                    if view.decision is not None and view.decision['decision_final'] and view.decision['candidate_disposition']=='CANDIDATE_REJECTED':
+                        add('candidate', 0, dict(classification='rejected', **view.decision), candidate, current)
         try: rounds = self.store.list_directory(ROOT)
         except FileNotFoundError: rounds = ()
         for name, kind in rounds:

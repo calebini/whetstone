@@ -129,11 +129,15 @@ def _validate_frame(proof, owner, number, record):
     require(number == bound.request['round_number'] == record['round_number']
         and record['base_pointer'] == bound.request['base_pointer']
         and record['feedback'] == binding['feedback'] and record['advice'] == binding['advice']
-        and record['constraints'] == _constraints(proof) and not record['decision_refs']
+        and record['constraints'] == _constraints(proof)
         and record['job_id'] == proof.seed_values['job']['job_id'], 'Phase 2 round differs from sequence evidence')
-    require(any(r['classification']=='editor_fixable' for r in binding['findings'])
-        and all(r['classification'] in {'editor_fixable','deferable'} for r in binding['findings']),
-        'Phase 2 correction has unresolved operator or authority decisions')
+    if record['decision_refs']:
+        from whetstone.vnext_verified_phase2_operator import admission_preflight
+        admission_preflight(proof, bound, binding, record['decision_refs'])
+    else:
+        require(any(r['classification']=='editor_fixable' for r in binding['findings'])
+            and all(r['classification'] in {'editor_fixable','deferable'} for r in binding['findings']),
+            'Phase 2 correction has unresolved operator or authority decisions')
     # Stamping versioned corrections is a separate candidate-protocol milestone.
     from whetstone.versioning import _find_version_target
     require(_find_version_target(bound.inputs['draft']) is None, 'Phase 2 version maintenance is not implemented')
@@ -244,6 +248,26 @@ def sequence(proof, *, through=None):
         serious=any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'} for r in review['feedback']['feedback'])
         actionable=any(r['classification']!='deferable' for r in finding_rows)
         unknown=any(r['classification'] not in {'deferable','editor_fixable'} for r in finding_rows)
+        from whetstone.vnext_phase2_operator import supported as operator_supported
+        if operator_supported(proof.reader.suite) and advice_raw is not None:
+            from whetstone.vnext_proposal_run import round_input_path
+            from whetstone.vnext_verified_phase2_operator import admission_preflight
+            admitted_raw = owner._optional(round_input_path(owner.number))
+            if admitted_raw is not None:
+                admitted = tracked.reader.json(dict(path=round_input_path(owner.number), hash=sha256_bytes(admitted_raw)),
+                    'vnext_proposal_round_input_v1')
+                require(admitted['base_pointer'] == bound.request['base_pointer']
+                        and admitted['feedback'] == view['binding']['feedback']
+                        and admitted['advice'] == view['binding']['advice']
+                        and admitted['round_number'] == owner.number
+                        and admitted['job_id'] == bound.request['job_id']
+                        and admitted['constraints'] == _constraints(baseproof), 'Phase 2 operator round evidence changed')
+                if admitted['decision_refs']:
+                    admission_preflight(baseproof, bound, view['binding'], admitted['decision_refs'])
+                    unknown = False
+                else:
+                    require(not unknown and any(r['classification'] == 'editor_fixable' for r in finding_rows),
+                            'Phase 2 round requires admitted advice without unresolved choices')
         # Use only proven successors: during historical replay the current candidate is not proven yet.
         index=next(i for i,p in enumerate(proof.pointers) if _snapshot(p)==reference)
         successor=proof.pointers[index+1] if index+1<len(proof.pointers) and _snapshot(proof.pointers[index+1])['path'] in proof.bases else None
@@ -396,6 +420,6 @@ class _Continuation(_HistoricalAdvice):
             if action=='advice': return owner.bind(**kwargs)
             if action=='admit':
                 require(state['gate']=='correction_required','Phase 2 round is blocked by sequence gate')
-                return owner.admit()
+                return owner.admit(**kwargs)
             raise ValueError('unknown Phase 2 continuation operation')
         return self._execute(perform)

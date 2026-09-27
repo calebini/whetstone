@@ -1,0 +1,205 @@
+{
+  "date": "2026-09-27",
+  "status": "validated_operator_scope_uncommitted_m1_incomplete",
+  "baseline_head": "25c1825c1c20fa5d4e160d8ecd1448acaa0855ae",
+  "initial_worktree": [
+    "IMPLEMENTATION_PLAN.md",
+    "docs/VNEXT_18_8_PHASE2_RESOLUTION.md",
+    "notes/future-improvements.md"
+  ],
+  "authority": "User authorized pursuing M1 end to end, with existing D7/D8 and candidate/decision contracts. No authority is inferred for freeze continuation, public activation or external writes.",
+  "scope": "Separately pinned internal Phase 2 operator choices and interpretation-answer child transactions, verified resolution/debt accounting, selected-child failure reporting and recovery. Not all M1 bundle 1 or M1 acceptance.",
+  "distinct_passing_methods": 42,
+  "passing_executions": 42,
+  "new_runtime_methods": 11,
+  "existing_checks": 31,
+  "cohorts": [
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-core-final.log",
+      "sha256": "9112ab6ab81925464ddc90f5784e098731cfe74a36df9e7941ec5ed1992dc3d7",
+      "count": 9,
+      "methods": [
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_choice_source_drift_and_ownership_loss_leave_no_authorized_round",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_decline_stale_sources_and_unselected_response_cannot_admit",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_explicit_choice_admits_derived_work_but_retains_original_debt",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_fresh_process_replays_selected_decisions_without_writes",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_later_review_operator_admission_is_bound_to_its_exact_request",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_original_resolution_cannot_rewrite_pre_promotion_issue_history",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_request_response_selection_and_admission_lost_ack_recover_without_clients",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_status_lists_exact_retained_choices_without_selecting_or_repairing",
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_unpinned_operator_surface_refuses_without_writes"
+      ],
+      "scope": "Explicit decision publication/admission, current first/later review bindings, decline and stale consent, ownership loss, lost acknowledgements, fresh-process readback, read-only discovery, retained original debt and historical pointer boundaries.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/child-report-journey.log",
+      "sha256": "b3ef0fd745ec55744905ec891c9af362f415f9233790de14df50fc84806c9425",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_phase2_answer_selects_distinct_child_and_resolves_only_after_promotion"
+      ],
+      "scope": "Real Phase 2 rejection, explicit interpretation answer and child selection, independent verification/promotion, resolution and next review with unchanged parent report.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/child-report-fault.log",
+      "sha256": "554a92fdbdeec2be366d1007d64e73b134623721398d85377c0ceb64179ab2ce",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_selected_child_timeout_reports_separately_and_recovers_publication"
+      ],
+      "scope": "Selected-child timeout has a distinct immutable report; publication lost-acknowledgement recovery retains parent history without extra clients.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/shared-final.log",
+      "sha256": "bcb14ad11f423bb503e64a02edb3f2f278daf494879245a65b214fc3e82bdabd",
+      "count": 26,
+      "methods": [
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_altered_scope_or_source_bindings_refuse_before_any_client",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_decline_and_stale_receipt_cannot_supply_followup_evidence",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_editor_receives_interpretation_without_effect_grants_or_reclassified_findings",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_followup_has_distinct_stable_identity_and_exact_original_editing_scope",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_new_plan_drives_distinct_patch_candidate_and_independent_deterministic_assessment",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_unextended_preflight_remains_byte_identical_and_contract_support_is_explicit",
+        "test_vnext_semantic_followup_preflight.SemanticFollowupPreflightTests.test_verifier_context_carries_same_interpretation_and_cannot_reuse_source_response",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_creation_locator_candidate_or_map_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_changed_payload_or_report_cannot_enter_a_plausible_context",
+        "test_vnext_semantic_context.SemanticContextTests.test_complete_registered_context_contains_independent_evidence_and_no_writes",
+        "test_vnext_semantic_context.SemanticContextTests.test_rehashed_foreign_round_or_transaction_creation_refuses",
+        "test_vnext_semantic_context.SemanticContextTests.test_snapshot_is_deterministic_and_nested_mutation_cannot_change_its_hash",
+        "test_vnext_semantic_context.SemanticContextTests.test_unbound_context_and_changed_pinned_verifier_refuse",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_bad_transport_and_timeout_are_retained_and_never_replayed",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_candidate_base_cannot_be_silently_reseeded",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_changed_plan_before_call_is_detected_without_invoking_editor",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_exact_named_decision_reaches_the_editor_as_a_bound_derived_task",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_full_inventory_rules_and_actual_findings_are_frozen_before_client",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_invalid_assertion_program_makes_zero_editor_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_mid_call_rule_drift_retains_raw_and_prevents_canonical_publication",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_new_rule_content_changes_job_and_plan_without_upgrading_frozen_admission",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_policy_and_role_gates_make_zero_calls",
+        "test_vnext_unit_preflight.UnitPreflightTests.test_unbound_or_duplicate_discovery_rules_fail_before_client",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_partial_rejected_duplicate_and_unrelated_findings_never_resolve",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_reset_is_key_specific_and_does_not_clear_readdition_or_flip_flop",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_residuals_require_verified_coverage_and_recurrence_reopens"
+      ],
+      "scope": "Shared semantic follow-up preflight/context, unit preflight and pure resolution rules.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/compatibility-final.log",
+      "sha256": "35c281d0d1d1a30788e49b194e072fa7525912edb94bc145103fe447284d3931",
+      "count": 3,
+      "methods": [
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_promoted_correction_repeats_step_on_new_base_then_advances",
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_stale_sources_gaps_and_unresolved_choices_refuse_before_dispatch",
+        "test_vnext_verified_operator.VerifiedOperatorTests.test_actual_question_answer_selection_child_and_promotion_preserve_parent"
+      ],
+      "scope": "Older Phase 2 sequence gates/promotion and existing Phase 1 operator child journey.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/report-compatibility.log",
+      "sha256": "32df057278c404bc7e3e7815b97126555752ef186f74b420c95b354dd4191b34",
+      "count": 2,
+      "methods": [
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_editor_timeout_success_and_promotion_preserve_history",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_verifier_timeout_then_rejection_keeps_both_dispositions"
+      ],
+      "scope": "Older Editor/Verifier failure history through subsequent success, promotion and rejection.",
+      "source_manifest": {
+        "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+        "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+      }
+    }
+  ],
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-m1-001/operator-report-source-manifest.json",
+    "sha256": "0ba2c6693e4ff965b12722fccff3ee3a9e13eab19eee5d85027802ac7923c788"
+  },
+  "source_files_verified": 566,
+  "source_limits": "All six credited cohorts ran with delivered runtime/contract/test bytes. Earlier passing development cohorts are superseded and not counted. Documentation and this audit were finalized afterward.",
+  "boundary_check": {
+    "path": "rounds/vnext-18-8-m1-001/boundary-check.json",
+    "sha256": "9f64536516ca661c686522d5cf184ac5658738d7ec29d6bdafbd254d2b76271f"
+  },
+  "completed": [
+    "Explicit Phase 2 request/response/selection publication and canonical admission tied to the consumed review, current base, configuration and authority.",
+    "Interpretation-question answer selects a distinct child under unchanged Phase 2 context; rejected parent remains final.",
+    "Whole-finding resolution uses actual admitted findings; narrower derived repairs preserve original debt across later silence and historical reports.",
+    "Selected-child failure reporting preserves original report bytes and failure-time history, with separate child report recovery.",
+    "Focused stale-source, ownership, lost-acknowledgement, read-only and fresh-process checks plus older-pin compatibility."
+  ],
+  "remaining": [
+    "Explicit arbitrary repair admission after rejection without an interpretation question.",
+    "Acceptance of the approved evidence-preserving blocked-freeze outcome; resumable freeze is deferred beyond M1.",
+    "Declaration/final-review source repair, ordinary successor review selection and profile verification.",
+    "Exact rubric-gap attribution, retained evidence, verified resolution and target/profile coverage.",
+    "General Phase 2 halt/report integration and full M1 acceptance."
+  ],
+  "freeze_decision": {
+    "subject": "M1 freeze outcome",
+    "status": "approved_by_user_after_operator_validation",
+    "date": "2026-09-27",
+    "approval": "Ok I approve — direct response to the explicit M1 freeze-boundary question.",
+    "decision": "M1 supports the existing evidence-preserving blocked freeze outcome: retain the verified pointer and unresolved findings, publish/recover the signal report, and block technical resume, new Reviewer/Editor work, candidate admission and convergence. No automatic clearing or claimed resolution.",
+    "deferred": "Resumable freeze requires a separate policy defining the frozen subject, lifetime, forbidden mutations and releasing authority.",
+    "acceptance_complete": false,
+    "runtime_changed_by_approval_record": false
+  },
+  "excluded_runs": [
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-child-superseded.log",
+      "sha256": "5178bb9918bdfcf2207d20ef7411c4385ef55ec8418124f648fe0a881e7ffe6d",
+      "reason": "Exploratory run rejected pinned-contract drift during development; no pass credit."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-choices-initial.log",
+      "sha256": "7f311f3546145b099d15027d034d4f7eb50e4e21b785af4f3a60e778aa375483",
+      "reason": "Fixture reused a publication method bound to a closed store after reopen; corrected."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-boundaries.log",
+      "sha256": "312694b97d474d0c8ddca486d038d5690ccbe4720c42bfe8287b74faaa8dd3e6",
+      "reason": "Exposed missing ownership recheck after final operator publication; fixed."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-child.log",
+      "sha256": "f5c266500f7b1d73d27c4fde82a73cddf8fc0971f36c549bb84fdc549a4afb17",
+      "reason": "Deliberately interrupted redundant full-sequence replay; bounded historical reader restored."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/operator-child-bounded-replay.log",
+      "sha256": "b460edd72724981e6fff55618405449fa110bbf9329b52071669a32dcabd6f74",
+      "reason": "Exposed single-candidate reporting guard after child promotion; explicit selected-child reporting added."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-001/residual-history.log",
+      "sha256": "ff223695dd7e4f7876b07105347985b50584c133c765c49c2e44617a4ed70a00",
+      "reason": "Fixture expected unsorted issues rather than canonical issue order; corrected."
+    }
+  ],
+  "limits": [
+    "Injected clients only; no external provider transmission.",
+    "Simulated write faults and fresh-process readback, not process-death-during-write or power-loss qualification.",
+    "Selected checks only; no full repository or performance qualification.",
+    "No commit, push, public activation, authoritative-spec amendments or external apply-back.",
+    "M1 and all original 18.8/18.9 checklist items remain incomplete."
+  ]
+}

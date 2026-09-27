@@ -25,7 +25,8 @@ class VerifiedReviewTests(unittest.TestCase):
 
     def fixture(self, *, budget=3, profiles=None, mode='horizontal', sequence_contract=True, status_contract=False,
                 closeout_contract=False, operator_status_contract=False, phase2_eligibility_contract=False,
-                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False, phase2_round_contract=False, phase2_sequence_contract=False, phase2_closeout_contract=False, phase2_findings_contract=False, phase2_blocked_contract=False, phase2_termination_contract=False, phase2_failure_contract=False, phase2_correction_failure_contract=False, phase2_signals_contract=False, phase2_resolution_contract=False):
+                phase2_binding_contract=False, phase2_entry_contract=False, phase2_review_contract=False, phase2_client_contract=False, phase2_consumption_contract=False, phase2_advice_contract=False, phase2_round_contract=False, phase2_sequence_contract=False, phase2_closeout_contract=False, phase2_findings_contract=False, phase2_blocked_contract=False, phase2_termination_contract=False, phase2_failure_contract=False, phase2_correction_failure_contract=False, phase2_signals_contract=False, phase2_resolution_contract=False, phase2_operator_contract=False):
+        phase2_resolution_contract = phase2_resolution_contract or phase2_operator_contract
         phase2_signals_contract = phase2_signals_contract or phase2_resolution_contract
         phase2_correction_failure_contract = phase2_correction_failure_contract or phase2_signals_contract
         phase2_failure_contract = phase2_failure_contract or phase2_correction_failure_contract
@@ -68,6 +69,7 @@ class VerifiedReviewTests(unittest.TestCase):
         if phase2_closeout_contract: algorithms += ('vnext_verified_phase2_closeout_v1',)
         if phase2_findings_contract: algorithms += ('vnext_verified_phase2_findings_v1',)
         if phase2_blocked_contract: algorithms += ('vnext_verified_phase2_blocked_v1',)
+        if phase2_operator_contract: algorithms += ('vnext_verified_phase2_operator_v1',)
         if phase2_resolution_contract: algorithms += ('vnext_verified_phase2_resolution_v1',)
         if phase2_signals_contract: algorithms += ('vnext_verified_phase2_signals_v1',)
         if phase2_correction_failure_contract: algorithms += ('vnext_verified_phase2_correction_failure_v1',)
@@ -78,7 +80,7 @@ class VerifiedReviewTests(unittest.TestCase):
         if phase2_advice_contract: algorithms += ('vnext_verified_phase2_advice_v1', 'vnext_mutation_preparation_v1')
         with patch.object(unit.UnitPreflightTests, 'setUp', setup):
             f = history.VerifiedHistoryTests.fixture(self, extra_algorithms=algorithms,
-                extra_schemas={'vnext_review_request_v2'} | ({'vnext_phase2_resolution_v1','vnext_phase2_resolution_summary_v1'} if phase2_resolution_contract else set()) | ({'vnext_phase2_signals_v1','oscillation_report','conflict_report','conflict_state'} if phase2_signals_contract else set()) | ({'vnext_phase2_correction_failure_v1','vnext_correction_artifact_error_v1'} if phase2_correction_failure_contract else set()) | ({'vnext_phase2_reviewer_failure_v1','artifact_validation_error'} if phase2_failure_contract else set()) | ({'vnext_phase2_failure_closeout_v1','convergence_failure_report'} if phase2_termination_contract else set()) | ({'vnext_phase2_blocked_report_v1'} if phase2_blocked_contract else set()) | ({'vnext_phase2_finding_reconciliation_v1','vnext_phase2_closeout_v2'} if phase2_findings_contract else set()) | ({'vnext_phase2_declaration_v1','vnext_phase2_closeout_v1',
+                extra_schemas={'vnext_review_request_v2'} | ({'vnext_operator_options_v1','vnext_operator_response_input_v1','vnext_operator_selection_v1'} if phase2_operator_contract else set()) | ({'vnext_phase2_resolution_v1','vnext_phase2_resolution_summary_v1'} if phase2_resolution_contract else set()) | ({'vnext_phase2_signals_v1','oscillation_report','conflict_report','conflict_state'} if phase2_signals_contract else set()) | ({'vnext_phase2_correction_failure_v1','vnext_correction_artifact_error_v1'} if phase2_correction_failure_contract else set()) | ({'vnext_phase2_reviewer_failure_v1','artifact_validation_error'} if phase2_failure_contract else set()) | ({'vnext_phase2_failure_closeout_v1','convergence_failure_report'} if phase2_termination_contract else set()) | ({'vnext_phase2_blocked_report_v1'} if phase2_blocked_contract else set()) | ({'vnext_phase2_finding_reconciliation_v1','vnext_phase2_closeout_v2'} if phase2_findings_contract else set()) | ({'vnext_phase2_declaration_v1','vnext_phase2_closeout_v1',
                     'vnext_phase2_review_request_v3','vnext_phase2_consumption_v3','unresolved_issues','rubric_gaps'} if phase2_closeout_contract else set()) | ({'vnext_phase2_review_request_v2','vnext_phase2_consumption_v2'} if phase2_sequence_contract else set()) | ({'vnext_verified_phase1_closeout_v1'} if closeout_contract else set())
                     | ({'vnext_phase2_configuration_v1', 'vnext_phase2_entry_request_v1'} if phase2_binding_contract else set())
                     | ({'vnext_phase2_entry_v1'} if phase2_entry_contract else set())

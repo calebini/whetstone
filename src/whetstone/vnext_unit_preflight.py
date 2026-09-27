@@ -46,8 +46,11 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
                            feedback,feedback_ref,advice,constraints,context,suite,
                            base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None,phase2=None):
     if semantic_followup is not None:
-        require(phase2 is None, "Phase 2 semantic followups are not implemented")
-        arguments={key:value for key,value in locals().copy().items() if key not in {'semantic_followup','phase2'}}
+        if phase2 is not None:
+            from whetstone.vnext_phase2_operator import pins
+            pins(suite)
+        arguments={key:value for key,value in locals().copy().items()
+                   if key not in {'semantic_followup', 'pins'} and (key != 'phase2' or phase2 is not None)}
         from whetstone.vnext_semantic_followup_preflight import prepare_followup_preflight
         return prepare_followup_preflight(arguments,semantic_followup)
     # Omitting the new optional consumer retains the exact original preimage.

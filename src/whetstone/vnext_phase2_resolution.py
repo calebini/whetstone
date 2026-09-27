@@ -79,7 +79,26 @@ def record(proof, frames, successor, advice):
     semantic = proof.reader.json(semantic_ref, 'semantic_verification_v2')
     rows = frame['review']['feedback']['feedback']
     admitted = {r['finding_id'] for r in advice['findings'] if r['classification'] == 'editor_fixable'}
-    resolved = resolved_findings(semantic, rows, admitted)
+    from whetstone.vnext_phase2_operator import supported as operator_supported
+    operator_decisions = []
+    if operator_supported(proof.reader.suite):
+        from whetstone.vnext_proposal_run import round_input_path
+        path = round_input_path(owner.number)
+        inputs = proof.reader.json(dict(path=path, hash=sha256_bytes(proof.store.read(path))), 'vnext_proposal_round_input_v1')
+        operator_decisions = inputs['decision_refs']
+    if operator_decisions:
+        from whetstone.vnext_verified_phase2_operator import admission_preflight
+        preflight = admission_preflight(proof, bound, advice, operator_decisions)
+        all_admitted = {r['finding_id'] for r in preflight.plan['finding_dispositions'] if r['admitted_to_editing']}
+        results = semantic['finding_results']; identifiers = [r['finding_id'] for r in results]
+        require(semantic['verdict'] == 'pass' and len(identifiers) == len(set(identifiers))
+                and set(identifiers) == all_admitted and all(r['disposition'] == 'resolved' for r in results),
+                'resolution requires exact, wholly resolved admitted findings')
+        # A derived task may intentionally address only part of its original.
+        # Preserve that original debt; promotion cannot silently discharge it.
+        resolved = all_admitted & admitted & {r['issue_id'] for r in rows}
+    else:
+        resolved = resolved_findings(semantic, rows, admitted)
     residual = residual_rows(frames, resolved)
     after = proof.values(reference)['base']
     before = proof.values(bound.request['base_pointer'])['base']

@@ -81,6 +81,9 @@ from the selected receipt and original source evidence on every invocation.
     baseline=prepare_unit_preflight(**arguments)
     context=SemanticContext(canonical_json_bytes(evidence['source_context']))
     source=context.packet
+    if arguments.get('phase2') is not None:
+        require(source.get('phase2') == arguments['phase2'],
+                'semantic follow-up Phase 2 configuration or request changed')
     response=validate_answer_response(evidence['response'],request=evidence['question'],context=context,suite=suite)
     require(response['selected_option_id']!='decline','declined semantic answer cannot enable follow-up work')
     for key in ('job','seed_map','base_map','authority_map','scope_contract','protected_invariants','review_configuration','base_pointer'):

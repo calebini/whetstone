@@ -31,6 +31,27 @@ def _pins(proof):
 
 
 def _latest_issues(frames, reference):
+    if frames:
+        from whetstone.vnext_phase2_operator import supported as operator_supported, pins as operator_pins
+        suite = frames[-1]['owner'].proof.reader.suite
+        if operator_supported(suite):
+            operator_pins(suite)
+            from whetstone.vnext_phase2_resolution import residual_rows
+            # The new operator path may verify a narrower task. Later silence
+            # cannot erase the broader original debt before declaration/closeout.
+            reader = frames[-1]['owner'].proof.reader
+            ordinal = reader.json(reference, 'current_verified_pointer_v1')['promotion_ordinal']
+            prefix = []
+            for frame in frames:
+                base = reader.json(frame['bound'].request['base_pointer'], 'current_verified_pointer_v1')
+                if base['promotion_ordinal'] > ordinal: continue
+                retained = dict(frame)
+                resolution = retained.get('resolution')
+                if resolution is not None:
+                    promoted = reader.json(resolution['packet']['promoted_pointer'], 'current_verified_pointer_v1')
+                    if promoted['promotion_ordinal'] > ordinal: retained.pop('resolution')
+                prefix.append(retained)
+            return residual_rows(prefix, set())
     latest={f['bound'].request['step']['profile']:f for f in frames
             if f.get('consumed') and f['bound'].request['base_pointer']==reference}
     issues={}
