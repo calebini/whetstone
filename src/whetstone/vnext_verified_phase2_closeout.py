@@ -341,14 +341,19 @@ class _Declaration(_Continuation):
                     # Terminal projection is create-only. The frozen storage
                     # materialization whitelist does not include declarations.
                     if old is not None and 'failure_report' in view['packet']:
-                        from whetstone.vnext_verified_phase2_failure import _Failure
-                        failure=_Failure(self.run);failure._sync(store,proof,failure._failure_view(proof))
-                        def transition(before,after):
-                            require(before==old and after==new,'failure projection changed')
-                            validate(self.store.read,path,new)
-                            require(failure._failure_view(proof)['records'],'failure projection lacks historical ownership')
-                        self.store.replace_pointer(store._token,path,expected=old,
-                            snapshot=view['packet']['failure_report'],validate_transition=transition)
+                        from whetstone.vnext_verified_phase2_correction_failure import supported as correction_supported
+                        if correction_supported(proof):
+                            from whetstone.vnext_phase2_report_projection import recover_projections
+                            recover_projections(self,store,proof)
+                        else:
+                            from whetstone.vnext_verified_phase2_failure import _Failure
+                            failure=_Failure(self.run);failure._sync(store,proof,failure._failure_view(proof))
+                            def transition(before,after):
+                                require(before==old and after==new,'failure projection changed')
+                                validate(self.store.read,path,new)
+                                require(failure._failure_view(proof)['records'],'failure projection lacks historical ownership')
+                            self.store.replace_pointer(store._token,path,expected=old,
+                                snapshot=view['packet']['failure_report'],validate_transition=transition)
                     else:self.store.publish(store._token,path,new)
                 elif old!=new:self.store.materialize(store._token,path,new,validate_target=validate)
                 else:self.store.synchronize_existing(store._token,path,expected=new)

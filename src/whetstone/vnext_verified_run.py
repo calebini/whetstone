@@ -181,6 +181,15 @@ class VerifiedRun:
     def reconcile_phase2_failure_state(self):
         from whetstone.vnext_verified_phase2_failure import _Failure
         return _Failure(self).recover_failure()
+    def phase2_correction_failure_status(self):
+        from whetstone.vnext_verified_phase2_correction_failure import _CorrectionFailure
+        return _CorrectionFailure(self).status()
+    def publish_phase2_correction_failure(self):
+        from whetstone.vnext_verified_phase2_correction_failure import _CorrectionFailure
+        return _CorrectionFailure(self).publish()
+    def reconcile_phase2_correction_failure_state(self):
+        from whetstone.vnext_verified_phase2_correction_failure import _CorrectionFailure
+        return _CorrectionFailure(self).recover()
     def phase2_closeout(self):
         from whetstone.vnext_verified_phase2_closeout import _Declaration
         return _Declaration(self).status()

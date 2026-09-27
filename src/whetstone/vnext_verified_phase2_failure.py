@@ -203,6 +203,11 @@ class _Failure(_Declaration):
                     if closeout.get('committed') and 'failure_report' in closeout['packet']:
                         expected=closeout['assets'][0][1]
                 mirrors_current=mirrors_current and self._optional(path)==expected
+        from whetstone.vnext_verified_phase2_correction_failure import supported as correction_supported
+        if correction_supported(proof):
+            from whetstone.vnext_phase2_report_projection import projections
+            plan=projections(self,proof,reviewer=view)
+            mirrors_current=all(self._optional(path)==target['raw'] for path,target in plan.items())
         terminal=_classification(active['outcomes'])[0] if active else None
         return dict(gate='reviewer_failure' if active else 'no_active_reviewer_failure',terminal_state=terminal,
             resume_permitted=bool(active and _classification(active['outcomes'])[1]),
@@ -222,28 +227,33 @@ class _Failure(_Declaration):
     def _recover(self,store,proof,view):
         require(not any(r['pending'] for r in view['records']),'publish Reviewer failure evidence before state recovery')
         self._sync(store,proof,view)
-        # Report paths are owned projections of immutable records, not materializations.
-        latest=view['records'][-1] if view['records'] else None
-        for key,path in MIRRORS.items():
-            if latest is None:continue
-            ref=latest['packet'][key];desired=latest['assets'][ref['path']];old=self._optional(path)
-            allowed=[r['assets'][r['packet'][key]['path']] for r in view['records']]
-            # A later committed exhaustion report supersedes these historical reports.
-            if key=='failure' and view['state']['gate']=='declaration_closeout_required':
-                closeout=self._closeout(proof)
-                if closeout.get('committed') and 'failure_report' in closeout['packet']:
-                    ref=closeout['packet']['failure_report'];desired=closeout['assets'][0][1]
-                    self._synchronize(store,proof,closeout)
-                    for p,v in closeout['assets']+((closeout['reference']['path'],canonical_json_bytes(closeout['packet'])),):
-                        self.store.synchronize_existing(store._token,p,expected=v)
-            require(old is None or old==desired or old in allowed,'unowned Phase 2 failure report conflicts',path)
-            if old==desired:self.store.synchronize_existing(store._token,path,expected=desired)
-            elif old is None:store.publish(store._token,path,desired)
-            else:
-                def validate(before,after,old=old,desired=desired):
-                    require(before==old and after==desired,'Reviewer failure projection changed')
-                    proof.guard(self.store.read);self._failure_view(proof)
-                self.store.replace_pointer(store._token,path,expected=old,snapshot=ref,validate_transition=validate)
+        from whetstone.vnext_verified_phase2_correction_failure import supported as correction_supported
+        if correction_supported(proof):
+            from whetstone.vnext_phase2_report_projection import recover_projections
+            recover_projections(self,store,proof,reviewer=view)
+        else:
+            # Report paths are owned projections of immutable records, not materializations.
+            latest=view['records'][-1] if view['records'] else None
+            for key,path in MIRRORS.items():
+                if latest is None:continue
+                ref=latest['packet'][key];desired=latest['assets'][ref['path']];old=self._optional(path)
+                allowed=[r['assets'][r['packet'][key]['path']] for r in view['records']]
+                # A later committed exhaustion report supersedes these historical reports.
+                if key=='failure' and view['state']['gate']=='declaration_closeout_required':
+                    closeout=self._closeout(proof)
+                    if closeout.get('committed') and 'failure_report' in closeout['packet']:
+                        ref=closeout['packet']['failure_report'];desired=closeout['assets'][0][1]
+                        self._synchronize(store,proof,closeout)
+                        for p,v in closeout['assets']+((closeout['reference']['path'],canonical_json_bytes(closeout['packet'])),):
+                            self.store.synchronize_existing(store._token,p,expected=v)
+                require(old is None or old==desired or old in allowed,'unowned Phase 2 failure report conflicts',path)
+                if old==desired:self.store.synchronize_existing(store._token,path,expected=desired)
+                elif old is None:store.publish(store._token,path,desired)
+                else:
+                    def validate(before,after,old=old,desired=desired):
+                        require(before==old and after==desired,'Reviewer failure projection changed')
+                        proof.guard(self.store.read);self._failure_view(proof)
+                    self.store.replace_pointer(store._token,path,expected=old,snapshot=ref,validate_transition=validate)
         before=self.store.read(STATE_PATH);state=decode_json(before)
         if view['records']:state[STATE_FIELD]=self._projection(view)
         else:state.pop(STATE_FIELD,None)
@@ -285,4 +295,9 @@ class _Failure(_Declaration):
 
 def owned_failure_mirror(run,raw):
     owner=_Failure(run);proof=owner._proof(owner.store.read);view=owner._failure_view(proof)
+    from whetstone.vnext_verified_phase2_correction_failure import supported as correction_supported
+    if correction_supported(proof):
+        from whetstone.vnext_phase2_report_projection import projections
+        plan=projections(owner,proof,reviewer=view)
+        return raw in plan.get(MIRRORS['failure'],{}).get('allowed',[])
     return any(r['committed'] and r['assets'][r['packet']['failure']['path']]==raw for r in view['records'])

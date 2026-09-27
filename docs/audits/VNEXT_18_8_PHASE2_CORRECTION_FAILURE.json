@@ -1,0 +1,197 @@
+{
+  "date": "2026-09-27",
+  "status": "validated_uncommitted",
+  "baseline_head": "2c01979fcf2ab687bede80c334372fa7e460cfb1",
+  "initial_worktree_clean": true,
+  "authority": "User authorized the bounded Editor/Verifier/candidate failure reporting implementation; D7 outcome/finality/retry rules and Phase 2 companion-report requirements supply authority. No new product decision assumed.",
+  "scope": "Internal standard horizontal unversioned Phase 2 original correction transactions; explicit evidence publication and separate owned report/state recovery. No new execution, retry, transaction, candidate disposition or public mode.",
+  "distinct_passing_methods": 69,
+  "passing_method_executions": 71,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-correction-failure-001/initial-validation.log",
+      "sha256": "a27599877fff835b3e55a12f9e6d9240bf05cdaae35526d33ef7706b500462b9",
+      "scope": "Six initial correction methods before final request/attempt binding, full source capture, projection checks and correction-only closeout changes.",
+      "methods": [
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_editor_timeout_success_and_promotion_preserve_history.test_editor_timeout_success_and_promotion_preserve_history",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_invalid_editor_shape_transport_and_deterministic_rejection.test_invalid_editor_shape_transport_and_deterministic_rejection",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_publication_projection_and_uncertain_state_recovery.test_publication_projection_and_uncertain_state_recovery",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_source_barriers_and_committed_report_tampering_refuse.test_source_barriers_and_committed_report_tampering_refuse",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_unstarted_and_retained_output_are_not_failures.test_unstarted_and_retained_output_are_not_failures",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_verifier_timeout_then_rejection_keeps_both_dispositions.test_verifier_timeout_then_rejection_keeps_both_dispositions"
+      ],
+      "count": 6
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-correction-failure-001/delivered-core-validation.log",
+      "sha256": "b7fbb36fe8fa701799e842350489399ac8a92028c7e588959e49a52f36e0c312",
+      "scope": "Delivered source: Editor continuation/history, expanded source/report/request tampering and uncertain publication/projection/state recovery, including fresh process.",
+      "methods": [
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_editor_timeout_success_and_promotion_preserve_history.test_editor_timeout_success_and_promotion_preserve_history",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_source_barriers_and_committed_report_tampering_refuse.test_source_barriers_and_committed_report_tampering_refuse",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_second_editor_failure_and_fresh_process_state_recovery.test_second_editor_failure_and_fresh_process_state_recovery"
+      ],
+      "count": 3
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-correction-failure-001/delivered-outcome-validation.log",
+      "sha256": "73fd46c1f20862815d16fad2e56e9a6c3a8054f41bed67d06ce5cbe070dd33a6",
+      "scope": "Delivered source: corrected Verifier outcome matrix, concrete operator choice and later correction/Reviewer projection ownership.",
+      "methods": [
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_verifier_invalid_shape_transport_and_prepared_decision.test_verifier_invalid_shape_transport_and_prepared_decision",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_operator_choice_is_final_rejection_and_not_resume.test_operator_choice_is_final_rejection_and_not_resume",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_later_failure_and_reviewer_reports_share_owned_projections.test_later_failure_and_reviewer_reports_share_owned_projections"
+      ],
+      "count": 3
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-correction-failure-001/delivered-lifecycle-validation.log",
+      "sha256": "eec2d8f3f21776b1e4d8acebe330dcd8ac60000214b443ef839153df1cb63450",
+      "scope": "Delivered source: mixed-history clean closeout, correction-only exhausted closeout, interrupted invocations and available shape retry.",
+      "methods": [
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_correction_history_through_later_reviewer_and_final_closeout.test_correction_history_through_later_reviewer_and_final_closeout",
+        "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_interrupted_invocation_and_available_shape_retry_do_not_invent_outcomes.test_interrupted_invocation_and_available_shape_retry_do_not_invent_outcomes"
+      ],
+      "count": 2
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-correction-failure-001/compatibility-validation.log",
+      "sha256": "c4a1e7106b3c6c9506b502b00b8d0c3440af98f69bf33ce15d927dba7bf8fea5",
+      "scope": "57 methods on old suites without the new correction pin: nine Reviewer failure methods, two correction journeys, existing clean/exhausted closeout and 44 contract/evaluation/declaration methods. New correction-only code was not selected. Final closeout branch retains the tested old-suite implementation unchanged.",
+      "methods": [
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_available_shape_retry_and_unstarted_request_are_not_failures.test_available_shape_retry_and_unstarted_request_are_not_failures",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_failure_history_survives_verified_promotion.test_failure_history_survives_verified_promotion",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_invalid_transport_and_shape_failures_keep_exact_causes.test_invalid_transport_and_shape_failures_keep_exact_causes",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_later_and_final_failed_reviews_reach_both_closeout_outcomes.test_later_and_final_failed_reviews_reach_both_closeout_outcomes",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_publication_and_uncertain_final_state_recover_without_clients.test_publication_and_uncertain_final_state_recover_without_clients",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_retained_response_and_uncertain_invocation_are_distinct.test_retained_response_and_uncertain_invocation_are_distinct",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_second_failure_replaces_owned_projection_and_closes_attempts.test_second_failure_replaces_owned_projection_and_closes_attempts",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_tampering_cache_and_unowned_reports_cannot_grant_continuation.test_tampering_cache_and_unowned_reports_cannot_grant_continuation",
+        "test_vnext_verified_phase2_failure.ReviewerFailureTests.test_timeout_publication_recovery_and_success_preserve_history.test_timeout_publication_recovery_and_success_preserve_history",
+        "test_vnext_verified_phase2_journey.Phase2JourneyTests.test_invalid_proposal_and_semantic_rejection_preserve_authority.test_invalid_proposal_and_semantic_rejection_preserve_authority",
+        "test_vnext_verified_phase2_journey.Phase2JourneyTests.test_deterministically_invalid_candidate_never_calls_verifier_or_promotes.test_deterministically_invalid_candidate_never_calls_verifier_or_promotes",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery",
+        "test_vnext_verified_phase2_termination.FinalTerminationTests.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance.test_exhaustion_publishes_full_failure_and_recovers_without_acceptance",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_fixture_evaluation_uses_the_exact_hash_checked_bytes.test_fixture_evaluation_uses_the_exact_hash_checked_bytes",
+        "test_vnext_suite_verified_bytes.SuiteVerifiedBytesTests.test_schema_parsing_uses_the_exact_hash_checked_bytes.test_schema_parsing_uses_the_exact_hash_checked_bytes",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_detects_declaration_only_work.test_declaration_revision_route_detects_declaration_only_work",
+        "test_declaration.DeclarationTests.test_declaration_revision_route_prefers_source_spec_work.test_declaration_revision_route_prefers_source_spec_work",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_contains_required_fields.test_render_convergence_declaration_contains_required_fields",
+        "test_declaration.DeclarationTests.test_render_convergence_declaration_rejects_conditional_status.test_render_convergence_declaration_rejects_conditional_status",
+        "test_declaration.DeclarationTests.test_validate_convergence_declaration_checks_hashes_and_counts.test_validate_convergence_declaration_checks_hashes_and_counts"
+      ],
+      "count": 57
+    }
+  ],
+  "source_snapshot_files": 551,
+  "source_snapshot_extensions": [
+    ".py",
+    ".json",
+    ".md"
+  ],
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/implementation-source-manifest.json",
+      "sha256": "e43ffe5a8694ea3fd588f81c4b071a19fdff3bf437d8988d0426b648192db14e"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/pre-lifecycle-fixture-source-manifest.json",
+      "sha256": "2fe9bf41f3bda54c31c5650773e2e074bceef62595d6fd974f33a129899e2946"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/delivered-source-manifest.json",
+      "sha256": "0a664faaa3991342e989f4f54b197152cdfa93489104829a7d6a1839051eb181"
+    }
+  ],
+  "source_scope": "Eight affected methods passed on delivered runtime/contract bytes. The final lifecycle-only fixture correction changed no other test method or runtime/contract source; both test-file snapshots are retained. Four other new methods retain their initial-source results; the final changes bind the request and invocation prefix, recheck before commit, require Reviewer reporting ownership support, capture/recheck complete source bytes, derive uncommitted terminal status and allow correction-only final exhaustion projection. The final eight include both technical roles, operator rejection, historical promotion, cross-role mirrors and both closeout outcomes. 57 old-suite compatibility methods passed before final opt-in-only changes. This is scoped cross-snapshot evidence, not all 69 methods rerun on delivered bytes or a full-repository qualification claim.",
+  "exploratory_evidence": [
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/exploratory.log",
+      "sha256": "5ce4df64e1a518b25ab01a4d897b71fdf6ca1244c2ce99e60a2d1ad1df03b44d"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/smoke.log",
+      "sha256": "033fba6d05654a51cf0f312aafde7d381c2b93c20ffbf64308b68832f4e26757"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/diagnostic.log",
+      "sha256": "13ebef409689bc8789070d59c47c5b878f8b3e555feefdd0d8d78a7d24e2b559"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/extended-validation.log",
+      "sha256": "2b8c336c66347416685af48533f1bd422316a4baeaaf25ec1747aefa945e53b4"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/lifecycle-validation.log",
+      "sha256": "4cbb2c18fe9a882e1d5ca2464f447ec6fe89e6ddab6e48e02d62d1346788e6fe"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/final-barrier-validation.log",
+      "sha256": "f1f1b2ab7b653a508a05d6129e76352308742108c9721209e9c0b7fdbbfe26c1"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-correction-failure-001/lifecycle-budget-exploratory.log",
+      "sha256": "ce5347ab9ed16b5f7a96f1eda06a2b83d99c247ea6d2e70d3568b78e86d04af0"
+    }
+  ],
+  "exploratory_limits": "Initial schema used unsupported maximum keyword; replaced with enum. An invalid-Verifier fixture added an unknown property and exercised shape repair; corrected to mismatched context_hash. The original exhausted lifecycle fixture carried a stale draft hash after promotion and inherited an unexhausted final-profile budget; the delivered fixture binds actual current draft and an immutable one-pass final budget. The budget-fixture run was stopped and restarted; its partial output is excluded. The old long lifecycle run was interrupted before completion and is excluded. Source review found missing explicit request/invocation binding and correction-only closeout ownership; both corrected and covered by delivered checks. Redundant full-history projection checks were replaced by exact checks of invocation-local validated sources and commits under D8. Earlier smoke/diagnostic and two barrier checks are excluded from the count.",
+  "completed_scope": [
+    "Exact Editor/Verifier technical failure causes, reproduced assembly failure, and final deterministic/semantic/operator-choice rejections retain actual authority and disposition.",
+    "Distinct immutable reports bind original Phase 2 provenance, client request and attempt prefix; valid retained output and available shape retry are not new failures.",
+    "Separate D8 publication and report/state recovery preserve immutable history through continuation, promotion and both final closeout outcomes.",
+    "Cross-role projections replace only committed owned bytes; unowned conflicts, source drift and modified evidence refuse.",
+    "Uncertain publication/mirror/state acknowledgement and fresh-process recovery stop without clients or duplicate credit."
+  ],
+  "limitations": [
+    "Explicit internal reporting APIs only; no automatic scheduler dispatch or generic Phase 2 resume. Existing component APIs keep their independent continuation gates; report owner advertises no resume.",
+    "Original correction transactions only. Phase 2 operator followup/new repair admission, conflict/oscillation/rubric resolution, declaration repair, version maintenance, broader modes and strop/readback remain open.",
+    "Corrupt authority or unsafe persistence errors propagate; a durable failure report is not fabricated when it cannot be safely published.",
+    "Local scripted clients on macOS/APFS, injected faults and fresh subprocess recovery. No live providers, physical power loss, process kill during a write, full repository or new legacy/bridge qualification campaign.",
+    "Historical replay remains computationally expensive; no general performance qualification is claimed."
+  ],
+  "remaining_feature_tasks": "All four 18.8 tasks and 18.9 remain incomplete.",
+  "frozen_suite_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+  "qualification_maps_empty": true,
+  "index_empty": true,
+  "diff_check_passed": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_external_transmission": true
+}
