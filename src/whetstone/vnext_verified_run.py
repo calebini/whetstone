@@ -196,6 +196,15 @@ class VerifiedRun:
     def phase2_signal_status(self):
         from whetstone.vnext_verified_phase2_signals import _Signals
         return _Signals(self).status()
+    def phase2_resolution_status(self):
+        from whetstone.vnext_verified_phase2_resolution import _Resolution
+        return _Resolution(self).status()
+    def publish_phase2_resolutions(self):
+        from whetstone.vnext_verified_phase2_resolution import _Resolution
+        return _Resolution(self).publish()
+    def reconcile_phase2_resolution_state(self):
+        from whetstone.vnext_verified_phase2_resolution import _Resolution
+        return _Resolution(self).recover()
     def publish_phase2_signals(self):
         from whetstone.vnext_verified_phase2_signals import _Signals
         return _Signals(self).publish()

@@ -45,7 +45,7 @@ class SignalTracker:
         self.conflicts = ConflictTracker()
         self.drafts.record_draft(round_number=number-1, draft_hash_value=draft_hash(raw.decode()), semantic_changes=[])
 
-    def record(self, number, feedback, *, before=None, after=None):
+    def record(self, number, feedback, *, before=None, after=None, resolved_opposition_keys=()):
         detections = []
         draft_detection = None
         if after is not None:
@@ -54,9 +54,10 @@ class SignalTracker:
             if found is not None:
                 draft_detection = asdict(found)
                 detections.append(found)
-        # Promotion alone is not a resolution receipt. Do not reset churn from
-        # candidate acceptance or a missing later finding (D7).
-        detections.extend(self.feedback.record_phase2_detections(round_number=number, reviewer_feedback=feedback))
+        # Only the separately pinned resolution owner supplies these keys from
+        # committed evidence before this review. Promotion/silence alone do not.
+        detections.extend(self.feedback.record_phase2_detections(round_number=number, reviewer_feedback=feedback,
+            resolved_opposition_keys=set(resolved_opposition_keys)))
         conflicts = {r['conflict_fingerprint']: r for r in
                      (conflict_from_oscillation_detection(d) for d in detections if d.recommendation == 'escalate_conflict')}
         escalation = self.conflicts.record_round(round_number=number, conflicts=conflicts.values())

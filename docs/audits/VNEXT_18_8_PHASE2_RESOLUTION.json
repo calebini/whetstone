@@ -1,0 +1,169 @@
+{
+  "date": "2026-09-27",
+  "status": "validated_uncommitted",
+  "baseline_head": "68a8f6f724b874b87e8261cd3fb00f58a0bb4657",
+  "initial_worktree": "Only notes/future-improvements.md was modified before this slice; the user edit is preserved and excluded.",
+  "authority": "User authorized the bounded slice. Identity/oscillation intervening-resolution rule, candidate verification-derived finding status and scheduler D7/D8 supply authority. No new mutation authority.",
+  "scope": "Separately pinned standard horizontal unversioned V Phase 2 resolution receipts and recovery-only state projection. No public qualification, push, commit, external transmission or specification edits.",
+  "distinct_passing_methods": 59,
+  "passing_executions": 62,
+  "cohorts": [
+    {
+      "log": "rounds/vnext-18-8-phase2-resolution-001/delivered-shared-validation.log",
+      "sha256": "c59df8ee1aead86d1f0d06794dcdc96672db3f0a795a76dd102f94c30cf45305",
+      "count": 53,
+      "methods": [
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_computes_identity_fields",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_controlled_terms",
+        "test_oscillation.OscillationCanonicalizationTests.test_canonicalize_phase_2_feedback_rejects_unknown_section_id",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_draft_cycle_after_real_change",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_churn_after_three_cumulative_appearances",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_feedback_flip_flop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_mechanical_churn_without_stop",
+        "test_oscillation.OscillationCanonicalizationTests.test_tracker_detects_readdition_and_then_repeated_readdition_stop",
+        "test_conflicts.ConflictTrackerTests.test_absent_round_resets_consecutive_count_but_preserves_total",
+        "test_conflicts.ConflictTrackerTests.test_conflict_severity_is_computed_from_participating_issues_when_available",
+        "test_conflicts.ConflictTrackerTests.test_conflict_state_round_trips_and_preserves_escalation_counters",
+        "test_conflicts.ConflictTrackerTests.test_consecutive_conflict_escalates_on_second_round",
+        "test_conflicts.ConflictTrackerTests.test_nonconsecutive_conflict_escalates_on_third_appearance",
+        "test_evaluation.EvaluationTests.test_accepted_draft_rejects_blockers_and_majors",
+        "test_evaluation.EvaluationTests.test_conflict_severity_uses_participating_issue_max",
+        "test_evaluation.EvaluationTests.test_mid_permissive_allows_major_but_not_blocker",
+        "test_evaluation.EvaluationTests.test_oscillation_recommendation_table",
+        "test_evaluation.EvaluationTests.test_target_matrix_final_strict_requires_declaration_and_no_gaps",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_partial_rejected_duplicate_and_unrelated_findings_never_resolve",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_reset_is_key_specific_and_does_not_clear_readdition_or_flip_flop",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_residuals_require_verified_coverage_and_recurrence_reopens"
+      ],
+      "scope": "Oscillation, conflict, evaluation, pinned-contract regression and pure resolution rules."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-resolution-001/delivered-validation.log",
+      "sha256": "91ff1663b3142fd5434dbc3513b291b56a48535978848a02a077146f3c06f85e",
+      "count": 4,
+      "methods": [
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_partial_rejected_duplicate_and_unrelated_findings_never_resolve",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_reset_is_key_specific_and_does_not_clear_readdition_or_flip_flop",
+        "test_vnext_verified_phase2_resolution.ResolutionRulesTests.test_residuals_require_verified_coverage_and_recurrence_reopens",
+        "test_vnext_verified_phase2_resolution.ResolutionRuntimeTests.test_publication_prefixes_state_uncertainty_and_tampering_fail_closed"
+      ],
+      "scope": "Credit only the four passing methods: three pure rules and D8 publication/state uncertainty, drift/tampering and unknown claims. The following method stopped on an incorrect pre-promotion test expectation; corrected separately."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-resolution-001/journey-validation.log",
+      "sha256": "13213b6f80f3950cfcff26a1ef890c79cc561b1aee8a94e467695829080800ca",
+      "count": 2,
+      "methods": [
+        "test_vnext_verified_phase2_resolution.ResolutionRuntimeTests.test_receipt_gates_next_review_preserves_residuals_and_resets_once",
+        "test_vnext_verified_phase2_resolution.ResolutionRuntimeTests.test_rejected_partial_candidate_has_no_resolution_receipt"
+      ],
+      "scope": "Corrected pre-promotion expectation, receipt gate, residual retention, reset timing, and rejected partial candidate; delivered sources."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-resolution-001/history-validation.log",
+      "sha256": "61f28ab7070837ffd301b1ac3bf967a576d0bef385198d1a89360a1029acada5",
+      "count": 1,
+      "methods": [
+        "test_vnext_verified_phase2_resolution.ResolutionRuntimeTests.test_second_receipt_extends_history_without_rewriting_first"
+      ],
+      "scope": "Two genuine Phase 2 corrections/promotions with linked receipts, retained unadmitted issue, exact original-base replay and unchanged earlier receipt bytes."
+    },
+    {
+      "log": "rounds/vnext-18-8-phase2-resolution-001/compatibility-validation.log",
+      "sha256": "8afd0245a9fa690c301966d7f17c17da6c27bb506e83caa778c680f239b1b268",
+      "count": 2,
+      "methods": [
+        "test_vnext_verified_phase2_sequence.Phase2SequenceTests.test_later_correction_promotes_and_replays_original_bases",
+        "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_nonblocking_conflict_survives_promotion_and_clean_closeout"
+      ],
+      "scope": "Existing suites without the resolution pin: later corrections across two promotions and nonblocking conflict history through promotion and clean closeout."
+    }
+  ],
+  "delivered_source_count": 562,
+  "pre_history_test_source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-resolution-001/pre-history-test-source-manifest.json",
+    "sha256": "6175309712389d94465e28f8c899000c25c99e6df87d7665d39056a12376bef1"
+  },
+  "pre_assertion_source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-resolution-001/pre-assertion-source-manifest.json",
+    "sha256": "9ba0dd12e61601b7378c56ad1b5f9e58d05c10e09eb6c35ab7b6780a6a655f6d"
+  },
+  "source_manifest": {
+    "path": "rounds/vnext-18-8-phase2-resolution-001/delivered-source-manifest.json",
+    "sha256": "bc2f14270199a26a0ab3bf82d3f8a561a394330c522a58716e5607d65304a9d5"
+  },
+  "boundary_check": {
+    "path": "rounds/vnext-18-8-phase2-resolution-001/boundary-check.json",
+    "sha256": "e21f2b97141b7309caf3a644b2ab7cb8e81af3a71c2e9596cb3af41f8b8c61ae"
+  },
+  "completed": [
+    "Exact promoted-correction joins to canonical feedback and whole-finding semantic results.",
+    "Versioned accepted-or-modified union summary and unresolved snapshot retain unverified issues.",
+    "Next-review receipt gate and key-specific churn reset, preserving current diagnostics, other signal history, cleanliness and budgets.",
+    "Read-only status, D8 publication and state-only recovery with source/output barriers and lost-acknowledgement reentry.",
+    "Opt-in-only integration and selected older-suite compatibility."
+  ],
+  "remaining": [
+    "Freeze resolution",
+    "Actual declaration repair",
+    "Operator followups/new repair admission",
+    "Rubric handling",
+    "Broader scheduler modes",
+    "Version maintenance",
+    "Strop/readback",
+    "18.9 release qualification/public activation"
+  ],
+  "exploratory_runs": [
+    {
+      "path": "rounds/vnext-18-8-phase2-resolution-001/initial.log",
+      "sha256": "02e1956e51c9dd0cef55788effc11953ac52b3691cc4217a89d0d108176d6c65"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-resolution-001/fault-validation.log",
+      "sha256": "046414bfe0f5ef55b448aa9af97178474740af631f8559c40f24ccde03a59e3a"
+    },
+    {
+      "path": "rounds/vnext-18-8-phase2-resolution-001/shared-validation.log",
+      "sha256": "b2500d8a064639d00df63d9465c410d5b7c8364467502011926ae685ed636e65"
+    }
+  ],
+  "exploratory_limits": "Initial summary schema incorrectly restricted feedback IDs to a prefix; corrected to the existing non-empty-string rule. A schema change during two old-fixture runs correctly triggered pinned-suite mismatch. These failed/superseded runs are excluded. The initial delivered cohort passed four methods before a test expected a record list at a valid pre-promotion D7 gate; corrected to promotion_required and rerun. Only that assertion changed after the four passing methods; their methods/helpers and runtime/contracts are unchanged. The corrected journey and rejected-candidate methods/helpers are unchanged on delivered sources; a separately run two-promotion history method was subsequently appended without changing other tests or runtime/contracts.",
+  "limits": [
+    "Injected local clients only; no external provider calls.",
+    "Filesystem fault injection and reopen, not physical power-loss/process-death qualification.",
+    "Selected tests only; no full-repository or performance qualification.",
+    "Resolution receipts do not change residual policies in other report owners or resolve other open gates."
+  ]
+}

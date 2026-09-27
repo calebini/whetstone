@@ -172,6 +172,10 @@ def sequence(proof, *, through=None):
     if signals_supported(proof):
         signal_pins(proof)
         signals = SignalTracker(first.request['round_number'], prefix.values(prefix.latest)['base'])
+    from whetstone.vnext_phase2_resolution import supported as resolution_supported, pins as resolution_pins
+    resolutions = resolution_supported(proof)
+    if resolutions: resolution_pins(proof)
+    pending_resets = ()
     scheduler = PhaseScheduler(ProfileStep(r['name'],round_budget=r['budget'],repeat_if_blockers=True)
                                for r in binding.configuration['profiles'])
     claims = _claims(evidence) if through is None else list(range(2,through-first.request['round_number']+2))
@@ -218,7 +222,7 @@ def sequence(proof, *, through=None):
             gate='result_consumption_required';break
         if through == owner.number:
             if signals is not None:
-                frame['signals'] = signals.record(owner.number, review['feedback'])
+                frame['signals'] = signals.record(owner.number, review['feedback'], resolved_opposition_keys=pending_resets)
             return dict(frames=frames,gate='historical',owner=owner)
         if bound.request['schema_version'] == 'vnext-phase2-review-request-v3':
             serious = any(r['in_scope'] and r['normalized_severity'] in {'major','blocker'}
@@ -226,7 +230,7 @@ def sequence(proof, *, through=None):
             scheduler.record_result(step.profile,blocker_count=int(serious),major_count=0)
             if not serious: clean.add(step.profile)
             if signals is not None:
-                frame['signals'] = signals.record(owner.number, review['feedback'])
+                frame['signals'] = signals.record(owner.number, review['feedback'], resolved_opposition_keys=pending_resets)
                 frame['signal_reference'] = deepcopy(reference)
                 frame['signal_profiles'] = deepcopy(scheduler.status())
             gate='declaration_closeout_required'
@@ -272,11 +276,20 @@ def sequence(proof, *, through=None):
         scheduler.record_result(step.profile,blocker_count=int(serious),major_count=int(not serious and mutated))
         if scheduler.states[step_index].residual_status is not None and gate=='review': gate='budget_exhausted'
         if signals is not None:
-            frame['signals'] = signals.record(owner.number, review['feedback'], before=oldbase, after=newbase)
+            frame['signals'] = signals.record(owner.number, review['feedback'], before=oldbase, after=newbase,
+                resolved_opposition_keys=pending_resets)
             frame['signal_reference'] = deepcopy(reference)
             frame['signal_profiles'] = deepcopy(scheduler.status())
             frame['ordinary_gate'] = gate
             gate = gate_for(frame['signals'], gate)
+        pending_resets = ()
+        if resolutions and successor is not None:
+            from whetstone.vnext_phase2_resolution import record as resolution_record
+            frame['resolution'] = resolution_record(tracked, frames, successor, view['binding'])
+            if frame['resolution']['committed']:
+                pending_resets = frame['resolution']['packet']['reset_opposition_keys']
+            elif gate == 'review':
+                gate = 'resolution_publication_required'
         # Existing declarations require their own maintenance/verification owner.
         from whetstone.vnext_verified_phase2_closeout import supported as closeout_supported
         if not closeout_supported(proof) and any(owner._optional(path) is not None for path in
@@ -285,6 +298,9 @@ def sequence(proof, *, through=None):
     else:
         raise ValueError('Phase 2 sequence scan did not reach a boundary')
     if through is not None: require(False,'Phase 2 round lacks committed sequence consumption')
+    if resolutions:
+        from whetstone.vnext_phase2_resolution import validate_claims
+        validate_claims(evidence, frames)
     # A suffix cannot lurk beyond a pending result or a terminal gate.
     if frames and gate != 'review':
         require(len(claims)+1<=len(frames),'Phase 2 successor bypasses incomplete predecessor')

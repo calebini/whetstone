@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-phase2-resolution-summary-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "round_number",
+    "draft_before_hash",
+    "draft_after_hash",
+    "accepted_or_modified_feedback_ids",
+    "resolved_issue_ids",
+    "unresolved_issue_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-phase2-resolution-summary-v1"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "draft_before_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "draft_after_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "accepted_or_modified_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "resolved_issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^iss_[0-9a-f]{16}$"
+      },
+      "uniqueItems": true
+    },
+    "unresolved_issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^iss_[0-9a-f]{16}$"
+      },
+      "uniqueItems": true
+    }
+  }
+}
