@@ -81,6 +81,8 @@ from the selected receipt and original source evidence on every invocation.
     baseline=prepare_unit_preflight(**arguments)
     context=SemanticContext(canonical_json_bytes(evidence['source_context']))
     source=context.packet
+    if arguments.get('vertical') is not None:
+        require(source.get('vertical') == arguments['vertical'], 'semantic follow-up vertical sources changed')
     if arguments.get('phase2') is not None:
         require(source.get('phase2') == arguments['phase2'],
                 'semantic follow-up Phase 2 configuration or request changed')

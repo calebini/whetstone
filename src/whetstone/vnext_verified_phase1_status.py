@@ -45,6 +45,7 @@ class VerifiedPhase1Status:
     all_profiles_clean: bool | None
     focused_profile: str | None = None
     focused_profile_clean: bool | None = None
+    review_round_budget: int | None = None
 
 
 def _profiles(proof, profiles, frames):
@@ -83,6 +84,9 @@ def inspect_verified_phase1(run):
         clean = all(row.clean for row in profiles)
         if gate == 'review': number = len(frames) + 1
         elif gate in {'pending', 'finding_admission'}: number = frames[-1].request.number
+        from whetstone.vnext_verified_vertical_phase1 import enabled, sequence
+        if enabled(proof.seed_values['review']):
+            number = sequence(proof).number if gate in {'review', 'pending', 'finding_admission', 'merge_required'} else None
         if gate == 'pending': attempts = len(frames[-1].outcomes)
     proof.guard(run.store.read)
     run._guard(run.store.read)
@@ -90,4 +94,6 @@ def inspect_verified_phase1(run):
     return VerifiedPhase1Status(deepcopy(work.current_pointer), work.outcome,
         deepcopy(work.latest_candidate), deepcopy(work.promotion_candidate), work.pending_paths,
         orphans, profiles, gate, selected, number, attempts,
-        False if focused and clean is not None else clean, focused, clean if focused else None)
+        False if focused and clean is not None else clean, focused, clean if focused else None,
+        (sum(p.round_budget for p in profiles) + max(p.round_budget for p in profiles))
+        if profiles and proof.seed_values['review']['review_mode'] == 'vertical' else None)

@@ -124,20 +124,29 @@ def _read_review_prefix(proof, *, through_round=None, require_complete=False):
             match = re.fullmatch(r'request-([1-9][0-9]*)\.json', name)
             require(match is not None and kind == 'file', 'invalid V Reviewer sequence claim')
             numbers.append(int(match[1]))
-        require(sorted(numbers) == list(range(1, len(numbers) + 1)), 'V Reviewer sequence has an ordinal gap')
-        count = len(numbers)
+        from whetstone.vnext_verified_vertical_phase1 import enabled
+        if not enabled(proof.seed_values['review']):
+            require(sorted(numbers) == list(range(1, len(numbers) + 1)), 'V Reviewer sequence has an ordinal gap')
+        numbers = sorted(numbers)
     else:
         require(type(through_round) is int and through_round > 0, 'invalid V Reviewer prefix boundary')
-        count = through_round
+        from whetstone.vnext_verified_vertical_phase1 import enabled
+        numbers = list(range(1, through_round + 1))
+        if enabled(proof.seed_values['review']):
+            numbers = []
+            for n in range(1, through_round):
+                try: proof.store.read(f'rounds/review_index/request-{n}.json')
+                except FileNotFoundError: continue
+                numbers.append(n)
     frames, previous = [], None
-    for number in range(1, count + 1):
+    for number in numbers:
         path = f'rounds/review_index/request-{number}.json'
         raw = proof.store.read(path)
         header = proof.reader.json({'path': path, 'hash': sha256_bytes(raw)}, 'vnext_review_request_v2')
         request = _VerifiedReviewRequest(_ReviewInputs(proof.store, proof, header['base_pointer']), number, header['profile'])
         replayed, outcomes, review, receipt = request.read_claim(previous)
         require(replayed == header and canonical_json_bytes(replayed) == raw, 'V Reviewer claim changed during replay')
-        require(receipt is not None or (number == count and not require_complete),
+        require(receipt is not None or (number == numbers[-1] and not require_complete),
                 'V Reviewer prefix has an incomplete source request')
         frames.append(_ReviewFrame(request, deepcopy(header), tuple(outcomes), deepcopy(review), deepcopy(receipt)))
         previous = sha256_bytes(raw)

@@ -150,6 +150,10 @@ class ProposalAdmission:
                    for b in values['authority']['bindings'] if b['role'] not in {'mutable_target','excluded'}}
         values.update(feedback=feedback, feedback_ref=record['feedback'], advice=advice,
                       constraints=record['constraints'], decisions=decisions, context=context)
+        if values['job']['editing_mode'] == 'verified_promotion' and feedback['profile'] == 'vertical':
+            from whetstone.vnext_verified_vertical_phase1 import context
+            values['vertical'] = context(reader, round_number, review=values['review'],
+                job=values['job'], base_pointer=values['base_pointer_ref'])
         prepare_unit_preflight(**values)
         return values
 

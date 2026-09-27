@@ -260,6 +260,6 @@ class VerifiedPhase2EligibilityTests(unittest.TestCase):
         self.assertEqual(client.calls, 0)
         f, client = self.start(phase2_eligibility_contract=True, mode='vertical')
         before = self.files(f)
-        with self.assertRaisesRegex(ValueError, 'standard horizontal'): f.run.phase2_eligibility()
+        with self.assertRaisesRegex(ValueError, 'vertical Phase 1 contract'): f.run.phase2_eligibility()
         self.assertEqual(self.files(f), before)
         self.assertEqual(client.calls, 0)

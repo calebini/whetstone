@@ -107,6 +107,8 @@ def prepare_semantic_context(*, proposal_inputs, proposal, creation, creation_re
         },
         'preservation_report': report, 'semantic_obligations': obligations,
     }
+    if proposal_inputs.get('vertical') is not None:
+        packet['vertical'] = proposal_inputs['vertical']
     if proposal_inputs.get('phase2') is not None:
         from whetstone.vnext_phase2_operator import supported, pins
         if supported(proposal_inputs['suite']):

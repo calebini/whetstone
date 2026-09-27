@@ -45,22 +45,22 @@ class UnitProposalPreflight:
 
 def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_map,review,
                            feedback,feedback_ref,advice,constraints,context,suite,
-                           base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None,phase2=None,phase2_repair=None):
+                           base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None,phase2=None,phase2_repair=None,vertical=None):
     if semantic_followup is not None:
         if phase2 is not None:
             from whetstone.vnext_phase2_operator import pins
             pins(suite)
         arguments={key:value for key,value in locals().copy().items()
-                   if key not in {'semantic_followup', 'pins'} and (key != 'phase2' or phase2 is not None)
+                   if (key != 'vertical' or vertical is not None) and key not in {'semantic_followup', 'pins'} and (key != 'phase2' or phase2 is not None)
                    and (key != 'phase2_repair' or phase2_repair is not None)}
         from whetstone.vnext_semantic_followup_preflight import prepare_followup_preflight
         return prepare_followup_preflight(arguments,semantic_followup)
     if phase2_repair is not None:
-        arguments={key:value for key,value in locals().copy().items() if key not in {'semantic_followup','phase2_repair'}}
+        arguments={key:value for key,value in locals().copy().items() if (key != 'vertical' or vertical is not None) and key not in {'semantic_followup','phase2_repair'}}
         from whetstone.vnext_phase2_repair import prepare
         return prepare(arguments,phase2_repair)
     # Omitting the new optional consumer retains the exact original preimage.
-    raw_arguments={key:value for key,value in locals().copy().items() if key not in {'suite','semantic_followup','phase2_repair'} and (key != 'phase2' or phase2 is not None)}
+    raw_arguments={key:value for key,value in locals().copy().items() if (key != 'vertical' or vertical is not None) and key not in {'suite','semantic_followup','phase2_repair'} and (key != 'phase2' or phase2 is not None)}
     digest=sha256_bytes(canonical_json_bytes(input_projection({**raw_arguments,
         'suite_version':suite.version,'suite_digest':suite.digest})))
     rules=discovery_rules(invariants)
@@ -82,7 +82,13 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
         from whetstone.vnext_verified_phase2_preflight import validate_phase2_context
         profiles = validate_phase2_context(phase2, job=job, review=review, feedback=feedback,
             base_map=base_map, base_pointer_ref=base_pointer_ref, suite=suite)
-    require(feedback['reviewer']==review['reviewer'] and feedback['profile'] in {p['name'] for p in profiles},
+    reviewer = review['reviewer']
+    if vertical is not None:
+        require(phase2 is None, 'vertical Phase 1 cannot carry Phase 2 context')
+        from whetstone.vnext_verified_vertical_phase1 import validate_context, MERGER
+        validate_context(vertical, suite=suite, job=job, review=review, feedback=feedback, advice=advice, base_pointer=base_pointer_ref)
+        profiles, reviewer = [{'name': 'vertical'}], MERGER
+    require(feedback['reviewer']==reviewer and feedback['profile'] in {p['name'] for p in profiles},
             'preflight feedback differs from pinned Reviewer or profile')
     require(scope is None or (scope['status']=='approved' and scope['approval']['approved']), 'preflight scope must be approved')
     if base_inventory is None:
@@ -123,6 +129,7 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
     packet.update(base_inventory=inventory,discovery_rules=rules,editor=deepcopy(review['editor']),
         operator_unit_decisions=[{'request':b.request,'response':b.response} for b in bindings])
     if phase2 is not None: packet['phase2'] = deepcopy(phase2)
+    if vertical is not None: packet['vertical'] = deepcopy(vertical)
     prompt=(
         'Produce one JSON object with schema_version = vnext-proposal-response-v2, patch and payloads.\n'
         'The patch follows patch-set-client-v2. proposal_id is null, operation IDs are local labels, '

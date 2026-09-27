@@ -124,7 +124,7 @@ for this bundle. Focused Reviewer timeout, shape retry and retained-response
 continuation are tested; this does not qualify every focused Editor/Verifier fault
 combination or a new generic resume interface.
 
-**Next bounded bundle:** vertical Phase 1 integration. Preserve independent
+**Focused-bundle handoff (now checkpointed at `1d39057`):** vertical Phase 1 integration. Preserve independent
 profile reviews on the same verified draft, deterministic finding provenance and
 ID collision handling, one consolidated V correction, and all-profile re-review
 after promotion. Finish that bundle's status, exhaustion and recovery cases
@@ -145,3 +145,12 @@ source delta from the delivery manifest; tests were not rerun for it. The audit
 retains its historical pre-commit status. The checkpoint excludes the unrelated
 notes edit; M2 remains incomplete. Push, activation and external writes remain
 deferred.
+
+
+## Vertical follow-on — 2026-09-27
+
+The user authorized the next implementation slice after the focused checkpoint.
+The [vertical handoff](VNEXT_18_8_M2_VERTICAL.md) records its implementation,
+verification and limits. Its subsequently authorized local checkpoint does not alter the focused audit’s
+historical evidence. Budget-extension/continuation and cross-route acceptance
+remain open. The vertical bundle’s local commit is authorized; push remains deferred.

@@ -49,20 +49,24 @@ def failure(proof, frames, progress, *, existing=None, generated_at=None):
 
 def round_assets(request, review=None):
     values = request.preflight.arguments
-    if focused_profile(values['review']) is None: return {}
+    from whetstone.vnext_verified_vertical_phase1 import enabled
+    vertical = enabled(values['review'])
+    if focused_profile(values['review']) is None and not vertical: return {}
     from whetstone.scheduler import REVIEW_PROFILE_DEFINITIONS
     prefix = f'rounds/round-{request.number}'
     raw = values['base']
     profile = REVIEW_PROFILE_DEFINITIONS[request.profile]
     # Full draft review plus conservative invalidation: pin all actual section IDs.
-    metadata = dict(profile=request.profile, round_kind='review_editor',
+    metadata = dict(profile=request.profile, round_kind='review_only' if vertical else 'review_editor',
         focus=list(profile.focus), resolved_focus_anchors=[r['canonical_section_id'] for r in values['base_map']['sections']],
-        focused=True)
+        focused=not vertical)
     assets = {prefix+'/draft_before.md': raw, prefix+'/profile_used.yaml': canonical_json_bytes(metadata),
         prefix+'/prompt_snapshot.json': canonical_json_bytes(dict(request_id=request.id,
             input_hash=request.preflight.input_hash, base_pointer=values['base_pointer_ref'],
             original_prompt_path=request.directory+'/original_prompt.txt'))}
-    if review is not None and not any(row['classification'] != 'deferable' for row in review['findings']):
+    if vertical:
+        assets[prefix+'/context_snapshot.json'] = canonical_json_bytes(values['context'])
+    if review is not None and (vertical or not any(row['classification'] != 'deferable' for row in review['findings'])):
         digest = review['feedback']['draft_hash']
         summary = dict(round_number=request.number, draft_before_hash=digest, draft_after_hash=digest,
             accepted_feedback_ids=[], modified_feedback_ids=[], declined_feedback=[], created_conflict_ids=[],

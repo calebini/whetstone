@@ -26,6 +26,10 @@ def prepare_verified_review(inputs, *, round_number, profile):
     reader, values, pointer = inputs.values()
     require(values['job']['editing_mode'] == 'verified_promotion', 'verified Reviewer requires V mode')
     validate_verified_review_contract(reader.suite)
+    if values['review']['review_mode'] == 'vertical':
+        from whetstone.vnext_verified_vertical_phase1 import pins
+        pins(reader.suite)
+        require(values['review']['workflow'] == 'standard', 'vertical V review requires standard workflow')
     require(type(round_number) is int and round_number > 0, 'invalid verified Reviewer round')
     require(profile in {row['name'] for row in values['review']['profiles']}, 'Reviewer profile is outside pinned configuration')
     from whetstone.vnext_review_configuration import focused_profile

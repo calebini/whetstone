@@ -51,10 +51,18 @@ class _OperatorStatus(_Closeout):
         else:
             changed = state.get(STATE_FIELD) != reference
             state[STATE_FIELD] = deepcopy(reference)
-            if closeout.evidence.get('focused_profile') is not None:
+            vertical = 'vertical_merges' in closeout.evidence
+            if closeout.evidence.get('focused_profile') is not None or vertical:
                 focused_state = dict(terminal_state=closeout.report['terminal_state'],
                     ready_for_phase_2=False, current_draft_status='not_accepted',
                     last_accepted_draft_hash=None)
+                if vertical:
+                    stable = closeout.report['terminal_state'] == 'PHASE_1_STABLE'
+                    focused_state.update(ready_for_phase_2=stable,
+                        review_round_budget=closeout.evidence['review_round_budget'],
+                        current_round=closeout.evidence['round_number'],
+                        current_draft_status='phase_1_stable' if stable else 'not_accepted',
+                        last_accepted_draft_hash=closeout.report['current_verified_draft_hash'] if stable else None)
                 changed = changed or any(state.get(key) != value for key, value in focused_state.items())
                 state.update(focused_state)
         return raw, canonical_json_bytes(state) if changed else raw, stale

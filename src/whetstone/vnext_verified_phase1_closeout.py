@@ -112,6 +112,8 @@ class _Closeout(VerifiedReview):
                          for row in frame.review['feedback']['feedback']
                          if row['normalized_severity'] in {'major', 'blocker'})
         focused = focused_profile(proof.seed_values['review'])
+        from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, completed_round
+        vertical = enabled(proof.seed_values['review'])
         accepted = focused is None and not missing and not blocking
         report = report_ref = evidence = evidence_ref = None
         pending = ()
@@ -133,9 +135,12 @@ class _Closeout(VerifiedReview):
                 accepted=accepted, missing_review_profiles=list(missing), unclean_profiles=list(unclean),
                 global_blocking_findings=list(blocking), terminal_report=report_ref)
             evidence_schema = SCHEMA
-            if focused:
+            if focused or vertical:
                 from whetstone.vnext_verified_focused_phase1 import directory, failure
                 prefix = directory(proof, frames)
+                if vertical:
+                    from whetstone.vnext_verified_vertical_phase1 import failure
+                    prefix = 'rounds/vertical_phase1/' + proof.latest['hash'] + '-' + str(frames[-1].request.number)
                 if not stable:
                     path = prefix+'/technical_failure_report.json'
                     technical = failure(proof, frames, progress, existing=self._optional(path), generated_at=generated_at)
@@ -144,9 +149,17 @@ class _Closeout(VerifiedReview):
                     review_configuration=deepcopy(self.run._record['review_configuration']),
                     focused_profile=focused, technical_failure=technical_ref)
                 evidence_schema = 'vnext_verified_phase1_closeout_v2'
+                if vertical:
+                    evidence.pop('focused_profile')
+                    vertical_state = sequence(proof)
+                    evidence.update(schema_version='vnext-verified-phase1-closeout-v3',
+                        round_number=completed_round(vertical_state),
+                        review_round_budget=sum(p.round_budget for p in progress) + max(p.round_budget for p in progress),
+                        vertical_merges=[_ref(f"rounds/round-{m[0]['round_number']}/vertical_merge.json", m[0]) for m in vertical_state.merges])
+                    evidence_schema = 'vnext_verified_phase1_closeout_v3'
             proof.reader.suite.registry.validate(evidence, evidence_schema)
             evidence_ref = _ref('rounds/phase1_closeouts/closeout-' + sha256_bytes(canonical_json_bytes(evidence)) + '.json', evidence)
-            if focused: evidence_ref = _ref(prefix+'/closeout.json', evidence)
+            if focused or vertical: evidence_ref = _ref(prefix+'/closeout.json', evidence)
             stored_report = self._optional(report_ref['path'])
             stored_evidence = self._optional(evidence_ref['path'])
             require(stored_report is None or stored_report == canonical_json_bytes(report), 'Phase 1 terminal report conflicts with replay')
@@ -179,6 +192,8 @@ class _Closeout(VerifiedReview):
                                              frame.request.number, frame.request.profile)
             request.synchronize(store._token, frame.header, frame.outcomes)
             request.finish(store._token, frame.review)
+        from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, synchronize
+        if enabled(proof.seed_values['review']): synchronize(store, proof, sequence(proof))
         checked = self.evaluate(proof, generated_at=(closeout.technical_failure or {}).get('generated_at'))
         require(checked.evidence == closeout.evidence, 'Phase 1 closeout changed during source synchronization')
         return checked
