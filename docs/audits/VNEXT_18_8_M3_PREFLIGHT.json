@@ -1,0 +1,59 @@
+{
+  "status": "m3_authority_decision_pending",
+  "baseline_head": "5a12cd514ce2267ec32e6dacd18c44f5903d8322",
+  "implemented": false,
+  "runtime_changed": false,
+  "normative_specs_changed": false,
+  "proposal": "docs/VNEXT_18_8_M3.md",
+  "distinct_passing_methods": 32,
+  "command": "PYTHONPATH=src:tests python3 -m unittest -v test_versioning test_vnext_candidate_validation test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_whole_major_noop_enters_but_required_version_changes_refuse_without_writes test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_entry_commit_is_distinct_preserves_authority_and_reentry_only_synchronizes",
+  "files": [
+    {
+      "path": "rounds/vnext-18-8-m3-authority-001/sources.json",
+      "sha256": "ec59bdfed7ed032217c55f4660aa6eb4dcf680b1f996a7f1dba065dc63cbb407"
+    },
+    {
+      "path": "rounds/vnext-18-8-m3-authority-001/preflight-tests.log",
+      "sha256": "44894df233e5327c9fb9d819ce6daf9c2d71099f35aced127cf4b083a31cf90d"
+    }
+  ],
+  "tests": [
+    "test_versioning.VersioningTests.test_normalize_editor_version_anchor_restores_pre_round_version",
+    "test_versioning.VersioningTests.test_promote_spec_file_allows_stable_unversioned_spec",
+    "test_versioning.VersioningTests.test_promote_spec_file_requires_stable_phase1_gate",
+    "test_versioning.VersioningTests.test_promote_spec_file_updates_spec_history_and_state",
+    "test_versioning.VersioningTests.test_promote_spec_text_skips_unversioned_specs",
+    "test_versioning.VersioningTests.test_promote_spec_text_supports_status_version_when_heading_has_no_version",
+    "test_versioning.VersioningTests.test_promote_spec_text_supports_version_field_when_heading_has_no_version",
+    "test_versioning.VersioningTests.test_promote_spec_text_updates_root_heading_only",
+    "test_versioning.VersioningTests.test_promoted_phase2_version_rounds_up_to_whole_major",
+    "test_versioning.VersioningTests.test_stamp_spec_text_for_round_rejects_four_component_versions_instead_of_partial_parse",
+    "test_versioning.VersioningTests.test_stamp_spec_text_for_round_supports_patch_status_version_and_demotes_accepted_phase1",
+    "test_versioning.VersioningTests.test_stamp_spec_text_for_round_supports_status_version_when_heading_has_no_version",
+    "test_versioning.VersioningTests.test_stamp_spec_text_for_round_updates_root_heading_only",
+    "test_versioning.VersioningTests.test_stamped_round_version_increments_patch_versions_without_rewriting_scheme",
+    "test_versioning.VersioningTests.test_stamped_round_version_increments_phase1_hundredths",
+    "test_versioning.VersioningTests.test_stamped_round_version_increments_phase2_decimal_counter",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_actual_section_budget_counts_new_descendants",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_actual_unit_budget_fails_even_when_editor_declares_clarification",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_altered_candidate_map_and_bytes_produce_bound_failed_reports",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_ambiguity_does_not_hide_an_independently_known_deletion",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_ambiguous_correspondence_retains_failure_without_inventing_unit_ids",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_blocking_assertions_fail_and_semantic_assertions_remain_outstanding",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_exact_named_weakening_passes_deterministic_gate_but_requires_semantics",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_invalid_immutable_bindings_refuse_before_candidate_assessment",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_known_weakening_and_silent_deletion_fail_with_exact_unit_ids",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_passing_merge_reports_every_predecessor_and_pending_semantics",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_payload_readback_failure_still_produces_a_failed_report",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_persisted_report_cannot_hide_failures_or_semantic_obligations",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_text_corruption_patch_markers_and_placeholders_fail_even_with_correspondence",
+    "test_vnext_candidate_validation.CandidateValidationTests.test_versioned_normalization_can_retire_unprotected_terminal_separators",
+    "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_whole_major_noop_enters_but_required_version_changes_refuse_without_writes",
+    "test_vnext_verified_phase2_entry.VerifiedPhase2EntryTests.test_entry_commit_is_distinct_preserves_authority_and_reentry_only_synchronizes"
+  ],
+  "limits": [
+    "Selected existing boundary regressions; no M3 runtime implementation or acceptance credit.",
+    "Scripted local clients only; no public activation or live transmission."
+  ],
+  "unrelated_note_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502"
+}

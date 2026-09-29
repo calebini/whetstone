@@ -47,7 +47,7 @@ def candidate_inventory(*,base,base_map,base_inventory,plan,proposal,rules=()):
     successors get new IDs and retire their predecessors. All such changes
     still need the independent preservation decision before promotion.
     """
-    require(plan.get('schema_version') in {'mutation-plan-v2','mutation-plan-v3'}
+    require(plan.get('schema_version') in {'mutation-plan-v2','mutation-plan-v3','mutation-plan-v4'}
             and proposal.patch.get('schema_version')=='patch-set-v2',
             'candidate unit lineage requires inventory-bound v2 inputs')
     validate_inventory_facts(base_inventory,base,base_map,rules=rules)

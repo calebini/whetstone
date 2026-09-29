@@ -71,7 +71,7 @@ def correspondence_endpoints(proposal,base,section_map,inventory,*,rules=()):
 def prepare_unit_patch(raw_response,*,payload_root,plan,base,section_map,inventory,editor,responses=(),rules=()):
     """Prepare an isolated v2 proposal; no public mode or registered suite is implied."""
     registry=VNextSchemaRegistry();registry.validate(inventory,'vnext_preservation_inventory_v2')
-    plan_schema={'mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3'}.get(plan['schema_version'])
+    plan_schema={'mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3','mutation-plan-v4':'mutation_plan_v4'}.get(plan['schema_version'])
     require(plan_schema is not None,'unit proposal requires an inventory-bound plan')
     require(plan['base_inventory_hash']==sha256_bytes(canonical_json_bytes(inventory))
             and plan['base_section_identity_map_hash']==sha256_bytes(canonical_json_bytes(section_map)),

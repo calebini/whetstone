@@ -125,6 +125,19 @@ def candidate_section_map(*,base,base_map,proposal,assembled):
     checks its exact heading-origin coverage and source bindings. A map alone
     is not authorization to remove, weaken or supersede a preservation unit.
     """
+    if assembled.editor_assembly is not None:
+        mapping = candidate_section_map(base=base,base_map=base_map,proposal=proposal,assembled=assembled.editor_assembly)
+        spans = section_spans(assembled.raw)
+        active = [r for r in mapping['sections'] if r['status']=='active']
+        require(len(spans)==len(active), 'metadata changed section count')
+        for row,span in zip(active,spans):
+            require(row['heading_level']==span.level, 'metadata changed section level')
+            row.update(heading_text=span.heading,canonical_section_id=span.canonical_id,
+                       direct_body_hash=sha256_bytes(assembled.raw[span.heading_end:span.direct_end]),
+                       section_hash=sha256_bytes(assembled.raw[span.start:span.end]))
+        mapping['draft_hash']=sha256_bytes(assembled.raw)
+        validate_lineage_map(mapping,assembled.raw)
+        return mapping
     targets=validate_lineage_map(base_map,base)
     require(proposal.patch['job_id']==base_map['job_id'],'section lineage belongs to another job')
     require(proposal.patch['base_draft_hash']==sha256_bytes(base),'section lineage base changed')

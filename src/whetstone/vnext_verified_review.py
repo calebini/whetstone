@@ -164,6 +164,8 @@ def validate_current_sequence(proof):
         try: proof.store.read(BINDING_PATH)
         except FileNotFoundError: pass
         else: return current_sequence(proof)
+    from whetstone.vnext_version_entry import validate_pending_transition
+    if validate_pending_transition(proof): return None
     run = proof.owner.run
     try: claims = proof.store.list_directory('rounds/review_index')
     except FileNotFoundError: claims = ()

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-version-operation-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_id",
+    "job_id",
+    "transaction_id",
+    "authority",
+    "base_hash",
+    "input_hash",
+    "output_hash",
+    "candidate_hash",
+    "before",
+    "after",
+    "edits",
+    "canonical_input_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-version-operation-v1"
+    },
+    "operation_id": {
+      "type": "string",
+      "pattern": "^op_[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "transition",
+        "source",
+        "base_pointer"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "phase_1",
+            "phase_2"
+          ]
+        },
+        "transition": {
+          "enum": [
+            "round",
+            "phase2_entry"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "base_pointer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "base_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "before": {
+      "type": "string"
+    },
+    "after": {
+      "type": "string"
+    },
+    "edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "start",
+          "end",
+          "before",
+          "after",
+          "kind"
+        ],
+        "properties": {
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "version",
+              "status"
+            ]
+          }
+        }
+      }
+    },
+    "canonical_input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-version-operation-v1",
+    "producer": "orchestrator",
+    "consumer": "versioned-candidate-replay",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; separately pinned consuming suite"
+  }
+}

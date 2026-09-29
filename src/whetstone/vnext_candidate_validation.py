@@ -59,7 +59,7 @@ def assess_candidate(*,job,authority,invariants,seed,seed_map,base,base_map,base
     """
     registry=VNextSchemaRegistry()
     rules=discovery_rules(invariants,rules)
-    plan_schema={'mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3'}.get(plan.get('schema_version'))
+    plan_schema={'mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3','mutation-plan-v4':'mutation_plan_v4'}.get(plan.get('schema_version'))
     require(plan_schema is not None
             and proposal.patch.get('schema_version')=='patch-set-v2',
             'candidate assessment requires inventory-bound v2 inputs')
@@ -80,7 +80,14 @@ def assess_candidate(*,job,authority,invariants,seed,seed_map,base,base_map,base
     responses=[(b.response,b.response_hash) for b in bindings if b.response['authorized_effects']]
     validate_plan(plan,job,authority,base_map,responses)
     patch_hash=sha256_bytes(canonical_json_bytes(proposal.patch))
-    identifier=candidate_id(plan['transaction_id'],sha256_bytes(base),patch_hash,ASSEMBLER_VERSION,NORMALIZATION_VERSION)
+    assembler = ASSEMBLER_VERSION
+    if plan_schema=='mutation_plan_v4':
+        from whetstone.vnext_version_operations import ASSEMBLER, validate_context
+        validate_context(plan)
+        assembler=ASSEMBLER
+    if plan_schema=='mutation_plan_v4' or job['assembler_version']=='patch-assembler-v3':
+        require(job['assembler_version']==assembler, 'candidate plan differs from descriptor assembler')
+    identifier=candidate_id(plan['transaction_id'],sha256_bytes(base),patch_hash,assembler,NORMALIZATION_VERSION)
     expected_tail=('candidates',identifier,'section_identity_map_candidate.json')
     map_path=candidate_map_path or '/'.join(expected_tail)
     require(tuple(PurePosixPath(map_path).parts[-3:])==expected_tail, 'candidate map path belongs to another candidate')
@@ -89,7 +96,7 @@ def assess_candidate(*,job,authority,invariants,seed,seed_map,base,base_map,base
         'candidate_section_identity_map_path':map_path,
         'candidate_section_identity_map_hash':sha256_bytes(canonical_json_bytes(candidate_map)) if candidate_map is not None else None,
         'patch_set_hash':patch_hash,'parser_contract_version':base_map['parser_contract_version'],
-        'assembler_version':ASSEMBLER_VERSION,'inventory_version':INVENTORY_VERSION,'normalization_version':NORMALIZATION_VERSION,
+        'assembler_version':assembler,'inventory_version':INVENTORY_VERSION,'normalization_version':NORMALIZATION_VERSION,
         'reproduced_candidate_hash':None,'result':'fail','metrics_complete':False,
         'base_inventory_hash':plan['base_inventory_hash'],'candidate_inventory_hash':None,
         'protected_invariants_hash':job['protected_invariants_hash'],'rules_hash':base_inventory['rules_hash'],
@@ -146,8 +153,9 @@ def assess_candidate(*,job,authority,invariants,seed,seed_map,base,base_map,base
     report['candidate_inventory_hash']=sha256_bytes(canonical_json_bytes(inventory)) if inventory is not None else None
     report['metrics_complete']=inventory is not None
     if report['metrics_complete']:
-        budget=report['mutation_budget'];budget['sections_observed']=len(diff.metrics.changed_section_ids)
-        budget['normative_units_observed']=len(diff.metrics.normative_unit_sections)
+        metrics=diff.editor_metrics or diff.metrics
+        budget=report['mutation_budget'];budget['sections_observed']=len(metrics.changed_section_ids)
+        budget['normative_units_observed']=len(metrics.normative_unit_sections)
         for prefix in ('operations','sections','normative_units'):
             if budget[prefix+'_observed']>budget[prefix+'_allowed']:
                 fail('mutation_budget_exceeded',prefix+' exceeds the admitted hard mutation budget.')
@@ -176,10 +184,11 @@ def assess_candidate(*,job,authority,invariants,seed,seed_map,base,base_map,base
             and not any(old[key]['protected'] for key in delta.base_unit_ids)
             and not any(diff.candidate_scan[j-1]['protected'] for j in delta.candidate_unit_ordinals))
         authorized=(delta.change=='unchanged' or normalization_only
+                    or (delta.operation_id is None and delta.system_operation_id is not None)
                     or (op is not None and op['operation_id'] not in invalid_operations))
         authorized=authorized and inventory is not None and effect_failures is not None and not set(delta.base_unit_ids)&denied
         successors=[inventory['units'][j-1]['unit_id'] for j in delta.candidate_unit_ordinals] if inventory else []
-        detail=dict(authorized=authorized,operation=delta.operation_id,successors=successors,ordinals=delta.candidate_unit_ordinals,
+        detail=dict(authorized=authorized,operation=delta.operation_id or delta.system_operation_id,successors=successors,ordinals=delta.candidate_unit_ordinals,
                     group=delta.correspondence_group_id,semantic=delta.semantic_obligation,findings=op['addressed_finding_ids'] if op else [])
         for key in delta.base_unit_ids:rows.append(row(old[key],delta.change,**detail))
         # New identities from split/merge groups are recorded as additions as

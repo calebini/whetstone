@@ -54,9 +54,9 @@ def _read_followup_evidence(store, *, admission, candidate_id, reference, source
 def _editing_plan(plan, responses):
     """Project a follow-up back to its unchanged, independently admitted scope."""
     result = deepcopy(plan)
-    if result.get('schema_version')=='mutation-plan-v3':
+    if 'semantic_origin' in result:
         origin = result.pop('semantic_origin')
-        result['schema_version']='mutation-plan-v2'
+        result['schema_version']='mutation-plan-v4' if 'system_metadata' in result else 'mutation-plan-v2'
         result['transaction_id']=transaction_id(result,responses)
         require(sha256_bytes(canonical_json_bytes(result))==origin['editing_plan_hash'],
                 'semantic source editing scope differs from its origin')
@@ -96,7 +96,7 @@ from the selected receipt and original source evidence on every invocation.
         require(source[key].encode('utf-8')==arguments[key],'semantic follow-up source bytes changed: '+key)
     responses={b.response['response_id']:b.response_hash for b in baseline.bindings if b.response['authorized_effects']}
     source_plan=source['mutation_plan']
-    suite.registry.validate(source_plan,'mutation_plan_v3' if source_plan.get('schema_version')=='mutation-plan-v3' else 'mutation_plan_v2')
+    suite.registry.validate(source_plan,source_plan['schema_version'].replace('-','_'))
     validate_plan(source_plan,arguments['job'],arguments['authority'],arguments['base_map'],
                   [(b.response,b.response_hash) for b in baseline.bindings if b.response['authorized_effects']])
     require(_editing_plan(source_plan,responses)==baseline.plan,
@@ -126,14 +126,14 @@ from the selected receipt and original source evidence on every invocation.
     receipt_path=directory+'/operator_answers/'+question['decision_id']+'/receipts/answer-'+sha256_bytes(canonical_json_bytes(receipt))+'.json'
     require(evidence['receipt_ref']==ref(receipt_path,receipt),'semantic follow-up receipt reference changed')
     plan=deepcopy(baseline.plan)
-    plan.update(schema_version='mutation-plan-v3',semantic_origin={
+    plan.update(schema_version='mutation-plan-v4' if 'system_metadata' in plan else 'mutation-plan-v3',semantic_origin={
         'source_candidate_id':source_id,'source_transaction_id':source_plan['transaction_id'],
         'editing_plan_hash':sha256_bytes(canonical_json_bytes(baseline.plan)),
         'answer_receipt':deepcopy(evidence['receipt_ref']),
         'source_verification':deepcopy(evidence['source_verification_ref'])})
     plan['transaction_id']=transaction_id(plan,responses)
     require(plan['transaction_id']!=source_plan['transaction_id'],'semantic follow-up must create a fresh transaction')
-    suite.registry.validate(plan,'mutation_plan_v3')
+    suite.registry.validate(plan,plan['schema_version'].replace('-','_'))
     validate_plan(plan,arguments['job'],arguments['authority'],arguments['base_map'],
                   [(b.response,b.response_hash) for b in baseline.bindings if b.response['authorized_effects']])
     intro,packet_raw=baseline.prompt.rsplit('\n',1)

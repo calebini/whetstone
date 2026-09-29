@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-version-admission-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "round_number",
+    "entry_request",
+    "base_pointer",
+    "mutation_plan_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-version-admission-v1"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "entry_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "base_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "mutation_plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-version-admission-v1",
+    "producer": "orchestrator",
+    "consumer": "version-entry",
+    "migration": "none"
+  }
+}

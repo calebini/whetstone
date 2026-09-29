@@ -97,7 +97,7 @@ def prepare(arguments, evidence):
     responses = [(b.response,b.response_hash) for b in baseline.bindings if b.response['authorized_effects']]
     plan['transaction_id'] = transaction_id(plan, {r['response_id']:h for r,h in responses})
     require(plan['transaction_id'] != parent['transaction_id'], 'repair must have a distinct transaction')
-    arguments['suite'].registry.validate(plan,'mutation_plan_v2')
+    arguments['suite'].registry.validate(plan,plan['schema_version'].replace('-','_'))
     validate_plan(plan, arguments['job'], arguments['authority'], arguments['base_map'], responses)
     intro, raw = baseline.prompt.rsplit('\n',1)
     prompt = decode_json(raw.encode())

@@ -85,7 +85,11 @@ class ProposalAdmission:
             review_configuration_ref=self._refs['review'])
         require(canonical_json_bytes(job) == self.store.read_descriptor(), 'admitted descriptor differs from storage binding')
         require(job['editing_mode'] == expected_mode, 'seed proposal consumer requires ' + expected_mode + ' mode')
-        for key, value in [('parser_contract_version','markdown-atx-v1'), ('assembler_version',ASSEMBLER_VERSION),
+        from whetstone.vnext_version_operations import ASSEMBLER, pins as version_pins
+        assembler=ASSEMBLER_VERSION
+        if job['assembler_version']==ASSEMBLER:
+            version_pins(suite); assembler=ASSEMBLER
+        for key, value in [('parser_contract_version','markdown-atx-v1'), ('assembler_version',assembler),
                            ('inventory_version',INVENTORY_VERSION), ('normalization_version',NORMALIZATION_VERSION)]:
             require(job[key] == value, 'unsupported proposal consumer algorithm', key)
         snapshot = 'rounds/verified_history/current-verified-0.json'

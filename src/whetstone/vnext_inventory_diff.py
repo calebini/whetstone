@@ -23,6 +23,7 @@ class InventoryDelta:
     change: str
     semantic_obligation: bool
     correspondence_group_id: str | None = None
+    system_operation_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class InventoryDiff:
     metrics: MutationMetrics
     failures: tuple[str,...]
     baseline_diagnostics: tuple[dict,...]
+    editor_metrics: MutationMetrics | None = None
 
 
 def _facts(unit):
@@ -39,6 +41,9 @@ def _facts(unit):
 
 
 def _candidate_origins(assembled,units):
+    if assembled.editor_assembly is not None:
+        from whetstone.vnext_version_inventory import intermediate_units
+        return _candidate_origins(assembled.editor_assembly, intermediate_units(assembled, units))
     before=build_inventory(assembled.before_normalization,path='before.md')['units']
     after=build_inventory(assembled.raw,path='after.md')['units']
     require(len(after)<=len(before),'normalization invented source lines')
@@ -79,6 +84,10 @@ def compare_inventory(*,base,base_map,base_inventory,proposal,assembled,candidat
     history by the caller. This function recomputes all discovery facts and
     derives change counts instead of accepting any client-reported counts.
     """
+    if assembled.editor_assembly is not None:
+        from whetstone.vnext_version_inventory import compare
+        return compare(base=base,base_map=base_map,base_inventory=base_inventory,proposal=proposal,
+                       assembled=assembled,candidate_map=candidate_map,rules=rules,plan=plan)
     frontmatter=base_inventory['frontmatter_section_id']
     old_scan,old_diagnostics,rules_hash=scan_units(base,base_map,frontmatter_id=frontmatter,rules=rules)
     require(base_inventory['draft_hash']==sha256_bytes(base)
@@ -90,7 +99,7 @@ def compare_inventory(*,base,base_map,base_inventory,proposal,assembled,candidat
     new,diagnostics,_=scan_units(assembled.raw,candidate_map,frontmatter_id=frontmatter,rules=rules)
     origins=_candidate_origins(assembled,new)
     if proposal.patch['schema_version']=='patch-set-v2':
-        require(plan is not None and plan['schema_version'] in {'mutation-plan-v2','mutation-plan-v3'},
+        require(plan is not None and plan['schema_version'] in {'mutation-plan-v2','mutation-plan-v3','mutation-plan-v4'},
                 'v2 comparison requires its inventory-bound plan')
         require(plan['base_inventory_hash']==sha256_bytes(canonical_json_bytes(base_inventory))
                 and plan['base_section_identity_map_hash']==sha256_bytes(canonical_json_bytes(base_map))

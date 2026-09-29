@@ -57,7 +57,9 @@ class CandidateRegistry:
         require(canonical_json_bytes(job)==store.read_descriptor(),'registration descriptor differs from storage binding')
         require(job['editing_mode'] in {'proposal_only','verified_promotion'},'job mode prohibits candidate registration')
         require(job['contract_suite_version']!='vnext-contracts-1','frozen suite does not support candidate registration')
-        for key,value in [('assembler_version',ASSEMBLER_VERSION),('normalization_version',NORMALIZATION_VERSION),
+        from whetstone.vnext_version_operations import ASSEMBLER
+        require(job['assembler_version'] in {ASSEMBLER_VERSION, ASSEMBLER}, 'unsupported registration assembler')
+        for key,value in [('normalization_version',NORMALIZATION_VERSION),
                           ('inventory_version',INVENTORY_VERSION),('parser_contract_version','markdown-atx-v1')]:
             require(job[key]==value,'registration descriptor algorithm differs: '+key)
         self.store=store;self.job=deepcopy(job);self.validate_authority=validate_authority;self.load_inputs=load_inputs
@@ -91,10 +93,12 @@ class CandidateRegistry:
         validate_review_configuration(review, self.schemas)
         require(sha256_bytes(canonical_json_bytes(review))==self.job['review_configuration_hash'],'registration role configuration changed')
         if plan_reference is None:
-            plan,_=self._json(f'rounds/round-{round_number}/mutation_plan.json','mutation_plan_v2')
+            plan,_=self._json(f'rounds/round-{round_number}/mutation_plan.json',
+                'mutation_plan_v4' if self.job['assembler_version']=='patch-assembler-v3' else 'mutation_plan_v2')
         else:
             require(isinstance(plan_reference,dict) and set(plan_reference)=={'path','hash'},'invalid transaction plan reference')
-            plan,raw=self._json(plan_reference['path'],'mutation_plan_v2' if repair_plan else 'mutation_plan_v3')
+            plan,raw=self._json(plan_reference['path'],'mutation_plan_v4' if self.job['assembler_version']=='patch-assembler-v3'
+                               else 'mutation_plan_v2' if repair_plan else 'mutation_plan_v3')
             require(sha256_bytes(raw)==plan_reference['hash'],'transaction plan reference changed')
             require(plan_reference['path']==f"rounds/round-{round_number}/transactions/{plan['transaction_id']}/mutation_plan.json",
                     'transaction plan path differs from its identity')
@@ -142,6 +146,8 @@ class CandidateRegistry:
         require(assessment.report['candidate_id']==identifier,'assessment candidate identity differs')
         artifacts={directory+'/candidate_unverified.md':candidate_raw,map_path:canonical_json_bytes(mapping),
                    directory+'/preservation_report.json':canonical_json_bytes(assessment.report)}
+        if assembled.version_operation is not None:
+            artifacts[directory+'/version_operation.json']=canonical_json_bytes(assembled.version_operation)
         if assessment.inventory is not None:
             artifacts[directory+'/preservation_inventory_candidate.json']=canonical_json_bytes(assessment.inventory)
         return identifier,directory,patch,artifacts

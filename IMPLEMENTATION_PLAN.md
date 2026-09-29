@@ -1498,7 +1498,7 @@ Planning baseline (2026-09-27): `25c1825` includes evidence-backed churn resolut
 | --- | --- | --- | --- |
 | 18.8-M1 | Complete the remaining standard Phase 2 decision and resolution paths | 4–5 | Complete within the documented internal scope; checkpointed at `bd6c7da`. Approved gap acceptance and final integration: 61 distinct passing methods on one frozen snapshot. Prior continuation: 101 at its recorded snapshots. Freeze and declaration-disagreement decisions preserved |
 | 18.8-M2 | Integrate focused/vertical scheduling, Phase 1 budget extensions and specifically supported continuation | 3–4 | [Complete at the documented internal API scope](docs/VNEXT_18_8_M2_COMPLETION.md); local checkpoint subsequently authorized. Explicit grants, supported continuation and horizontal/vertical Phase 2 handoff validated: 162 distinct passing methods across recorded snapshots, including 11 new methods; 26 on final sources |
-| 18.8-M3 | Carry version maintenance and version history through verified candidates | 1–2 | Required version changes currently refuse; no post-verification stamping |
+| 18.8-M3 | Carry version maintenance and version history through verified candidates | 1–2 | [Complete at the documented internal boundary](docs/VNEXT_18_8_M3.md); system-metadata attribution ratified on 2026-09-29. Versioned round/entry candidates and history: 211 distinct passing methods across recorded snapshots, including all 18 new methods on final sources. Local checkpoint authorized; combined interruption/performance acceptance remains explicit in M5 |
 | 18.8-M4 | Complete verified strop/readback integration and its source-write boundary | 1–2 | Full vNext apply-back policy explicitly awaits a normative scheduler amendment |
 | 18.8-M5 | Demonstrate the integrated 18.8 workflows and reconcile acceptance | 1–2 | Depends on M1–M4; does not substitute for 18.9 release qualification |
 
@@ -1550,7 +1550,11 @@ Authority: [scheduler version lifecycle and D7](docs/specs/SCHEDULER_STATE_AND_R
 
 Bounded execution: establish the candidate admission/verification path for Orchestrator-owned version maintenance, then integrate required Phase 1 increments/status changes, Phase 2 entry major-version transition and post-entry increments with exact before/after history. This may be one bundle or separate entry and round-lifecycle bundles. If the existing candidate contract cannot authorize a required maintenance operation, stop that operation for a concrete authority decision; do not restore the legacy stamping bypass.
 
+Historical preflight (2026-09-28): the user authorized starting M3 after M2 checkpoint `5a12cd5`. The [M3 decision proposal](docs/VNEXT_18_8_M3.md) reconciles the scheduler's required metadata changes and the candidate leaf's explicit system-operation instruction with its requirement that every change be attributable to admitted findings. A clean Phase 2 entry can require a stamp without any findings. The user ratified the handoff’s narrowly scoped scheduler-authorized metadata operation on 2026-09-29; do not manufacture findings or import bridge authority. The historical preflight changed no runtime or normative specs. M3 implementation was authorized at that point. The current delivery record below supersedes that implementation status.
+
 Acceptance: required metadata changes exist in the verified, promoted candidate bytes. No-op, rejected or unpromoted candidates and declaration-only generation do not advance the version; interruption and reentry do not increment twice. Entry has a distinct commit after its complete prerequisites. Unversioned journeys and legacy/bridge rules retain their existing behavior. History reproduces the exact versions, hashes and transition that made them authoritative.
+
+Current delivery (2026-09-29): **M3 is complete at the documented internal boundary; its local checkpoint is authorized.** The [handoff](docs/VNEXT_18_8_M3.md) and [implementation audit](docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json) record version/status assembly before candidate hashing, full verification and promotion, finding-free system entry with a distinct entry commit, and derived exact version/hash history. There are 218 passing method executions / 211 distinct methods across recorded snapshots. All 18 new methods passed on final runtime sources; seven individual passes came from an interrupted bundle and the remaining checks completed separately. No whole-run pass is claimed for the interrupted bundle. M5 retains the unpassed combined two-promotion timeout/convergence journey and measured history-replay performance concern; internal M3 acceptance does not qualify long-history throughput or public activation.
 
 ###### 18.8-M4 — Strop, Readback And Source-Write Boundary
 
@@ -1572,18 +1576,21 @@ This milestone does **not** claim the 18.9 exhaustive P0 mapping, full regressio
 
 ###### Immediate Next Step
 
-M2 is implemented and validated at its documented internal API scope; see the
-[completion handoff](docs/VNEXT_18_8_M2_COMPLETION.md). The user subsequently authorized
-its local checkpoint after source and evidence revalidation.
-The next delivery milestone is **M3: version maintenance through verified
-candidates**, including required Phase 1 increments, Phase 2 entry transition and
-version history without post-verification stamping. M4's normative source-write
-decision remains unresolved; M5 and 18.9 remain separate acceptance stages. All
-original 18.8/18.9 checklist items remain open. Preserve the settled scope,
-immutable inputs, candidate finality and legacy/bridge behavior. No commit, push,
-public activation, external provider call or external apply-back was performed
-or newly authorized by the M2 completion campaign. The subsequent checkpoint
-authorization permits a local commit only; push remains deferred.
+M1, M2 and M3 have completed their documented internal boundaries. The user
+has authorized M3's local checkpoint; see the [M3 handoff](docs/VNEXT_18_8_M3.md)
+for exact evidence and limitations. Prepare **one concrete M4 source-write
+policy proposal** covering eligibility, write commit/uncertain acknowledgement,
+recovery and operator action. Obtain the required ratification before dependent
+implementation; the plan does not supply that authority or authorize normative
+specification edits.
+
+M5 retains integrated acceptance, including the combined two-promotion
+interruption journey and replay performance concern recorded in M3. M5 and
+18.9 remain separate acceptance stages. All original 18.8/18.9 checklist items
+remain open. Preserve settled scope, immutable inputs, candidate finality and
+legacy/bridge behavior. Public activation, live provider calls, external
+apply-back and push remain deferred. The local checkpoint excludes the
+pre-existing `notes/future-improvements.md` edit.
 
 #### 18.9 Compatibility, Qualification And Controlled Activation
 

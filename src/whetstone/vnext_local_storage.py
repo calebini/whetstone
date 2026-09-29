@@ -377,8 +377,8 @@ class LocalAuthorityStore:
 
     def materialize(self, token, relative, raw, *, validate_target):
         """Fenced replacement of a declared derived mirror, never authority."""
-        require(relative in {'spec.md', 'rounds/run_state.json', 'rounds/technical_failure_report.json'}
-                or re.fullmatch(r'rounds/round-[1-9][0-9]*/draft_after\.md', relative),
+        require(relative in {'spec.md', 'spec.history.md', 'rounds/run_state.json', 'rounds/technical_failure_report.json'}
+                or re.fullmatch(r'rounds/round-[1-9][0-9]*/draft_(?:after|before)\.md', relative),
                 'unsupported materialization destination')
         require(isinstance(raw, bytes) and callable(validate_target), 'materialization requires bytes and validation')
         with _FORK_GATE, self._mutex:

@@ -43,7 +43,7 @@ class UnitProposalPreflight:
     prompt: str
 
 
-def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_map,review,
+def _prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_map,review,
                            feedback,feedback_ref,advice,constraints,context,suite,
                            base_pointer_ref,scope=None,base_inventory=None,decisions=(),semantic_followup=None,phase2=None,phase2_repair=None,vertical=None):
     if semantic_followup is not None:
@@ -148,3 +148,32 @@ def prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_ma
         'correction cannot be proposed. Context keeps its declared authority role and cannot expand scope.\n'
         +canonical_json_bytes(packet).decode('utf-8'))
     return UnitProposalPreflight(digest,deepcopy(plan),deepcopy(inventory),rules,tuple(bindings),findings,evidence,derived,prompt)
+
+
+def prepare_unit_preflight(**arguments):
+    if arguments.get('system_entry') is not None:
+        from whetstone.vnext_version_entry import preflight
+        return preflight(arguments)
+    result = _prepare_unit_preflight(**arguments)
+    from whetstone.vnext_version_operations import ASSEMBLER, anchors, pins, plan_context
+    if arguments['job']['assembler_version'] != ASSEMBLER:
+        return result
+    pins(arguments['suite'])
+    anchors(arguments['base'])
+    from dataclasses import replace
+    from whetstone.vnext_contracts import decode_json
+    from whetstone.vnext_identity import transaction_id
+    context = plan_context(phase='phase_2' if arguments.get('phase2') is not None else 'phase_1',
+        transition='round',source=arguments['feedback_ref'],base_pointer=arguments['base_pointer_ref'])
+    plan = deepcopy(result.plan)
+    require('system_metadata' not in plan or plan['system_metadata']==context, 'system metadata authority changed')
+    plan.update(schema_version='mutation-plan-v4',system_metadata=context)
+    responses={b.response['response_id']:b.response_hash for b in result.bindings if b.response['authorized_effects']}
+    plan['transaction_id']=transaction_id(plan,responses)
+    VNextSchemaRegistry().validate(plan,'mutation_plan_v4')
+    prefix, raw = result.prompt.rsplit('\n',1)
+    packet = decode_json(raw.encode())
+    packet.update(mutation_plan=plan,mutation_plan_hash=sha256_bytes(canonical_json_bytes(plan)))
+    prompt=prefix+'\nVersion/status anchors are Orchestrator-owned. Preserve them exactly in Editor payloads.\n'+canonical_json_bytes(packet).decode()
+    return replace(result,plan=plan,prompt=prompt,
+        input_hash=sha256_bytes(canonical_json_bytes(['vnext-version-preflight-v1',result.input_hash,context])))

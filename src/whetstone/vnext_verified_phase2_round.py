@@ -43,7 +43,12 @@ def _pins(proof):
 def _entry_prefix(proof):
     """Restrict proven ancestry, never replace or virtualize the actual head/read."""
     raw = proof.store.read(ENTRY_PATH)
-    entry = proof.reader.json(dict(path=ENTRY_PATH, hash=sha256_bytes(raw)), ENTRY_SCHEMA)
+    from whetstone.vnext_contracts import decode_json
+    schema=ENTRY_SCHEMA
+    if decode_json(raw).get('schema_version')=='vnext-phase2-entry-v2':
+        from whetstone.vnext_version_entry import pins
+        pins(proof.reader.suite);schema='vnext_phase2_entry_v2'
+    entry = proof.reader.json(dict(path=ENTRY_PATH, hash=sha256_bytes(raw)), schema)
     reference = entry['current_verified_pointer']
     proof.values(reference)  # Must already be proven, even during ascending history replay.
     ordinal = next((i for i, pointer in enumerate(proof.pointers) if _snapshot(pointer) == reference), None)
@@ -79,6 +84,11 @@ class _HistoricalAdvice(_Advice):
             closeout.evidence_ref, closeout.report_ref, True, True, ())
 
     def _entry_view(self, proof, binding):
+        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3':
+            from whetstone.vnext_version_entry import entry_view
+            result=entry_view(self,proof,binding)
+            require(result.committed,'historical version entry is not committed')
+            return result
         raw = proof.reader.raw(binding.request['current_verified_draft'])
         text, before, after, changed = promote_spec_text_for_phase2(raw.decode('utf-8'))
         require(not changed and text.encode('utf-8') == raw and before == after,

@@ -42,6 +42,13 @@ class _VerifiedTransactions(SemanticFollowupAdmission):
         super().__init__(store, original=original, selected_ref=selected_ref, history_limit=history_limit)
         self.load_inputs.request_journal = self._request_journal
 
+    def _transaction(self,read,number,transaction):
+        if self.original.proof.seed_values['job']['assembler_version']=='patch-assembler-v3':
+            from whetstone.vnext_version_entry import selected_inputs
+            values=selected_inputs(self,read,number,transaction)
+            if values is not None:return values
+        return super()._transaction(read,number,transaction)
+
     def _json(self, read, path, schema, digest=None):
         if schema == 'vnext_semantic_followup_input_v1':
             from whetstone.vnext_contracts import decode_json
@@ -67,8 +74,11 @@ class _VerifiedTransactions(SemanticFollowupAdmission):
     def _request_journal(self, store, number, identifier):
         proof = self.original.proof
         _same_store(store, proof.store)
-        return _HistoricalJournal(proof, lambda read: self.load_inputs.for_proposal(read, number, identifier)
-                                  if identifier is not None else self.load_inputs(read, number))
+        load=lambda read: self.load_inputs.for_proposal(read,number,identifier) if identifier is not None else self.load_inputs(read,number)
+        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and load(store.read).get('system_entry') is not None:
+            from whetstone.vnext_version_entry import SystemJournal
+            return SystemJournal(store,load)
+        return _HistoricalJournal(proof,load)
 
     def _read_evidence(self, historical, candidate_id, reference):
         return _read_followup_evidence(historical.store, admission=historical,

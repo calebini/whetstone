@@ -107,6 +107,13 @@ def prepare_semantic_context(*, proposal_inputs, proposal, creation, creation_re
         },
         'preservation_report': report, 'semantic_obligations': obligations,
     }
+    if proposal_inputs.get('system_entry') is not None:
+        packet['system_entry']=proposal_inputs['system_entry']
+        packet['editor_proposal']['interpretation']='System-only empty patch; no Editor was invoked. The scheduler binds metadata authority; independent verification is still required.'
+    if 'system_metadata' in preflight.plan:
+        from whetstone.vnext_assembly import assemble_bytes
+        assembled=assemble_bytes(base=proposal_inputs['base'],section_map=proposal_inputs['base_map'],plan=preflight.plan,proposal=proposal)
+        packet['system_version_operation']=assembled.version_operation
     if proposal_inputs.get('vertical') is not None:
         packet['vertical'] = proposal_inputs['vertical']
     if proposal_inputs.get('phase2') is not None:

@@ -42,7 +42,11 @@ class _Journal:
         require(canonical_json_bytes(job)==store.read_descriptor(),'proposal descriptor differs from storage binding')
         require(job['contract_suite_version']!='vnext-contracts-1','frozen suite has no durable proposal request capability')
         require(job['contract_suite_version']==self.arguments['suite'].version,'proposal suite selection differs')
-        for key,value in [('assembler_version',ASSEMBLER_VERSION),('normalization_version',NORMALIZATION_VERSION),('inventory_version',INVENTORY_VERSION)]:
+        from whetstone.vnext_version_operations import ASSEMBLER, pins as version_pins
+        assembler=ASSEMBLER_VERSION
+        if job['assembler_version']==ASSEMBLER:
+            version_pins(self.arguments['suite']); assembler=ASSEMBLER
+        for key,value in [('assembler_version',assembler),('normalization_version',NORMALIZATION_VERSION),('inventory_version',INVENTORY_VERSION)]:
             require(job[key]==value,'proposal request algorithm differs: '+key)
         self.request_id=logical_request_id(job['job_id'],self.preflight.plan['transaction_id'])
         self.directory='rounds/client_requests/'+self.request_id

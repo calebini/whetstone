@@ -41,10 +41,20 @@ class VerifiedMaterialization:
         pointer = proof.pointers[-1]
         raw = proof.reader.raw({'path': pointer['verified_draft_path'], 'hash': pointer['verified_draft_hash']})
         targets = {'spec.md': raw}
+        from whetstone.vnext_version_history import projection
+        history=projection(proof)
+        if history is not None: targets['spec.history.md']=history[0]
         if pointer['promotion_ordinal']:
             creation = proof.reader.json({'path': pointer['source_candidate_creation_event_path'],
                 'hash': pointer['source_candidate_creation_event_hash']}, 'candidate_creation_event_v1')
-            targets[f"rounds/round-{creation['round_number']}/draft_after.md"] = raw
+            operation=history[1] if history is not None else None
+            if operation and operation['authority']['transition']=='phase2_entry':
+                from whetstone.vnext_phase2_routes import first_round
+                request=proof.reader.json(operation['authority']['source'],'vnext_phase2_entry_request_v1')
+                number=first_round(proof,request)
+                targets[f'rounds/round-{number}/draft_before.md']=raw
+            else:
+                targets[f"rounds/round-{creation['round_number']}/draft_after.md"] = raw
         state_raw = self._optional(STATE_PATH)
         state = {} if state_raw is None else decode_json(state_raw)
         require(isinstance(state, dict), 'run state materialization requires a JSON object')

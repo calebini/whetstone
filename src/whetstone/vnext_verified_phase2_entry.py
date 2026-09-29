@@ -41,6 +41,12 @@ class _Entry(_Binding):
         return proof
 
     def _committed_binding(self, proof):
+        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3':
+            from whetstone.vnext_version_entry import binding_at
+            return binding_at(proof)[2]
+        return self._original_committed_binding(proof)
+
+    def _original_committed_binding(self, proof):
         raw = self._optional(REQUEST_PATH)
         require(raw is not None, 'Phase 2 entry requires a committed immutable request')
         request = proof.reader.json(dict(path=REQUEST_PATH, hash=sha256_bytes(raw)), REQUEST_SCHEMA)
@@ -51,6 +57,9 @@ class _Entry(_Binding):
         return binding
 
     def _entry_view(self, proof, binding):
+        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3':
+            from whetstone.vnext_version_entry import entry_view
+            return entry_view(self,proof,binding)
         raw = proof.reader.raw(binding.request['current_verified_draft'])
         text = raw.decode('utf-8')
         projected, before, after, changed = promote_spec_text_for_phase2(text)
@@ -86,6 +95,10 @@ class _Entry(_Binding):
         return self._entry_view(proof, self._committed_binding(proof))
 
     def _synchronize_entry_sources(self, store, proof, binding):
+        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and proof.latest!=binding.request['current_verified_pointer']:
+            from whetstone.vnext_version_entry import binding_at
+            original,historical,_=binding_at(proof)
+            return _Entry._synchronize_entry_sources(historical,store,original,binding)
         closeout = self.evaluate(proof)
         checked = self._synchronize_sources(store, proof, closeout)
         require(checked.materialized, 'Phase 1 closeout disappeared before Phase 2 entry')
@@ -101,6 +114,11 @@ class _Entry(_Binding):
     def enter(self):
         def publish(store, proof):
             binding = self._committed_binding(proof)
+            if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and self._optional(ENTRY_PATH) is None:
+                from whetstone.vnext_version_entry import prefix_at
+                original=prefix_at(proof,binding.request['current_verified_pointer'])
+                require(self._status(original,self.evaluate(original)).state_current,
+                        'Phase 2 entry requires current Phase 1 state')
             expected = self._entry_view(proof, binding)
             self._synchronize_entry_sources(store, proof, binding)
             require(self._entry_view(proof, binding) == expected, 'Phase 2 entry changed during source synchronization')

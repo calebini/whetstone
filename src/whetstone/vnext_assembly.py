@@ -43,6 +43,8 @@ class AssembledBytes:
     heading_origins: tuple[HeadingOrigin, ...]
     assembler_version: str = ASSEMBLER_VERSION
     normalization_version: str = NORMALIZATION_VERSION
+    editor_assembly: object | None = None
+    version_operation: dict | None = None
 
 
 def assemble_bytes(*, base, section_map, plan, proposal):
@@ -53,14 +55,14 @@ def assemble_bytes(*, base, section_map, plan, proposal):
     The result deliberately has no candidate ID, registration or disposition.
     """
     registry=VNextSchemaRegistry()
-    versions={'mutation-plan-v1':'mutation_plan_v1','mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3',
+    versions={'mutation-plan-v1':'mutation_plan_v1','mutation-plan-v2':'mutation_plan_v2','mutation-plan-v3':'mutation_plan_v3','mutation-plan-v4':'mutation_plan_v4',
               'section-identity-map-v1':'section_identity_map_v1','section-identity-map-v2':'section_identity_map_v2',
               'patch-set-v1':'patch_set_v1','patch-set-v2':'patch_set_v2'}
     for packet in (plan,section_map,proposal.patch):
         schema=versions.get(packet.get('schema_version'))
         require(schema is not None,'unsupported assembly input version')
         registry.validate(packet,schema)
-    if plan['schema_version'] in {'mutation-plan-v2','mutation-plan-v3'}:
+    if plan['schema_version'] in {'mutation-plan-v2','mutation-plan-v3','mutation-plan-v4'}:
         require(plan['base_section_identity_map_hash']==sha256_bytes(canonical_json_bytes(section_map)),
                 'assembly plan section map binding changed')
     require(section_map['job_id']==plan['job_id'],'assembly map belongs to another job')
@@ -159,4 +161,13 @@ def assemble_bytes(*, base, section_map, plan, proposal):
     final_headings=section_spans(normalized)
     require([(h.heading,h.level,h.parent) for h in final_headings]==[(h.heading,h.level,h.parent) for h in headings],
             'normalization changed the assembled section hierarchy')
-    return AssembledBytes(normalized,assembled,tuple(pieces),origins)
+    editor = AssembledBytes(normalized,assembled,tuple(pieces),origins)
+    if plan['schema_version'] == 'mutation-plan-v4':
+        from whetstone.vnext_version_operations import ASSEMBLER, operation
+        final, record = operation(base, assembled, plan)
+        final_raw = normalize_draft(final.decode()).encode()
+        require([(h.level,h.parent) for h in section_spans(final_raw)] == [(h.level,h.parent) for h in final_headings],
+                'metadata operation changed heading topology')
+        return AssembledBytes(final_raw, final, tuple(pieces), origins, ASSEMBLER,
+                              NORMALIZATION_VERSION, editor, record)
+    return editor

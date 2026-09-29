@@ -144,7 +144,8 @@ def _validate_frame(proof, owner, number, record):
             'Phase 2 correction has unresolved operator or authority decisions')
     # Stamping versioned corrections is a separate candidate-protocol milestone.
     from whetstone.versioning import _find_version_target
-    require(_find_version_target(bound.inputs['draft']) is None, 'Phase 2 version maintenance is not implemented')
+    if proof.seed_values['job']['assembler_version']!='patch-assembler-v3':
+        require(_find_version_target(bound.inputs['draft']) is None, 'Phase 2 version maintenance is not implemented')
     from whetstone.vnext_phase2_rubric import proposal_context
     if 'rubric_catalogue' in bound.inputs:
         _, journal, _, _, _ = owner._consumption_view(owner.proof)

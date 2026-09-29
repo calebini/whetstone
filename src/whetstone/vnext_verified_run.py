@@ -167,6 +167,9 @@ class VerifiedRun:
     def enter_phase2(self):
         from whetstone.vnext_verified_phase2_entry import enter_verified_phase2
         return enter_verified_phase2(self)
+    def prepare_phase2_version(self, *, created_at):
+        from whetstone.vnext_version_entry import prepare
+        return prepare(self,created_at=created_at)
     def prepare_phase2_review(self, transport):
         from whetstone.vnext_verified_phase2_review import prepare_phase2_review
         return prepare_phase2_review(self, transport)

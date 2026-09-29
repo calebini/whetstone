@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mutation-plan-v4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "transaction_id",
+    "base_draft_hash",
+    "authority_map_hash",
+    "scope_contract_hash",
+    "protected_invariants_hash",
+    "finding_dispositions",
+    "allowed_section_ids",
+    "allowed_operation_types",
+    "max_operations",
+    "max_changed_sections",
+    "max_changed_normative_units",
+    "authorized_deletion_unit_ids",
+    "required_context_binding_ids",
+    "slices",
+    "base_inventory_hash",
+    "base_section_identity_map_hash",
+    "system_metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mutation-plan-v4"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[0-9a-f]{64}$"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^txn_[0-9a-f]{64}$"
+    },
+    "base_draft_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authority_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "scope_contract_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "protected_invariants_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "finding_dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "source_feedback_ids",
+          "classification",
+          "admitted_to_editing",
+          "decision_response_id"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_feedback_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "classification": {
+            "enum": [
+              "editor_fixable",
+              "operator_decision_required",
+              "authority_conflict",
+              "scope_change",
+              "deferable"
+            ]
+          },
+          "admitted_to_editing": {
+            "type": "boolean"
+          },
+          "decision_response_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^resp_[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "allowed_section_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^sec_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "allowed_operation_types": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "replace_section_body",
+          "replace_section_subtree",
+          "insert_section_before",
+          "insert_section_after",
+          "append_child_section",
+          "delete_section_subtree"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "max_operations": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_changed_sections": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_changed_normative_units": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "authorized_deletion_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^unit_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "required_context_binding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^bind_[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "slices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slice_id",
+          "target_section_ids",
+          "dependency_slice_ids",
+          "admitted_finding_ids"
+        ],
+        "properties": {
+          "slice_id": {
+            "type": "string",
+            "pattern": "^slice_[0-9a-f]{64}$"
+          },
+          "target_section_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sec_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "dependency_slice_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^slice_[0-9a-f]{64}$"
+            },
+            "uniqueItems": true
+          },
+          "admitted_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "base_inventory_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base_section_identity_map_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_candidate_id",
+        "source_transaction_id",
+        "editing_plan_hash",
+        "answer_receipt",
+        "source_verification"
+      ],
+      "properties": {
+        "source_candidate_id": {
+          "type": "string",
+          "pattern": "^can_[0-9a-f]{64}$"
+        },
+        "source_transaction_id": {
+          "type": "string",
+          "pattern": "^txn_[0-9a-f]{64}$"
+        },
+        "editing_plan_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "answer_receipt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "source_verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "transition",
+        "source",
+        "base_pointer"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "phase_1",
+            "phase_2"
+          ]
+        },
+        "transition": {
+          "enum": [
+            "round",
+            "phase2_entry"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "base_pointer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "hash"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "mutation-plan-v4",
+    "producer": "orchestrator",
+    "consumer": "unactivated-semantic-followup",
+    "canonical_json": "whetstone-canonical-json-v1",
+    "migration": "none; new consuming suite and patch-assembler-v3 required"
+  }
+}
