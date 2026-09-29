@@ -354,7 +354,11 @@
     "reason": "Excessive repeated history reconstruction in the combined correction/timeout/continuation/convergence test. Required M3 promotion and declaration boundaries now have separate bounded journeys.",
     "observed_progress": "System entry 0.17 -> 1.0, verified correction 1.0 -> 1.1, resolution publication, timeout failure/state and continuation result.",
     "verdict": "No passing verdict; stopped diagnostics are not acceptance credit.",
-    "remaining": "Combined two-promotion timeout/convergence and replay performance are explicit M5 concerns."
+    "remaining": "Combined two-promotion timeout/convergence and replay performance are explicit M5 concerns.",
+    "log_sha256": {
+      "rounds/vnext-18-8-m3-implementation-001/development-full-journey-stopped.log": "8dc101653d4ca9891390978ef7276dbd5e512662da93690affd6d41ceec8d9b9",
+      "rounds/vnext-18-8-m3-implementation-001/development-exploratory-journey-stopped.log": "85e1f7766769adb5a5e12d94c1b4cde439a29d2c2f04d93a13de46d558463497"
+    }
   },
   "acceptance": {
     "passing_method_executions": 218,
@@ -365,5 +369,36 @@
     "final_source_manifest_files_verified": 652,
     "scope": "Internal M3 boundary; results span the recorded snapshots. Seven final-source passes are individual verdicts from the interrupted bundle, complemented by the completed remaining-ten and entry-after-round runs."
   },
-  "checkpoint": "Local commit authorized by the user after implementation; unrelated notes excluded."
+  "checkpoint": "a1d46a67da947d5d7b72c95677494787a0232354 (local M3 implementation and acceptance record; unrelated notes excluded)",
+  "evidence_reconciliation": {
+    "date": "2026-09-29",
+    "implementation_commit": "a1d46a67da947d5d7b72c95677494787a0232354",
+    "verified_log_hashes": 5,
+    "verified_manifest_hashes": 4,
+    "verified_current_source_hashes": 652,
+    "passing_method_executions": 218,
+    "distinct_passing_methods": 211,
+    "new_methods_matched_to_final_source_verdicts": 18,
+    "additional_runtime_tests_run": false,
+    "result": "Recorded counts, verdicts and hashes agree; interrupted and stopped runs receive no whole-run acceptance credit."
+  },
+  "m5_carryovers": [
+    {
+      "id": "M5-I1",
+      "status": "open_unpassed",
+      "requirement": "Complete the joined entry, correction, timeout, explicit continuation and convergence journey with reopen/recovery assertions; separate passing journeys do not close it.",
+      "acceptance_owner": "IMPLEMENTATION_PLAN.md: 18.8-M5 Integrated Acceptance And Handoff"
+    },
+    {
+      "id": "M5-P1",
+      "status": "open_unqualified",
+      "requirement": "Measure and profile joined and longer-history replay, preserve authority barriers in any correction, and report remaining performance limitations explicitly. No performance threshold or waiver is ratified.",
+      "observed_timings_seconds": {
+        "entry_after_round_single_test": 593.925,
+        "regression_66_tests": 1329.967
+      },
+      "timing_scope": "Whole test/run elapsed times; not isolated replay measurements.",
+      "acceptance_owner": "IMPLEMENTATION_PLAN.md: 18.8-M5 Integrated Acceptance And Handoff"
+    }
+  ]
 }

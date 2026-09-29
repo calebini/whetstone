@@ -1499,7 +1499,7 @@ Planning baseline (2026-09-27): `25c1825` includes evidence-backed churn resolut
 | 18.8-M1 | Complete the remaining standard Phase 2 decision and resolution paths | 4–5 | Complete within the documented internal scope; checkpointed at `bd6c7da`. Approved gap acceptance and final integration: 61 distinct passing methods on one frozen snapshot. Prior continuation: 101 at its recorded snapshots. Freeze and declaration-disagreement decisions preserved |
 | 18.8-M2 | Integrate focused/vertical scheduling, Phase 1 budget extensions and specifically supported continuation | 3–4 | [Complete at the documented internal API scope](docs/VNEXT_18_8_M2_COMPLETION.md); local checkpoint subsequently authorized. Explicit grants, supported continuation and horizontal/vertical Phase 2 handoff validated: 162 distinct passing methods across recorded snapshots, including 11 new methods; 26 on final sources |
 | 18.8-M3 | Carry version maintenance and version history through verified candidates | 1–2 | [Complete at the documented internal boundary](docs/VNEXT_18_8_M3.md); system-metadata attribution ratified on 2026-09-29. Versioned round/entry candidates and history: 211 distinct passing methods across recorded snapshots, including all 18 new methods on final sources. Local checkpoint authorized; combined interruption/performance acceptance remains explicit in M5 |
-| 18.8-M4 | Complete verified strop/readback integration and its source-write boundary | 1–2 | Full vNext apply-back policy explicitly awaits a normative scheduler amendment |
+| 18.8-M4 | Complete verified strop/readback integration and its source-write boundary | 1–2 | [Complete at the documented internal boundary](docs/VNEXT_18_8_M4.md); local checkpoint authorized; policy ratified on 2026-09-29. Internal pinned review/write/readback/recovery: 98 distinct passing methods / 106 executions. M5 integrated acceptance remains open |
 | 18.8-M5 | Demonstrate the integrated 18.8 workflows and reconcile acceptance | 1–2 | Depends on M1–M4; does not substitute for 18.9 release qualification |
 
 Default delivery order is M1 → M2 → M3 → M4 → M5. Surface M4's policy dependency during the first M1 preflight so it cannot become a surprise at closeout. If a policy decision blocks dependent work, record the exact question and continue an independently authorized M2 or M3 bundle. Do not silently defer required behavior and call 18.8 complete.
@@ -1554,17 +1554,19 @@ Historical preflight (2026-09-28): the user authorized starting M3 after M2 chec
 
 Acceptance: required metadata changes exist in the verified, promoted candidate bytes. No-op, rejected or unpromoted candidates and declaration-only generation do not advance the version; interruption and reentry do not increment twice. Entry has a distinct commit after its complete prerequisites. Unversioned journeys and legacy/bridge rules retain their existing behavior. History reproduces the exact versions, hashes and transition that made them authoritative.
 
-Current delivery (2026-09-29): **M3 is complete at the documented internal boundary; its local checkpoint is authorized.** The [handoff](docs/VNEXT_18_8_M3.md) and [implementation audit](docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json) record version/status assembly before candidate hashing, full verification and promotion, finding-free system entry with a distinct entry commit, and derived exact version/hash history. There are 218 passing method executions / 211 distinct methods across recorded snapshots. All 18 new methods passed on final runtime sources; seven individual passes came from an interrupted bundle and the remaining checks completed separately. No whole-run pass is claimed for the interrupted bundle. M5 retains the unpassed combined two-promotion timeout/convergence journey and measured history-replay performance concern; internal M3 acceptance does not qualify long-history throughput or public activation.
+Current delivery (2026-09-29): **M3 is complete at the documented internal boundary and checkpointed locally at `a1d46a6`.** The [handoff](docs/VNEXT_18_8_M3.md) and [implementation audit](docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json) record version/status assembly before candidate hashing, full verification and promotion, finding-free system entry with a distinct entry commit, and derived exact version/hash history. There are 218 passing method executions / 211 distinct methods across recorded snapshots. All 18 new methods passed on final runtime sources; seven individual passes came from an interrupted bundle and the remaining checks completed separately. No whole-run pass is claimed for the interrupted bundle. M5 retains the unpassed combined two-promotion timeout/convergence journey and measured history-replay performance concern; internal M3 acceptance does not qualify long-history throughput or public activation.
 
 ###### 18.8-M4 — Strop, Readback And Source-Write Boundary
 
 Authority: [candidate eligibility and Ratification Delta Map](docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md), the [scheduler](docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md) as designated normative owner, and the current [Operator Quickstart](docs/OPERATOR_QUICKSTART.md).
 
-**Known authority dependency:** the candidate leaf explicitly states that the detailed vNext strop/apply-back policy remains unratified pending the scheduler amendment. This plan does not supply that missing policy. Prepare a bounded decision/amendment proposal covering eligibility, source-write commit/recovery semantics and operator action; obtain the required authority before implementing dependent behavior. Do not edit authoritative specs as part of this planning update.
+**Authority disposition:** the candidate leaf delegates detailed vNext strop/apply-back policy to the scheduler amendment. The user ratified the concrete six-rule internal policy in [the M4 handoff](docs/VNEXT_18_8_M4.md) on 2026-09-29. That approval authorizes this bounded implementation and fixture acceptance. Coordinated normative publication remains separate; authoritative specifications are unchanged.
+
+Current delivery (2026-09-29): **M4 is complete at its documented internal boundary; its local checkpoint is authorized.** The [M4 handoff](docs/VNEXT_18_8_M4.md) and [implementation audit](docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json) record the ratified policy, explicitly pinned review/approval/source-write/readback/recovery consumer, 98 distinct passing methods and 106 executions across reconciled snapshots. All 18 new methods passed on final runtime sources; only a directory-fault test refinement separates the two source manifests, and all eight primitive methods passed after it. The genuine M3 versioned promotion/convergence/apply journey passed in 381.738 seconds; this whole-test timing does not close M5-P1. Existing public strop still rejects vNext roots, shipping suites are unchanged, and old immutable closeouts retain `apply_back_permitted=false`. Normative spec edits, real apply-back, public activation and push remain excluded.
 
 Bounded execution: implement/reuse read-only eligibility and readback under existing authority, then integrate the ratified write/recovery lifecycle using temporary source fixtures. These can be one or two implementation bundles once authority is available. Bind the current verified pointer, candidate/map/decision/intent lineage, outstanding decisions and external source hash; separate a write committed with uncertain acknowledgement from a write that never committed according to the ratified policy.
 
-Acceptance: fixture campaigns cover eligible and ineligible lineage, rejected/unpromoted material, pending decisions, source drift and all newly introduced write/recovery boundaries. Manual-recovery flags cannot upgrade unverified material or bypass eligibility. Tests write only disposable fixture sources; no actual external specification apply-back is authorized. Missing ratification remains a blocker to M4 and full 18.8 completion.
+Acceptance: fixture campaigns cover eligible and ineligible lineage, rejected/unpromoted material, pending decisions, source drift and all newly introduced write/recovery boundaries. Manual-recovery flags cannot upgrade unverified material or bypass eligibility. Tests write only disposable fixture sources; no actual external specification apply-back is authorized. The internal policy is ratified; normative family consistency remains an explicit qualification dependency.
 
 ###### 18.8-M5 — Integrated Acceptance And Handoff
 
@@ -1572,25 +1574,30 @@ Bounded execution: run a CLI-shaped, scripted integration matrix across M1–M4 
 
 Acceptance: campaigns cross Phase 1/Phase 2, closeout, supported scheduler routes, versioned and unversioned paths, operator decisions, representative interruptions and fixture strop/readback. Relevant terminals retain prior authority, latest candidate, orphan/rejected evidence, outstanding decisions and only an actually supported next/resume gate. Verify changed legacy/bridge surfaces proportionately. Publish exact evidence scope, remaining limitations and a usable operator handoff; close A–D only when their full requirements and authority dependencies are satisfied.
 
+Explicit carryovers from M3 checkpoint `a1d46a6` (both remain open):
+
+- [ ] **M5-I1 — Combined interruption journey.** On one frozen source snapshot, run the joined system-entry `0.17 → 1.0`, verified correction `1.0 → 1.1`, resolution publication, Reviewer timeout/failure reporting, explicit continuation, declaration and convergence journey. Exercise reopen/recovery at the interruption boundary; assert exact pointer/version/history, retained failure evidence and client-call counts, with no duplicate promotion or stamp. Require a completed passing test verdict and indexed command, log and source hashes. The stopped exploratory runs and the passing separate M3 journeys do not close this item.
+- [ ] **M5-P1 — History replay cost.** Measure that joined fixture and a representative longer history on fixed sources with scripted clients; record environment, history size, per-stage elapsed time and evidence of where repeated reconstruction occurs. M3 recorded 593.925 seconds for the single entry-after-round test and 1329.967 seconds for the 66-test regression bundle; these are whole-test/run measurements, not isolated replay timings or a throughput baseline. Profile before choosing a correction, preserve all authority/source barriers, and rerun affected correctness cases after any optimization. Close with reproducible before/after evidence, or explicitly retain an unresolved performance limitation in the acceptance decision. No performance target or waiver has been ratified; elapsed time alone cannot supply a pass.
+
+These are two obligations within the existing M5 acceptance bundle, not additional delivery milestones. M3's 18 new methods are covered on final sources; these integrated and performance obligations remain unpassed and must be reconciled before claiming full 18.8 acceptance.
+
 This milestone does **not** claim the 18.9 exhaustive P0 mapping, full regression/process conformance, separately authorized live soak or public activation. Those remain the following delivery stage, and pushing remains deferred by the user.
 
 ###### Immediate Next Step
 
-M1, M2 and M3 have completed their documented internal boundaries. The user
-has authorized M3's local checkpoint; see the [M3 handoff](docs/VNEXT_18_8_M3.md)
-for exact evidence and limitations. Prepare **one concrete M4 source-write
-policy proposal** covering eligibility, write commit/uncertain acknowledgement,
-recovery and operator action. Obtain the required ratification before dependent
-implementation; the plan does not supply that authority or authorize normative
-specification edits.
+M1–M4 have completed their documented internal boundaries. M3 is checkpointed
+locally at `a1d46a6`; M4 is implemented and verified, with its local checkpoint authorized. See the
+[M4 handoff](docs/VNEXT_18_8_M4.md) for exact scope, operator actions and evidence.
+The next implementation milestone is **M5 integrated acceptance**, covering the
+M1–M4 matrix and original A–D requirements, including the combined two-promotion
+interruption journey (M5-I1) and replay cost analysis (M5-P1). These remain open;
+M4's separate passing versioned journey does not satisfy them.
 
-M5 retains integrated acceptance, including the combined two-promotion
-interruption journey and replay performance concern recorded in M3. M5 and
-18.9 remain separate acceptance stages. All original 18.8/18.9 checklist items
-remain open. Preserve settled scope, immutable inputs, candidate finality and
-legacy/bridge behavior. Public activation, live provider calls, external
-apply-back and push remain deferred. The local checkpoint excludes the
-pre-existing `notes/future-improvements.md` edit.
+M5 and 18.9 remain separate acceptance stages. All original 18.8/18.9 checklist
+items remain open. Preserve immutable inputs, candidate finality and
+legacy/bridge behavior. Normative specification publication, public activation,
+live provider calls, real source apply-back and push remain deferred. Preserve
+the pre-existing `notes/future-improvements.md` edit outside any feature checkpoint.
 
 #### 18.9 Compatibility, Qualification And Controlled Activation
 

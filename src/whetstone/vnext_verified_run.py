@@ -133,6 +133,18 @@ class VerifiedRun:
 
     def _operator(self): return _RunOperator(self.store, history=self._history())
     def inspect(self): return self._operator().inspect()
+    def review_apply_back(self):
+        from whetstone.vnext_apply_back import ApplyBack
+        return ApplyBack(self).review()
+    def apply_back_status(self):
+        from whetstone.vnext_apply_back import ApplyBack
+        return ApplyBack(self).status()
+    def apply_back(self, **options):
+        from whetstone.vnext_apply_back import ApplyBack
+        return ApplyBack(self).apply(**options)
+    def recover_apply_back(self, **options):
+        from whetstone.vnext_apply_back import ApplyBack
+        return ApplyBack(self).recover(**options)
     def phase1_status(self):
         from whetstone.vnext_verified_phase1_status import inspect_verified_phase1
         return inspect_verified_phase1(self)

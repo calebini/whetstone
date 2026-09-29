@@ -1,0 +1,253 @@
+{
+  "milestone": "18.8-M4",
+  "base_commit": "a1d46a67da947d5d7b72c95677494787a0232354",
+  "date": "2026-09-29",
+  "status": "complete_at_internal_boundary",
+  "authority": "User ratified the concrete six-rule proposal in docs/VNEXT_18_8_M4.md: yes, i approve your proposal.",
+  "scope": "Internal pinned review/apply/readback/recovery with disposable bound sources only.",
+  "source_manifest": "rounds/vnext-18-8-m4-implementation-001/sources.json",
+  "source_manifest_sha256": "f4c1ed8f54a50decf2068f9634b6b9216d513f43bde1792a90309fbce680829d",
+  "commands": [
+    {
+      "name": "acceptance",
+      "sources": "sources-initial.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_vnext_source_file test_vnext_apply_back.ApplyBackTests test_vnext_apply_back.ApplyBackProcessTests test_vnext_apply_back.ApprovalIdentityTests"
+    },
+    {
+      "name": "regression",
+      "sources": "sources-initial.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_apply_back test_vnext_local_storage test_vnext_contracts test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root test_preservation_runtime.RuntimeTests.test_pending_cannot_run_next_round_or_strop_with_overrides test_preservation_runtime.RuntimeTests.test_accepted_dry_strop_is_read_only_and_external_hash_guard_remains test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery"
+    },
+    {
+      "name": "source-final",
+      "sources": "sources.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_vnext_source_file"
+    },
+    {
+      "name": "version-final",
+      "sources": "sources.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_vnext_apply_back.ApplyBackVersionTests"
+    }
+  ],
+  "development_findings": [
+    "Approval ID initially supplied a dictionary where the identity helper expects an ordered preimage; corrected to [review_packet] and covered with a key-order/value-binding regression.",
+    "Unsupported schema maximum keyword removed; runtime mode validation retains the restricted permissions surface.",
+    "macOS Python lacks os.listxattr; native descriptor-based attribute inspection preserves Apple provenance and refuses unsupported metadata.",
+    "Final source durability readback strengthened to repeat identity and metadata checks; final acceptance uses that implementation.",
+    "Directory-flush injection refined to target the parent-directory fd; final primitive rerun covers the distinct directory barrier."
+  ],
+  "remaining": [
+    "M5 integrated M1\u2013M4 acceptance and original A\u2013D requirement reconciliation",
+    "M5-I1 combined interruption/convergence journey",
+    "M5-P1 replay measurement and profiling",
+    "18.9 qualification and public activation",
+    "Coordinated normative family consistency/publication remains separately authorized"
+  ],
+  "not_performed": [
+    "Real source apply-back",
+    "Normative specification edits",
+    "Live provider calls",
+    "Public activation",
+    "Push"
+  ],
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "storage": "qualified local APFS; disposable source fixtures"
+  },
+  "source_snapshots": [
+    {
+      "path": "rounds/vnext-18-8-m4-implementation-001/sources-initial.json",
+      "sha256": "893d8c0347431cc42a7a286d45495e7014f8d58e3c95e18fa88f4d08f733a0fc",
+      "files": 658
+    },
+    {
+      "path": "rounds/vnext-18-8-m4-implementation-001/sources.json",
+      "sha256": "f4c1ed8f54a50decf2068f9634b6b9216d513f43bde1792a90309fbce680829d",
+      "files": 658
+    }
+  ],
+  "snapshot_reconciliation": "Runtime and contracts are identical across both snapshots. Only tests/test_vnext_source_file.py changed to target the actual parent-directory fsync fault; all 8 primitive methods were rerun on the final snapshot.",
+  "results": [
+    {
+      "name": "acceptance",
+      "log": "rounds/vnext-18-8-m4-implementation-001/acceptance.log",
+      "log_sha256": "f4c2e29e5de82534b387ee7023b13addae66e12b7b97459e591938cb8f69fa12",
+      "passed": 17,
+      "elapsed_seconds": 289.972,
+      "status": "passed",
+      "methods": [
+        "test_vnext_source_file.SourceFileTests.test_busy_owner_and_stale_token_cannot_stage_or_replace",
+        "test_vnext_source_file.SourceFileTests.test_changed_source_and_staging_bytes_refuse_before_replacement",
+        "test_vnext_source_file.SourceFileTests.test_exact_atomic_replacement_preserves_permissions_and_provenance",
+        "test_vnext_source_file.SourceFileTests.test_failure_before_replace_keeps_old_source_and_does_not_claim_commit",
+        "test_vnext_source_file.SourceFileTests.test_metadata_and_preparation_flush_failures_do_not_replace_source",
+        "test_vnext_source_file.SourceFileTests.test_parent_identity_or_filesystem_change_refuses",
+        "test_vnext_source_file.SourceFileTests.test_rename_acknowledgement_and_postrename_barrier_are_uncertain",
+        "test_vnext_source_file.SourceFileTests.test_symlinks_multilinks_relative_and_in_root_targets_refuse",
+        "test_vnext_apply_back.ApplyBackTests.test_converged_seed_exact_apply_reopen_and_later_source_drift",
+        "test_vnext_apply_back.ApplyBackTests.test_noop_never_replaces_and_approval_cannot_be_implicitly_supplied",
+        "test_vnext_apply_back.ApplyBackTests.test_precommit_and_lost_receipt_recovery_never_rewrite_automatically",
+        "test_vnext_apply_back.ApplyBackTests.test_registered_unverified_and_rejected_candidates_never_grant_apply_back",
+        "test_vnext_apply_back.ApplyBackTests.test_stale_source_approval_and_corrupt_lineage_refuse_before_intent",
+        "test_vnext_apply_back.ApplyBackTests.test_unpinned_and_unfinished_runs_cannot_review_or_write",
+        "test_vnext_apply_back.ApplyBackProcessTests.test_process_death_before_and_after_replace_recovers_without_second_write",
+        "test_vnext_apply_back.ApplyBackProcessTests.test_uncertain_third_bytes_and_missing_source_require_attention",
+        "test_vnext_apply_back.ApprovalIdentityTests.test_identity_binds_values_and_survives_canonical_key_order"
+      ]
+    },
+    {
+      "name": "regression",
+      "log": "rounds/vnext-18-8-m4-implementation-001/regression.log",
+      "log_sha256": "9aaadfae3dcf63c9c571805c19999a453c9e50757ea5431df8ac6f169f38529a",
+      "passed": 80,
+      "elapsed_seconds": 224.996,
+      "status": "passed",
+      "methods": [
+        "test_apply_back.ApplyBackTests.test_apply_back_refuses_final_draft_with_control_characters",
+        "test_apply_back.ApplyBackTests.test_apply_refuses_when_final_draft_hash_does_not_match_run_state",
+        "test_apply_back.ApplyBackTests.test_apply_requires_converged_run_by_default",
+        "test_apply_back.ApplyBackTests.test_apply_requires_explicit_approval",
+        "test_apply_back.ApplyBackTests.test_apply_updates_only_source_spec_when_approved",
+        "test_apply_back.ApplyBackTests.test_dry_run_writes_review_without_mutating_source",
+        "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_can_be_explicitly_allowed",
+        "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_refuses_apply",
+        "test_apply_back.ApplyBackTests.test_falls_back_to_run_state_round_draft_after",
+        "test_apply_back.ApplyBackTests.test_latest_round_fallback_sorts_rounds_numerically",
+        "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+        "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+        "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+        "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+        "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+        "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+        "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+        "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+        "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+        "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+        "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+        "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+        "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+        "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+        "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+        "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+        "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+        "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+        "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+        "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+        "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+        "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+        "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root",
+        "test_preservation_runtime.RuntimeTests.test_pending_cannot_run_next_round_or_strop_with_overrides",
+        "test_preservation_runtime.RuntimeTests.test_accepted_dry_strop_is_read_only_and_external_hash_guard_remains",
+        "test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back",
+        "test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status",
+        "test_vnext_verified_phase2_closeout.Phase2CloseoutTests.test_scheduled_final_review_converges_only_after_evidence_and_state_recovery"
+      ]
+    },
+    {
+      "name": "source-final",
+      "log": "rounds/vnext-18-8-m4-implementation-001/source-final.log",
+      "log_sha256": "3519bdd646bcf7d2e1583ec23c7ad75935dd9150f82f6c68cc0b7a332f0b2ddf",
+      "passed": 8,
+      "elapsed_seconds": 0.453,
+      "status": "passed",
+      "methods": [
+        "test_vnext_source_file.SourceFileTests.test_busy_owner_and_stale_token_cannot_stage_or_replace",
+        "test_vnext_source_file.SourceFileTests.test_changed_source_and_staging_bytes_refuse_before_replacement",
+        "test_vnext_source_file.SourceFileTests.test_exact_atomic_replacement_preserves_permissions_and_provenance",
+        "test_vnext_source_file.SourceFileTests.test_failure_before_replace_keeps_old_source_and_does_not_claim_commit",
+        "test_vnext_source_file.SourceFileTests.test_metadata_and_preparation_flush_failures_do_not_replace_source",
+        "test_vnext_source_file.SourceFileTests.test_parent_identity_or_filesystem_change_refuses",
+        "test_vnext_source_file.SourceFileTests.test_rename_acknowledgement_and_postrename_barrier_are_uncertain",
+        "test_vnext_source_file.SourceFileTests.test_symlinks_multilinks_relative_and_in_root_targets_refuse"
+      ]
+    },
+    {
+      "name": "version-final",
+      "log": "rounds/vnext-18-8-m4-implementation-001/version-final.log",
+      "log_sha256": "f4441b6e6ac3aaceba0a95b6bcc88ebb8f34998ae08411fa0bac69ff15bf9312",
+      "passed": 1,
+      "elapsed_seconds": 381.738,
+      "status": "passed",
+      "methods": [
+        "test_vnext_apply_back.ApplyBackVersionTests.test_promoted_version_convergence_apply_preserves_history_and_closeout"
+      ]
+    }
+  ],
+  "coverage": [
+    "Converged seed: read-only review, exact CRLF-to-verified-byte replacement, fresh-owner readback, repeated apply/recovery, later external drift and no-op.",
+    "Genuine M3 system-entry 0.17 \u2192 1.0 promotion, convergence, exact source replacement and readback retain pointer, version history, old closeout authority and client-call counts.",
+    "Unpinned/incomplete convergence, unverified/rejected candidate, missing explicit approval/exclusive access, stale approval references, source drift and corrupt selected mirrors refuse.",
+    "Lost acknowledgements for preimage, intent, prepared record and receipt; prepared interruption with third bytes/missing source; no automatic recovery rewrite.",
+    "Actual child process termination immediately before and immediately after atomic replacement, fresh-owner explicit retry or receipt recovery, stable inode and client counts.",
+    "Source adapter: busy/stale D8 owner; path/link/parent/filesystem restrictions; metadata preservation/refusal; staging drift/preparation failure; rename acknowledgement and file/directory flush faults.",
+    "Legacy/bridge apply-back, vNext legacy-writer exclusion, local storage, contract validation and converged closeout/recovery regressions."
+  ],
+  "limitations": [
+    "Internal explicitly pinned consumers only; no shipped suite or public selector activation.",
+    "One existing local regular source on the same qualified APFS filesystem; exclusive external source access is an operator precondition, not a cross-root or external-editor lock guarantee.",
+    "Ordinary permissions/owner/group and Apple provenance preserved; unsupported metadata refuses.",
+    "Process termination and injected I/O failures are not physical power-loss qualification.",
+    "No throughput target or long-history performance qualification; M5-P1 remains open.",
+    "Normative family amendment/publication remains separate from the approved internal policy."
+  ],
+  "preserved_notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "totals": {
+    "distinct_passing_methods": 98,
+    "passing_method_executions": 106,
+    "new_distinct_methods": 18,
+    "regression_distinct_methods": 80,
+    "duplicate_primitive_executions": 8
+  },
+  "verification_notes": [
+    "All 658 final source hashes match.",
+    "Python compilation and git diff --check passed.",
+    "Normative specs, shipping suites and existing legacy/bridge source files unchanged.",
+    "Unrelated notes edit retained at the recorded hash.",
+    "No final-source acceptance failures or interrupted acceptance bundles; development/preflight runs excluded from totals."
+  ],
+  "checkpoint": "Local commit subsequently authorized by the user after implementation and acceptance; unrelated notes excluded. Push remains deferred."
+}

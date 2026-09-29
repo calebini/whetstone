@@ -196,8 +196,9 @@ passes. Their initial-source limitations are preserved in the audit; they are
 not represented as frozen final-source runs.
 
 On unchanged final runtime sources, the version acceptance command recorded
-seven individual passing verdicts before the conversation interruption stopped
-its process during the focused-route check. That command has no whole-run pass.
+seven individual passing verdicts. After the conversation interruption, its
+process was no longer running and the focused-route check had no verdict.
+That command has no whole-run pass.
 The ten outstanding methods subsequently passed in a separate command, and the
 additional entry-after-round method passed separately. Together these cover
 all 18 new methods on final sources. All 652 final source-manifest hashes and
@@ -210,6 +211,12 @@ the audit index is included in the checkpoint. The broader combined interruption
 journey described below remains unpassed, and replay performance remains an
 explicit M5 concern. This result closes only the documented internal M3
 boundary, not all of 18.8 or release qualification.
+
+The implementation and this reconciliation were checkpointed locally in
+`a1d46a6`. A subsequent read-only evidence check verified all five indexed log
+hashes, four manifest hashes, 652 current source hashes and the exact test-method
+counts, including coverage of all 18 new methods on final sources. No additional
+runtime test execution is claimed by that evidence check.
 
 ## Remaining delivery boundaries
 
@@ -233,6 +240,15 @@ retained as diagnostics. M3 acceptance instead checks the complete version
 promotion chain and clean declaration/convergence separately. The combined
 two-promotion timeout/convergence journey and its replay cost remain explicit
 M5 acceptance concerns; neither is silently credited as passed.
+
+The [M5 execution plan](../IMPLEMENTATION_PLAN.md#188-m5--integrated-acceptance-and-handoff)
+now tracks these as **M5-I1** (complete the joined interruption journey) and
+**M5-P1** (measure and investigate replay cost), with explicit closing evidence.
+The recorded entry-after-round test took 593.925 seconds; the 66-test regression
+bundle took 1329.967 seconds. These timings establish an investigation need,
+not a measured replay-only cost or an accepted performance budget. The stopped
+diagnostic log hashes are retained in the implementation audit. Neither item
+creates another milestone or qualifies public operation.
 
 The user authorized a local commit after implementation; push remains deferred.
 The pre-existing

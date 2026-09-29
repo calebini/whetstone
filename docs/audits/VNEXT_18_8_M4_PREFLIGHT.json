@@ -1,0 +1,59 @@
+{
+  "milestone": "18.8-M4",
+  "date": "2026-09-29",
+  "base_commit": "a1d46a67da947d5d7b72c95677494787a0232354",
+  "status": "authority_proposal_pending_ratification",
+  "scope": "Existing legacy/bridge strop and vNext refusal preflight; not M4 implementation acceptance.",
+  "decision_proposal": "docs/VNEXT_18_8_M4.md",
+  "authority_dependency": "CANDIDATE_EDITING_AND_PROMOTION_SPEC.md Ratification Delta Map: detailed vNext source-write policy awaits scheduler amendment.",
+  "verification": {
+    "status": "passed",
+    "command": "PYTHONPATH=src:tests python3 -m unittest -v test_apply_back test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root test_preservation_runtime.RuntimeTests.test_pending_cannot_run_next_round_or_strop_with_overrides test_preservation_runtime.RuntimeTests.test_accepted_dry_strop_is_read_only_and_external_hash_guard_remains test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status",
+    "count": 15,
+    "elapsed_seconds": 142.211,
+    "test_methods": [
+      "test_apply_back.ApplyBackTests.test_apply_back_refuses_final_draft_with_control_characters",
+      "test_apply_back.ApplyBackTests.test_apply_refuses_when_final_draft_hash_does_not_match_run_state",
+      "test_apply_back.ApplyBackTests.test_apply_requires_converged_run_by_default",
+      "test_apply_back.ApplyBackTests.test_apply_requires_explicit_approval",
+      "test_apply_back.ApplyBackTests.test_apply_updates_only_source_spec_when_approved",
+      "test_apply_back.ApplyBackTests.test_dry_run_writes_review_without_mutating_source",
+      "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_can_be_explicitly_allowed",
+      "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_refuses_apply",
+      "test_apply_back.ApplyBackTests.test_falls_back_to_run_state_round_draft_after",
+      "test_apply_back.ApplyBackTests.test_latest_round_fallback_sorts_rounds_numerically",
+      "test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root",
+      "test_preservation_runtime.RuntimeTests.test_pending_cannot_run_next_round_or_strop_with_overrides",
+      "test_preservation_runtime.RuntimeTests.test_accepted_dry_strop_is_read_only_and_external_hash_guard_remains",
+      "test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back",
+      "test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status"
+    ],
+    "log": "rounds/vnext-18-8-m4-authority-001/boundary.log",
+    "log_sha256": "1f2f9340ab06090577eeec1e8d508507c9389b839ed88f0bace2b213fef6561b",
+    "source_manifest": "rounds/vnext-18-8-m4-authority-001/sources.json",
+    "source_manifest_sha256": "cfb1d444291c80bcbe7bdc0691056028cf896e89e4120282948561656e6ef14e",
+    "source_files_verified": 649
+  },
+  "observed_code_boundaries": [
+    "Legacy apply_back rejects vNext roots before source consumption.",
+    "Internal converged V closeout still binds apply_back_permitted=false.",
+    "D8 fences the physical run root, not arbitrary external source writers.",
+    "Descriptor source path/hash already exist; null-source V fixtures cannot prove positive apply-back."
+  ],
+  "unchanged": [
+    "Runtime, tests, shipped contracts and authoritative specs",
+    "Existing M3 documentation follow-up",
+    "Unrelated notes edit"
+  ],
+  "preserved_note_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "not_performed": [
+    "New vNext source-write implementation",
+    "M4 completion",
+    "Live provider calls",
+    "Real external specification apply-back",
+    "Normative specification edits",
+    "Public activation",
+    "Commit",
+    "Push"
+  ]
+}

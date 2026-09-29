@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-apply-back-receipt-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "intent",
+    "outcome",
+    "source_hash",
+    "file_identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vnext-apply-back-receipt-v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^apply_[0-9a-f]{64}$"
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "outcome": {
+      "enum": [
+        "source_updated",
+        "no_change"
+      ]
+    },
+    "source_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "file_identity": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "x-whetstone": {
+    "version": "vnext-apply-back-receipt-v1",
+    "producer": "orchestrator",
+    "consumer": "internal-verified-apply-back",
+    "tests": [
+      "tests/test_vnext_apply_back.py"
+    ]
+  }
+}
