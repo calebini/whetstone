@@ -145,8 +145,106 @@ busy ownership, heartbeat/deadline reclamation of a paused worker, and descendan
 cleanup. No product runtime code changed and no performance correction is
 claimed by introducing the execution harness.
 
-M5 remains incomplete. The immediate work is a bounded replay correction with
-fresh-byte/source-barrier tests, followed by the interrupted joined case and
-remaining matrix methods under supervision. Neither M5-I1 nor M5-P1 is closed;
-the original A–D checkboxes remain open. The user authorized a local checkpoint of these tests, controls and incomplete
-evidence, followed by continued M5 work. This checkpoint does not complete M5.
+At the checkpoint M5 remained incomplete. The immediate work was a bounded
+replay correction with fresh-byte/source-barrier tests, followed by the interrupted
+joined case and remaining matrix methods under supervision. Neither M5-I1 nor M5-P1 is closed;
+the original A–D checkboxes remain open. These tests, controls and incomplete evidence were checkpointed at `8ec7fba`,
+followed by continued M5 work. That checkpoint does not complete M5.
+
+
+## Replay correction after the checkpoint
+
+The bounded correction changes only system-entry input replay. The fresh
+`_original_committed_binding` already reconstructs the original complete Phase 1
+closeout, checks its committed bytes and binds its exact hash into the request.
+`inputs` now reads that exact hash-bound closeout instead of evaluating the same
+prerequisites a second time. It rereads receipt/feedback/context as before and
+checks pointer/descriptor/run identity again before returning. There is no
+retained cache, no client or publication between binding and consumption, and no
+change to D8 source synchronization or publication barriers. The version-entry
+algorithm still requires and receives complete prerequisites on every call.
+
+Three focused tests passed (31.761s), including changes to request,
+configuration, rubric, closeout/report, receipt/feedback, review configuration,
+descriptor, pointer and installed pins; changes between binding and consumption;
+and repeat-call validation with isolated returned values. These are product
+checks, separate from the three developer-supervisor checks.
+
+A same-process, same-fixture comparison uses the exact checkpoint implementation
+for the before sample and the corrected implementation for the after sample.
+Both run at the same 50% duty limit under cProfile:
+
+| One-promotion operation | Before | After | Closeout evaluations before → after |
+| --- | ---: | ---: | ---: |
+| History inspection | 16.764s | 9.827s | 28 → 14 |
+| Phase 2 state | 34.004s | 20.460s | 57 → 29 |
+
+This is approximately 40–41% less profiled elapsed time for these operations,
+not a throughput guarantee or a long-history fix. Absolute values include
+profiling and duty limiting. The remaining repeated history/prerequisite
+reconstruction is still a performance limitation. `replay_comparison.py`, exact
+before-source bytes, profiles and results are retained with the local evidence.
+Acceptance runs can now retain stage timing with `WHETSTONE_M5_PROFILE=0`, avoiding
+extra profiling-only history/status reads without changing their assertions.
+
+
+The existing system-entry fault/recovery method also passed (172.217s), covering
+rubric synchronization failure, orphan registration recovery, uncertain history
+and entry-state acknowledgements, exact reentry, and changed system inputs.
+The first supervised joined recheck expired its 90-second heartbeat during a
+user-reported network interruption. Its supervisor stopped the worker after
+182.179s; process inspection confirmed no workers remained. System entry had
+completed, but the method has no test verdict. Its evidence remains separate
+from the explicitly requested restart, which uses `joined-restart/`, a 30-minute
+wall cap and the same 50% duty/90-second lease. Earlier passing checks were not
+restarted.
+
+All 24 selected operator/terminal matrix methods have individually verified
+historical passing logs, indexed in `matrix-historical-evidence.json`. Those
+older verdicts are not new M5 passes; 22 selected methods remain pending in the
+current campaign. No undocumented coverage gap is inferred merely from an
+interrupted rerun, and no current-source completion is inferred from older logs.
+
+
+The 90-second restart also expired during a supervision gap, after 772.221s,
+with correction registration complete and second-promotion processing unfinished.
+Its worker exit was verified. One further restart uses a 300-second lease to
+accommodate connection delays, with the same single worker, 50% duty and 1800s
+wall cap. `joined-restart-lease300/` is the separate evidence directory. These
+execution interruptions add no assertion failure or passing test verdict.
+
+
+## Current disposition and next work
+
+The connection-tolerant restart stopped at its **1800-second wall deadline**.
+It completed system entry (114.098s), correction review/registration (267.464s)
+and verification/second promotion/reopen (596.990s), then remained in the
+Reviewer timeout/uncertain-failure-state stage when the cap was reached. No
+assertion failure was reported, but there is **no complete passing verdict**.
+Explicit continuation, declaration/convergence and uncertain apply-back recovery
+were not reached in this attempt. The supervisor exited 124; its session was
+reaped and a process check confirmed no M5/test/profile workers remained.
+
+The correction and its focused verification are complete; the user subsequently
+authorized their local partial checkpoint.
+M5 is not complete. Four product methods passed on the corrected runtime. Across
+all recorded M5 snapshots there are 37 distinct passing product methods (33 at
+the checkpoint plus these four); that is not 37 fresh passes on the corrected
+runtime. Developer-supervisor checks remain separate. The joined/four-promotion
+campaigns and the remaining 22 selected matrix methods still lack current M5
+completion. M5-I1, M5-P1 and the original A–D checkboxes remain open.
+
+The next work is further correction of repeated history/registry/request
+reconstruction, preserving fresh input bytes, contract pins, ownership checks
+and all source/publication barriers. The after-profile still shows four registry
+material/preparation inspections and fourteen system-entry input reconstructions
+for one history inspection. Removing the immediate duplicate reduced cost but
+did not solve this amplification. Establish a bounded improvement before another
+long joined or four-promotion rerun; retain the four passing checks and comparison
+as evidence rather than rerunning them without a relevant change. This remains
+the existing M5 corrective bundle, with no new product policy, mode or milestone.
+No throughput waiver or completion claim follows from the diagnostic time cap.
+
+The checkpoint remains `8ec7fba`. The unrelated notes edit is unchanged; no push,
+public activation, live provider call, normative edit or real source apply-back
+was performed.

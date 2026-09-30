@@ -1,7 +1,8 @@
 """M5 scripted operator campaigns; no public dispatch or live source writes.
 
 WHETSTONE_M5_EVIDENCE optionally records per-stage measurements and cProfile
-samples. The same assertions run without instrumentation in normal unittest.
+samples. Set WHETSTONE_M5_PROFILE=0 to retain stage timings without profiling
+extra replay calls. The same assertions run without instrumentation in unittest.
 """
 from contextlib import contextmanager
 import cProfile
@@ -46,7 +47,7 @@ class Measurements:
 
     def sample(self, f, name):
         directory = os.environ.get('WHETSTONE_M5_EVIDENCE')
-        if not directory:
+        if not directory or os.environ.get('WHETSTONE_M5_PROFILE') == '0':
             return
         root = Path(directory)
         for operation, call in [('history', lambda: f.run._history().inspect()),

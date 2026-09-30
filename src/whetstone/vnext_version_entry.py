@@ -59,8 +59,12 @@ def inputs(proof):
     pins(proof.reader.suite)
     require(proof.seed_values['job']['assembler_version']==ASSEMBLER,'entry requires versioned assembler')
     prefix,owner,binding=binding_at(proof)
-    closeout=owner.evaluate(prefix)
-    rows=closeout.evidence['review_receipts']
+    # _original_committed_binding just reconstructed the complete prerequisite
+    # closeout and matched its committed bytes. Consume that exact reference,
+    # not a second reconstruction with a potentially different result. There
+    # is no client, publication or retained cache between validation and use.
+    closeout=prefix.reader.json(binding.request['phase1_closeout'])
+    rows=closeout['review_receipts']
     require(bool(rows),'entry version requires real Phase 1 review evidence')
     last=rows[-1]
     receipt=decode_json(prefix.reader.raw(last['receipt']))
@@ -76,8 +80,10 @@ def inputs(proof):
         constraints=dict(allowed_operation_types=[],max_operations=0,max_changed_sections=0,
                          max_changed_normative_units=0,required_context_binding_ids=[]),
         system_entry=dict(request=binding.request,request_ref=binding.request_ref,
-                          configuration=binding.configuration,closeout=closeout.evidence,
+                          configuration=binding.configuration,closeout=closeout,
                           review_receipt=last['receipt']))
+    prefix.guard(prefix.store.read)
+    owner.run._guard(prefix.store.read)
     return values,prefix,owner,binding
 
 

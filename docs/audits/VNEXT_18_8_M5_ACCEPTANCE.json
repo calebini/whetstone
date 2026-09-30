@@ -1,6 +1,6 @@
 {
   "milestone": "18.8-M5",
-  "status": "incomplete_replay_cost_requires_correction_before_expensive_reruns",
+  "status": "incomplete_joined_deadline_replay_amplification_unresolved",
   "base_commit": "72498e5",
   "date": "2026-09-30",
   "authority": "User requested M5 after the internal M4 checkpoint and subsequently authorized a local checkpoint on 2026-09-30, followed by continued M5 work. No push, public activation or real apply-back authorized.",
@@ -56,7 +56,7 @@
       "scope": "Developer execution-control tests, separate from product acceptance."
     }
   ],
-  "snapshot_scope": "Runtime, contracts and normative sources unchanged from 72498e5. Initial joined/routes module differs only by later addition of LongerHistoryTests and measurement-label/phase selector; the exact initial module bytes are retained.",
+  "snapshot_scope": "At checkpoint 8ec7fba: Runtime, contracts and normative sources unchanged from 72498e5. Initial joined/routes module differs only by later addition of LongerHistoryTests and measurement-label/phase selector; the exact initial module bytes are retained.",
   "results": [
     {
       "name": "routes",
@@ -134,8 +134,8 @@
     }
   ],
   "carryovers": {
-    "M5-I1": "Unpassed: second promotion completed, but interrupted during profiling before timeout/continuation/convergence/apply.",
-    "M5-P1": "One/two-promotion profiles captured; four-promotion campaign interrupted in fourth promotion. Increasing replay cost is unresolved."
+    "M5-I1": "Unpassed: supervised corrected-source restart reached the timeout/uncertain-failure-state stage after both promotions; the 1800-second wall deadline stopped it before a complete verdict. Earlier lease-expired runs also receive no whole-run credit.",
+    "M5-P1": "Partial improvement measured: same-fixture one-promotion history/state profile elapsed time reduced about 40\u201341% by removing duplicate closeout reconstruction. Repeated registry/request/history replay remains costly; joined acceptance exceeded its diagnostic wall cap and the four-promotion campaign still lacks a completed verdict. No performance target or waiver ratified."
   },
   "not_performed": [
     "Live provider calls",
@@ -403,6 +403,368 @@
     "development_finding": "macOS sandbox may signal EPERM after a worker already exited; suppress only when poll confirms the leader exited. Rechecked, plus descendant cleanup test."
   },
   "current_product_verdicts": {
+    "completed_cohort_methods": 36,
+    "individual_passes_from_interrupted_matrix": 1,
+    "total_distinct_product_methods_across_recorded_snapshots": 37,
+    "additional_completed_product_methods_after_checkpoint": 4,
+    "final_runtime_passing_methods": 4,
+    "supervisor_methods_separate": 3,
+    "no_whole_run_credit": [
+      "joined",
+      "longer",
+      "matrix",
+      "joined-recheck",
+      "joined-restart",
+      "joined-restart-lease300"
+    ]
+  },
+  "source_snapshot_note": "Checkpoint snapshot: Runtime/contracts/normative sources remain at 72498e5. Only new test/harness files and planning/evidence documents changed. Older completed product cohorts remain valid at their recorded test-module snapshots. Subsequent runtime/test correction is separately frozen and indexed in replay_correction; its local partial checkpoint was subsequently authorized.",
+  "remaining": [
+    "M5-I1 joined two-promotion interruption/continuation/convergence/apply verdict",
+    "Longer-history completed replay measurement and M5-P1 disposition",
+    "Remaining selected operator/terminal matrix verdicts",
+    "Final original A\u2013D acceptance reconciliation; public/normative qualification remains deferred"
+  ],
+  "checkpoint_scope": "Tests, execution controls and incomplete acceptance evidence only; no M5 completion claim.",
+  "checkpoint_commit": "8ec7fba",
+  "replay_correction": {
+    "status": "correction_validated_joined_recheck_hit_wall_deadline_no_complete_verdict",
+    "scope": "System-entry inputs consume the exact hash-bound closeout freshly reconstructed by committed binding; no retained cache or source/publication barrier removal.",
+    "sources": {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-replay-correction.json",
+      "sha256": "f524194f7cb89cc16dea46714e0e454a906c8ac13508608f9b959786691202a7"
+    },
+    "snapshot_scope": "Only vnext_version_entry.py runtime changes. Contracts, shipping suites and normative sources unchanged. Instrumentation can omit extra profiling reads while retaining stage timings and all assertions.",
+    "commands": [
+      {
+        "name": "replay-focused",
+        "command": "PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/replay-focused --wall-seconds 300 --lease-seconds 90 --duty 0.5 -- python3 -m unittest -v test_vnext_version_entry_replay"
+      },
+      {
+        "name": "replay-comparison",
+        "command": "PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/replay-comparison --wall-seconds 300 --lease-seconds 90 --duty 0.5 -- python3 -u rounds/vnext-18-8-m5-acceptance-001/replay_comparison.py"
+      },
+      {
+        "name": "replay-entry-faults",
+        "command": "PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/replay-entry-faults --wall-seconds 300 --lease-seconds 90 --duty 0.5 -- python3 -m unittest -v test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit"
+      },
+      {
+        "name": "joined-recheck",
+        "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/joined-recheck WHETSTONE_M5_PROFILE=0 PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/joined-recheck --wall-seconds 1800 --lease-seconds 90 --duty 0.5 -- python3 -m unittest -v test_vnext_m5_integration.JoinedVersionTests"
+      },
+      {
+        "name": "joined-restart",
+        "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/joined-restart WHETSTONE_M5_PROFILE=0 PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/joined-restart --wall-seconds 1800 --lease-seconds 90 --duty 0.5 -- python3 -m unittest -v test_vnext_m5_integration.JoinedVersionTests"
+      },
+      {
+        "name": "joined-restart-lease300",
+        "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/joined-restart-lease300 WHETSTONE_M5_PROFILE=0 PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/joined-restart-lease300 --wall-seconds 1800 --lease-seconds 300 --duty 0.5 -- python3 -m unittest -v test_vnext_m5_integration.JoinedVersionTests"
+      }
+    ],
+    "completed_checks": [
+      {
+        "name": "replay-focused",
+        "passed": 3,
+        "seconds": 31.761,
+        "log": {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-focused/tests.log",
+          "sha256": "db83caa94362e346139f9a29191bd9f96031a2a1c9ff3b813e229bb53aff5e4b"
+        },
+        "supervisor": {
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "-v",
+            "test_vnext_version_entry_replay"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 300.0,
+          "lease_seconds": 90.0,
+          "elapsed_seconds": 32.414766957983375
+        },
+        "methods": [
+          "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+          "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+          "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites"
+        ]
+      },
+      {
+        "name": "replay-entry-faults",
+        "passed": 1,
+        "seconds": 172.217,
+        "log": {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-entry-faults/tests.log",
+          "sha256": "1250beac837e4a3d724e7d37b9c694a352d2b657ccd0b721a90465cb07309123"
+        },
+        "supervisor": {
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "-v",
+            "test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 300.0,
+          "lease_seconds": 90.0,
+          "elapsed_seconds": 172.7013769579935
+        },
+        "methods": [
+          "test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit"
+        ]
+      }
+    ],
+    "comparison": {
+      "script": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/replay_comparison.py",
+        "sha256": "acc5d1436baeacd997d5faa2e7af7ebc0f6af3599d4cacc356fd695060bb1d1c"
+      },
+      "before_source": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/version_entry_before.py",
+        "sha256": "f155c02396409b0ab0b4277714c7fe5e7488c4a558517517e54ab63967d602f5"
+      },
+      "log": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/replay-comparison/tests.log",
+        "sha256": "36dba7136ff3042f787fa25089b45ee4222d8327bf62f0f6566065c36b0ed629"
+      },
+      "results": [
+        {
+          "label": "before",
+          "operation": "history",
+          "seconds": 16.763675041031092,
+          "profile_seconds": 16.760193814000004,
+          "total_calls": 24647911,
+          "functions": [
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+              "function": "evaluate",
+              "calls": 28,
+              "cumulative_seconds": 13.600698623000001
+            },
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+              "function": "validate_contract_suite",
+              "calls": 29,
+              "cumulative_seconds": 8.47806254
+            }
+          ]
+        },
+        {
+          "label": "before",
+          "operation": "phase2_state",
+          "seconds": 34.00438200001372,
+          "profile_seconds": 33.99732363199998,
+          "total_calls": 49339485,
+          "functions": [
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+              "function": "evaluate",
+              "calls": 57,
+              "cumulative_seconds": 27.736709961000003
+            },
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+              "function": "validate_contract_suite",
+              "calls": 58,
+              "cumulative_seconds": 17.782764460000003
+            }
+          ]
+        },
+        {
+          "label": "after",
+          "operation": "history",
+          "seconds": 9.826531708007678,
+          "profile_seconds": 9.823637260000005,
+          "total_calls": 14708499,
+          "functions": [
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+              "function": "evaluate",
+              "calls": 14,
+              "cumulative_seconds": 6.667723585
+            },
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+              "function": "validate_contract_suite",
+              "calls": 15,
+              "cumulative_seconds": 4.4249589600000006
+            }
+          ]
+        },
+        {
+          "label": "after",
+          "operation": "phase2_state",
+          "seconds": 20.459875666012522,
+          "profile_seconds": 20.453876688999973,
+          "total_calls": 29460689,
+          "functions": [
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+              "function": "evaluate",
+              "calls": 29,
+              "cumulative_seconds": 14.051281755000002
+            },
+            {
+              "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+              "function": "validate_contract_suite",
+              "calls": 30,
+              "cumulative_seconds": 8.699608712
+            }
+          ]
+        }
+      ],
+      "profiles": [
+        {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-comparison/after-history.prof",
+          "sha256": "c16147ef913dbda9245121bfba110767b695fb90e447f7782b173a72c710b38b"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-comparison/after-phase2_state.prof",
+          "sha256": "b5c5c9153f113e6ec269efd36311e6db9d8be54ed1467c9a4394c8f428759e83"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-comparison/before-history.prof",
+          "sha256": "1a87d9e4838d74a1b9333be78b80277baf27225988d77c6956de1cf6a394c9af"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/replay-comparison/before-phase2_state.prof",
+          "sha256": "79d4c54d96a770814f5b02b43a2d1cb3f35ce2bc02c271aa0fd903640c29699c"
+        }
+      ],
+      "supervisor": {
+        "command": [
+          "python3",
+          "-u",
+          "rounds/vnext-18-8-m5-acceptance-001/replay_comparison.py"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 90.0,
+        "elapsed_seconds": 194.67508995899698
+      },
+      "limits": "Same process/fixture, before then after, under cProfile and 50% duty limit. Not randomized or a production throughput measurement."
+    },
+    "remaining": "Reduce repeated whole-history/registry/request reconstruction with fresh byte and ownership barriers, then obtain joined and longer-history verdicts, remaining 22 selected matrix verdicts and final A-D reconciliation. Do not blindly repeat the expensive campaigns.",
+    "interrupted_recheck": {
+      "reason": "User reported network interruption; the supervision heartbeat expired. No worker remained at restart inspection. No passing test verdict.",
+      "supervisor": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_m5_integration.JoinedVersionTests"
+        ],
+        "outcome": "heartbeat_expired",
+        "exit_code": 124,
+        "duty": 0.5,
+        "wall_seconds": 1800.0,
+        "lease_seconds": 90.0,
+        "elapsed_seconds": 182.17927529104054
+      },
+      "log": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/joined-recheck/tests.log",
+        "sha256": "5934da0b3a02b5650f28f7ccf6b17ab4ca4c628e70457e93876f9c6dc23c3939"
+      },
+      "stages": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/joined-recheck/stages.jsonl",
+        "sha256": "7aad638354e152e8ab46278228db5bd56baa295eba078ab21d65c5b3ac88cae4"
+      }
+    },
+    "historical_matrix_index": {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/matrix-historical-evidence.json",
+      "sha256": "7f11243563843a3493eb1f5ba929215552e25a16536fa232f5f6d6f0a2de133a"
+    },
+    "historical_matrix_scope": "All 24 selected methods have verified earlier passing logs. This does not add current-source M5 pass credit; 22 remain pending in the campaign.",
+    "interrupted_restarts": [
+      {
+        "reason": "Supervision lease expired during a gap between tool checks. Worker exit confirmed; no test verdict.",
+        "supervisor": {
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "-v",
+            "test_vnext_m5_integration.JoinedVersionTests"
+          ],
+          "outcome": "heartbeat_expired",
+          "exit_code": 124,
+          "duty": 0.5,
+          "wall_seconds": 1800.0,
+          "lease_seconds": 90.0,
+          "elapsed_seconds": 772.2206117080059
+        },
+        "log": {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/joined-restart/tests.log",
+          "sha256": "5934da0b3a02b5650f28f7ccf6b17ab4ca4c628e70457e93876f9c6dc23c3939"
+        },
+        "stages": {
+          "path": "rounds/vnext-18-8-m5-acceptance-001/joined-restart/stages.jsonl",
+          "sha256": "29ec4d01286ac12a06cadf7b428a5d3c3f445fd226bb17513eb1582bfd1d67e9"
+        }
+      }
+    ],
+    "restart_control": "One connection-tolerant restart uses 300-second lease; unchanged one-worker/50% duty/1800-second wall deadline. No independent heartbeat daemon.",
+    "joined_final_attempt": {
+      "supervisor": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_m5_integration.JoinedVersionTests"
+        ],
+        "outcome": "wall_deadline",
+        "exit_code": 124,
+        "duty": 0.5,
+        "wall_seconds": 1800.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 1800.0164237499703
+      },
+      "log": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/joined-restart-lease300/tests.log",
+        "sha256": "5934da0b3a02b5650f28f7ccf6b17ab4ca4c628e70457e93876f9c6dc23c3939"
+      },
+      "stages_file": {
+        "path": "rounds/vnext-18-8-m5-acceptance-001/joined-restart-lease300/stages.jsonl",
+        "sha256": "04eeff2f634fff2d7d6191e5bcbb1d3eb786cc638bfeda4136135e4f3296780f"
+      },
+      "completed_stages": [
+        {
+          "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+          "stage": "system-entry",
+          "event": "passed",
+          "seconds": 114.09761799999978
+        },
+        {
+          "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+          "stage": "correction-review-and-registration",
+          "event": "passed",
+          "seconds": 267.46435100003146
+        },
+        {
+          "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+          "stage": "verification-and-second-promotion",
+          "event": "passed",
+          "seconds": 596.989778749994
+        }
+      ],
+      "stopping_stage": "timeout-and-uncertain-failure-state",
+      "whole_run_pass": false,
+      "assertion_failure_reported": false,
+      "scope": "Deadline interruption during timeout/uncertain-failure-state processing; intermediate stage assertions do not qualify the complete journey."
+    },
+    "cleanup": "Final supervisor session reaped with exit 124; ps inspection found no remaining M5/unittest/profile workers.",
+    "checkpoint_authority": "User subsequently authorized this local correction/evidence checkpoint, then further replay optimization. No milestone completion, public activation or push authorized."
+  },
+  "checkpoint_product_verdicts": {
     "completed_cohort_methods": 32,
     "individual_passes_from_interrupted_matrix": 1,
     "total_distinct_product_methods": 33,
@@ -413,12 +775,5 @@
       "matrix"
     ]
   },
-  "source_snapshot_note": "Runtime/contracts/normative sources remain at 72498e5. Only new test/harness files and planning/evidence documents changed. Older completed product cohorts remain valid at their recorded test-module snapshots.",
-  "remaining": [
-    "M5-I1 joined two-promotion interruption/continuation/convergence/apply verdict",
-    "Longer-history completed replay measurement and M5-P1 disposition",
-    "Remaining selected operator/terminal matrix verdicts",
-    "Final original A\u2013D acceptance reconciliation; public/normative qualification remains deferred"
-  ],
-  "checkpoint_scope": "Tests, execution controls and incomplete acceptance evidence only; no M5 completion claim."
+  "next_action": "Reduce repeated whole-history/registry/request reconstruction with fresh byte and ownership barriers, then obtain joined and longer-history verdicts, remaining 22 selected matrix verdicts and final A-D reconciliation. Do not blindly repeat the expensive campaigns."
 }
