@@ -81,10 +81,26 @@ class _VerifiedTransactions(SemanticFollowupAdmission):
         proof = self.original.proof
         _same_store(store, proof.store)
         load=lambda read: self.load_inputs.for_proposal(read,number,identifier) if identifier is not None else self.load_inputs(read,number)
-        if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and load(store.read).get('system_entry') is not None:
+        if proof.seed_values['job']['assembler_version']!='patch-assembler-v3':
+            return _HistoricalJournal(proof,load)
+        # Selection and construction consume one freshly validated input set.
+        # No client call or publication intervenes. This one-use handoff is
+        # local to construction; all subsequent journal reads use fresh load.
+        selected = load(store.read)
+        pending = [selected]
+        def initial_inputs(read):
+            if not pending:
+                return load(read)
+            proof.guard(read)
+            return pending.pop()
+        if selected.get('system_entry') is not None:
             from whetstone.vnext_version_entry import SystemJournal
-            return SystemJournal(store,load)
-        return _HistoricalJournal(proof,load)
+            journal = SystemJournal(store,initial_inputs)
+        else:
+            journal = _HistoricalJournal(proof,initial_inputs)
+        journal.load_inputs = load
+        proof.guard(store.read)
+        return journal
 
     def _read_evidence(self, historical, candidate_id, reference):
         return _read_followup_evidence(historical.store, admission=historical,

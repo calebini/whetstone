@@ -324,3 +324,103 @@ repeated registry material/preflight reconstruction as the next performance
 investigation; do not blindly repeat expensive campaigns. Normative publication,
 public activation, live providers, real source apply-back and push remain
 excluded. No new mode, authority policy or throughput waiver is introduced.
+
+
+## Restart handoff after `f8988b9`
+
+The guarded input-replay correction and its 102 passing method verdicts are
+checkpointed at **`f8988b9`**. The next authorized slice tried per-proof candidate
+material reuse. Twelve preliminary focused checks passed, but the controlled
+one-promotion benchmark showed **no speedup**: history 6.295s → 6.943s; Phase 2
+state 12.848s → 13.202s. Exact results remained equal. Only one of four history
+material reconstructions was avoided, and total function calls increased.
+These single-fixture timings are diagnostic; no long-history benefit is claimed.
+
+The experiment was withdrawn from active runtime. Both changed runtime files
+are byte-identical to `f8988b9`; the complete experimental source, refined test,
+patch, profiles and logs remain under `rounds/vnext-18-8-m5-material-003/`.
+The refined test adds two assertions beyond the passing preliminary run and
+was not rerun. The [experiment audit](audits/VNEXT_18_8_M5_MATERIAL_EXPERIMENT.json)
+records exact scope and hashes. No worker remains running, and no long campaign
+was relaunched. Current uncommitted feature changes are handoff/evidence only;
+`notes/future-improvements.md` remains the unrelated preserved edit.
+
+**Next investigation at that checkpoint (superseded below):** the versioned `_VerifiedTransactions._request_journal`
+loads historical inputs to select `SystemJournal`, whose constructor immediately
+loads them again. Profile a correction to that duplicate construction work before
+adding another cache layer. Retain subsequent journal rechecks, fresh source and
+ownership barriers, and strict history-prefix separation. This is a hypothesis
+for the next implementation, not a validated optimization or authority waiver.
+Do not reapply the archived material-cache experiment merely to repeat it.
+M5-I1, M5-P1, the 22 remaining matrix methods and final A–D reconciliation remain
+open. No push, public activation, normative edits, live providers or real external
+source apply-back are authorized.
+
+Historical restart prompt (superseded by the latest handoff below):
+
+> Continue Whetstone M5 from the restart handoff at the end of
+> docs/VNEXT_18_8_M5.md and its linked experiment audit. HEAD is f8988b9.
+> Preserve the notes edit and all evidence. The material-cache experiment had
+> no measured benefit and has been archived; active runtime matches HEAD.
+> Investigate duplicate versioned journal-construction input loads, retain all
+> source and D8 guards, and demonstrate benefit before another long test run.
+> Use one bounded worker at 50% duty with a 300-second supervision lease.
+> Do not commit, push, activate modes or apply back externally.
+
+## Journal construction handoff — latest continuation
+
+Continuing from `f8988b9`, versioned historical request-journal selection now
+hands its freshly validated inputs directly to the immediate constructor. The
+handoff is consumed once, with a live proof guard; the original fresh loader is
+restored before returning, and authority is checked again after construction.
+Journal preflight/base/descriptor validation, subsequent rechecks, source
+readback, strict prefix separation and the nonversioned branch remain intact.
+There is no client call or publication between selection and construction, no
+new cache and no shared-constructor API accepting unchecked inputs. Only
+`vnext_verified_history.py` changes in runtime; the unsuccessful material-cache
+experiment remains archived.
+
+The same-fixture comparison substitutes only the journal factory from `f8988b9`,
+with input memoization enabled in both versions. Baseline/handoff/handoff/baseline
+samples assert exact history/state equality and unchanged fixture files:
+
+| Operation | Baseline samples | Handoff samples | Mean reduction |
+| --- | ---: | ---: | ---: |
+| History inspection | 6.294s, 6.115s | 5.580s, 5.477s | 10.9% |
+| Phase 2 state | 13.403s, 13.119s | 11.328s, 11.373s | 14.4% |
+
+Transaction-input loads fall from 14 to 10 for history and 27 to 19 for state.
+Live proof-guard counts remain 59 and 129 respectively on both sides.
+These are two profiled samples on one promotion fixture at 50% duty, not
+production latency, long-history scaling qualification or a throughput waiver.
+The entire comparison completed under its 300-second wall limit.
+
+The first focused cohort passed all **13 methods in 122.292s**. Its new genuine
+system-entry fixture checks changed request/configuration/rubric/closeout/receipt/
+review sources, changed head at both construction boundaries, foreign or closed
+storage ownership, fresh subsequent loads, result isolation, and no writes or
+client calls. Existing entry-replay and guarded memo tests also pass. Four
+selected route regressions passed in **454.542s**: ordinary versioned promotion
+and reopen, unversioned entry, genuine system-entry plus post-entry correction
+and reopen, and original-base historical replay without writes. Together these
+are **17 distinct passing methods on the same frozen sources**, indexed in the
+[journal audit](audits/VNEXT_18_8_M5_JOURNAL.json). They do not overlap the 22
+remaining selected matrix methods or replace the combined interruption test.
+
+All new evidence is retained under `rounds/vnext-18-8-m5-journal-004/`, including
+the exact checkpoint control, comparison driver, profiles and frozen source
+manifest. No combined-interruption or four-promotion rerun was launched here.
+M5-I1, M5-P1, 22 remaining operator/terminal matrix methods and final A–D
+reconciliation remain open. No new authority or product decision was needed.
+
+**Next acceptance work:** resume the outstanding operator/terminal matrix using
+one bounded worker, then obtain the joined-interruption verdict and longer-history
+disposition. Use the saved method-level results to avoid repeating completed
+work. Keep the 50% duty limit, 300-second supervision lease and explicit wall
+cap; refresh the lease only while actively supervising. A stopped test is not a
+pass. Profile any concrete remaining cost before proposing another optimization.
+No commit, push, public activation, normative edits, live providers or real
+external apply-back occurred. Preserve the unrelated notes edit and all archived
+experiments; current implementation and handoff changes remain uncommitted.
+All three supervisor sessions completed successfully and were reaped; final
+process inspection found no remaining task-owned test or benchmark worker.

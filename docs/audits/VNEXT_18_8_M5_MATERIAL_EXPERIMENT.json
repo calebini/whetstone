@@ -1,0 +1,285 @@
+{
+  "milestone": "18.8-M5",
+  "status": "material-reuse experiment withdrawn; M5 incomplete",
+  "base_commit": "f8988b9a08a76ca513d7c7d7df5f132b4e6e85ed",
+  "scope": "Pure historical candidate-material reconstruction under the existing per-proof memo, with live registry artifact comparisons unchanged.",
+  "outcome": "No demonstrated one-promotion speedup. Preserve experiment outside active runtime; do not relaunch long campaigns on its basis.",
+  "verification": {
+    "focused_status": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "-fv",
+        "test_vnext_material_replay",
+        "test_vnext_replay_memo"
+      ],
+      "outcome": "completed",
+      "exit_code": 0,
+      "duty": 0.5,
+      "wall_seconds": 300.0,
+      "lease_seconds": 300.0,
+      "elapsed_seconds": 66.46989424998173
+    },
+    "focused_tests": 12,
+    "focused_seconds": 65.994,
+    "test_source_limit": "Focused pass predates boolean-selector test refinement and a second installed-schema tamper check. Refined archived test source was not rerun. Runtime source was unchanged between focused run and comparison."
+  },
+  "comparison": {
+    "status": {
+      "command": [
+        "python3",
+        "-u",
+        "rounds/vnext-18-8-m5-material-003/compare_material.py"
+      ],
+      "outcome": "completed",
+      "exit_code": 0,
+      "duty": 0.5,
+      "wall_seconds": 300.0,
+      "lease_seconds": 300.0,
+      "elapsed_seconds": 128.36745158297708
+    },
+    "results": [
+      {
+        "control": "cache_off",
+        "operation": "history",
+        "seconds": 6.294559792033397,
+        "total_calls": 8201796,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.297296833
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_proposal_handoff.py",
+            "function": "_prepare",
+            "calls": 4,
+            "cumulative_seconds": 4.155995167
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.218912792
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+            "function": "validate_contract_suite",
+            "calls": 3,
+            "cumulative_seconds": 1.0260532500000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_candidate_registry.py",
+            "function": "_material",
+            "calls": 4,
+            "cumulative_seconds": 4.701511917
+          }
+        ]
+      },
+      {
+        "control": "cache_off",
+        "operation": "phase2_state",
+        "seconds": 12.848455250030383,
+        "total_calls": 17052288,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.678316916
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_proposal_handoff.py",
+            "function": "_prepare",
+            "calls": 8,
+            "cumulative_seconds": 8.294679626
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.104053668
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+            "function": "validate_contract_suite",
+            "calls": 7,
+            "cumulative_seconds": 2.221847711
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_candidate_registry.py",
+            "function": "_material",
+            "calls": 8,
+            "cumulative_seconds": 9.569979207000001
+          }
+        ]
+      },
+      {
+        "control": "cache_on",
+        "operation": "history",
+        "seconds": 6.943133792025037,
+        "total_calls": 8336242,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.2783545
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_material",
+            "calls": 3,
+            "cumulative_seconds": 4.620396833
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_proposal_handoff.py",
+            "function": "_prepare",
+            "calls": 3,
+            "cumulative_seconds": 4.545640459
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.087916584
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+            "function": "validate_contract_suite",
+            "calls": 3,
+            "cumulative_seconds": 1.022861374
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_candidate_registry.py",
+            "function": "_material",
+            "calls": 3,
+            "cumulative_seconds": 5.010965624000001
+          }
+        ]
+      },
+      {
+        "control": "cache_on",
+        "operation": "phase2_state",
+        "seconds": 13.202387249970343,
+        "total_calls": 17321340,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.7967522910000002
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_material",
+            "calls": 6,
+            "cumulative_seconds": 8.112332251
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_proposal_handoff.py",
+            "function": "_prepare",
+            "calls": 6,
+            "cumulative_seconds": 7.711844501000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.3242734570000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_contracts.py",
+            "function": "validate_contract_suite",
+            "calls": 7,
+            "cumulative_seconds": 2.194777459
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_candidate_registry.py",
+            "function": "_material",
+            "calls": 6,
+            "cumulative_seconds": 8.770343417000001
+          }
+        ]
+      }
+    ],
+    "control": "Same current-code fixture/process, material reuse disabled through the inherited registry factory versus enabled; existing input reuse remains enabled in both. Exact returned history/state equality asserted. cProfile, 50% duty, fixed order, single fixture.",
+    "limitation": "This is a diagnostic sample, not a statistical latency claim. Material reconstructions fell 4 to 3 for history and 8 to 6 for state, while total calls increased; no performance benefit established."
+  },
+  "preservation": "Complete runtime experiment, refined test, patch, source manifest, logs and profiles retained under rounds/vnext-18-8-m5-material-003. Only this turn's two runtime edits restored exactly to f8988b9; its new test moved outside active tests.",
+  "next_step": "Investigate immediate duplicate historical input loads during versioned request-journal selection/construction before broadening memoization; preserve subsequent journal recheck, prefix isolation and all source/fence barriers.",
+  "workers": "Both bounded sessions completed and were reaped; ps inspection found no task-owned workers.",
+  "excluded": [
+    "new runtime commit",
+    "push",
+    "public activation",
+    "normative edits",
+    "live providers",
+    "real external apply-back"
+  ],
+  "notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "evidence": [
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/compare_material.py",
+      "sha256": "845ee3f408536a06c465f1d091aa5f05918355d067f7c1f542558de7493f48bb"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/cache_off-history.prof",
+      "sha256": "39fccb754a50f739d40f590d1fa8bb5f486568a3a6fef6587e8e3c173374633e"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/cache_off-phase2_state.prof",
+      "sha256": "5cb0fef95ce65ea67e9e8b8328c610504eb3d53c8a18cb542f6e14dd5fbfe056"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/cache_on-history.prof",
+      "sha256": "20fba9552f4c86c45cc06138c8d8dd6c8b559e3616b366342450b8ca967404e8"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/cache_on-phase2_state.prof",
+      "sha256": "f5f48a07e71188cce02412f807e424978c55837d1690dd6c7c570726709618ef"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/results.json",
+      "sha256": "07e9579e817a1b17320b69dfad32d71fa5dd5fb05b1f81e90351089fbd504dbc"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/status.json",
+      "sha256": "029f34ae1f7efe4d8c3b2302326f1617ca66190821849cf18ddbf9de8667cf67"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/comparison/tests.log",
+      "sha256": "7634db292c8cd44ebf6695b7ee1f01abfc7e6574bb4b9d72d8b6ed33b339965d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/experiment/src/whetstone/vnext_proposal_handoff.py",
+      "sha256": "ae369947e10f7864931c1449d2a4c01b7c0f1c4a53e213e5a9893126eb0595ac"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/experiment/src/whetstone/vnext_verified_history.py",
+      "sha256": "f1c86e22b34cbf745cd0f951dca42d6fba50039a2c17ba537f995aa2bbc51ee0"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/experiment/tests/test_vnext_material_replay.py",
+      "sha256": "547efe66126b6420ba3f177270d3ad7a033135fcacf9c223510143ec0bc29794"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/experiment.patch",
+      "sha256": "1f7b1220c5291cdecbc3079528adcf56720efe57bc8a4210f1c2f24f3780b577"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/focused/status.json",
+      "sha256": "b683b3114966d0bfa84464750e9a8c0e76fec919c28a6379864087c78bfb4f1e"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/focused/tests.log",
+      "sha256": "015038a866a592d70c91c80a90ff7f243944c2ac037e3620e718a450569838f8"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-material-003/sources.json",
+      "sha256": "4a8b854518103155e9be0f4fcff11dc1b494567e5ece8c8b1822db0da97a4c4c"
+    }
+  ]
+}

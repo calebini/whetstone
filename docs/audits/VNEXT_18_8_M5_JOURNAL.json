@@ -1,0 +1,729 @@
+{
+  "milestone": "18.8-M5",
+  "status": "Journal construction optimization validated; M5 incomplete; uncommitted",
+  "base_commit": "f8988b9a08a76ca513d7c7d7df5f132b4e6e85ed",
+  "scope": "Reuse freshly validated versioned journal-selection inputs only for immediate constructor consumption. Restore the fresh loader before returning. No new cache or public constructor bypass.",
+  "authority": "Existing internal read-only verified-history protocol; no product decision or normative authority change.",
+  "barriers": [
+    "Fresh guarded transaction/round reconstruction selects the journal.",
+    "Current pointer, descriptor and D8 ownership guarded at handoff consumption and after construction.",
+    "Original journal preflight/base/descriptor validations remain; later loads, inspect/recheck and writer barriers unchanged.",
+    "Nonversioned branch, legacy/bridge code, memo keys and prefix separation unchanged."
+  ],
+  "verification": [
+    {
+      "name": "focused",
+      "status": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-fv",
+          "test_vnext_history_journal",
+          "test_vnext_version_entry_replay",
+          "test_vnext_replay_memo"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 123.19658720801817
+      },
+      "seconds": 122.292,
+      "passing_methods": [
+        "test_vnext_history_journal.HistoryJournalTests.test_construction_handoff_keeps_fresh_sources_and_authority",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites",
+        "test_vnext_replay_memo.ReplayMemoTests.test_confined_contract_bytes_and_symlinks_are_rechecked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_context_eviction_and_process_boundary_do_not_reuse_other_results",
+        "test_vnext_replay_memo.ReplayMemoTests.test_disposable_payload_replay_is_not_a_persistent_source",
+        "test_vnext_replay_memo.ReplayMemoTests.test_failures_and_unstable_reads_are_not_cached_or_leaked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_hit_rereads_bytes_runs_guards_and_isolates_returned_data",
+        "test_vnext_replay_memo.ReplayMemoTests.test_nested_hits_propagate_missing_files_and_directory_dependencies",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_outlive_borrowed_ownership",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_reuse_identical_bytes_from_replaced_root",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_rejects_symlink_even_when_target_bytes_match"
+      ]
+    },
+    {
+      "name": "routes",
+      "status": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-fv",
+          "test_vnext_verified_versions.VerifiedVersionTests.test_round_promotes_final_version_once_and_reopens_for_clean_review",
+          "test_vnext_verified_versions.VerifiedVersionTests.test_unversioned_new_consumer_enters_without_candidate",
+          "test_vnext_verified_versions.VersionPhase2Tests.test_entry_and_post_entry_correction_promote_exact_history",
+          "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 600.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 455.150000750029
+      },
+      "seconds": 454.542,
+      "passing_methods": [
+        "test_vnext_verified_versions.VerifiedVersionTests.test_round_promotes_final_version_once_and_reopens_for_clean_review",
+        "test_vnext_verified_versions.VerifiedVersionTests.test_unversioned_new_consumer_enters_without_candidate",
+        "test_vnext_verified_versions.VersionPhase2Tests.test_entry_and_post_entry_correction_promote_exact_history",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes"
+      ]
+    }
+  ],
+  "distinct_passing_methods": 17,
+  "focused_coverage": "One genuine promoted-system fixture checks request/configuration/rubric/closeout/receipt/review source drift, both construction head barriers, foreign/closed owner refusal, fresh subsequent loads, result isolation, no writes and no client calls; existing entry and memo checks also pass.",
+  "comparison": {
+    "status": {
+      "command": [
+        "python3",
+        "-u",
+        "rounds/vnext-18-8-m5-journal-004/compare_journal.py"
+      ],
+      "outcome": "completed",
+      "exit_code": 0,
+      "duty": 0.5,
+      "wall_seconds": 300.0,
+      "lease_seconds": 300.0,
+      "elapsed_seconds": 156.25013066700194
+    },
+    "summary": [
+      {
+        "operation": "history",
+        "samples": {
+          "baseline": [
+            6.294026749965269,
+            6.1154992079827935
+          ],
+          "handoff": [
+            5.58039562497288,
+            5.476895084022544
+          ]
+        },
+        "means": {
+          "baseline": 6.204762978974031,
+          "handoff": 5.528645354497712
+        },
+        "mean_reduction_percent": 10.896751846403586
+      },
+      {
+        "operation": "phase2_state",
+        "samples": {
+          "baseline": [
+            13.402707832981832,
+            13.118891291960608
+          ],
+          "handoff": [
+            11.328116209013388,
+            11.37315962498542
+          ]
+        },
+        "means": {
+          "baseline": 13.26079956247122,
+          "handoff": 11.350637916999403
+        },
+        "mean_reduction_percent": 14.404573694618517
+      }
+    ],
+    "results": [
+      {
+        "control": "baseline_1",
+        "operation": "history",
+        "seconds": 6.294026749965269,
+        "total_calls": 8201796,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 14,
+            "cumulative_seconds": 4.144798831
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 14,
+            "cumulative_seconds": 2.345191582
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.289756584
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 59,
+            "cumulative_seconds": 0.090709253
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 6,
+            "cumulative_seconds": 0.009217209
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 3,
+            "cumulative_seconds": 1.875e-06
+          },
+          {
+            "file": "<f8988b9-journal-control>",
+            "function": "_request_journal",
+            "calls": 4,
+            "cumulative_seconds": 3.0099167500000004
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.200446916
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 14,
+            "cumulative_seconds": 4.167501623000001
+          }
+        ]
+      },
+      {
+        "control": "baseline_1",
+        "operation": "phase2_state",
+        "seconds": 13.402707832981832,
+        "total_calls": 17052288,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 27,
+            "cumulative_seconds": 8.278423375000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 27,
+            "cumulative_seconds": 4.378740544
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.6541224160000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 129,
+            "cumulative_seconds": 0.5060991690000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 18,
+            "cumulative_seconds": 0.133905125
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 7,
+            "cumulative_seconds": 5.499e-06
+          },
+          {
+            "file": "<f8988b9-journal-control>",
+            "function": "_request_journal",
+            "calls": 8,
+            "cumulative_seconds": 6.382758793000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.2884810420000004
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 27,
+            "cumulative_seconds": 8.323989832
+          }
+        ]
+      },
+      {
+        "control": "handoff_1",
+        "operation": "history",
+        "seconds": 5.58039562497288,
+        "total_calls": 7318062,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 10,
+            "cumulative_seconds": 3.209306289
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 10,
+            "cumulative_seconds": 1.625606209
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.2759088330000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 59,
+            "cumulative_seconds": 0.083012796
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 6,
+            "cumulative_seconds": 0.008562583
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 3,
+            "cumulative_seconds": 1.3750000000000002e-06
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.1948888340000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_request_journal",
+            "calls": 4,
+            "cumulative_seconds": 2.292947417
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 10,
+            "cumulative_seconds": 3.225264916
+          }
+        ]
+      },
+      {
+        "control": "handoff_1",
+        "operation": "phase2_state",
+        "seconds": 11.328116209013388,
+        "total_calls": 15284374,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 19,
+            "cumulative_seconds": 6.4272805040000005
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 19,
+            "cumulative_seconds": 3.041592333
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.5456489170000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 129,
+            "cumulative_seconds": 0.183751627
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 18,
+            "cumulative_seconds": 0.026944498
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 7,
+            "cumulative_seconds": 4.124000000000001e-06
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.3772405830000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_request_journal",
+            "calls": 8,
+            "cumulative_seconds": 4.495164582
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 19,
+            "cumulative_seconds": 6.457630835000001
+          }
+        ]
+      },
+      {
+        "control": "handoff_2",
+        "operation": "history",
+        "seconds": 5.476895084022544,
+        "total_calls": 7318062,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 10,
+            "cumulative_seconds": 3.3406743740000002
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 10,
+            "cumulative_seconds": 1.626136668
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.280337375
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 59,
+            "cumulative_seconds": 0.19129057800000002
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 6,
+            "cumulative_seconds": 0.008110791000000001
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 3,
+            "cumulative_seconds": 1.458e-06
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.085874417
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_request_journal",
+            "calls": 4,
+            "cumulative_seconds": 2.208297875
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 10,
+            "cumulative_seconds": 3.356691543
+          }
+        ]
+      },
+      {
+        "control": "handoff_2",
+        "operation": "phase2_state",
+        "seconds": 11.37315962498542,
+        "total_calls": 15284374,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 19,
+            "cumulative_seconds": 6.332614748
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 19,
+            "cumulative_seconds": 2.944766872
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.5824679180000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 129,
+            "cumulative_seconds": 0.503728619
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 18,
+            "cumulative_seconds": 0.027966419000000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 7,
+            "cumulative_seconds": 4.0420000000000004e-06
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.43528425
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_request_journal",
+            "calls": 8,
+            "cumulative_seconds": 4.625548334
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 19,
+            "cumulative_seconds": 6.468562666
+          }
+        ]
+      },
+      {
+        "control": "baseline_2",
+        "operation": "history",
+        "seconds": 6.1154992079827935,
+        "total_calls": 8201796,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 14,
+            "cumulative_seconds": 3.978017458
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 14,
+            "cumulative_seconds": 2.409795623
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 2,
+            "cumulative_seconds": 1.271958959
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 59,
+            "cumulative_seconds": 0.082773706
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 6,
+            "cumulative_seconds": 0.008953333
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 3,
+            "cumulative_seconds": 1.7500000000000002e-06
+          },
+          {
+            "file": "<f8988b9-journal-control>",
+            "function": "_request_journal",
+            "calls": 4,
+            "cumulative_seconds": 2.954409043
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 2,
+            "cumulative_seconds": 1.190433749
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 14,
+            "cumulative_seconds": 4.000478584000001
+          }
+        ]
+      },
+      {
+        "control": "baseline_2",
+        "operation": "phase2_state",
+        "seconds": 13.118891291960608,
+        "total_calls": 17052288,
+        "functions": [
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_transaction",
+            "calls": 27,
+            "cumulative_seconds": 8.283252457
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_replay_memo.py",
+            "function": "_unchanged",
+            "calls": 27,
+            "cumulative_seconds": 4.40449571
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "_replay_transaction",
+            "calls": 4,
+            "cumulative_seconds": 2.6513086670000003
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_history.py",
+            "function": "guard",
+            "calls": 129,
+            "cumulative_seconds": 0.39663479700000004
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_review_requests.py",
+            "function": "guard",
+            "calls": 18,
+            "cumulative_seconds": 0.134709999
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_run.py",
+            "function": "guard",
+            "calls": 7,
+            "cumulative_seconds": 4.624e-06
+          },
+          {
+            "file": "<f8988b9-journal-control>",
+            "function": "_request_journal",
+            "calls": 8,
+            "cumulative_seconds": 6.231981792
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_verified_phase1_closeout.py",
+            "function": "evaluate",
+            "calls": 6,
+            "cumulative_seconds": 3.071836958
+          },
+          {
+            "file": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/src/whetstone/vnext_semantic_followup_admission.py",
+            "function": "for_proposal",
+            "calls": 27,
+            "cumulative_seconds": 8.33070575
+          }
+        ]
+      }
+    ],
+    "control": "Only _VerifiedTransactions._request_journal restored from f8988b9 via AST extraction; input memo remains enabled on both sides. One genuine promotion fixture, baseline/handoff/handoff/baseline order, two samples per operation; exact result equality and unchanged fixture files asserted.",
+    "limitation": "cProfile and 50% duty affect timings. One fixture with two samples is diagnostic, not production latency or a scaling/SLA claim."
+  },
+  "remaining": [
+    "M5-I1 whole joined interruption verdict",
+    "M5-P1 longer-history measurement and explicit performance disposition",
+    "22 selected operator/terminal matrix methods without current M5 credit",
+    "Final original A-D reconciliation"
+  ],
+  "next_step": "Resume outstanding acceptance verdicts with the operator/terminal matrix under one bounded supervisor, then joined interruption and longer-history disposition. Do not add speculative caches or repeat an unbounded long campaign.",
+  "workers": "All three bounded supervisor sessions completed with exit 0 and were reaped. Final ps inspection found no remaining task-owned test or benchmark workers.",
+  "excluded": [
+    "commit",
+    "push",
+    "public activation",
+    "normative spec edits",
+    "live providers",
+    "real external apply-back"
+  ],
+  "notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "evidence": [
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/compare_journal.py",
+      "sha256": "202062d9219726a975f32c3f65ab0e6ff8681327c5292e58866d99c89107b808"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/baseline_1-history.prof",
+      "sha256": "a7dd1342836cd37a217aa440942ad76064ad3aef14024f810a57facdb593b45d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/baseline_1-phase2_state.prof",
+      "sha256": "c97418465d2f950cf1202779d18008d5dd0e70f93982732040b128523bb553fd"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/baseline_2-history.prof",
+      "sha256": "2563facf1b768465851fd2736b9efcc395c1a44258207dbc67f4031ed758b831"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/baseline_2-phase2_state.prof",
+      "sha256": "f66730a9bf2252960e593b5a58244eda5bd7a904cb8ee41eb46e624cebea3b2d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/control.py",
+      "sha256": "257879e76bb996e4d3cafa249452c6d76f7e8625e74ad6478c81fcd273a53bc8"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/handoff_1-history.prof",
+      "sha256": "f77c7fcec1ef72cd36eecb893969fd94cfb2c6879956f89fe5eeda5345a42d8a"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/handoff_1-phase2_state.prof",
+      "sha256": "82f56a0fe164283e435b662cf8df815afd11923259356dae47facaef6a011c53"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/handoff_2-history.prof",
+      "sha256": "bb7919698c297805f9c498fc3536064a11a9e524a9d23b319abb2f43b0eef4aa"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/handoff_2-phase2_state.prof",
+      "sha256": "4a43d617a8408c0d165df06a6315b96888156463abc6cc9075832c163d396432"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/results.json",
+      "sha256": "75bb85fda30818ecf9870c2afdd52f82429ae9e9d3111d82528acd0c78fc371c"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/status.json",
+      "sha256": "4c2828ab546ae6824ef072aa0d90ffbab32472e4f1090364d8ddc6307a5e5dc3"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/comparison/tests.log",
+      "sha256": "082f30c384bc55fd6c0db49b17b65e087d7ec297e87c7fc6a08b4708f172d034"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/finalize_audit.py",
+      "sha256": "535e8acf8b1fd9cadb637c33e30dc2d92c7937b873cb7947c640ad2c3c56d01a"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/focused/status.json",
+      "sha256": "607642f4edbd979a520b26255c737c6f74b06ec44c5ccb4695d5fc1872495f71"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/focused/tests.log",
+      "sha256": "cbbb631b58263afc698106cf9a6956cca36ee8f3a5cd3a5ecb882e5574a12c6e"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/routes/status.json",
+      "sha256": "01361a085c7a96e0f0ca4ec06b9ed8202e3ac6e97de01dc8e1ceac69f944826f"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/routes/tests.log",
+      "sha256": "a6ffd2541d7a072c0f0a743b28fbeaeb55ab50674a0b5231bfde69f786e65690"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/sources.json",
+      "sha256": "932228f4e47a6df8026135319bf02bf591eb3440a103ec98d51df0157198a018"
+    }
+  ]
+}
