@@ -775,5 +775,7 @@
       "matrix"
     ]
   },
-  "next_action": "Reduce repeated whole-history/registry/request reconstruction with fresh byte and ownership barriers, then obtain joined and longer-history verdicts, remaining 22 selected matrix verdicts and final A-D reconciliation. Do not blindly repeat the expensive campaigns."
+  "next_action": "The separate replay audit records 102 distinct passing methods on corrected sources and a controlled 38-41% one-promotion replay improvement. The four-promotion test stopped at its 900s cap during promotion four without a complete verdict; workers exited. Continue with measured reduction of repeated registry/preflight reconstruction before another long campaign. M5-I1, M5-P1, the remaining 22 matrix methods and final A-D reconciliation remain open. No new-work commit, public activation or push.",
+  "replay_optimization_audit": "docs/audits/VNEXT_18_8_M5_REPLAY.json",
+  "latest_checkpoint_commit": "1dd2ebc"
 }

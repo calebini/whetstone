@@ -1,0 +1,744 @@
+{
+  "milestone": "18.8-M5 replay optimization",
+  "status": "bounded replay correction validated; longer-history performance unresolved; M5 incomplete",
+  "base_commit": "1dd2ebc",
+  "date": "2026-09-30",
+  "boundary": "Invocation-local historical input reconstruction only; no cached live permission, client call, decision, write or durability operation.",
+  "authority": [
+    "contracts/algorithms/vnext_verified_history_v1.md",
+    "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+    "IMPLEMENTATION_PLAN.md"
+  ],
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/source-manifest.json",
+      "sha256": "ee2b97bfde3c182d252f6ba8e57c165a5030aca0ebc4d310439d1054491449ac"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/sources-corrected.json",
+      "sha256": "ca2d720471722bd42c809aae9a29f8efa0723382819b038d7f59aea10f5093d7"
+    }
+  ],
+  "evidence": [
+    {
+      "name": "final-focused",
+      "source_manifest": "source-manifest.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_replay_memo",
+          "test_vnext_history_replay_memo",
+          "test_vnext_version_entry_replay"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 130.54922908300068
+      },
+      "passing_methods": [
+        "test_vnext_replay_memo.ReplayMemoTests.test_confined_contract_bytes_and_symlinks_are_rechecked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_context_eviction_and_process_boundary_do_not_reuse_other_results",
+        "test_vnext_replay_memo.ReplayMemoTests.test_failures_and_unstable_reads_are_not_cached_or_leaked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_hit_rereads_bytes_runs_guards_and_isolates_returned_data",
+        "test_vnext_replay_memo.ReplayMemoTests.test_nested_hits_propagate_missing_files_and_directory_dependencies",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_outlive_borrowed_ownership",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_reuse_identical_bytes_from_replaced_root",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_rejects_symlink_even_when_target_bytes_match",
+        "test_vnext_history_replay_memo.HistoryReplayMemoTests.test_promoted_transaction_reuse_rereads_sources_and_keeps_output_isolated",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites"
+      ],
+      "whole_run_pass": true,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/final-focused/status.json",
+          "sha256": "c9ac0f182d689169c908d50fec807a4f4ee238ce950ed5a1fa6d2882a43e5b0d"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/final-focused/tests.log",
+          "sha256": "060b9e6943bd698e691a5b2c98c6ab71b30385b97d17a0cca45ca4bec61f1ef0"
+        }
+      ]
+    },
+    {
+      "name": "storage-contracts",
+      "source_manifest": "source-manifest.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_local_storage",
+          "test_vnext_contracts"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 8.720556083018892
+      },
+      "passing_methods": [
+        "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+        "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+        "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+        "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+        "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+        "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+        "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+        "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+        "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+        "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+        "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+        "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+        "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+        "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+        "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+        "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+        "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+        "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+        "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+        "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+        "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+        "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+        "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions"
+      ],
+      "whole_run_pass": true,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/storage-contracts/status.json",
+          "sha256": "9d85cc3cfd9c738ac5a9e91bdf2245038371a9e7b12fb0387f1fd294a0833de8"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/storage-contracts/tests.log",
+          "sha256": "65ff48a409a329171223a58d124ccb56bfe5b439ae1836a77f02f2e8864d7d92"
+        }
+      ]
+    },
+    {
+      "name": "comparison",
+      "source_manifest": "source-manifest.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-u",
+          "rounds/vnext-18-8-m5-replay-002/compare_replay.py"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 139.14082670898642
+      },
+      "passing_methods": [],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/cache_off-history.prof",
+          "sha256": "afec6acd0208e53e5daab26387aae840b0905f1ef86afb37f9fbde8577abfc43"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/cache_off-phase2_state.prof",
+          "sha256": "c48964b110c258cdcbbb948e11ac55cf5727665e293d31f51351b727571e79e9"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/cache_on-history.prof",
+          "sha256": "23af8253a49e106c240310201a43687b4ee51b03ae98496a4f5d5ab568d1e64e"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/cache_on-phase2_state.prof",
+          "sha256": "b28c7d10e2606d37406d1a62d7189c6f0d513177e1b418b783dc9851e9f65f96"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/results.json",
+          "sha256": "8cdb75a1dd1906a13095e6287fd44179a724f4af9ad69e61d91bf9adf5c2e4c7"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/status.json",
+          "sha256": "a27fde2e97cdf0ad1f3aac9e15901204fc9d7ebdfff8f88bb8775cd2424cb34c"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison/tests.log",
+          "sha256": "6a64783e69916e482d734aad40843934e0b557029a3231584649c03879be8680"
+        }
+      ]
+    },
+    {
+      "name": "history",
+      "source_manifest": "source-manifest.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_verified_history"
+        ],
+        "outcome": "wall_deadline",
+        "exit_code": 124,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 300.2080934169935
+      },
+      "passing_methods": [
+        "test_vnext_verified_history.VerifiedHistoryTests.test_changed_actual_head_during_replay_refuses_without_repair",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_committed_pointer_cannot_hide_missing_original_verifier_response",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_fresh_replay_rejects_altered_editor_source_after_an_earlier_success",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_historical_request_factory_refuses_another_storage_owner",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_history_requires_its_own_pinned_algorithm",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_inventory_capture_remains_bound_after_semantic_replay",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promotion_cannot_use_itself_as_its_transaction_base"
+      ],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history/status.json",
+          "sha256": "22f0a5fe31fe8a6680eeb743874a8db16057951d3c17f575ef95bb2e42df7de0"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history/tests.log",
+          "sha256": "4dc13dac2716d0fe0ad3ba4b1ac792312194535dcb785e9c9d410dff3fff127b"
+        }
+      ]
+    },
+    {
+      "name": "followup-diagnostic",
+      "source_manifest": "source-manifest.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_verified_history.VerifiedHistoryTests.test_promoted_same_round_followup_replays_rejected_parent_and_exact_answer"
+        ],
+        "outcome": "completed",
+        "exit_code": 1,
+        "duty": 0.5,
+        "wall_seconds": 180.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 40.79495404200861
+      },
+      "passing_methods": [],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/followup-diagnostic/status.json",
+          "sha256": "b8468399835dd943f8c587fef1508b137064016ceba737880db126f52edff301"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/followup-diagnostic/tests.log",
+          "sha256": "43bdd6344c6781edd4fe7286cb823279d291441da111e7dfb5eab8ed86082d83"
+        }
+      ]
+    },
+    {
+      "name": "history-corrected",
+      "source_manifest": "sources-corrected.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-fv",
+          "test_vnext_verified_history"
+        ],
+        "outcome": "heartbeat_expired",
+        "exit_code": 124,
+        "duty": 0.5,
+        "wall_seconds": 600.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 368.4892488750047
+      },
+      "passing_methods": [
+        "test_vnext_verified_history.VerifiedHistoryTests.test_changed_actual_head_during_replay_refuses_without_repair",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_committed_pointer_cannot_hide_missing_original_verifier_response",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_fresh_replay_rejects_altered_editor_source_after_an_earlier_success",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_historical_request_factory_refuses_another_storage_owner",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_history_requires_its_own_pinned_algorithm",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_inventory_capture_remains_bound_after_semantic_replay",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promoted_same_round_followup_replays_rejected_parent_and_exact_answer",
+        "test_vnext_verified_history.VerifiedHistoryTests.test_promotion_cannot_use_itself_as_its_transaction_base"
+      ],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history-corrected/status.json",
+          "sha256": "7bd355e4ee3951542fa267594a2937327dba68f775093645d2e27f33bb728ac0"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history-corrected/tests.log",
+          "sha256": "3a485538bf2028293a9a29ed1b51e3d016e2bd669a1a11bcafadb13532f5f009"
+        }
+      ]
+    },
+    {
+      "name": "history-final-method",
+      "source_manifest": "sources-corrected.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_verified_history.VerifiedHistoryTests.test_second_genuine_promotion_replays_both_original_bases"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 198.57546408398775
+      },
+      "passing_methods": [
+        "test_vnext_verified_history.VerifiedHistoryTests.test_second_genuine_promotion_replays_both_original_bases"
+      ],
+      "whole_run_pass": true,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history-final-method/status.json",
+          "sha256": "cc98deccfeb5af3ad4124af536d1ede79388c24798d20c4022479c54cb30c32b"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/history-final-method/tests.log",
+          "sha256": "8ad4f2e9f1c6fc45ae01896456ad0299fb984f0d1bba8f1dc1209efa51102d30"
+        }
+      ]
+    },
+    {
+      "name": "corrected-focused",
+      "source_manifest": "sources-corrected.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-fv",
+          "test_vnext_replay_memo",
+          "test_vnext_history_replay_memo",
+          "test_vnext_version_entry_replay",
+          "test_vnext_local_storage",
+          "test_vnext_contracts",
+          "test_contracts",
+          "test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 420.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 274.14449229202
+      },
+      "passing_methods": [
+        "test_vnext_replay_memo.ReplayMemoTests.test_confined_contract_bytes_and_symlinks_are_rechecked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_context_eviction_and_process_boundary_do_not_reuse_other_results",
+        "test_vnext_replay_memo.ReplayMemoTests.test_disposable_payload_replay_is_not_a_persistent_source",
+        "test_vnext_replay_memo.ReplayMemoTests.test_failures_and_unstable_reads_are_not_cached_or_leaked",
+        "test_vnext_replay_memo.ReplayMemoTests.test_hit_rereads_bytes_runs_guards_and_isolates_returned_data",
+        "test_vnext_replay_memo.ReplayMemoTests.test_nested_hits_propagate_missing_files_and_directory_dependencies",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_outlive_borrowed_ownership",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_reuse_identical_bytes_from_replaced_root",
+        "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_rejects_symlink_even_when_target_bytes_match",
+        "test_vnext_history_replay_memo.HistoryReplayMemoTests.test_promoted_transaction_reuse_rereads_sources_and_keeps_output_isolated",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+        "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites",
+        "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+        "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+        "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+        "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+        "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+        "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+        "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+        "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+        "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+        "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+        "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+        "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+        "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+        "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+        "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+        "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+        "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+        "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+        "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+        "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+        "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+        "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+        "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+        "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+        "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+        "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+        "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+        "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+        "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+        "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+        "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+        "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+        "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+        "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+        "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+        "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+        "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+        "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+        "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+        "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+        "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+        "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+        "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+        "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+        "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+        "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+        "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+        "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+        "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+        "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+        "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+        "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+        "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+        "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+        "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+        "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+        "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+        "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+        "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+        "test_contracts.ContractValidationTests.test_apply_back_report_validates",
+        "test_contracts.ContractValidationTests.test_artifact_validation_error_validates",
+        "test_contracts.ContractValidationTests.test_client_telemetry_validates",
+        "test_contracts.ContractValidationTests.test_config_validation_error_validates",
+        "test_contracts.ContractValidationTests.test_decision_artifacts_validate",
+        "test_contracts.ContractValidationTests.test_editor_summary_validates_deferred_decline_requirements",
+        "test_contracts.ContractValidationTests.test_phase_2_reviewer_feedback_requires_oscillation_key",
+        "test_contracts.ContractValidationTests.test_reviewer_feedback_requires_rationale_when_baseline_is_null",
+        "test_contracts.ContractValidationTests.test_reviewer_feedback_validates",
+        "test_contracts.ContractValidationTests.test_rubric_gaps_validates",
+        "test_contracts.ContractValidationTests.test_rubric_manifest_validates",
+        "test_contracts.ContractValidationTests.test_schema_error_survives_context_manager_unwinding",
+        "test_contracts.ContractValidationTests.test_scope_contract_validates",
+        "test_contracts.ContractValidationTests.test_unresolved_issues_validates",
+        "test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit"
+      ],
+      "whole_run_pass": true,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/corrected-focused/status.json",
+          "sha256": "a77f87a7d550239c02d4d20b282ee5665aec149ee1bb1488048533efcbd9f602"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/corrected-focused/tests.log",
+          "sha256": "7893706f3f96b5d4feba5fbc33f0045fd5006f9d0f94ded3aa263a5604f3f882"
+        }
+      ]
+    },
+    {
+      "name": "comparison-corrected",
+      "source_manifest": "sources-corrected.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-u",
+          "rounds/vnext-18-8-m5-replay-002/compare_replay_corrected.py"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 143.31310862500686
+      },
+      "passing_methods": [],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_off-history.prof",
+          "sha256": "cd72dc92706b474c03f3cd738273ba39e183f173546acead2cdb5b8eb62d787f"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_off-phase2_state.prof",
+          "sha256": "b1d001331db9b5c2146752a478af5acbc7d2bbb936905aa65ff339fe373b1889"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_on-history-summary.txt",
+          "sha256": "28c662fe8131efb1804ab496cf998b5d0bc1fb6e1fc6ba1e0dda2ab850a03522"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_on-history.prof",
+          "sha256": "46e3576f3f43fd4fc19227fb266a6fb3dd8bedf082d61c416b993bf53b1bd3b8"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_on-phase2_state-summary.txt",
+          "sha256": "ac003cdb09987cdf6ad87003b2b5ee8bbd20a4a9b639d4fa5416210e818f82d0"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/cache_on-phase2_state.prof",
+          "sha256": "05c5893aebdeb793d351a44eed2aa217b350a91fc442bf590121f1d137637d82"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/results.json",
+          "sha256": "1728fd56aaeb0cc754520c8b00742980cd2b7cff883b3042825648dfb5de6e56"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/status.json",
+          "sha256": "f62aaadba4c25eb381d9e3c0601e3a6eea2abb4d95ea277b3884c51c537678d3"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/comparison-corrected/tests.log",
+          "sha256": "eb1306df39180e7d69fe3e58239d049052e9048525a1a93ac70d3a45bd0795f1"
+        }
+      ]
+    },
+    {
+      "name": "longer-corrected",
+      "source_manifest": "sources-corrected.json",
+      "supervision": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_m5_integration.LongerHistoryTests"
+        ],
+        "outcome": "wall_deadline",
+        "exit_code": 124,
+        "duty": 0.5,
+        "wall_seconds": 900.0,
+        "lease_seconds": 300.0,
+        "elapsed_seconds": 900.0512120829662
+      },
+      "passing_methods": [],
+      "whole_run_pass": false,
+      "artifacts": [
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/phase1-1-promotions-history.prof",
+          "sha256": "3c76bdf428300c3505d8772a3ad7a56229ae6f4f72ae0729a7395252192f40f2"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/phase1-1-promotions-history.txt",
+          "sha256": "4a22d15b8199897f77be9435cfb8ea647ac793465d38a9e3e1562befb9866649"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/phase1-1-promotions-phase_state.prof",
+          "sha256": "524e03b97968c09e52f13c1660e4ee2400538d0d7deb88b5b6a58ab1b8dc1f1d"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/phase1-1-promotions-phase_state.txt",
+          "sha256": "9d1c3c805c3ac5471fe79939420875099c6455542bd21765589147de77916fa6"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/stages.jsonl",
+          "sha256": "fc4b2e419dd31bab2fc0730d2919b28c61dc2e6ae6da160d9f21ebbd6d5da0a2"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/status.json",
+          "sha256": "3d51d1158650a1a08ea2f0e0312ecf1aecfea35df361786d59634b92fbe09e81"
+        },
+        {
+          "path": "rounds/vnext-18-8-m5-replay-002/longer-corrected/tests.log",
+          "sha256": "45387134f9d1ef9539e37ae5f061c283eef0dc53708d8a007eb0f86476a1df01"
+        }
+      ]
+    }
+  ],
+  "final_source_distinct_passing_methods": 102,
+  "final_source_passing_methods": [
+    "test_contracts.ContractValidationTests.test_apply_back_report_validates",
+    "test_contracts.ContractValidationTests.test_artifact_validation_error_validates",
+    "test_contracts.ContractValidationTests.test_client_telemetry_validates",
+    "test_contracts.ContractValidationTests.test_config_validation_error_validates",
+    "test_contracts.ContractValidationTests.test_decision_artifacts_validate",
+    "test_contracts.ContractValidationTests.test_editor_summary_validates_deferred_decline_requirements",
+    "test_contracts.ContractValidationTests.test_phase_2_reviewer_feedback_requires_oscillation_key",
+    "test_contracts.ContractValidationTests.test_reviewer_feedback_requires_rationale_when_baseline_is_null",
+    "test_contracts.ContractValidationTests.test_reviewer_feedback_validates",
+    "test_contracts.ContractValidationTests.test_rubric_gaps_validates",
+    "test_contracts.ContractValidationTests.test_rubric_manifest_validates",
+    "test_contracts.ContractValidationTests.test_schema_error_survives_context_manager_unwinding",
+    "test_contracts.ContractValidationTests.test_scope_contract_validates",
+    "test_contracts.ContractValidationTests.test_unresolved_issues_validates",
+    "test_vnext_contracts.GraphTests.test_all_fixture_artifact_shapes",
+    "test_vnext_contracts.GraphTests.test_bootstrap_is_acyclic_and_descriptor_identity_ignores_locator_timestamp",
+    "test_vnext_contracts.GraphTests.test_bootstrap_rejects_changed_prejob_bytes_before_artifact_consumption",
+    "test_vnext_contracts.GraphTests.test_candidate_identity_cannot_disagree_with_registered_patch",
+    "test_vnext_contracts.GraphTests.test_candidate_index_and_disposition_chains_reject_gaps",
+    "test_vnext_contracts.GraphTests.test_candidate_map_bytes_must_match_registration",
+    "test_vnext_contracts.GraphTests.test_closed_prejob_inputs_reject_job_backreference",
+    "test_vnext_contracts.GraphTests.test_current_pointer_requires_identical_ordinal_snapshot",
+    "test_vnext_contracts.GraphTests.test_exact_canonical_artifacts_and_confined_paths",
+    "test_vnext_contracts.GraphTests.test_model_patch_labels_are_not_persisted_identifiers",
+    "test_vnext_contracts.GraphTests.test_mutation_admission_and_slice_coverage_reject",
+    "test_vnext_contracts.GraphTests.test_nullable_pairs_algorithms_and_untrusted_digest_reject",
+    "test_vnext_contracts.GraphTests.test_operation_count_and_normative_assessment_coverage_are_exact",
+    "test_vnext_contracts.GraphTests.test_patch_rejects_stale_target_unadmitted_work_and_sensitive_claim",
+    "test_vnext_contracts.GraphTests.test_promotion_pointer_predecessor_and_mode_cannot_be_substituted",
+    "test_vnext_contracts.GraphTests.test_ratification_delta_cannot_invent_authority_or_operator_response",
+    "test_vnext_contracts.GraphTests.test_readonly_joined_candidate_verification_and_promotion_evidence",
+    "test_vnext_contracts.GraphTests.test_schema_valid_semantic_coverage_and_uncertainty_fail_closed",
+    "test_vnext_contracts.GraphTests.test_terminal_cannot_take_unbound_prepared_event_as_effective",
+    "test_vnext_contracts.GraphTests.test_uncertainty_rejection_has_exact_mapping",
+    "test_vnext_contracts.GraphTests.test_verification_pointer_cannot_swap_a_decision_or_event",
+    "test_vnext_contracts.GraphTests.test_verified_decision_requires_exact_semantic_evidence_and_mode",
+    "test_vnext_contracts.GraphTests.test_verifier_envelope_cannot_inject_persisted_bindings",
+    "test_vnext_contracts.SuiteTests.test_canonical_fixed_bytes_and_invalid_json",
+    "test_vnext_contracts.SuiteTests.test_identity_registry_replay_and_role_collision",
+    "test_vnext_contracts.SuiteTests.test_local_reference_uses_own_schema_and_json_pointer_escaping",
+    "test_vnext_contracts.SuiteTests.test_negative_vector_must_reject_and_expected_output_must_match",
+    "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+    "test_vnext_contracts.SuiteTests.test_rehashed_manifest_cannot_replace_registered_suite",
+    "test_vnext_contracts.SuiteTests.test_schema_keyword_audit_and_typed_additional_properties",
+    "test_vnext_contracts.SuiteTests.test_suite_relocation_and_tampering",
+    "test_vnext_contracts.SuiteTests.test_utc_timestamps_are_strict_even_through_shared_definitions",
+    "test_vnext_history_replay_memo.HistoryReplayMemoTests.test_promoted_transaction_reuse_rereads_sources_and_keeps_output_isolated",
+    "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+    "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+    "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+    "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+    "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+    "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+    "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+    "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+    "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+    "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+    "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+    "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+    "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+    "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+    "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+    "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+    "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+    "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+    "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+    "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+    "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+    "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+    "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+    "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+    "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+    "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+    "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+    "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+    "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+    "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+    "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+    "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+    "test_vnext_replay_memo.ReplayMemoTests.test_confined_contract_bytes_and_symlinks_are_rechecked",
+    "test_vnext_replay_memo.ReplayMemoTests.test_context_eviction_and_process_boundary_do_not_reuse_other_results",
+    "test_vnext_replay_memo.ReplayMemoTests.test_disposable_payload_replay_is_not_a_persistent_source",
+    "test_vnext_replay_memo.ReplayMemoTests.test_failures_and_unstable_reads_are_not_cached_or_leaked",
+    "test_vnext_replay_memo.ReplayMemoTests.test_hit_rereads_bytes_runs_guards_and_isolates_returned_data",
+    "test_vnext_replay_memo.ReplayMemoTests.test_nested_hits_propagate_missing_files_and_directory_dependencies",
+    "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_outlive_borrowed_ownership",
+    "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_reuse_identical_bytes_from_replaced_root",
+    "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_rejects_symlink_even_when_target_bytes_match",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_changed_actual_head_during_replay_refuses_without_repair",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_committed_pointer_cannot_hide_missing_original_verifier_response",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_fresh_replay_rejects_altered_editor_source_after_an_earlier_success",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_historical_request_factory_refuses_another_storage_owner",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_history_requires_its_own_pinned_algorithm",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_inventory_capture_remains_bound_after_semantic_replay",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_promoted_same_round_followup_replays_rejected_parent_and_exact_answer",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_promotion_cannot_use_itself_as_its_transaction_base",
+    "test_vnext_verified_history.VerifiedHistoryTests.test_second_genuine_promotion_replays_both_original_bases",
+    "test_vnext_verified_versions.VerifiedVersionTests.test_clean_versioned_entry_has_no_editor_or_invented_review_and_distinct_commit",
+    "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+    "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+    "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites"
+  ],
+  "preliminary_development": "focused/ predates source-manifest.json; no final-source credit.",
+  "corrected_regression": "Unrestricted confined-file observation captured disposable payload scratch. Only pinned installed/selected contract roots are now observed; durable run inputs remain observed by D8.",
+  "interruption": "history/ reached a 300s wall cap after eight passes and one error. history-corrected/ passed nine methods before a connection-related lease expiry. Its unfinished final method was restarted separately.",
+  "benchmark_scope": "Current-code cache-disabled versus cache-enabled, same fixture/process, cProfile, 50% duty; exact results asserted equal. Not an exact prior-commit benchmark or throughput qualification.",
+  "environment": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "scripts": [
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/compare_replay.py",
+      "sha256": "dc2f7ef00ebb16cadf04b6189f1964a592af372a9c8f173c025d233a12ab228b"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/compare_replay_corrected.py",
+      "sha256": "1788242cabcc9291c454c2a59be586b096371833e1c16417ce6a5b6a7d8e1799"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/index_evidence.py",
+      "sha256": "c3be78d0c071dd08a0e539bb285c5157eab4f67a7130161894c34b9d60b62a68"
+    }
+  ],
+  "preserved_notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "not_performed": [
+    "push",
+    "new-work commit",
+    "public activation",
+    "live providers",
+    "normative edits",
+    "real external source apply-back"
+  ],
+  "cleanup": "All supervisor sessions reaped. Final longer-history supervisor/worker PIDs 87307 and 87308 absent on ps inspection; no further expensive run launched.",
+  "performance_limitation": "Four-promotion measurement stopped at 900.051s wall deadline during promotion four; three stages passed, no final test verdict or assertion failure. Registry/preflight repetition remains unresolved; no SLA or waiver inferred.",
+  "remaining": [
+    "M5-I1 complete joined interruption verdict",
+    "M5-P1 longer-history measurement/disposition",
+    "22 remaining selected operator/terminal matrix methods",
+    "final A-D reconciliation"
+  ],
+  "checkpoint_authority": "User authorized a local checkpoint followed by the next replay optimization slice; M5 completion and push remain deferred."
+}

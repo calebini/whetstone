@@ -17,6 +17,7 @@ import sys
 import threading
 
 from whetstone.vnext_contracts import VNextSchemaRegistry, canonical_json_bytes, decode_json, require, sha256_bytes
+from whetstone.vnext_replay_memo import observed_read
 
 
 LOCK_PATH='rounds/.vnext-authority.lock'
@@ -114,6 +115,7 @@ class _Tree:
             yield current,parts[-1]
         finally:os.close(current)
 
+    @observed_read
     def read(self,relative):
         self.check()
         with self.parent(relative) as (parent,leaf):
@@ -129,6 +131,7 @@ class _Tree:
                 return b''.join(chunks)
             finally:os.close(fd)
 
+    @observed_read
     def list_directory(self,relative):
         self.check()
         with self.parent(relative) as (parent,leaf):

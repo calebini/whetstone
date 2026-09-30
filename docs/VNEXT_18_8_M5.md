@@ -1,7 +1,7 @@
 # M5 integrated acceptance
 
 Started from local M4 checkpoint `72498e5` on 2026-09-29 after the user requested
-M5. Status: **in progress; expensive campaigns interrupted for CPU load on 2026-09-30; no 18.8 completion claim**. The unrelated notes edit is
+M5. Status: **in progress; replay correction validated, integrated acceptance still open on 2026-09-30; no 18.8 completion claim**. The unrelated notes edit is
 preserved. This campaign uses scripted clients and disposable bound sources;
 public activation, normative edits, real specification apply-back and push remain
 deferred. The user subsequently authorized this local partial checkpoint.
@@ -214,7 +214,7 @@ wall cap. `joined-restart-lease300/` is the separate evidence directory. These
 execution interruptions add no assertion failure or passing test verdict.
 
 
-## Current disposition and next work
+## Disposition at checkpoint `1dd2ebc`
 
 The connection-tolerant restart stopped at its **1800-second wall deadline**.
 It completed system entry (114.098s), correction review/registration (267.464s)
@@ -245,6 +245,82 @@ as evidence rather than rerunning them without a relevant change. This remains
 the existing M5 corrective bundle, with no new product policy, mode or milestone.
 No throughput waiver or completion claim follows from the diagnostic time cap.
 
-The checkpoint remains `8ec7fba`. The unrelated notes edit is unchanged; no push,
+This correction was checkpointed at `1dd2ebc` after user authorization. The unrelated notes edit is unchanged; no push,
 public activation, live provider call, normative edit or real source apply-back
 was performed.
+
+
+## Invocation-local replay optimization — 2026-09-30
+
+The previous correction is committed at **`1dd2ebc`**. The user then authorized
+continued optimization and subsequently authorized this local checkpoint. The unrelated notes
+edit is preserved. M5 and the original A–D requirements remain incomplete.
+
+Historical round/transaction input reconstruction now reuses up to 64 results
+within one `_Proof`. Prefixes share that invocation's memo but have distinct
+keys for ancestry, proven bases, registry visibility, history limit and
+transaction. No result survives a public proof invocation or process boundary.
+Each hit repeats its observed physical reads, listings, missing-file checks and
+pinned contract reads, compares fresh fingerprints, and runs live pointer,
+descriptor and D8 ownership guards before and after reuse. Changed dependencies
+rebuild through the original validators; drift during reconstruction fails.
+Nested hits propagate dependencies, mutable results are isolated, and failed
+builds are not retained. Clients, live eligibility, decisions, publication and
+durability operations retain their existing paths and barriers.
+
+Broader regression found and corrected one observer bug: generic
+`confined_file` also serves disposable payload-verification scratch. Observation
+now covers only the proof's installed and selected contract roots; scratch is
+reconstructed from observed durable run bytes. The original same-round follow-up
+journey passes after this correction. Selector validation precedes lookup to
+preserve rejection of boolean/integer aliases. The concrete platform path class
+supports the project's Python 3.11 floor; execution evidence here is Python 3.14.6
+on macOS/APFS, not a cross-version qualification claim.
+
+**102 distinct methods pass on corrected sources:**
+
+- 92 methods in one completed cohort (273.356s): ten new memo/history checks,
+  three prior entry-replay checks, 64 storage/vNext contract checks, 14 legacy
+  contract checks and the existing version-entry fault/reentry method.
+- Nine historical-replay methods passed before a connection-related lease
+  expiry; only the unfinished two-promotion method was restarted, and it passed
+  in 198.157s. All ten have individual verdicts, not a single whole-cohort pass.
+
+The [replay audit](audits/VNEXT_18_8_M5_REPLAY.json) indexes commands, individual
+verdicts, logs and source hashes under `rounds/vnext-18-8-m5-replay-002/`.
+`sources-corrected.json` owns current-source credit. Preliminary development
+runs, the initial eight-pass/one-error history timeout and the isolated failing
+diagnostic remain separate; none is relabeled as a corrected-source pass.
+
+The final one-promotion comparison asserts exact equality of returned history
+and Phase 2 state with reuse disabled/enabled in the current code:
+
+| Operation | Cache disabled | Cache enabled | Closeout evaluations |
+| --- | ---: | ---: | ---: |
+| History inspection | 10.475s | 6.179s | 14 → 2 |
+| Phase 2 state | 21.095s | 13.004s | 29 → 6 |
+
+This is **41.0% / 38.4% less profiled elapsed time**, measured in fixed order on
+one fixture under the same 50% duty limit. It is not an exact prior-commit
+benchmark, production latency target or scaling qualification. The earlier
+comparison is retained as preliminary evidence. Registry preparation and
+candidate/preflight reconstruction still repeat; their cost remains unresolved.
+
+The four-promotion measurement in `longer-corrected/` stopped at its **900-second
+wall cap** (900.051s including supervision), during the fourth promotion. The
+first three promotion stages completed in **52.533s, 143.151s and 295.818s**.
+One-promotion history/Phase 1 state samples took 5.826s / 10.822s. Four-promotion
+samples and final reopen/clean-review assertions were not reached. There was no
+reported assertion failure, but **no completed test verdict**. The supervisor
+exited 124 and both supervisor/worker exit were verified. No tests remain running.
+This is an explicit unresolved performance limitation, not a throughput failure
+against an agreed SLA or an implicit performance waiver. No further expensive
+attempt was launched.
+
+Remaining work is the completed joined interruption journey (M5-I1), longer
+history/performance disposition (M5-P1), 22 remaining selected operator/terminal
+matrix methods and final A–D reconciliation. The current profile points to
+repeated registry material/preflight reconstruction as the next performance
+investigation; do not blindly repeat expensive campaigns. Normative publication,
+public activation, live providers, real source apply-back and push remain
+excluded. No new mode, authority policy or throughput waiver is introduced.

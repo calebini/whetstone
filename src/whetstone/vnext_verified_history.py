@@ -43,6 +43,12 @@ class _VerifiedTransactions(SemanticFollowupAdmission):
         self.load_inputs.request_journal = self._request_journal
 
     def _transaction(self,read,number,transaction):
+        proof = self.original.proof
+        require(type(number) is int and number > 0, 'invalid historical round selector')
+        return proof.memo.call(('transaction', proof.memo_context(), self.load_inputs.history_limit, number, transaction),
+            lambda: self._replay_transaction(read, number, transaction), lambda: proof.guard(read))
+
+    def _replay_transaction(self,read,number,transaction):
         if self.original.proof.seed_values['job']['assembler_version']=='patch-assembler-v3':
             from whetstone.vnext_version_entry import selected_inputs
             values=selected_inputs(self,read,number,transaction)
@@ -121,6 +127,11 @@ class _ReplayAdmission:
         self.proof.guard(read)
 
     def load_inputs(self, read, number):
+        require(type(number) is int and number in self.proof.owner._refs['rounds'], 'unselected historical Reviewer round')
+        return self.proof.memo.call(('round', self.proof.memo_context(), number),
+            lambda: self._replay_inputs(read, number), lambda: self.proof.guard(read))
+
+    def _replay_inputs(self, read, number):
         self.proof.guard(read)
         selectors = self.proof.owner._refs['rounds']
         require(type(number) is int and number in selectors, 'unselected historical Reviewer round')
@@ -151,12 +162,24 @@ class _Proof:
         require(canonical_json_bytes(self.pointers[-1]) == self.head_raw, 'verified history head changed during structural replay')
         self.latest = _snapshot(self.pointers[0])
         self.bases = {self.latest['path']: (self.latest, None)}
+        from whetstone.vnext_replay_memo import ReplayMemo
+        self.memo = ReplayMemo(contract_roots=(CONTRACT_ROOT, self.reader.suite.root))
         self.admission = _ReplayAdmission(self)
 
     def guard(self, read):
         require(read('rounds/current_verified.json') == self.head_raw
                 and self.owner.store.read_descriptor() == self.descriptor_raw,
                 'verified history authority changed during replay')
+
+    def memo_context(self):
+        # Prefix copies share the invocation's memo, but not proof authority.
+        # Distinguish structural ancestry, actually proven bases and registry
+        # visibility, including ascending replay before a view exists.
+        view = getattr(self, 'view', None)
+        return sha256_bytes(canonical_json_bytes(dict(
+            latest=self.latest, pointers=list(self.pointers),
+            bases=[self.bases[path][0] for path in sorted(self.bases)],
+            registry=None if view is None else dict(creations=list(view.creations), orphans=list(view.orphans)))))
 
     def values(self, reference):
         found = self.bases.get(reference['path'])

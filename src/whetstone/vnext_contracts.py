@@ -104,7 +104,8 @@ def confined_file(root: Path, relative: str) -> Path:
         target /= part
         require(not target.is_symlink(), 'symlinks are not allowed', relative)
     require(target.is_file() and target.resolve().is_relative_to(base), 'missing or escaping file', relative)
-    return target
+    from whetstone.vnext_replay_memo import observe_contract_path
+    return observe_contract_path(target, root, relative)
 
 
 class VNextSchemaRegistry(SchemaRegistry):
