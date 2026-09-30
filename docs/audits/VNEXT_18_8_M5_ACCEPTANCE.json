@@ -1,6 +1,6 @@
 {
   "milestone": "18.8-M5",
-  "status": "incomplete_joined_deadline_replay_amplification_unresolved",
+  "status": "historical_partial_campaign_superseded_by_M5_closeout",
   "base_commit": "72498e5",
   "date": "2026-09-30",
   "authority": "User requested M5 after the internal M4 checkpoint and subsequently authorized a local checkpoint on 2026-09-30, followed by continued M5 work. No push, public activation or real apply-back authorized.",
@@ -775,7 +775,10 @@
       "matrix"
     ]
   },
-  "next_action": "The journal audit records the subsequent bounded optimization on f8988b9: 17 passing methods on frozen sources, identical one-promotion results and 10.9% / 14.4% less mean profiled history/state time. All workers exited. The earlier material-cache experiment was withdrawn. Resume the remaining 22 selected operator/terminal matrix verdicts under one bounded supervisor, then joined interruption and longer-history disposition; finish A-D reconciliation before claiming M5 complete. No speculative cache expansion, unbounded long rerun, new-work commit, public activation or push.",
+  "next_action": "M5 internal acceptance completed on 2026-10-01; see the closeout audit for 22 outstanding matrix passes, whole joined and longer-history verdicts, A-D disposition and retained replay-cost limitation. Preserve the interrupted runs and original source scope recorded here. The user authorized the closeout documentation/evidence checkpoint on 2026-10-01. Next stage: 18.9 qualification; no public activation, normative publication, live provider, real source apply-back or push authorized.",
   "replay_optimization_audit": "docs/audits/VNEXT_18_8_M5_REPLAY.json",
-  "latest_checkpoint_commit": "1dd2ebc"
+  "latest_checkpoint_commit": "2eb4223",
+  "historical_status": "incomplete_joined_deadline_replay_amplification_unresolved",
+  "closeout_audit": "docs/audits/VNEXT_18_8_M5_CLOSEOUT.json",
+  "closeout_handoff": "docs/VNEXT_18_8_M5_COMPLETION.md"
 }

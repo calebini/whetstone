@@ -1,7 +1,7 @@
 # M5 integrated acceptance
 
 Started from local M4 checkpoint `72498e5` on 2026-09-29 after the user requested
-M5. Status: **in progress; replay correction validated, integrated acceptance still open on 2026-09-30; no 18.8 completion claim**. The unrelated notes edit is
+M5. Current status: **complete at the approved internal acceptance boundary on 2026-10-01**. The [completion handoff](VNEXT_18_8_M5_COMPLETION.md) and [closeout audit](audits/VNEXT_18_8_M5_CLOSEOUT.json) supersede historical partial statuses below. Slow replay remains a release limitation; broader 18.8/18.9 release qualification is not claimed. The unrelated notes edit is
 preserved. This campaign uses scripted clients and disposable bound sources;
 public activation, normative edits, real specification apply-back and push remain
 deferred. The user subsequently authorized this local partial checkpoint.
@@ -68,8 +68,7 @@ indexed in a tracked audit at closeout. Tests may record measurements through
 | Scheduler source-write lifecycle | M4 six-rule internal decision ratified 2026-09-29; normative publication not performed |
 | Operator defaults, documentation and release suite | Internal handoff documents exact operations; public defaults and frozen suites unchanged; coordinating publication/qualification is deferred |
 
-The original A–D requirements will receive a final scoped disposition after
-actual verdicts. A successful campaign does not itself amend the normative family
+The original A–D requirements now have a [final scoped disposition](VNEXT_18_8_M5_COMPLETION.md#original-ad-requirements) based on completed verdicts. A successful campaign does not itself amend the normative family
 or close the candidate leaf's complete public-activation ratification checklist.
 
 ## Interruption and CPU recovery — 2026-09-30
@@ -424,3 +423,125 @@ external apply-back occurred. Preserve the unrelated notes edit and all archived
 experiments; current implementation and handoff changes remain uncommitted.
 All three supervisor sessions completed successfully and were reaped; final
 process inspection found no remaining task-owned test or benchmark worker.
+
+## Acceptance closeout campaign after `2eb4223`
+
+The user requested the journal optimization checkpoint and continued work to
+close M5. That checkpoint is **`2eb4223`**. The preceding uncommitted-work and
+next-step statements describe its pre-commit state. The unrelated notes edit
+remains outside the commit.
+
+The closeout campaign uses `rounds/vnext-18-8-m5-closeout-005/` and a frozen
+manifest of 660 source/test/contract files. Its finite acceptance worklist is:
+
+1. Complete the 22 outstanding selected operator/terminal methods; retain
+   method-level verdicts and distinguish the two previously passing methods.
+2. Obtain the whole joined two-promotion, timeout, uncertain-state, reopen,
+   explicit-continuation, convergence and uncertain fixture-apply verdict.
+3. Finish four-promotion measurement and reopen/clean-review assertions; retain
+   measured replay cost as a limitation where it remains slow. No SLA or
+   performance waiver is inferred from a correctness pass.
+4. Reconcile A–D to the tested internal routes, ratified M3/M4 decisions,
+   compatibility evidence and explicit 18.9 dependencies.
+
+Only one bounded worker runs at a time, at 50% duty with a 300-second live
+supervision lease. The matrix has a 1800-second wall cap; completed method
+verdicts survive a stopped cohort. Do not restart passing methods merely because
+the enclosing cohort was interrupted. Runtime changes require a concrete test
+failure or measured blocker; this campaign does not authorize new product scope.
+
+Historical launch status: **running; no closeout verdict yet**. Inspect `matrix/status.json`,
+`matrix*/verdicts.jsonl`, `matrix*/status.json` and `progress.json` before resuming
+after interruption. The first cohort reached its 1800-second cap with ten
+completed passing methods and no reported assertion failure. The twelve
+unfinished methods continued in `matrix-resume-1`; none of those ten passes was
+repeated. Subsequent cohorts stop at a test boundary after 1200 seconds, with a
+2400-second hard cap for a slow active method and the same 300-second lease.
+
+The outstanding matrix is now complete: **all 22 methods passed on the frozen
+`2eb4223` sources**, with no runtime fix and no repeated passing method. The first
+cohort contributed ten individual verdicts before its hard cap; subsequent
+cohorts completed four, five and three methods and stopped cleanly. This is not
+a single uninterrupted 22-method suite run. The other two selected matrix
+methods retain their separately scoped earlier M5 passes. `progress.json` and
+the per-method logs own the exact counts and timing.
+
+The whole joined interruption journey was launched in `joined/`, with stage
+timings and a 3600-second wall cap, the same 50% duty and 300-second supervision
+lease. Additional profiling calls are disabled for this journey; all functional
+assertions remain enabled. The four-promotion measurement remains next. No whole
+joined or longer-history verdict is claimed here yet.
+No push, public activation, live provider, normative spec edit or real external
+apply-back is included. New closeout evidence/documentation is not part of the
+already completed checkpoint.
+
+### Internal operator handoff
+
+These are existing `VerifiedRun` operations for explicitly pinned internal
+roots, not newly available CLI commands or permission to run live clients.
+Open through the descriptor-bound D8 owner. Inspect the current gate before
+acting; reopening does not replenish retries or approve a new transaction.
+
+| Boundary | Existing operation and required behavior |
+| --- | --- |
+| Phase 1 work | `phase1_status()`, `review_status()` and `operator_status()` select supported work. `review_next()` consumes the selected profile; focused cleanliness cannot stand in for full Phase 1 prerequisites. |
+| Candidate lifecycle | `request()`, `register()`, `verify()` and `promote()` remain separate. Only a committed promotion advances authority; rejection and orphan evidence remain visible. Use the reported recovery gate before new work. |
+| Additional budget | `extend_phase1_budget()` appends an explicit grant. It does not rewrite configuration, reset client attempts or erase prior exhaustion evidence. |
+| Phase 2 entry | `phase2_eligibility()` and `phase2_entry_status()` expose prerequisites. `bind_phase2_entry()` commits configuration/request, not entry. When metadata maintenance is required, `prepare_phase2_version()` must pass verification and promotion before the distinct `enter_phase2()` commit. |
+| Phase 2 review | `phase2_sequence_status()` selects the gate. Bind the selected review with `bind_phase2_review()` or `bind_phase2_next_review()` and use `continue_phase2_pass()` only for its supported action. Consuming a result, admitting a correction and promoting it are separate steps. |
+| Corrected findings | At `resolution_publication_required`, call `publish_phase2_resolutions()` and reconcile its state as indicated. A clean later review does not erase unresolved original debt. |
+| Operator choices and answers | Use the bound request/context, exact response and explicit selected admission. New children retain their rejected parent and original findings; a choice alone does not grant convergence credit. |
+| Technical failure | Inspect `phase2_failure_status()` or `phase2_correction_failure_status()`. Reconcile retained reports/state without a client; explicit continuation is allowed only by the reported gate and original allowance. |
+| Freeze or unresolved declaration disagreement | Preserve the current authority and blocking evidence. Only supported report/state recovery is available; no generic resume, automatic clearing or new review is implied. |
+| Declaration and convergence | `prepare_phase2_declaration()`, required configured reviews, `reconcile_phase2_findings()`, `finish_phase2()` and `reconcile_phase2_state()` consume the current verified lineage. Candidate existence or an earlier clean review cannot substitute for these gates. |
+| Fixture apply-back | `review_apply_back()` reconstructs current eligibility. `apply_back()` additionally requires exact approval and exclusive source access; uncertain writes go through `apply_back_status()` / `recover_apply_back()` before another write. This campaign uses temporary sources only. |
+
+The bounded route matrix above remains authoritative for this handoff. Existing
+public legacy/bridge routes keep their own behavior; their accepted hashes and
+recovery flags do not become verified-promotion authority. M3/M4 ratified internal
+policies remain recorded in their handoffs pending coordinated spec publication.
+
+### A–D reconciliation worklist
+
+| Original requirement | Implemented owners / retained authority | Acceptance evidence to reconcile |
+| --- | --- | --- |
+| A — Scheduler integration | `VerifiedRun`, verified review/work/operator/promotion owners, Phase 1 budget grants and Phase 2 sequence. Descriptor budgets, cleanliness, D7 continuation and D8 fencing remain separate constraints. | M2 completion; the passing M5 extended horizontal/vertical journey; selected budget/focused/operator matrix methods; joined timeout and explicit continuation. |
+| B — Verified lifecycle consumers | Verified history, versioned candidate assembly, Phase 2 binding/entry, declaration, findings and closeout. M3's ratified metadata operation changes only candidate bytes before verification; entry remains a distinct commit. | M3 inventory; current replay regression; joined `0.17 → 1.0 → 1.1` history, declaration/convergence and retained failure evidence; four-promotion replay and final clean review. |
+| C — Strop/readback | Verified apply-back eligibility and the M4 source-file writer/readback owner. Exact approved source and converged pointer bindings plus exclusive source access are required. | M4 acceptance; M5 extended-route fixture apply; joined lost-receipt recovery without a second source replacement; carried legacy/bridge apply-back checks. |
+| D — Terminal/operator evidence | Phase 1 status, candidate operator state, Phase 2 failure/correction/signal/blocked/finding reports, current declaration and explicit recovery projections. Final candidate rejection and unresolved debt retain their authority boundaries. | Selected operator/repair/freeze/target/gap/review-only/blocked/conflict/oscillation/failure/budget/focused matrix; joined failure-state acknowledgement loss and reopen. |
+
+These rows are not closed by the existence of an owner alone. The final
+disposition must name whole passing verdicts, carried earlier source scope and
+remaining limitations. Public capability negotiation, coordinated normative
+publication, exhaustive P0/process qualification, live soak and activation remain
+18.9 dependencies; an internal acceptance pass does not settle them.
+
+### Joined verdict — 2026-10-01
+
+**M5-I1 is closed:** the whole joined method passed in **1602.056s** on the
+frozen `2eb4223` sources at 50% duty. All seven stage assertions passed: system
+entry, correction registration, second promotion/reopen, timeout with uncertain
+failure-state acknowledgement, reopened explicit continuation, declaration and
+convergence, and lost apply receipt with readback recovery. Recovery retained the
+original failure artifact and avoided a second source replacement; versions,
+history and client-call counts remained exact. The supervisor exited 0.
+
+### Final closeout — 2026-10-01
+
+The final four-promotion method **passed in 1208.656 seconds**. All four
+promotions, one/four-promotion history and Phase 1 state profiles, and reopened
+clean review passed on the same frozen `2eb4223` sources. Exact head/history and
+client counts are preserved. Both whole journey verdicts and all 22 outstanding
+matrix methods are indexed in the [closeout audit](audits/VNEXT_18_8_M5_CLOSEOUT.json).
+Prior interrupted runs remain unpassed historical evidence.
+
+**M5 is complete at its approved internal acceptance boundary.** M5-P1 closes
+its measurement/reconciliation obligation with slow replay retained as a release
+limitation: history samples rose from 5.342s to 43.682s, and Phase 1 state from
+9.431s to 77.428s, at one versus four promotions under cProfile/50% duty. This is
+not a throughput qualification or performance waiver. The [completion handoff](VNEXT_18_8_M5_COMPLETION.md)
+records A–D dispositions, exact evidence scope and the remaining 18.9 gates.
+All supervisors exited; final process inspection found no task test/profile
+worker. The requested replay checkpoint is `2eb4223`; the user authorized the closeout documentation
+and evidence checkpoint on 2026-10-01. No public activation, live provider, normative
+edit, real external apply-back or push was performed.

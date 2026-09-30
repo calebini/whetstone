@@ -1,0 +1,744 @@
+{
+  "milestone": "18.8-M5",
+  "status": "Integrated acceptance complete at the ratified internal boundary; release qualification remains 18.9",
+  "completed_on": "2026-10-01",
+  "implementation_commit": "2eb4223c592b7860f314824d9c8aaf81c9443cd0",
+  "frozen_source_files": 660,
+  "scope": "Selected scripted M1-M4 internal routes, representative interruptions, exact fixture source write/readback, compatibility evidence and A-D reconciliation. No live clients or public activation.",
+  "environment": {
+    "python": "3.14.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "controls": "One bounded worker, 50% duty, 300-second actively refreshed lease. Initial matrix hard deadline retained as an interruption; subsequent matrix cohorts stop between tests. No passing matrix method repeated.",
+  "measurement_environment": {
+    "PYTHONPATH": "src:tests",
+    "WHETSTONE_M5_PROFILE": {
+      "joined": "0",
+      "longer": "1"
+    },
+    "WHETSTONE_M5_EVIDENCE": "Per-cohort directory under rounds/vnext-18-8-m5-closeout-005; longer phase_state samples call Phase 1 status, not Phase 2 state."
+  },
+  "current_campaign": {
+    "distinct_methods": 24,
+    "matrix": [
+      {
+        "method": "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_explicit_choice_admits_derived_work_but_retains_original_debt",
+        "outcome": "passed",
+        "seconds": 265.85429687501164,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_decline_stale_sources_and_unselected_response_cannot_admit",
+        "outcome": "passed",
+        "seconds": 55.733596958976705,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_selected_child_timeout_reports_separately_and_recovers_publication",
+        "outcome": "passed",
+        "seconds": 253.78305633401033,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_repair.Phase2RepairTests.test_repair_child_promotes_and_preserves_parent_report",
+        "outcome": "passed",
+        "seconds": 437.9848011250142,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_repair.Phase2RepairTests.test_approved_freeze_preserves_evidence_and_allows_only_report_recovery",
+        "outcome": "passed",
+        "seconds": 89.25042395800119,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_last_pass_promotion_maintains_current_declaration_then_halts_and_recovers",
+        "outcome": "passed",
+        "seconds": 194.58348729199497,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_target_path_preserves_approved_freeze_and_recovery_only_boundary",
+        "outcome": "passed",
+        "seconds": 68.49785870796768,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_requires_new_declaration_review_and_preserves_source_finding",
+        "outcome": "passed",
+        "seconds": 120.67183620802825,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_new_promotion_invalidates_acceptance_and_requires_explicit_current_draft_renewal",
+        "outcome": "passed",
+        "seconds": 184.83856062497944,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_gap_acceptance.GapAcceptanceTests.test_acceptance_after_last_review_does_not_grant_extra_budget_or_convergence",
+        "outcome": "passed",
+        "seconds": 128.0043055000133,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_review_only.ReviewOnlyTests.test_late_correction_closeout_converges_with_no_editor_or_budget_extension",
+        "outcome": "passed",
+        "seconds": 533.1370127080008,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_review_only.ReviewOnlyTests.test_closeout_source_finding_halts_and_cannot_select_more_work",
+        "outcome": "passed",
+        "seconds": 478.4148167090025,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_blocked.BlockedReportTests.test_exact_evidence_and_counts_stay_unresolved_without_writes_or_extra_work",
+        "outcome": "passed",
+        "seconds": 69.22521741699893,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_nonblocking_conflict_survives_promotion_and_clean_closeout",
+        "outcome": "passed",
+        "seconds": 603.0721748330398,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_signals.SignalRuntimeTests.test_committed_draft_cycle_halts_at_verified_authority",
+        "outcome": "passed",
+        "seconds": 416.7998750419938,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_verifier_timeout_then_rejection_keeps_both_dispositions",
+        "outcome": "passed",
+        "seconds": 162.95910912496038,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase2_correction_failure.CorrectionFailureTests.test_publication_projection_and_uncertain_state_recovery",
+        "outcome": "passed",
+        "seconds": 87.54748162499163,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase1_budget.BudgetTests.test_horizontal_vertical_and_focused_extensions_finish_without_replaying_prior_work",
+        "outcome": "passed",
+        "seconds": 482.9725273329532,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase1_budget.BudgetTests.test_pending_timeout_reuses_grant_and_retained_attempt_without_reset",
+        "outcome": "passed",
+        "seconds": 217.33617741597118,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_phase1_budget.BudgetTests.test_extension_preserves_shape_allowance_and_recovers_retained_review_without_client",
+        "outcome": "passed",
+        "seconds": 200.25571462500375,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_selected_profile_cleanliness_is_never_full_phase1_or_phase2_entry",
+        "outcome": "passed",
+        "seconds": 12.60670362500241,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/verdicts.jsonl"
+      },
+      {
+        "method": "test_vnext_verified_focused_phase1.FocusedPhase1Tests.test_verified_promotion_requires_selected_profile_rereview_and_retains_history",
+        "outcome": "passed",
+        "seconds": 74.82697166601429,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/verdicts.jsonl"
+      }
+    ],
+    "journeys": {
+      "joined": {
+        "method": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+        "seconds": 1602.056,
+        "stages": [
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "system-entry",
+            "event": "passed",
+            "seconds": 81.31319600000279
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "correction-review-and-registration",
+            "event": "passed",
+            "seconds": 153.0866980830324
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "verification-and-second-promotion",
+            "event": "passed",
+            "seconds": 166.79805087501882
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "timeout-and-uncertain-failure-state",
+            "event": "passed",
+            "seconds": 246.78609033301473
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "reopen-recovery-and-explicit-continuation",
+            "event": "passed",
+            "seconds": 362.2997925420059
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "declaration-and-convergence",
+            "event": "passed",
+            "seconds": 465.97725400002673
+          },
+          {
+            "test": "test_vnext_m5_integration.JoinedVersionTests.test_two_promotions_timeout_reopen_convergence_and_uncertain_apply",
+            "stage": "apply-receipt-loss-and-recovery",
+            "event": "passed",
+            "seconds": 125.50681799999438
+          }
+        ],
+        "cohort": {
+          "name": "joined",
+          "status": {
+            "command": [
+              "python3",
+              "-m",
+              "unittest",
+              "-fv",
+              "test_vnext_m5_integration.JoinedVersionTests"
+            ],
+            "outcome": "completed",
+            "exit_code": 0,
+            "duty": 0.5,
+            "wall_seconds": 3600.0,
+            "lease_seconds": 300.0,
+            "elapsed_seconds": 1602.547129707993
+          },
+          "whole_pass": true,
+          "log": "rounds/vnext-18-8-m5-closeout-005/joined/tests.log",
+          "log_sha256": "18d4dc712b9cd160bc7fad00f359c472245973537ba2394292dd3203efc17512"
+        }
+      },
+      "longer": {
+        "method": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+        "seconds": 1208.656,
+        "stages": [
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "longer-history-initialization",
+            "event": "passed",
+            "seconds": 1.3218294580001384
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-promotion-1",
+            "event": "passed",
+            "seconds": 48.316907833039295
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-1-promotions-history",
+            "event": "passed",
+            "seconds": 5.3424892500042915
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-1-promotions-phase_state",
+            "event": "passed",
+            "seconds": 9.431133874983061
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-promotion-2",
+            "event": "passed",
+            "seconds": 124.47044641699176
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-promotion-3",
+            "event": "passed",
+            "seconds": 245.43237304099603
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-promotion-4",
+            "event": "passed",
+            "seconds": 425.7978416249971
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-4-promotions-history",
+            "event": "passed",
+            "seconds": 43.68182037502993
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "phase1-4-promotions-phase_state",
+            "event": "passed",
+            "seconds": 77.42774637497496
+          },
+          {
+            "test": "test_vnext_m5_integration.LongerHistoryTests.test_four_versioned_promotions_replay_exact_history",
+            "stage": "longer-history-reopen-and-clean-review",
+            "event": "passed",
+            "seconds": 227.22044541704236
+          }
+        ],
+        "cohort": {
+          "name": "longer",
+          "status": {
+            "command": [
+              "python3",
+              "-m",
+              "unittest",
+              "-fv",
+              "test_vnext_m5_integration.LongerHistoryTests"
+            ],
+            "outcome": "completed",
+            "exit_code": 0,
+            "duty": 0.5,
+            "wall_seconds": 2400.0,
+            "lease_seconds": 300.0,
+            "elapsed_seconds": 1209.499934417021
+          },
+          "whole_pass": true,
+          "log": "rounds/vnext-18-8-m5-closeout-005/longer/tests.log",
+          "log_sha256": "3c4f32a8ce31c9efccc68e8ba0d86e8fdf0b54c467a2e3a76d3de42f821a9463"
+        }
+      }
+    },
+    "cohorts": [
+      {
+        "name": "joined",
+        "status": {
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "-fv",
+            "test_vnext_m5_integration.JoinedVersionTests"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 3600.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 1602.547129707993
+        },
+        "whole_pass": true,
+        "log": "rounds/vnext-18-8-m5-closeout-005/joined/tests.log",
+        "log_sha256": "18d4dc712b9cd160bc7fad00f359c472245973537ba2394292dd3203efc17512"
+      },
+      {
+        "name": "longer",
+        "status": {
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "-fv",
+            "test_vnext_m5_integration.LongerHistoryTests"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 2400.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 1209.499934417021
+        },
+        "whole_pass": true,
+        "log": "rounds/vnext-18-8-m5-closeout-005/longer/tests.log",
+        "log_sha256": "3c4f32a8ce31c9efccc68e8ba0d86e8fdf0b54c467a2e3a76d3de42f821a9463"
+      },
+      {
+        "name": "matrix",
+        "status": {
+          "command": [
+            "python3",
+            "-u",
+            "rounds/vnext-18-8-m5-closeout-005/run_matrix.py"
+          ],
+          "outcome": "wall_deadline",
+          "exit_code": 124,
+          "duty": 0.5,
+          "wall_seconds": 1800.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 1800.1923040000256
+        },
+        "whole_pass": false,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix/tests.log",
+        "log_sha256": "a42804b964ab25c64ba03a60f19e6dd6fb2015871dd3f2e7c7737aab5d5485af"
+      },
+      {
+        "name": "matrix-resume-1",
+        "status": {
+          "command": [
+            "python3",
+            "-u",
+            "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_1.py"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 2400.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 1684.5923373340047
+        },
+        "whole_pass": false,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/tests.log",
+        "log_sha256": "003350f5439243716355c2787fc0146035e745358a246adba30cb0cdad066a31"
+      },
+      {
+        "name": "matrix-resume-2",
+        "status": {
+          "command": [
+            "python3",
+            "-u",
+            "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_2.py"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 2400.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 1368.3609413749655
+        },
+        "whole_pass": false,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/tests.log",
+        "log_sha256": "9283ba7f41bbdc25e3596110c8bf3cc5c44ee66747390512151e8fff8b53291f"
+      },
+      {
+        "name": "matrix-resume-3",
+        "status": {
+          "command": [
+            "python3",
+            "-u",
+            "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_3.py"
+          ],
+          "outcome": "completed",
+          "exit_code": 0,
+          "duty": 0.5,
+          "wall_seconds": 2400.0,
+          "lease_seconds": 300.0,
+          "elapsed_seconds": 288.2063954160549
+        },
+        "whole_pass": true,
+        "log": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/tests.log",
+        "log_sha256": "06fe4a4cc240a00173b10867e5039b8c4a19880b4c070a3aec8222b666f622a4"
+      }
+    ]
+  },
+  "same_source_prior_regression": {
+    "distinct_methods": 17,
+    "methods": [
+      "test_vnext_history_journal.HistoryJournalTests.test_construction_handoff_keeps_fresh_sources_and_authority",
+      "test_vnext_replay_memo.ReplayMemoTests.test_confined_contract_bytes_and_symlinks_are_rechecked",
+      "test_vnext_replay_memo.ReplayMemoTests.test_context_eviction_and_process_boundary_do_not_reuse_other_results",
+      "test_vnext_replay_memo.ReplayMemoTests.test_disposable_payload_replay_is_not_a_persistent_source",
+      "test_vnext_replay_memo.ReplayMemoTests.test_failures_and_unstable_reads_are_not_cached_or_leaked",
+      "test_vnext_replay_memo.ReplayMemoTests.test_hit_rereads_bytes_runs_guards_and_isolates_returned_data",
+      "test_vnext_replay_memo.ReplayMemoTests.test_nested_hits_propagate_missing_files_and_directory_dependencies",
+      "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_outlive_borrowed_ownership",
+      "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_cannot_reuse_identical_bytes_from_replaced_root",
+      "test_vnext_replay_memo.StorageReplayMemoTests.test_warm_entry_rejects_symlink_even_when_target_bytes_match",
+      "test_vnext_verified_history.VerifiedHistoryTests.test_genuine_promoted_history_replays_original_base_and_inventory_without_writes",
+      "test_vnext_verified_versions.VerifiedVersionTests.test_round_promotes_final_version_once_and_reopens_for_clean_review",
+      "test_vnext_verified_versions.VerifiedVersionTests.test_unversioned_new_consumer_enters_without_candidate",
+      "test_vnext_verified_versions.VersionPhase2Tests.test_entry_and_post_entry_correction_promote_exact_history",
+      "test_vnext_version_entry_replay.EntryReplayTests.test_change_between_binding_and_consumption_refuses",
+      "test_vnext_version_entry_replay.EntryReplayTests.test_each_call_revalidates_and_returns_isolated_exact_closeout",
+      "test_vnext_version_entry_replay.EntryReplayTests.test_reused_proof_still_refuses_changed_prerequisites"
+    ],
+    "audit": "docs/audits/VNEXT_18_8_M5_JOURNAL.json"
+  },
+  "earlier_M5_evidence": {
+    "distinct_methods": 33,
+    "cohorts": [
+      {
+        "name": "routes",
+        "methods": [
+          "test_vnext_m5_integration.JoinedRouteTests.test_extended_horizontal_and_vertical_promotions_converge_and_apply"
+        ],
+        "log": "rounds/vnext-18-8-m5-acceptance-001/routes.log",
+        "sha256": "5b82df2febb6840d5e797de2c01e3c64db6c6fdb19acfcc3aa22ff0842b3b6e1"
+      },
+      {
+        "name": "compatibility",
+        "methods": [
+          "test_apply_back.ApplyBackTests.test_apply_back_refuses_final_draft_with_control_characters",
+          "test_apply_back.ApplyBackTests.test_apply_refuses_when_final_draft_hash_does_not_match_run_state",
+          "test_apply_back.ApplyBackTests.test_apply_requires_converged_run_by_default",
+          "test_apply_back.ApplyBackTests.test_apply_requires_explicit_approval",
+          "test_apply_back.ApplyBackTests.test_apply_updates_only_source_spec_when_approved",
+          "test_apply_back.ApplyBackTests.test_dry_run_writes_review_without_mutating_source",
+          "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_can_be_explicitly_allowed",
+          "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_refuses_apply",
+          "test_apply_back.ApplyBackTests.test_falls_back_to_run_state_round_draft_after",
+          "test_apply_back.ApplyBackTests.test_latest_round_fallback_sorts_rounds_numerically",
+          "test_vnext_review.ReviewTests.test_clean_review_and_repeat_readback_never_invoke_editor_or_verifier",
+          "test_vnext_review.ReviewTests.test_horizontal_and_vertical_profile_budget_order",
+          "test_vnext_review.ReviewTests.test_input_change_during_review_never_reports_clean",
+          "test_vnext_review.ReviewTests.test_interruption_after_review_output_is_visible_and_not_auto_resumed",
+          "test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root",
+          "test_vnext_review.ReviewTests.test_pending_decision_and_residual_budget_are_distinct",
+          "test_vnext_review.ReviewTests.test_public_cli_selectors_and_omission_never_downgrade",
+          "test_vnext_review.ReviewTests.test_public_config_admit_review_status_and_forbidden_legacy_command",
+          "test_vnext_review.ReviewTests.test_public_configured_codex_transport_and_unused_roles",
+          "test_vnext_review.ReviewTests.test_rehashed_false_clean_receipt_cannot_support_completion",
+          "test_vnext_review.ReviewTests.test_single_shape_retry_and_timeout_does_not_retry",
+          "test_preservation_qualification.ConsumerJourneyTests.test_accepted_phase1_cannot_publish_accepted_phase2_declaration",
+          "test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back",
+          "test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status",
+          "test_preservation_qualification.ConsumerJourneyTests.test_false_convergence_cannot_apply_unverified_accepted_phase1",
+          "test_preservation_qualification.ConsumerJourneyTests.test_source_change_during_review_is_not_overwritten",
+          "test_vnext_verified_work.VerifiedWorkTests.test_registration_orphan_recovers_separately_without_another_editor",
+          "test_vnext_verified_work.VerifiedWorkTests.test_prepared_verification_recovers_without_starting_verifier",
+          "test_vnext_verified_work.VerifiedWorkTests.test_verifier_timeout_requires_explicit_continuation_and_keeps_slot_budget",
+          "test_vnext_verified_work.VerifiedWorkTests.test_retained_editor_and_verifier_output_recovers_without_a_client"
+        ],
+        "log": "rounds/vnext-18-8-m5-acceptance-001/compatibility.log",
+        "sha256": "c83cdb1b636ccb14e5f505b453573944a44161382c95a728441b67beae13649c"
+      },
+      {
+        "name": "bounded-targets",
+        "methods": [
+          "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles"
+        ],
+        "log": "rounds/vnext-18-8-m5-acceptance-001/bounded-targets/tests.log",
+        "sha256": "b1abdd9a1efb86395983d644e2bf89e240ffdc6fad014f5dfca17261a5ffc6a6"
+      },
+      {
+        "name": "individual pass from earlier interrupted matrix",
+        "methods": [
+          "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_phase2_answer_selects_distinct_child_and_resolves_only_after_promotion"
+        ],
+        "log": "rounds/vnext-18-8-m5-acceptance-001/matrix.log",
+        "sha256": "59c58ffe44afe7b9fb9853206108247732060242b81893b346da53203456f88c"
+      }
+    ],
+    "scope": "Earlier M5 snapshots; not relabeled as fresh current-source runs. Includes the other two selected matrix methods, joined extended horizontal/vertical journey and 30 compatibility/recovery methods."
+  },
+  "compatibility": {
+    "changes_since_M4": [
+      "src/whetstone/vnext_contracts.py",
+      "src/whetstone/vnext_local_storage.py",
+      "src/whetstone/vnext_replay_memo.py",
+      "src/whetstone/vnext_verified_history.py",
+      "src/whetstone/vnext_version_entry.py"
+    ],
+    "source_matching_replay_checkpoint": [
+      "src/whetstone/vnext_contracts.py",
+      "src/whetstone/vnext_local_storage.py",
+      "src/whetstone/vnext_replay_memo.py",
+      "src/whetstone/vnext_version_entry.py"
+    ],
+    "changed_since_replay_checkpoint": "src/whetstone/vnext_verified_history.py",
+    "scope": "Legacy/bridge runtime files unchanged since M4. Storage/contracts/memo/version-entry bytes match corrected f8988b9 test evidence. Private journal selection changed in 2eb4223 and has 17 same-source passing methods plus the current affected-consumer campaign. This is source/evidence reconciliation, not another full-suite run."
+  },
+  "M5_I1": "Closed by the whole passing joined method: 0.17 -> 1.0 -> 1.1, timeout and uncertain state, reopen/explicit continuation, convergence and uncertain fixture apply/readback. Exact versions, retained evidence and client counts asserted.",
+  "M5_P1": {
+    "disposition": "Measurement/reconciliation complete; slow replay remains an explicit release limitation, not an SLA pass or performance waiver.",
+    "evidence": "One- and four-promotion history/Phase 1 state profiles, all four promotion stages and final reopen/clean review; whole joined timing on the same frozen source snapshot.",
+    "comparison": "The preceding same-source journal audit records exact-result equality and 10.9% / 14.4% mean profiled reductions on one promotion. Earlier capped four-promotion runs had no complete verdict or comparable final sample.",
+    "limits": "Single local APFS environment, scripted fixtures, cProfile overhead and 50% duty; whole-test times are not production operation latencies. No throughput target is ratified."
+  },
+  "A_D": {
+    "A": "Internal scheduler routes, explicit budgets and supported continuation: M2 plus extended-route journey and completed focused/budget/operator matrix.",
+    "B": "Current verified lineage, version/history, distinct entry, declaration and convergence: M3 plus joined and longer-history verdicts and guarded replay regression.",
+    "C": "Exact approved source/current-pointer convergence binding and uncertain write/readback: ratified M4 plus joined/extended fixture apply and carried compatibility checks.",
+    "D": "Retained authority/candidate/rejection/orphan/decision/failure evidence and exact gates: completed matrix plus joined uncertainty/reopen and earlier M1-M4 fault coverage."
+  },
+  "release_dependencies": [
+    "Coordinated normative publication including M3 metadata attribution and M4 source-write policy",
+    "18.9 exhaustive P0/process/CLI and full regression qualification",
+    "Separately authorized live soak, public capability activation and release performance disposition"
+  ],
+  "excluded": [
+    "push",
+    "public mode activation",
+    "live provider transmission",
+    "normative specification edits",
+    "real external apply-back",
+    "new scope or throughput waiver"
+  ],
+  "preserved_notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "evidence": [
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/authority-sources.json",
+      "sha256": "78c751ee78e605a16f3432f014254395a62285752339cd23f2344287af47a3f9"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/compatibility-scope.json",
+      "sha256": "49c0c5b8667383d5170dae88c29de662566db311fbaf6e061c4c00334ab124b6"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/finalize_closeout.py",
+      "sha256": "75b88a35863d440353170b9c862f4aeccf2196594451ba3f4eeffad8c23766da"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/joined/stages.jsonl",
+      "sha256": "c0335fc1f0247db6026d90936c7eddadb4053ece746866f70ed4ab8386c0c735"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/joined/status.json",
+      "sha256": "827121332d61555b32c110c8afaa4fd948c6542082bbbaa7f15a61d31d758d90"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/joined/tests.log",
+      "sha256": "18d4dc712b9cd160bc7fad00f359c472245973537ba2394292dd3203efc17512"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-1-promotions-history.prof",
+      "sha256": "46a3485149608a553387940909ca98b9f8eb84c7b0838d001d504543c43808a4"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-1-promotions-history.txt",
+      "sha256": "3279665a219518ee350d0947083fd453081308eb529dd649c3a09de06b7fa38b"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-1-promotions-phase_state.prof",
+      "sha256": "a73e39a989f7a3d9f941a9337e02792e7ad5a52c9c0935c2bebfc8144821abf7"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-1-promotions-phase_state.txt",
+      "sha256": "08fcd944c2ab318be7e44a405bfdab08e609519ef620ea40b227123d25b97962"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-4-promotions-history.prof",
+      "sha256": "51b0cd2b02fa7ccf30f3aaa995c7b057f490c2a0aaa29bb26c1bf589bfc9004f"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-4-promotions-history.txt",
+      "sha256": "adb01494a5fac7b3abd21fbd8fe4346d11d7a53c663159fb98fca21c604bb4e6"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-4-promotions-phase_state.prof",
+      "sha256": "3db50d8cf86a1b1831ce3e8a9d080561312b7d29edcf8755485d628df001e0bb"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/phase1-4-promotions-phase_state.txt",
+      "sha256": "d93f5e4cae2fb08a573320fc3b3a1876ae96730a34e14ba5c3b094a79869db95"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/stages.jsonl",
+      "sha256": "7803a7d4a2b664b36787a54ed806c94e2aa29a3ff6ba74d1419f6001dfaf7912"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/status.json",
+      "sha256": "38640b233bb0c9ad9649210685dce70cedcc7fbdfd6ef032fe8220f08f12218d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/longer/tests.log",
+      "sha256": "3c4f32a8ce31c9efccc68e8ba0d86e8fdf0b54c467a2e3a76d3de42f821a9463"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix/status.json",
+      "sha256": "7046397f01e465561e7722874a57936a54e527d8c93a9344c86e3381a341cee5"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix/tests.log",
+      "sha256": "a42804b964ab25c64ba03a60f19e6dd6fb2015871dd3f2e7c7737aab5d5485af"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix/verdicts.jsonl",
+      "sha256": "692d26ae73987a4450b0c71b679917a83eca23aad2ad40f2c909010e98dbcd46"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-methods.json",
+      "sha256": "e420f0bac3ac55230c08d53ff99941c81e650e8625ddbf570696062749f874ce"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/status.json",
+      "sha256": "9afdecdd8946b42fdff07b70ca62aea79093a181f1c4404a4263ca148b593ad8"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/tests.log",
+      "sha256": "003350f5439243716355c2787fc0146035e745358a246adba30cb0cdad066a31"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1/verdicts.jsonl",
+      "sha256": "767d166d16b4fce92a9a78c3f6f6687346da8146d0d2fb099ef5876af983254d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-1-methods.json",
+      "sha256": "2e102f9a44b57b54c195bc615daac20459191b19c3c1e183db4679601b35ba7c"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/status.json",
+      "sha256": "f1f9dfba65a077bf51bbbf377d30640685cf326c444b40cacb10521e57b6ecff"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/tests.log",
+      "sha256": "9283ba7f41bbdc25e3596110c8bf3cc5c44ee66747390512151e8fff8b53291f"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2/verdicts.jsonl",
+      "sha256": "543e3b3c517f58637b0f8a0184fa2061b0984491c9bc02274f46ac7a41b364a2"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-2-methods.json",
+      "sha256": "52e4a62c2993e0a97f1cf035a08a6d7871cdb453f9d9b04af30900a41585e24d"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/status.json",
+      "sha256": "61563948ddd280a30d8fb44f765d46db300572d9f61a477bd482d37b9b93c1af"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/tests.log",
+      "sha256": "06fe4a4cc240a00173b10867e5039b8c4a19880b4c070a3aec8222b666f622a4"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3/verdicts.jsonl",
+      "sha256": "291b6933229ae2b62b07d2a1d4c4302a14b1a6247a64338b4572622125600107"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/matrix-resume-3-methods.json",
+      "sha256": "4f2f13b3bf97660a75bbf356f12627e49a17662358ec8b5ea3f0f51e6ff4de47"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/prepare_matrix_resume.py",
+      "sha256": "32ad32162522e54c0bf0e86f84c998e6604321a3e0fbdebbfd39600135c21f73"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/prior-matrix-verdicts.json",
+      "sha256": "d74d949238ceeb4f0ccea04302dac6b5d9f63488631b2feca4a9de1cbce97755"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/progress.json",
+      "sha256": "cb2c180316ed29d2e01f9b2a27c9b7f1dd6870f6aa6b0f9622dc9d6c9382deb6"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/reconcile.py",
+      "sha256": "91c2b7040dec48d711d13af3c4e49bb5df8d4808a60c607c73b42a6b672240a3"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/run_matrix.py",
+      "sha256": "acfeaad61e73e0be0af87fa9c1c3f4726c53048a27596e651e7fde42e0930479"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_1.py",
+      "sha256": "0dc94e6f5fd9218e24ede73682e3428bf07dacf27df3465927555425ace313eb"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_2.py",
+      "sha256": "eff7852a67519b79e4e4a4303a2c569de761c99861c7f6a16dbbca99293f14e7"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/run_matrix_resume_3.py",
+      "sha256": "5ec0fdf76b2ff85617f0f43ced7cf5321e2f0dfa417243988c48f9f1f7520efb"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/sources.json",
+      "sha256": "9514c55b2123143b7efb818c935247b9d1630ae4f74edb955fd1de9551437782"
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/worker-exit.json",
+      "sha256": "99426f605ea73d29fee885d675c94430f108b542c86aaa6ea77bd209d98a1892"
+    }
+  ]
+}
