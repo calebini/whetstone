@@ -1,0 +1,424 @@
+{
+  "milestone": "18.8-M5",
+  "status": "incomplete_replay_cost_requires_correction_before_expensive_reruns",
+  "base_commit": "72498e5",
+  "date": "2026-09-30",
+  "authority": "User requested M5 after the internal M4 checkpoint and subsequently authorized a local checkpoint on 2026-09-30, followed by continued M5 work. No push, public activation or real apply-back authorized.",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "storage": "qualified local APFS",
+    "measurement_limits": "cProfile adds overhead; joined/routes/longer/matrix/compatibility cohorts overlap in wall-clock execution. No throughput baseline or power-loss qualification claimed."
+  },
+  "commands": [
+    {
+      "name": "baseline-profile",
+      "sources": "sources-baseline.json",
+      "command": "PYTHONPATH=src:tests python3 -u rounds/vnext-18-8-m5-acceptance-001/baseline_profile.py",
+      "scope": "Unmodified M4 runtime baseline; equivalent executed script at /private/tmp/whetstone_m5_profile.py; profiling, not acceptance."
+    },
+    {
+      "name": "joined",
+      "sources": "sources-joined-initial.json",
+      "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/joined PYTHONPATH=src:tests python3 -u -m unittest -v test_vnext_m5_integration.JoinedVersionTests"
+    },
+    {
+      "name": "routes",
+      "sources": "sources-joined-initial.json",
+      "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/routes PYTHONPATH=src:tests python3 -u -m unittest -v test_vnext_m5_integration.JoinedRouteTests"
+    },
+    {
+      "name": "longer",
+      "sources": "sources.json",
+      "command": "WHETSTONE_M5_EVIDENCE=rounds/vnext-18-8-m5-acceptance-001/longer PYTHONPATH=src:tests python3 -u -m unittest -v test_vnext_m5_integration.LongerHistoryTests"
+    },
+    {
+      "name": "matrix",
+      "sources": "sources.json",
+      "command": "PYTHONPATH=src:tests python3 -u rounds/vnext-18-8-m5-acceptance-001/run_matrix.py",
+      "method_list": "matrix-methods.json",
+      "scope": "Equivalent loader executed inline; exact method list retained."
+    },
+    {
+      "name": "compatibility",
+      "sources": "sources.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_apply_back test_vnext_review test_preservation_qualification.ConsumerJourneyTests test_vnext_verified_work.VerifiedWorkTests.test_registration_orphan_recovers_separately_without_another_editor test_vnext_verified_work.VerifiedWorkTests.test_prepared_verification_recovers_without_starting_verifier test_vnext_verified_work.VerifiedWorkTests.test_verifier_timeout_requires_explicit_continuation_and_keeps_slot_budget test_vnext_verified_work.VerifiedWorkTests.test_retained_editor_and_verifier_output_recovers_without_a_client"
+    },
+    {
+      "name": "bounded-targets",
+      "sources": "sources-supervised.json",
+      "command": "PYTHONPATH=src:tests python3 tests/m5_bounded_runner.py --output rounds/vnext-18-8-m5-acceptance-001/bounded-targets --wall-seconds 300 --lease-seconds 90 --duty 0.5 -- python3 -m unittest -v test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles"
+    },
+    {
+      "name": "supervisor-final",
+      "sources": "sources-supervised.json",
+      "command": "PYTHONPATH=src:tests python3 -m unittest -v test_m5_bounded_runner",
+      "scope": "Developer execution-control tests, separate from product acceptance."
+    }
+  ],
+  "snapshot_scope": "Runtime, contracts and normative sources unchanged from 72498e5. Initial joined/routes module differs only by later addition of LongerHistoryTests and measurement-label/phase selector; the exact initial module bytes are retained.",
+  "results": [
+    {
+      "name": "routes",
+      "passed": 1,
+      "seconds": 1021.5,
+      "log": "rounds/vnext-18-8-m5-acceptance-001/routes.log",
+      "log_sha256": "5b82df2febb6840d5e797de2c01e3c64db6c6fdb19acfcc3aa22ff0842b3b6e1",
+      "methods": [
+        "test_vnext_m5_integration.JoinedRouteTests.test_extended_horizontal_and_vertical_promotions_converge_and_apply"
+      ]
+    },
+    {
+      "name": "compatibility",
+      "passed": 30,
+      "seconds": 263.076,
+      "log": "rounds/vnext-18-8-m5-acceptance-001/compatibility.log",
+      "log_sha256": "c83cdb1b636ccb14e5f505b453573944a44161382c95a728441b67beae13649c",
+      "methods": [
+        "test_apply_back.ApplyBackTests.test_apply_back_refuses_final_draft_with_control_characters",
+        "test_apply_back.ApplyBackTests.test_apply_refuses_when_final_draft_hash_does_not_match_run_state",
+        "test_apply_back.ApplyBackTests.test_apply_requires_converged_run_by_default",
+        "test_apply_back.ApplyBackTests.test_apply_requires_explicit_approval",
+        "test_apply_back.ApplyBackTests.test_apply_updates_only_source_spec_when_approved",
+        "test_apply_back.ApplyBackTests.test_dry_run_writes_review_without_mutating_source",
+        "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_can_be_explicitly_allowed",
+        "test_apply_back.ApplyBackTests.test_expected_source_hash_mismatch_refuses_apply",
+        "test_apply_back.ApplyBackTests.test_falls_back_to_run_state_round_draft_after",
+        "test_apply_back.ApplyBackTests.test_latest_round_fallback_sorts_rounds_numerically",
+        "test_vnext_review.ReviewTests.test_clean_review_and_repeat_readback_never_invoke_editor_or_verifier",
+        "test_vnext_review.ReviewTests.test_horizontal_and_vertical_profile_budget_order",
+        "test_vnext_review.ReviewTests.test_input_change_during_review_never_reports_clean",
+        "test_vnext_review.ReviewTests.test_interruption_after_review_output_is_visible_and_not_auto_resumed",
+        "test_vnext_review.ReviewTests.test_legacy_python_writers_reject_an_admitted_vnext_root",
+        "test_vnext_review.ReviewTests.test_pending_decision_and_residual_budget_are_distinct",
+        "test_vnext_review.ReviewTests.test_public_cli_selectors_and_omission_never_downgrade",
+        "test_vnext_review.ReviewTests.test_public_config_admit_review_status_and_forbidden_legacy_command",
+        "test_vnext_review.ReviewTests.test_public_configured_codex_transport_and_unused_roles",
+        "test_vnext_review.ReviewTests.test_rehashed_false_clean_receipt_cannot_support_completion",
+        "test_vnext_review.ReviewTests.test_single_shape_retry_and_timeout_does_not_retry",
+        "test_preservation_qualification.ConsumerJourneyTests.test_accepted_phase1_cannot_publish_accepted_phase2_declaration",
+        "test_preservation_qualification.ConsumerJourneyTests.test_crlf_verified_convergence_to_dry_live_and_repeated_apply_back",
+        "test_preservation_qualification.ConsumerJourneyTests.test_declaration_and_manifest_tampering_blocks_dry_live_consumers_and_status",
+        "test_preservation_qualification.ConsumerJourneyTests.test_false_convergence_cannot_apply_unverified_accepted_phase1",
+        "test_preservation_qualification.ConsumerJourneyTests.test_source_change_during_review_is_not_overwritten",
+        "test_vnext_verified_work.VerifiedWorkTests.test_registration_orphan_recovers_separately_without_another_editor",
+        "test_vnext_verified_work.VerifiedWorkTests.test_prepared_verification_recovers_without_starting_verifier",
+        "test_vnext_verified_work.VerifiedWorkTests.test_verifier_timeout_requires_explicit_continuation_and_keeps_slot_budget",
+        "test_vnext_verified_work.VerifiedWorkTests.test_retained_editor_and_verifier_output_recovers_without_a_client"
+      ]
+    },
+    {
+      "name": "bounded-targets",
+      "passed": 1,
+      "seconds": 210.944,
+      "log": "rounds/vnext-18-8-m5-acceptance-001/bounded-targets/tests.log",
+      "log_sha256": "b1abdd9a1efb86395983d644e2bf89e240ffdc6fad014f5dfca17261a5ffc6a6",
+      "methods": [
+        "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles"
+      ],
+      "supervisor": {
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "-v",
+          "test_vnext_verified_phase2_targets.TargetRuntimeTests.test_clean_targets_complete_with_current_declaration_and_required_profiles"
+        ],
+        "outcome": "completed",
+        "exit_code": 0,
+        "duty": 0.5,
+        "wall_seconds": 300.0,
+        "lease_seconds": 90.0,
+        "elapsed_seconds": 211.69476458401186
+      }
+    }
+  ],
+  "carryovers": {
+    "M5-I1": "Unpassed: second promotion completed, but interrupted during profiling before timeout/continuation/convergence/apply.",
+    "M5-P1": "One/two-promotion profiles captured; four-promotion campaign interrupted in fourth promotion. Increasing replay cost is unresolved."
+  },
+  "not_performed": [
+    "Live provider calls",
+    "Real source apply-back",
+    "Normative spec edits",
+    "Public activation",
+    "Push"
+  ],
+  "preserved_notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "source_manifests": [
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-baseline.json",
+      "sha256": "15403a9c40d38bfab113d56628d2c7af75a68bb7caed7b936e1923812d3d3956",
+      "files": 658
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-joined-initial.json",
+      "sha256": "d1863d5ea830db592ab40d46a3761243636052b5eecef536962923e32a866048",
+      "files": 659
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources.json",
+      "sha256": "864e075c5569388ae38d668039658b7d7f0a3fcbedf7c87a7be2088769295be0",
+      "files": 659
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-supervised.json",
+      "sha256": "8b2d315924935ab1401d90f1806b13ee502de072846bc767f85d9d21e61519e4",
+      "files": 661
+    }
+  ],
+  "interrupted_runs": [
+    {
+      "name": "joined",
+      "log": "rounds/vnext-18-8-m5-acceptance-001/joined.log",
+      "log_sha256": "86d097847eebc5a0acecd8bfe00d6747078f539ca1598054c5aeade2df547c5d",
+      "reason": "Explicit SIGINT after user reported CPU heat; not an assertion failure or whole-run pass.",
+      "individual_passing_methods": []
+    },
+    {
+      "name": "longer",
+      "log": "rounds/vnext-18-8-m5-acceptance-001/longer.log",
+      "log_sha256": "70799e845768cfe697147a00ead078b1dc26438216fe901b98ecfe4169f8362c",
+      "reason": "Explicit SIGINT after user reported CPU heat; not an assertion failure or whole-run pass.",
+      "individual_passing_methods": []
+    },
+    {
+      "name": "matrix",
+      "log": "rounds/vnext-18-8-m5-acceptance-001/matrix.log",
+      "log_sha256": "59c58ffe44afe7b9fb9853206108247732060242b81893b346da53203456f88c",
+      "reason": "Explicit SIGINT after user reported CPU heat; not an assertion failure or whole-run pass.",
+      "individual_passing_methods": [
+        "test_vnext_verified_phase2_operator.Phase2OperatorTests.test_phase2_answer_selects_distinct_child_and_resolves_only_after_promotion"
+      ]
+    }
+  ],
+  "process_cleanup": {
+    "date": "2026-09-30",
+    "pids": [
+      11110,
+      11166,
+      11215
+    ],
+    "observed_cpu_percent": [
+      97.9,
+      99.4,
+      99.8
+    ],
+    "action": "SIGINT to these exact task processes; ps confirmed all exited.",
+    "execution_policy": "No overlapping heavy reruns; bound CPU and wall time and expire unattended workers before resuming."
+  },
+  "profiles": [
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/baseline-history.prof",
+      "sha256": "223bbc3a1a1f245bb38416e07118e2a64baff63bb0981fb6726dfca53c33481f",
+      "profile_seconds": 7.615824118999994,
+      "total_calls": 24647911,
+      "functions": [
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 29,
+          "cumulative_seconds": 5.112851001
+        },
+        {
+          "function": "vnext_version_entry.py:inputs",
+          "calls": 14,
+          "cumulative_seconds": 6.357527459000001
+        },
+        {
+          "function": "vnext_verified_phase1_closeout.py:evaluate",
+          "calls": 28,
+          "cumulative_seconds": 6.1432354160000004
+        },
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 29,
+          "cumulative_seconds": 3.834886587
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/baseline-phase2_state.prof",
+      "sha256": "58abcf356e6090daace2646aad7965b8a467d01c96eb9830be90cf70457fd772",
+      "profile_seconds": 15.387136514999995,
+      "total_calls": 49339485,
+      "functions": [
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 58,
+          "cumulative_seconds": 10.285146671000001
+        },
+        {
+          "function": "vnext_version_entry.py:inputs",
+          "calls": 28,
+          "cumulative_seconds": 12.812147253000001
+        },
+        {
+          "function": "vnext_verified_phase1_closeout.py:evaluate",
+          "calls": 57,
+          "cumulative_seconds": 12.599466333
+        },
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 58,
+          "cumulative_seconds": 7.69766637
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/joined/one-promotion-history.prof",
+      "sha256": "72d4aec6b5c3e89bc2614eddfc2a47574768efcf80413b9c7e17e6f941bbbf70",
+      "profile_seconds": 9.342251522000007,
+      "total_calls": 24647925,
+      "functions": [
+        {
+          "function": "vnext_verified_phase1_closeout.py:evaluate",
+          "calls": 28,
+          "cumulative_seconds": 7.579990751
+        },
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 29,
+          "cumulative_seconds": 4.469443002
+        },
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 29,
+          "cumulative_seconds": 6.2180163330000005
+        },
+        {
+          "function": "vnext_version_entry.py:inputs",
+          "calls": 14,
+          "cumulative_seconds": 7.840127623000001
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/joined/one-promotion-phase2_state.prof",
+      "sha256": "8a2a5c86ccb1a71069e2722ad0beac07b84c6a7e5cb6c5034521c12344cf976b",
+      "profile_seconds": 19.08905021900001,
+      "total_calls": 49339485,
+      "functions": [
+        {
+          "function": "vnext_verified_phase1_closeout.py:evaluate",
+          "calls": 57,
+          "cumulative_seconds": 15.705735038
+        },
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 58,
+          "cumulative_seconds": 8.924527291
+        },
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 58,
+          "cumulative_seconds": 12.563893498
+        },
+        {
+          "function": "vnext_version_entry.py:inputs",
+          "calls": 28,
+          "cumulative_seconds": 15.980230500000001
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/joined/two-promotions-history.prof",
+      "sha256": "9b2371d9855122b93c22e82e8f5eb77db26102b554fc358bc4db50fc0ca59f44",
+      "profile_seconds": 64.28453920999998,
+      "total_calls": 167586118,
+      "functions": [
+        {
+          "function": "vnext_verified_phase1_closeout.py:evaluate",
+          "calls": 196,
+          "cumulative_seconds": 52.82637062800001
+        },
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 197,
+          "cumulative_seconds": 30.376300419000003
+        },
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 197,
+          "cumulative_seconds": 42.202725362
+        },
+        {
+          "function": "vnext_version_entry.py:inputs",
+          "calls": 83,
+          "cumulative_seconds": 46.308047376000005
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/longer/phase1-1-promotions-history.prof",
+      "sha256": "6fad9a6526ca5476a1480787ee870bcc1af13eb5ff29864e9dcad3bd1899ea76",
+      "profile_seconds": 4.026606374000001,
+      "total_calls": 11180723,
+      "functions": [
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 11,
+          "cumulative_seconds": 1.41528804
+        },
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 11,
+          "cumulative_seconds": 1.991251791
+        }
+      ]
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/longer/phase1-1-promotions-phase_state.prof",
+      "sha256": "c3611e0a6bbeaaa40bda8b194b7c178a2d1cd513f099377482fce6bb79f1647f",
+      "profile_seconds": 8.131818097000007,
+      "total_calls": 21583069,
+      "functions": [
+        {
+          "function": "vnext_contracts.py:validate_contract_suite",
+          "calls": 21,
+          "cumulative_seconds": 2.6820377100000004
+        },
+        {
+          "function": "vnext_proposal_admission.py:_seed_inputs",
+          "calls": 21,
+          "cumulative_seconds": 3.8841910000000004
+        }
+      ]
+    }
+  ],
+  "test_execution_control": {
+    "implementation": "tests/m5_bounded_runner.py",
+    "tests": "tests/test_m5_bounded_runner.py",
+    "defaults": {
+      "duty_cycle": 0.5,
+      "wall_seconds": 300,
+      "heartbeat_seconds": 90
+    },
+    "observed_capped_worker_cpu_percent": 46.0,
+    "scope": "Developer process supervision only; no Whetstone runtime or authority changes."
+  },
+  "supervisor_tests": {
+    "passed": 3,
+    "log": "rounds/vnext-18-8-m5-acceptance-001/supervisor-final.log",
+    "sha256": "21f84886bd320405a55dcef42959a9f948e0a812416bdc3454c5c290e4d7a2dd",
+    "development_finding": "macOS sandbox may signal EPERM after a worker already exited; suppress only when poll confirms the leader exited. Rechecked, plus descendant cleanup test."
+  },
+  "current_product_verdicts": {
+    "completed_cohort_methods": 32,
+    "individual_passes_from_interrupted_matrix": 1,
+    "total_distinct_product_methods": 33,
+    "supervisor_methods_separate": 3,
+    "no_whole_run_credit": [
+      "joined",
+      "longer",
+      "matrix"
+    ]
+  },
+  "source_snapshot_note": "Runtime/contracts/normative sources remain at 72498e5. Only new test/harness files and planning/evidence documents changed. Older completed product cohorts remain valid at their recorded test-module snapshots.",
+  "remaining": [
+    "M5-I1 joined two-promotion interruption/continuation/convergence/apply verdict",
+    "Longer-history completed replay measurement and M5-P1 disposition",
+    "Remaining selected operator/terminal matrix verdicts",
+    "Final original A\u2013D acceptance reconciliation; public/normative qualification remains deferred"
+  ],
+  "checkpoint_scope": "Tests, execution controls and incomplete acceptance evidence only; no M5 completion claim."
+}

@@ -1500,7 +1500,7 @@ Planning baseline (2026-09-27): `25c1825` includes evidence-backed churn resolut
 | 18.8-M2 | Integrate focused/vertical scheduling, Phase 1 budget extensions and specifically supported continuation | 3–4 | [Complete at the documented internal API scope](docs/VNEXT_18_8_M2_COMPLETION.md); local checkpoint subsequently authorized. Explicit grants, supported continuation and horizontal/vertical Phase 2 handoff validated: 162 distinct passing methods across recorded snapshots, including 11 new methods; 26 on final sources |
 | 18.8-M3 | Carry version maintenance and version history through verified candidates | 1–2 | [Complete at the documented internal boundary](docs/VNEXT_18_8_M3.md); system-metadata attribution ratified on 2026-09-29. Versioned round/entry candidates and history: 211 distinct passing methods across recorded snapshots, including all 18 new methods on final sources. Local checkpoint authorized; combined interruption/performance acceptance remains explicit in M5 |
 | 18.8-M4 | Complete verified strop/readback integration and its source-write boundary | 1–2 | [Complete at the documented internal boundary](docs/VNEXT_18_8_M4.md); local checkpoint authorized; policy ratified on 2026-09-29. Internal pinned review/write/readback/recovery: 98 distinct passing methods / 106 executions. M5 integrated acceptance remains open |
-| 18.8-M5 | Demonstrate the integrated 18.8 workflows and reconcile acceptance | 1–2 | Depends on M1–M4; does not substitute for 18.9 release qualification |
+| 18.8-M5 | Demonstrate the integrated 18.8 workflows and reconcile acceptance | 1–2 | [Acceptance underway](docs/VNEXT_18_8_M5.md) from `72498e5`: joined interruption/apply-back, extended routes, longer-history profiling and the M1–M4 operator matrix; no completion claim or 18.9 release credit |
 
 Default delivery order is M1 → M2 → M3 → M4 → M5. Surface M4's policy dependency during the first M1 preflight so it cannot become a surprise at closeout. If a policy decision blocks dependent work, record the exact question and continue an independently authorized M2 or M3 bundle. Do not silently defer required behavior and call 18.8 complete.
 
@@ -1574,6 +1574,8 @@ Bounded execution: run a CLI-shaped, scripted integration matrix across M1–M4 
 
 Acceptance: campaigns cross Phase 1/Phase 2, closeout, supported scheduler routes, versioned and unversioned paths, operator decisions, representative interruptions and fixture strop/readback. Relevant terminals retain prior authority, latest candidate, orphan/rejected evidence, outstanding decisions and only an actually supported next/resume gate. Verify changed legacy/bridge surfaces proportionately. Publish exact evidence scope, remaining limitations and a usable operator handoff; close A–D only when their full requirements and authority dependencies are satisfied.
 
+Current M5 checkpoint (2026-09-30, local partial checkpoint authorized): the [handoff](docs/VNEXT_18_8_M5.md) and [audit](docs/audits/VNEXT_18_8_M5_ACCEPTANCE.json) record a passing joined horizontal/vertical promotion–extension–convergence–apply-back method, 30 compatibility/recovery methods, one passing four-target method under the new supervisor, and one individual operator method from an interrupted matrix (33 distinct product methods total; supervisor tests counted separately). After the user reported CPU heat, three overlapping workers were explicitly stopped and their exit verified. Joined two-promotion and four-promotion acceptance remain unpassed; completed intermediate stages are not test verdicts. Profiles demonstrate substantial repeated prerequisite reconstruction. A tested single-worker supervisor now bounds duty cycle, wall time and unattended lifetime. Do not blindly relaunch the expensive cohorts or credit the interrupted runs as completion.
+
 Explicit carryovers from M3 checkpoint `a1d46a6` (both remain open):
 
 - [ ] **M5-I1 — Combined interruption journey.** On one frozen source snapshot, run the joined system-entry `0.17 → 1.0`, verified correction `1.0 → 1.1`, resolution publication, Reviewer timeout/failure reporting, explicit continuation, declaration and convergence journey. Exercise reopen/recovery at the interruption boundary; assert exact pointer/version/history, retained failure evidence and client-call counts, with no duplicate promotion or stamp. Require a completed passing test verdict and indexed command, log and source hashes. The stopped exploratory runs and the passing separate M3 journeys do not close this item.
@@ -1586,9 +1588,9 @@ This milestone does **not** claim the 18.9 exhaustive P0 mapping, full regressio
 ###### Immediate Next Step
 
 M1–M4 have completed their documented internal boundaries. M3 is checkpointed
-locally at `a1d46a6`; M4 is implemented and verified, with its local checkpoint authorized. See the
+locally at `a1d46a6`; M4 is checkpointed locally at `72498e5`. See the
 [M4 handoff](docs/VNEXT_18_8_M4.md) for exact scope, operator actions and evidence.
-The next implementation milestone is **M5 integrated acceptance**, covering the
+The user authorized **M5 integrated acceptance**, now underway, covering the
 M1–M4 matrix and original A–D requirements, including the combined two-promotion
 interruption journey (M5-I1) and replay cost analysis (M5-P1). These remain open;
 M4's separate passing versioned journey does not satisfy them.
