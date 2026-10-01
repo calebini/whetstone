@@ -1,0 +1,1090 @@
+{
+  "status": "review-only proposal; approval pending; Q1 implementation incomplete",
+  "date": "2026-10-01",
+  "baseline_commit": "fb57a2406074520630fa99242161d9662e18653b",
+  "proposal": {
+    "path": "docs/VNEXT_18_9_Q1_PROPOSAL.md",
+    "sha256": "402ff7c56096d7dc0b0118dce4c949a05e4df00a316d27b9838d767c89c5d9f8"
+  },
+  "patch": {
+    "path": "docs/VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch",
+    "sha256": "ee130bf6fd9c7b76eec25a080039fa888cc4082f93129dc892beee022e0087f3",
+    "applied": false
+  },
+  "owners": [
+    {
+      "path": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+      "sha256": "ee9b4755a4f6e8107df52388d141af7daebcf528f6dc1dad2f77442041ab9005",
+      "proposed_sha256": "c43227211c2feaa4d8110e8b0946b2c7091f143707d20ac36ec6949017e34958"
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "sha256": "b5b37f4dcdaba0201ae5d96c80674d3727e65dc0587b3fbdd9a16942ca4ed92a",
+      "proposed_sha256": "7a3421324000a11fae6ec1ad153cb613f8836596c096f165f7b28a12214a8be5"
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "sha256": "76dd4d987d95e807abb31293e503e07be3ed79622c4900421b466f8fa0e08545",
+      "proposed_sha256": "7a8f0feacc06c8bd0eb53bbda328a012fddb16e6045a66d5186e62283ddba1d2"
+    },
+    {
+      "path": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "sha256": "88e20296b7eeb1ea4fb454caf509de3db7d9514d75ba071228e1ff18c7b98bce",
+      "proposed_sha256": "d9fd7601e40a341fdfd06c7f3892ff7857f3dd84330a5721ce0addfca93f0fc7"
+    },
+    {
+      "path": "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+      "sha256": "1f154ad6e825b2e4c5218144bbc79a9c4b4960d1ad7e8881be1efd46e8b44191",
+      "proposed_sha256": "4c122ca61e5cc5d18171458443f207c6508d4b161b2708636cf42853f24f206c"
+    },
+    {
+      "path": "docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+      "sha256": "aaee56aac663d7376e13e7d26a846d1443a20917ed8c27e397fe1fddd0866c88",
+      "proposed_sha256": "b6705775e80dafa11aeb2159cb73daa1a41709abe7f9551c4c3a5045c7369706"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "sha256": "7a21db437b1a47e074af46de6df1acae70f529ba2064c44e3a1276f168c46de5",
+      "proposed_sha256": "e90e00b22f29ef194184916275a53effdd98ff4b5cf6cbdabde16b3b7cc1be96"
+    }
+  ],
+  "changes": [
+    {
+      "path": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+      "section": "### vNext Admission And Capability Negotiation (D7)",
+      "operation": "append scoped subsection"
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "An operation MUST address at least one admitted finding.",
+      "new": "An Editor patch operation MUST address at least one admitted finding. The separately pinned scheduler-authorized system metadata operation below is not an Editor patch operation."
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "8. Verify every change is within allowed sections and attributable to admitted findings.",
+      "new": "8. Verify every Editor change is within allowed sections and attributable to admitted findings. Verify each separately pinned system metadata change against its exact scheduler transition, base and spans under the system-metadata rules in Scheduler-authorized system metadata; it grants no adjacent Editor authority."
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "Every modified, weakened, moved, or renamed normative unit MUST be attributable to an admitted finding and allowed mutation surface. Requirement weakening always requires an operator decision.",
+      "new": "Every Editor-modified, weakened, moved, or renamed normative unit MUST be attributable to an admitted finding and allowed mutation surface. Separately pinned system metadata changes require the exact scheduler authority and protected-unit checks below, not fictional findings. Requirement weakening always requires an operator decision; system metadata authority does not waive that rule."
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "section": "### Candidate Assembly",
+      "operation": "append scoped subsection"
+    },
+    {
+      "path": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "Detailed vNext policy remains unratified until that scheduler amendment is completed.",
+      "new": "The scheduler section `Verified-Promotion Source Write And Readback` publishes the bounded M4 policy for an explicitly pinned future consuming suite; it remains unavailable until the full activation gate passes."
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "section": "## SPEC VERSION LIFECYCLE",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "section": "### Reporting And Slice Availability",
+      "operation": "append scoped subsection"
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "section": "## Verified-Promotion Source Write And Readback",
+      "operation": "publish existing six-rule M4 policy, gated"
+    },
+    {
+      "path": "docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "This designation does not ratify detailed vNext strop/apply-back policy by itself. Until that scheduler amendment is completed, current operative apply-back behavior remains governed by the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure.",
+      "new": "The scheduler section `Verified-Promotion Source Write And Readback` defines the bounded future V consumer policy; publication does not activate it. Existing operative legacy/bridge apply-back behavior remains governed by its earlier lineage/hash guards and the Operator Quickstart procedure."
+    },
+    {
+      "path": "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+      "section": "### vNext identity and suite-manifest invariant",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+      "section": "## vNext Decision Routing (D7)",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+      "section": "## PHASE 2 FAILURE HANDLING",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "section": "## Recommended Defaults",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "section": "## ACCEPTED DRAFT DEFINITION",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "operation": "replace conflicting wording",
+      "old": "Version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft.",
+      "new": "For legacy and preservation-bridge consumers, version stamping is Orchestrator-owned. The Editor MUST NOT choose, increment, decrement, or otherwise modify the visible spec version label unless the Orchestrator explicitly supplies that exact version label as part of the editable draft."
+    },
+    {
+      "path": "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+      "section": "## SPEC VERSION LIFECYCLE",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+      "section": "## CONVERGENCE DECLARATION",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "operation": "replace conflicting wording",
+      "old": "The run is controlled by `rounds/run_state.json`; humans should usually read `status --format text` instead of opening that JSON first.",
+      "new": "For legacy/bridge runs, `rounds/run_state.json` records scheduler state. For V, run-state and `spec.md` are projections of committed evidence and current verified authority. Humans should read `status --format text` for the applicable gate rather than treating a projection as independent authority."
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "section": "## Create An Isolated Run",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "section": "## Recover A Timeout",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "section": "## Review Before Apply-Back",
+      "operation": "insert explicit V-specific clauses"
+    },
+    {
+      "path": "docs/OPERATOR_QUICKSTART.md",
+      "section": "## Apply Back",
+      "operation": "insert explicit V-specific clauses"
+    }
+  ],
+  "command_matrix": [
+    [
+      "vnext-admit",
+      "New V root; --dry-run is read-only",
+      "Validate config/package/suite; initialize only a nonexistent destination; no clients",
+      "V bootstrap adapter + D8 initializer"
+    ],
+    [
+      "live-phase1",
+      "Standard horizontal or vertical; new or existing V root",
+      "Run bounded verified review/correction gates; stop at Phase 1 terminal/decision/failure; no source apply",
+      "review_next/admit_reviewed_round/request/register/verify/promote/finish_phase1"
+    ],
+    [
+      "live-focused-phase1",
+      "One profile selected in immutable focused review config",
+      "CLI --profile/explicit --budget must match pins; omitted CLI defaults cannot override pins; focused clean never grants Phase 2",
+      "focused review owner + Phase 1 verified owners"
+    ],
+    [
+      "promote-phase2",
+      "Complete Phase 1; bound Phase 2 configuration",
+      "Run required verified metadata transition and distinct entry commit only; no ordinary Phase 2 reviews",
+      "bind_phase2_entry/prepare_phase2_version/verify/promote/enter_phase2"
+    ],
+    [
+      "live-phase2",
+      "Entered or eligible standard/fixed-rubric V job",
+      "Use shared entry owner, then existing bounded sequence through declaration/convergence or blocker",
+      "phase2_sequence_status/continue_phase2_pass/phase2 correction and closeout owners"
+    ],
+    [
+      "status",
+      "Any inspectable V root",
+      "Read-only current authority/candidate/failure/decision and exact next gate; malformed authority reports invalid",
+      "inspect/phase1_status/phase2_state/operator/failure/apply status"
+    ],
+    [
+      "resume",
+      "Existing V root; --dry-run is read-only",
+      "Only the exact recovery/continuation subtable below; plain resume stops at its selected boundary; --continue is Phase 1 only",
+      "materialization and role-specific recovery/continuation; extend_phase1_budget"
+    ],
+    [
+      "vnext-decisions",
+      "Bound Phase 1 or Phase 2 operator context",
+      "Inspect; with explicit --options prepare exact requests; --dry-run writes nothing; no clients",
+      "operator_status / phase2_operator_context / request preparation"
+    ],
+    [
+      "vnext-decide",
+      "One exact operator input",
+      "Existing --selections; proposed alternatives --repair-request or --gap-acceptance for Phase 2; exactly one input, no clients",
+      "response/selection owners; admit_phase2_repair / accept_phase2_gaps"
+    ],
+    [
+      "vnext-semantic-answers",
+      "Explicit --candidate",
+      "Read-only original question and retained answers; no implicit latest selection",
+      "answers"
+    ],
+    [
+      "vnext-semantic-answer",
+      "Explicit --candidate and --input",
+      "Record exact answer; --dry-run read-only; no candidate reopening or client",
+      "submit_answer"
+    ],
+    [
+      "vnext-semantic-followup",
+      "Explicit candidate and receipt/hash",
+      "Admit exact new child transaction; no client or automatic promotion",
+      "select_followup"
+    ],
+    [
+      "strop / apply-back",
+      "V inspection or retained-intent recovery; new writes require complete current eligibility",
+      "Separate assessment/status, apply/retry and historical recovery as defined below; recovery never rewrites",
+      "review_apply_back/apply_back/recover_apply_back"
+    ],
+    [
+      "Other commands on a V root",
+      "Not in the declared matrix",
+      "Refuse unsupported gate before client/writer; standalone audits/intake/decomposition use their own roots",
+      "existing protocol preflight refusal"
+    ]
+  ],
+  "ratification_surfaces": [
+    "Family routing and role authority",
+    "Run inputs, outputs, configuration, and design principle",
+    "Halting and terminal artifacts",
+    "Verified lineage versus quality state",
+    "Proposal-to-promotion scheduling",
+    "Budgets, retries, resume, and read-only status",
+    "Public artifacts, locking, and attempt semantics",
+    "Current full-draft preservation bridge",
+    "Versioned normalization and hashing",
+    "Scope, finding admission, authority, and decisions",
+    "Phase 2 and convergence lineage",
+    "Operator defaults and recovery guidance",
+    "Current strop/apply-back operational surface",
+    "Strop/apply-back normative ownership designation"
+  ],
+  "inventory_correction": {
+    "date": "2026-10-01",
+    "reason": "Q1 preparation detected that the original parser counted the separator and excluded both data rows beginning Current. Corrected to 14 substantive rows. Frozen inventory scripts/raw records retain their original bytes; P0 mapping and results unchanged.",
+    "original_reported_count": 13,
+    "corrected_count": 14
+  },
+  "validation": {
+    "date": "2026-10-01",
+    "status": "pass",
+    "checks": [
+      {
+        "check": "HEAD unchanged",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Authoritative source unchanged: docs/OPERATOR_QUICKSTART.md",
+        "result": "pass"
+      },
+      {
+        "check": "Unrelated notes unchanged",
+        "result": "pass"
+      },
+      {
+        "check": "Patch applies without writing targets",
+        "result": "pass"
+      },
+      {
+        "check": "No runtime, test, contract or authoritative spec changes",
+        "result": "pass"
+      },
+      {
+        "check": "Patch targets exactly the seven recorded owners",
+        "result": "pass"
+      },
+      {
+        "check": "M3 approved rules preserved verbatim",
+        "result": "pass"
+      },
+      {
+        "check": "M4 approved rules preserved verbatim",
+        "result": "pass"
+      },
+      {
+        "check": "22 P0 rows and evidence unchanged",
+        "result": "pass"
+      },
+      {
+        "check": "14 substantive authority rows",
+        "result": "pass"
+      },
+      {
+        "check": "14 consistent command rows",
+        "result": "pass"
+      },
+      {
+        "check": "Reused ordinary command names exist",
+        "result": "pass"
+      },
+      {
+        "check": "Existing strop and apply-back dispatcher confirmed",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> ../IMPLEMENTATION_PLAN.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> VNEXT_18_9_INVENTORY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> VNEXT_18_8_M3.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> VNEXT_18_8_M4.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> audits/VNEXT_18_9_Q1_FIX_RECHECK.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: docs/VNEXT_18_9_Q1_PROPOSAL.md -> audits/VNEXT_18_9_Q1_PROPOSAL.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/OPERATOR_QUICKSTART.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/live.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/sections.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/decomposition.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/hashing.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/contracts.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_D7.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_D8.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/WHETSTONE_COORDINATING_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/PRESERVATION_BRIDGE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_ACCEPTANCE_DEVELOPER.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_RUNTIME_DEVELOPER.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_RUNTIME_DEVELOPER.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_RUNTIME_DEVELOPER.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_QUALIFICATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_ACTIVATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/PRESERVATION_QUALIFICATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> examples/fixtures/preservation_bridge/README.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/vnext-d6-audit.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_CONTRACTS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_D7.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_ADMISSION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_seed_initialization_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_mutation_preparation_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_PROPOSALS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_5_ACCEPTANCE_MAP.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_local_storage_kernel_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_candidate_registration_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_requests_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_handoff_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_admission_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_closeout_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_run_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_seed_review_requests_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_seed_review_closeout_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_package_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_proposal_cli_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_operator_decisions_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_candidate_assembly_v2.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_6_ACCEPTANCE_MAP.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_semantic_workflow_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_semantic_answers_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_semantic_followup_preflight_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/algorithms/vnext_semantic_followup_admission_v1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_G2_VALIDATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_CONCURRENT_SELECTION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_7_ACCEPTANCE_MAP.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_PUBLICATION_PREFIXES.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_DECISION_REFERENCES.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_7_BOUNDARY_RECONCILIATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_VERIFIED_REVIEW_INTEGRATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FOLLOWUP.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FAULTS_BATCH_A.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FAULTS_BATCH_B.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FAULTS_BATCH_C.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FAULTS_BATCH_C_VERIFIER.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_RUNTIME_FAULTS_BATCH_C_MIRROR_UNCERTAINTY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/vnext_pointer_history.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE1_STATUS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE1_CLOSEOUT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE1_OPERATOR.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_ELIGIBILITY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_BINDING.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_ENTRY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_REVIEW_REQUEST.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_CLIENT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_CONSUMPTION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_ADVICE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_JOURNEY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_SEQUENCE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_CLOSEOUT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_FINDINGS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_FINDINGS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_BLOCKED_REPORT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_TERMINATION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_FAILURE_BOUNDARY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_FAILURE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_CORRECTION_FAILURE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_SIGNALS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M1.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M2_COMPLETION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M3.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M4.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5_COMPLETION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/IDENTITY_OSCILLATION_AND_CONFLICTS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_FINDINGS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M2_COMPLETION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M2_COMPLETION.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M2.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M2_FOCUSED.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M2_VERTICAL.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M3.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M3.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/OPERATOR_QUICKSTART.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M4.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M4.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5_COMPLETION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M5_CLOSEOUT.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M5_ACCEPTANCE.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M5_REPLAY.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M5_MATERIAL_EXPERIMENT.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_8_M5_JOURNAL.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_M5_COMPLETION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_9_INVENTORY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_9_INVENTORY.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_9_INVENTORY.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_9_Q1_PROPOSAL.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_9_Q1_PROPOSAL.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/audits/VNEXT_18_9_Q1_FIX_RECHECK.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_CORRECTION_FAILURE.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_SIGNALS.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/VNEXT_18_8_PHASE2_RESOLUTION.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/change_audit.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/hashing.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> contracts/schemas/reviewer_feedback.schema.json",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/clients.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/cli.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> src/whetstone/change_audit.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> tests/test_change_audit.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> tests/test_cli.py",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Local link exists: IMPLEMENTATION_PLAN.md -> docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md",
+        "result": "pass"
+      },
+      {
+        "check": "Tracked diff whitespace",
+        "result": "pass"
+      },
+      {
+        "check": "New proposal whitespace",
+        "result": "pass"
+      },
+      {
+        "check": "Patch added lines have no trailing whitespace",
+        "result": "pass"
+      },
+      {
+        "check": "Original evidence archive unchanged",
+        "result": "pass"
+      }
+    ],
+    "product_tests_executed": false,
+    "patch_applied": false,
+    "clients_invoked": false
+  },
+  "raw_evidence": [
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/sources.json",
+      "sha256": "11a5eeb8d94b34e6f8037adfb27a5d0299d59648d18900f63f0dcc7167e4fcd7"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/prepare.py",
+      "sha256": "00d43cd7d35133931c074f7cff717c07b9fcaa9ca62d0d0acd561253d010f967"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/validate.py",
+      "sha256": "d87dfdee1c5d2d2305f50bfd90cb89f895a4c7cc778fba7d6e173c8417aa682d"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/changes.json",
+      "sha256": "ca4555c939735defb03a6c7ac9be8b6d3028df75cacb962f25187d4626165425"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/command-matrix.json",
+      "sha256": "20a6b62b819e3c4c928973e247cf20e95768653dea6ebdd3be5a9c54aecacb30"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/existing-commands.json",
+      "sha256": "969f038e643f2c22d58809f92817c1906ab5e477fabe012bf1ee6d2b1bad48d7"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/quickstart-proposal.md",
+      "sha256": "1d9c015da2fbe246bb5177431477a7611c0386328f85f17e0dec2e1faae58a5d"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/recovery-proposal.md",
+      "sha256": "67b758ff2149299d96ee34d38cb6d02e16da1ea94ff572b956559bae4d8bb973"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/strop-proposal.md",
+      "sha256": "cbef6f70ddaf86bb2b714d3bd0541ee7748f505880d5f35abbd7a1e1da190141"
+    },
+    {
+      "path": "rounds/vnext-18-9-q1-proposal-001/validation.json",
+      "sha256": "15dbfd845979d56a94a915e347e74f4d32bcc0e41b8b82e978b39d353db581a2"
+    }
+  ],
+  "unchanged_notes_sha256": "d00f59d7e61335a980652d696011fb151f2006a4bcb7cc434bf14cab0279f502",
+  "limits": [
+    "Documentation-only checks do not qualify any runtime route.",
+    "Proposed flags/config fields are not currently public V support.",
+    "No authoritative spec, runtime, D8 contract or frozen suite was edited.",
+    "No commit, push, live provider transmission, activation or external apply-back.",
+    "Q2 P0 gaps, Q3 performance/qualification and Q4 live-soak/activation remain open."
+  ]
+}

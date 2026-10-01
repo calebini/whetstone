@@ -1640,6 +1640,78 @@ The exact recurrence golden fixture and independent implementation evidence are
 missing from the inspected checkout; five other P0 compositions remain partial.
 All four acceptance tasks below remain open until their full requirements pass.
 
+##### Q1 — Config-Selected Verified-Promotion Release Integration
+
+Operator direction recorded on 2026-10-01: **the associated run configuration
+is the user-facing opt-in for verified promotion; do not add a separate CLI mode
+flag.** This settles the interface direction, not public activation or permission
+to amend authoritative specifications. Existing reviewer-only CLI selectors and
+legacy/bridge behavior remain supported at their existing boundaries.
+
+The core transaction, D7 scheduling and D8 storage contracts already define the
+workflow. No new architecture/spec family is needed. Q1 is one bounded release
+integration package: reconcile the existing owning sections, connect supported
+commands to the delivered internal owners, and demonstrate the declared routes
+with scripted clients before any activation decision.
+
+**Configuration contract to finish:** the coordinating spec already reserves
+`editing_mode` and `contract_suite_version` for a new vNext job, while current
+D7 admission selects immutable descriptor/review-configuration references through
+the closed `vnext` block. Define their creation-time relationship in the existing
+coordinating sections. The run config selects the requested mode and supported
+suite during new-job preparation; the resulting immutable descriptor records
+the exact mode, suite digest and algorithm bindings. Existing-root commands
+validate those bindings and never reinterpret a config edit as a mode change.
+Conflicting config/input selectors refuse before clients or authority writes;
+changing mode requires a fresh job/root. A requested mode cannot make an
+unqualified suite available. Do not publish an invented suite name or present the
+reserved fields as currently operative verified-promotion support.
+
+| Deliverable | Owning surface and bounded work | Exit evidence |
+| --- | --- | --- |
+| Consistent release contract | Reconcile the 14 existing candidate-leaf delta rows. Prepare bounded amendments to coordinating configuration/admission, scheduler routing/version/strop and dependent artifact/Phase 2/operator sections. Carry forward the approved M3 metadata and M4 source-write decisions; do not reopen their policy or broaden their scope. Normative publication remains separately authorized. | Section-addressed amendment set with no competing config/descriptor authority, plus one explicit mode/route/profile/target/next-gate matrix. |
+| Immutable consuming suite | Stage a new versioned suite pinning the delivered schemas, algorithms, D8 contract and conformance vectors. Keep `vnext-contracts-1` unchanged; keep production qualification/activation disabled. | Exact manifest/transitive hashes and positive/negative suite-admission checks; unknown versions, altered bytes and missing consumer contracts refuse. |
+| Config-selected command integration | Connect the declared existing commands to `VerifiedRun` and its existing Phase 1, Phase 2, status, supported continuation and apply-back owners. Resolve run config once into pinned inputs; avoid a new scheduler or a CLI mode override. | Scripted config-to-command journeys through genuine verification/promotion and both phase boundaries, with accurate gates and no legacy full-draft fallback. |
+| Operator and compatibility boundary | Document config opt-in, new-root creation, candidate inspection, exact supported recovery and refusal, and disabling future automatic jobs without rewriting active descriptors. Apply-back retains separate exact approval and source guards. | Representative status/reopen/uncertain-write recovery plus legacy, bridge, reviewer-only and proposal-route compatibility; unsupported routes and in-place conversion refuse. |
+
+Required Q1 acceptance cases are finite: (1) fresh config-selected V admission
+under an explicitly pinned non-shipping test suite; (2) unknown/unqualified suite
+and config/descriptor conflicts make zero client calls and no authority writes;
+(3) reopened work retains its mode and cannot be upgraded by config edits;
+(4) the declared supported command journey uses genuine candidate verification,
+promotion, distinct Phase 2 entry and convergence; (5) status and recovery expose
+only supported actions after interruption, without duplicate clients/promotions;
+(6) apply-back remains separately approved and source-bound; (7) existing
+legacy/bridge/reviewer-only/proposal behavior and public V refusal remain intact.
+Reuse M1–M5 fixtures and owners where they already establish a boundary. Record
+exact commands and sources; a private suite pin is not release qualification.
+
+Q1 does not absorb Q2's seven named P0 gaps, Q3's replay/performance and complete
+qualification campaign, or Q4's live soak/activation. In particular, the P0-13
+independent-implementation requirement and P0-07 budget-stop ownership must not
+be silently weakened to make the integration pass.
+
+The [bounded Q1 proposal and command matrix](docs/VNEXT_18_9_Q1_PROPOSAL.md) and
+[review-only amendment patch](docs/VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch) were
+prepared on 2026-10-01 against `fb57a24`. The patch targets six existing normative
+owners and the Operator Quickstart; no authoritative file has been edited.
+It carries the approved M3/M4 rules, proposes exact config/operation inputs, and
+traces all 14 delta surfaces. The earlier 13-row inventory count was a parser
+error; the 22 P0 classifications and frozen evidence remain unchanged.
+[Document-only validation](docs/audits/VNEXT_18_9_Q1_PROPOSAL.json) records patch
+applicability and unchanged source boundaries. Q1 remains incomplete: the next
+step is approval of this concrete package, followed by its bounded implementation
+and the seven acceptance cases above with production activation disabled.
+The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
+interface gaps; the proposal now defines the exact continuation subtable, separate
+historical source recovery, and review-envelope/approval-byte handling. The
+[focused fix recheck](docs/audits/VNEXT_18_9_Q1_FIX_RECHECK.md) records the bounded
+resolution. These are proposal fixes, not authoritative publication or Q1 completion.
+No push, public activation, live transmission or real external apply-back is
+authorized by this planning update.
+
+##### 18.9 Release Acceptance Gates
+
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.
 - [ ] Run the full regression suite plus process/CLI and fault-injection conformance; demonstrate that legacy runs, reviewer-only audits/sweeps, bridge runs and proposal-only jobs retain their declared behavior. Publish exact tested schema/algorithm/client versions and known limits.
 - [ ] Perform a separately authorized isolated live soak only after deterministic gates pass; inspect both successful and rejected proposals and preservation evidence. No source apply-back is implied by qualification.

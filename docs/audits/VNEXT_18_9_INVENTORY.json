@@ -1719,12 +1719,6 @@
   ],
   "ratification_delta": [
     {
-      "surface": "---",
-      "anchors": "---",
-      "required_amendment": "---",
-      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
-    },
-    {
       "surface": "Family routing and role authority",
       "anchors": "`docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map`, `#core-roles`",
       "required_amendment": "Add this leaf to the family map; route proposal validation, semantic verification, candidate disposition, and promotion authority; state that Editor output is untrusted.",
@@ -1767,6 +1761,12 @@
       "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
     },
     {
+      "surface": "Current full-draft preservation bridge",
+      "anchors": "`docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#artifact-schemas-minimum-required-fields`, `#content-normalization-and-hashing`",
+      "required_amendment": "Before vNext patch-based editing is operative, require guarded full-draft Editor responses to pass deterministic preservation-bridge validation before `draft_after.md`, `spec.md`, `last_accepted_draft_hash`, Phase 1 stability, Phase 2, or apply-back eligibility can consume them.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
       "surface": "Versioned normalization and hashing",
       "anchors": "`docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#content-normalization-and-hashing`",
       "required_amendment": "Bind parser, assembler, inventory, normalization, candidate, candidate identity-map, report, pointer, and pointer-history hashes to the immutable job descriptor and exact persisted bytes.",
@@ -1788,6 +1788,12 @@
       "surface": "Operator defaults and recovery guidance",
       "anchors": "`docs/OPERATOR_QUICKSTART.md#mental-model`, `#recommended-defaults`, `#running-whetstone-from-an-agent`, `#recover-a-timeout`, `#terminal-states`, `#safety-rules`",
       "required_amendment": "Default unfamiliar jobs to reviewer-only mode; document proposal-only and verified-promotion opt-in, candidate inspection, safe recovery, and the prohibition on treating Editor output as current.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Current strop/apply-back operational surface",
+      "anchors": "`docs/OPERATOR_QUICKSTART.md#review-before-apply-back`, `#apply-back`, `#troubleshooting`",
+      "required_amendment": "Require strop/apply-back review and write paths to select only bytes referenced by a committed current verified pointer and to refuse unverified, rejected, or merely accepted candidates.",
       "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
     },
     {
@@ -3397,5 +3403,11 @@
       "path": "rounds/vnext-18-9-inventory-001/test-methods.json",
       "sha256": "7e059185f9d41da972b731700d99bd1accce0fa9c48d7ec85f13de5ff1d9718a"
     }
-  ]
+  ],
+  "ratification_delta_correction": {
+    "date": "2026-10-01",
+    "reason": "Q1 preparation detected that the original parser counted the separator and excluded both data rows beginning Current. Corrected to 14 substantive rows. Frozen inventory scripts/raw records retain their original bytes; P0 mapping and results unchanged.",
+    "original_reported_count": 13,
+    "corrected_count": 14
+  }
 }

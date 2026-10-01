@@ -16,7 +16,7 @@ they pass against the selected version-pinned consuming implementation.
 
 The [machine-readable inventory](audits/VNEXT_18_9_INVENTORY.json) records all
 64 P0 method links, exact test-file hashes, audit mentions, separately verified
-retained passing logs, historical source differences and all 13 ratification-delta
+retained passing logs, historical source differences and all 14 ratification-delta
 rows. A named test or audit mention is not credited as a passing execution.
 
 ## What the clean checkout established
@@ -101,7 +101,7 @@ modules. Their existence and earlier passes do not supply a current full-suite
 verdict. The final campaign must record discovered tests, actual passes, skips,
 failures, Python/platform and exact schema/algorithm/client versions.
 
-All 13 rows of the candidate leaf's ratification-delta map remain explicit in the
+All 14 rows of the candidate leaf's ratification-delta map remain explicit in the
 JSON. Existing coordinating/D6, scheduler D7 and scope-decision amendments are
 present; they must be reconciled with the delivered consuming surface rather
 than treated as absent or automatically complete. M3 metadata attribution and
@@ -113,7 +113,7 @@ must match the new consuming suite. Frozen suite 1 must not be rewritten.
 
 | Package | Deliverable and exit condition |
 | --- | --- |
-| Q1 — Release contract and disabled public integration | Reconcile the 13 authority surfaces; prepare the authorized M3/M4 amendments and a new immutable consuming suite; integrate explicit V command/status/recovery/strop routes with activation disabled. Exit with one supported route matrix, exact pins and scripted positive/refusal command journeys. |
+| Q1 — Release contract and disabled public integration | Reconcile the 14 authority surfaces; prepare the authorized M3/M4 amendments and a new immutable consuming suite; integrate explicit V command/status/recovery/strop routes with activation disabled. Exit with one supported route matrix, exact pins and scripted positive/refusal command journeys. |
 | Q2 — Seven specific P0 gaps | Complete P0-01/02/03/05 composed negative fixtures, P0-07 budget-stop behavior, P0-12 the original recurrence golden fixture and P0-13 independent implementation comparison. Include positive simplification. Exit with exact executable assertions/expected outputs for every row. |
 | Q3 — Replay performance and deterministic qualification | Use the recorded one/four-promotion profiles to bound optimization, then run affected checks and the fixed P0/D8/process/CLI and complete regression campaign on final sources. One supervised worker, explicit skip/failure accounting, no redundant passing cohorts. Exit with reproducible timing and a release performance disposition. |
 | Q4 — Authorized live soak and activation | After deterministic gates, separately authorize exact provider payloads, run an isolated soak and inspect successful/rejected proposals. Publish accurate operator guidance and decide activation explicitly. No real source apply-back or push is implied. |
@@ -151,3 +151,8 @@ file hash, and confirming that the checkout was unchanged. Cleanup is recorded
 in the JSON; no temporary worker or product test was started. `rounds/` remains ignored, so a future machine needs this
 archive as well as the committed source/docs. The user authorized the inventory documentation
 checkpoint on 2026-10-01; no other checkout or user file was removed.
+
+Inventory correction during Q1 preparation (2026-10-01): the delta map has 14
+substantive rows. The original parser counted the separator and skipped two rows
+beginning “Current.” The JSON and this handoff are corrected; frozen raw evidence
+is preserved, and the 22 P0 classifications are unchanged.
