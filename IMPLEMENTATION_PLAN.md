@@ -1601,17 +1601,26 @@ This milestone does **not** claim the 18.9 exhaustive P0 mapping, full regressio
 
 M1–M5 have completed their approved internal boundaries. The replay optimization
 is committed at **`2eb4223`**; the new [M5 completion handoff](docs/VNEXT_18_8_M5_COMPLETION.md)
-and closeout evidence have a user-authorized local checkpoint on 2026-10-01.
+and closeout evidence are checkpointed at **`648a6ea`** on 2026-10-01.
 The unrelated `notes/future-improvements.md` edit remains preserved outside the
 feature checkpoint.
 
-The next delivery stage is **18.9 qualification**, beginning with reconciliation
-of the executable P0 map, supported CLI/process routes and coordinated family
-dependencies. The original A–D checkboxes remain open where full supported-route,
-normative or release obligations exceed M5's internal acceptance; the completion
-handoff maps each boundary explicitly. Replay cost remains a measured release
-limitation, not an unbounded new M5 implementation stream. No new product or
-authority decision was needed to complete this acceptance campaign.
+The [18.9 clean-checkout inventory](docs/VNEXT_18_9_INVENTORY.md) is complete on
+`648a6ea`: all 22 P0 rows are mapped, with 15 having existing executable coverage,
+five partial compositions and two missing required evidence sources. This is an
+inventory, not a release pass; the four 18.9 checkboxes remain open. The handoff
+fixes Q1–Q4: consuming contract/disabled public integration, seven explicit P0
+gaps, measured replay work plus deterministic qualification, then separately
+authorized live soak/activation. Public V dispatch is missing, not merely a flag
+awaiting activation. Do not relaunch a full campaign before the consuming suite
+and gap fixtures settle.
+
+Next work should establish the exact consuming release boundary and the staged,
+disabled command integration. P0-13 requires an independent conforming comparison;
+a same-code second process cannot substitute. Resolve an explicit decision if the
+second-implementation requirement is to change. Normative M3/M4 publication still
+requires authorization; internal ratification does not supply it. The original
+A–D checkboxes remain open for broader route/normative/release obligations.
 
 Preserve immutable inputs, candidate finality and legacy/bridge behavior.
 Normative specification publication, public activation, live provider calls,
@@ -1621,6 +1630,15 @@ regression, exhaustive P0/process conformance or live-soak credit.
 #### 18.9 Compatibility, Qualification And Controlled Activation
 
 Dependencies: 18.1-18.8, all D1-D8 closed, all family amendments consistent.
+
+Inventory completed on 2026-10-01 in an unchanged detached checkout of `648a6ea`;
+see the [finite handoff](docs/VNEXT_18_9_INVENTORY.md) and
+[audit](docs/audits/VNEXT_18_9_INVENTORY.json). No product tests, runtime changes,
+activation or normative edits were performed. Existing P0/D8/compatibility
+coverage and retained evidence are mapped separately from release qualification.
+The exact recurrence golden fixture and independent implementation evidence are
+missing from the inspected checkout; five other P0 compositions remain partial.
+All four acceptance tasks below remain open until their full requirements pass.
 
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.
 - [ ] Run the full regression suite plus process/CLI and fault-injection conformance; demonstrate that legacy runs, reviewer-only audits/sweeps, bridge runs and proposal-only jobs retain their declared behavior. Publish exact tested schema/algorithm/client versions and known limits.

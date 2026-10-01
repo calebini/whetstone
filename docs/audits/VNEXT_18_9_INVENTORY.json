@@ -1,0 +1,3401 @@
+{
+  "status": "inventory_complete_qualification_not_executed",
+  "date": "2026-10-01",
+  "commit": "648a6ead53efafaf40e5c41f859861a010ec7423",
+  "checkout": "/private/tmp/whetstone-18-9-inventory-uqx3s6vo/checkout",
+  "clean_checkout": true,
+  "tracked_files": 1145,
+  "statically_declared_test_methods": 1474,
+  "product_tests_executed": 0,
+  "p0_status_counts": {
+    "partial": 5,
+    "mapped": 15,
+    "missing_exact_fixture": 1,
+    "missing_second_implementation": 1
+  },
+  "p0": [
+    {
+      "id": "P0-01",
+      "scenario": "Destructive Replacement",
+      "requirement": "An Editor replaces six sections with text stating that the sections remain unchanged. Deterministic preservation validation rejects the candidate. The current verified pointer and `spec.md` mirror remain on the prior verified draft.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#destructive-replacement",
+      "inventory_status": "partial",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_validation.CandidateValidationTests.test_text_corruption_patch_markers_and_placeholders_fail_even_with_correspondence",
+          "path": "tests/test_vnext_candidate_validation.py",
+          "line": 137,
+          "sha256": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_semantics.VerifiedSemanticTests.test_deterministic_rejection_stops_before_verifier_and_cannot_reopen",
+          "path": "tests/test_vnext_verified_semantics.py",
+          "line": 187,
+          "sha256": "6ae26af2c84ac4cd7e06f7117cf424e9c6e0ed18affb4fbff436dbd49b970690",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-promotion-001/promotion-semantic-regression-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Add literal six-section replacement and assert prior pointer/spec.md survive; current placeholder and rejection checks are related coverage.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_closeout.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-02",
+      "scenario": "Unrelated Enum Or Table Loss",
+      "requirement": "An Editor removes an enum member or table row unrelated to any admitted finding. The candidate is rejected with the removed unit ID and no promotion occurs.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#unrelated-enum-or-table-loss",
+      "inventory_status": "partial",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_inventory_diff.InventoryDiffTests.test_missing_enum_member_has_its_exact_removed_base_unit_id",
+          "path": "tests/test_vnext_inventory_diff.py",
+          "line": 53,
+          "sha256": "ec12ce2a8634d721fc74b174c55c03678a588b55aab13f7884c450a4dd1429bc",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_validation.CandidateValidationTests.test_known_weakening_and_silent_deletion_fail_with_exact_unit_ids",
+          "path": "tests/test_vnext_candidate_validation.py",
+          "line": 85,
+          "sha256": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_assertions.AssertionTests.test_headings_identifiers_enums_and_ordered_table_cells_use_real_candidate_facts",
+          "path": "tests/test_vnext_assertions.py",
+          "line": 34,
+          "sha256": "7fadb657cf3e7155c8abd5b644f33a3259a5734fddd8bd1af128e8af86bf3dd0",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Join unrelated enum and table-row loss to registered rejection/no-promotion with exact removed IDs; current tests demonstrate component facts.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_assertions.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_unit_proposals.py"
+      ]
+    },
+    {
+      "id": "P0-03",
+      "scenario": "Forbidden Compatibility Introduction",
+      "requirement": "The authority map marks the target prospective, implementation context describes an older model, and a blocking invariant forbids compatibility behavior. A patch introducing legacy, transition, adapter, migration, or dual-model language is rejected.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#forbidden-compatibility-introduction",
+      "inventory_status": "partial",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_classification.ClassificationTests.test_prospective_compatibility_introduction_is_forbidden_but_cleanup_is_distinct",
+          "path": "tests/test_vnext_classification.py",
+          "line": 40,
+          "sha256": "545a0c7a1c0c41ec070620d285748411c088748834c1c8673627f089c299c1f3",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_protocol.SemanticProtocolTests.test_blocking_assertion_nonpass_and_all_assertion_uncertainty_fail_closed",
+          "path": "tests/test_vnext_semantic_protocol.py",
+          "line": 257,
+          "sha256": "d538720e9ce31ae8e2ee6afa5d821c30c0c84bf8d15d0625052e31c96f9b57f8",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Add the candidate-introduced compatibility scenario with prospective authority and older implementation context; classification is not this joined negative fixture.",
+      "direct_implementation_imports": [
+        "src/whetstone/scope.py",
+        "src/whetstone/vnext_classification.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_protocol.py"
+      ]
+    },
+    {
+      "id": "P0-04",
+      "scenario": "Legitimate Product Decision",
+      "requirement": "A Reviewer raises a valid product choice. Classification produces `operator_decision_required`; the Editor is not invoked for that finding until a hash-bound operator response exists.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#legitimate-product-decision",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_mutation_admission.MutationAdmissionTests.test_missing_advice_or_unresolved_choice_stops_before_editor_and_writes",
+          "path": "tests/test_vnext_mutation_admission.py",
+          "line": 62,
+          "sha256": "4b7baba99859e81744521e92d260c9e1285be1653ef5ec2a006397b5254ea874",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_mutation_admission.MutationAdmissionTests.test_exact_operator_response_yields_derived_task_and_stale_response_never_calls_editor",
+          "path": "tests/test_vnext_mutation_admission.py",
+          "line": 119,
+          "sha256": "4b7baba99859e81744521e92d260c9e1285be1653ef5ec2a006397b5254ea874",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing zero-call/response-binding checks; qualify against the selected consuming suite.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_decisions.py",
+        "src/whetstone/vnext_mutation_admission.py"
+      ]
+    },
+    {
+      "id": "P0-05",
+      "scenario": "Partial Success With Regression",
+      "requirement": "An Editor resolves three findings but causes one unrelated semantic regression. The candidate is rejected. If the offending operation can be isolated, a new reduced patch set is assembled from the immutable base and fully reverified.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#partial-success-with-regression",
+      "inventory_status": "partial",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_semantic_protocol.SemanticProtocolTests.test_useful_fix_with_unrelated_regression_cannot_pass_but_can_validly_reject",
+          "path": "tests/test_vnext_semantic_protocol.py",
+          "line": 141,
+          "sha256": "d538720e9ce31ae8e2ee6afa5d821c30c0c84bf8d15d0625052e31c96f9b57f8",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_phase2_repair.Phase2RepairTests.test_repair_child_promotes_and_preserves_parent_report",
+          "path": "tests/test_vnext_verified_phase2_repair.py",
+          "line": 50,
+          "sha256": "55e4f6313d5e073ead5c9b5c3f2984e08abb16ebe3065365e7c7f81911387edf",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M1_CONTINUATION.json",
+            "docs/audits/VNEXT_18_8_M5_CLOSEOUT.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m1-002/acceptance-repair.log",
+            "rounds/vnext-18-8-m5-closeout-005/matrix/tests.log"
+          ]
+        }
+      ],
+      "remaining": "Add exact three-resolved/one-regression fixture and isolated reduced patch reassembled from immutable base with full verification; existing rejection and repair journeys cover pieces.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_verified_materialization.py"
+      ]
+    },
+    {
+      "id": "P0-06",
+      "scenario": "Invalid Output Or Timeout",
+      "requirement": "An Editor response is invalid or times out. Any retry uses the last current verified draft and the same mutation plan; no partial response becomes the next base.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#invalid-output-or-timeout",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_proposal_retries.ProposalRetryTests.test_one_shape_retry_keeps_identical_inputs_and_precise_errors",
+          "path": "tests/test_vnext_proposal_retries.py",
+          "line": 19,
+          "sha256": "040187a2540fc40e1fd4ca4dab44b069f559cb1b2fb1bb57cdbc59ba4b7c48e9",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_proposal_retries.ProposalRetryTests.test_timeout_and_other_client_errors_are_not_shape_failures",
+          "path": "tests/test_vnext_proposal_retries.py",
+          "line": 76,
+          "sha256": "040187a2540fc40e1fd4ca4dab44b069f559cb1b2fb1bb57cdbc59ba4b7c48e9",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_run.SemanticRunTests.test_timeout_continuation_preserves_cause_and_exhaustion_never_opens_another_slot",
+          "path": "tests/test_vnext_semantic_run.py",
+          "line": 86,
+          "sha256": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing retry/timeout checks; preserve explicit continuation and original base under the release suite.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_proposal_run.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_decisions.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py",
+        "src/whetstone/vnext_storage.py",
+        "src/whetstone/vnext_unit_protocol.py"
+      ]
+    },
+    {
+      "id": "P0-07",
+      "scenario": "Verification Budget Exhaustion",
+      "requirement": "The run exhausts its token or time budget after candidate registration but before semantic verification. Candidate disposition is `CANDIDATE_UNVERIFIED`; apply-back is prohibited. Exhaustion before registration leaves only an orphan and does not change `latest_candidate`.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#verification-budget-exhaustion",
+      "inventory_status": "partial",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_registered_creation_is_unverified_and_replay_reuses_timestamp_and_ordinal",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 120,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_complete_orphan_is_not_latest_and_recovers_before_later_registration",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 145,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_apply_back.ApplyBackTests.test_registered_unverified_and_rejected_candidates_never_grant_apply_back",
+          "path": "tests/test_vnext_apply_back.py",
+          "line": 101,
+          "sha256": "f12e4eff1126b062fa149e2271d7cfc0ea49fc64d5b0d2b93de24837244dc32f",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m4-implementation-001/acceptance.log"
+          ]
+        }
+      ],
+      "remaining": "No explicit run token/time-budget exhaustion fixture found before/after registration. Retry-slot/profile budgets differ. Demonstrate caller budget-stop boundary; clarify ownership if implementation requires a new policy.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_sections.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_unit_proposals.py"
+      ]
+    },
+    {
+      "id": "P0-08",
+      "scenario": "Exact Resume",
+      "requirement": "Resume first validates the current pointer's committed lineage at its own ordinal. Missing or stale pointer-derived materializations enter post-commit recovery, require the committed transaction base to equal `previous_verified_draft_hash`, and permit only idempotent `spec.md`, `draft_after.md`, and run-state materialization before the invocation ends. When those materializations already match, pre-commit resume validates `latest_candidate`, reconstructs it and its registered section identity map from immutable base, patch, payload, creation-event, and map hashes without invoking the Editor, and requires its transaction base to remain current. Promotion resume then acquires the run-wide lock and either completes the sole valid prepared next-ordinal claimant or, when none exists, selects only the exact latest candidate. Any hash mismatch, partial commit binding, or missing committed pointer snapshot blocks resume.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#exact-resume",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_verified_materialization.VerifiedMaterializationTests.test_promoted_recovery_does_not_validate_a_later_candidate_or_next_intent",
+          "path": "tests/test_vnext_verified_materialization.py",
+          "line": 157,
+          "sha256": "cde4d4980d6311399b863fe78d863457dfb1a3eef68f98d146b5ec8767c85e2a",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_materialization.VerifiedMaterializationTests.test_each_interrupted_mirror_prefix_recovers_without_another_promotion",
+          "path": "tests/test_vnext_verified_materialization.py",
+          "line": 73,
+          "sha256": "cde4d4980d6311399b863fe78d863457dfb1a3eef68f98d146b5ec8767c85e2a",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_run.SemanticRunTests.test_valid_raw_and_prepared_decision_recover_without_verifier_or_editor",
+          "path": "tests/test_vnext_semantic_run.py",
+          "line": 103,
+          "sha256": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_all_precommit_prefixes_reuse_claimant_and_timestamp",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 145,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/verified-promotion-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing prefix and runtime recovery coverage; refresh final consuming graph, without generic Phase 2 resume.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_proposal_run.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_decisions.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-09",
+      "scenario": "Candidate Identity Map Binding",
+      "requirement": "A candidate's Markdown bytes remain intact while `section_identity_map_candidate.json` is deleted, replaced, or changed. Registration, verification, promotion, resume, and apply-back reject the candidate lineage as artifact-invalid through the creation-event and current-pointer map bindings.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#candidate-identity-map-binding",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_missing_committed_map_is_invalid_even_when_candidate_bytes_survive",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 332,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_context.SemanticContextTests.test_changed_creation_locator_candidate_or_map_refuses",
+          "path": "tests/test_vnext_semantic_context.py",
+          "line": 99,
+          "sha256": "17b9d320eb5576c68051459cf277f1e8ea7f0f780c2eb3251a98bbf19bea5957",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M1_CONTINUATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m1-002/acceptance-compatibility.log",
+            "rounds/vnext-18-8-m1-002/shared-expanded.log",
+            "rounds/vnext-18-8-m1-002/shared-regression.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_pointer_history.PointerHistoryTests.test_missing_or_changed_bound_ancestor_artifacts_refuse_without_repairs",
+          "path": "tests/test_vnext_pointer_history.py",
+          "line": 150,
+          "sha256": "cb14ce71ee30b3ecc0eeb80aabd8c15236a1fb3a04eded6a77e7bf2fe131491c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log"
+          ]
+        },
+        {
+          "id": "test_vnext_apply_back.ApplyBackTests.test_stale_source_approval_and_corrupt_lineage_refuse_before_intent",
+          "path": "tests/test_vnext_apply_back.py",
+          "line": 146,
+          "sha256": "f12e4eff1126b062fa149e2271d7cfc0ea49fc64d5b0d2b93de24837244dc32f",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m4-implementation-001/acceptance.log"
+          ]
+        }
+      ],
+      "remaining": "Existing map bindings at registration/context/history/apply; qualify declared consumers.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_pointer_history.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposals.py",
+        "src/whetstone/vnext_sections.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py"
+      ]
+    },
+    {
+      "id": "P0-10",
+      "scenario": "Candidate Ordering And Orphan Recovery",
+      "requirement": "Two retries produce distinct candidates and one process crashes after writing a third candidate but before registration. The valid contiguous creation-event chain selects the second registered candidate as latest. Recovery either completes the third candidate's exact next registration once or preserves it as an orphan and halts artifact-invalid; candidate IDs, timestamps, and directory order never break the tie.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#candidate-ordering-and-orphan-recovery",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_latest_uses_creation_ordinal_not_round_timestamp_or_identifier",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 137,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_all_registration_publication_prefixes_preserve_or_reconcile_evidence",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 154,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_multiple_orphans_halt_without_selecting_by_enumeration",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 213,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Retain exact prefix/ordering coverage; no new generic orphan batch.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_sections.py",
+        "src/whetstone/vnext_unit_proposals.py"
+      ]
+    },
+    {
+      "id": "P0-11",
+      "scenario": "Verification Decision Commit Recovery",
+      "requirement": "Fault injection after decision-attempt write, after disposition-event write, and after verification-pointer replacement never exposes a torn decision and disposition. Recovery reuses at most one exact prepared next event, the pointer binds the decision and event together, and terminal reporting selects only the effective bound event.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#verification-decision-commit-recovery",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_semantic_decisions.SemanticDecisionTests.test_every_pre_pointer_prefix_is_ineffective_and_recovery_reuses_timestamp",
+          "path": "tests/test_vnext_semantic_decisions.py",
+          "line": 87,
+          "sha256": "e1899690889dc8041339b7b1f2162f204b7f9da4fc128757ad9bd6e444c4c8c8",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-promotion-001/promotion-semantic-regression-tests.log",
+            "rounds/vnext-semantic-001/answer-source-replay-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_decisions.SemanticDecisionTests.test_lost_pointer_acknowledgement_reads_the_committed_final_disposition",
+          "path": "tests/test_vnext_semantic_decisions.py",
+          "line": 110,
+          "sha256": "e1899690889dc8041339b7b1f2162f204b7f9da4fc128757ad9bd6e444c4c8c8",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-promotion-001/promotion-semantic-regression-tests.log",
+            "rounds/vnext-semantic-001/answer-source-replay-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_runtime_publication_prefixes.RuntimePublicationPrefixTests.test_candidate_pointer_ack_loss_repeats_barrier_before_global_promotion",
+          "path": "tests/test_vnext_verified_runtime_publication_prefixes.py",
+          "line": 119,
+          "sha256": "89dfd55b11e784501140d9a56038acbdfdcb6548421bfce6a07cd51db8f970a6",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_RUNTIME_PUBLICATION_PREFIXES.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-runtime-publication-prefixes-001/tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing decision/event/pointer prefixes and runtime uncertainty; execute on release sources.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_decisions.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py",
+        "src/whetstone/vnext_verified_materialization.py"
+      ]
+    },
+    {
+      "id": "P0-12",
+      "scenario": "Historical Recurrence Fixture",
+      "requirement": "The destructive first-round recurrence mutation is replayed as a golden fixture and rejected before promotion.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#historical-recurrence-fixture",
+      "inventory_status": "missing_exact_fixture",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_validation.CandidateValidationTests.test_text_corruption_patch_markers_and_placeholders_fail_even_with_correspondence",
+          "path": "tests/test_vnext_candidate_validation.py",
+          "line": 137,
+          "sha256": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        }
+      ],
+      "remaining": "No checked-in historical destructive first-round golden fixture located in tests/contracts. Locate original retained input/output and freeze a scrubbed exact fixture with provenance; finding-recurrence tests do not satisfy it.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_unit_proposals.py"
+      ]
+    },
+    {
+      "id": "P0-13",
+      "scenario": "Cross-Implementation Determinism",
+      "requirement": "Two conforming implementations apply the same validated patch inputs and produce byte-identical candidates, identity maps, and candidate hashes. Given the same persisted creation-event, disposition-event, verification-pointer, intent, and current-verified-pointer bytes, they select the same latest candidate and effective disposition.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#cross-implementation-determinism",
+      "inventory_status": "missing_second_implementation",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_contracts.SuiteTests.test_published_suite_and_all_fixed_vectors",
+          "path": "tests/test_vnext_contracts.py",
+          "line": 21,
+          "sha256": "f9c11fe7f87274bbd3cb6bfa317fb3cc8e732d2159faef91abc441c6fa2b625a",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M1_GAP_ACCEPTANCE.json",
+            "docs/audits/VNEXT_18_8_M1_CONTINUATION.json",
+            "docs/audits/VNEXT_18_8_M2_COMPLETION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json",
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json",
+            "docs/audits/VNEXT_18_8_M5_REPLAY.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m1-002/acceptance-compatibility.log",
+            "rounds/vnext-18-8-m1-002/acceptance-policy-compatibility.log",
+            "rounds/vnext-18-8-m1-002/contracts-and-policy.log",
+            "rounds/vnext-18-8-m1-003/acceptance-compatibility.log",
+            "rounds/vnext-18-8-m1-003/delivery-compatibility.log",
+            "rounds/vnext-18-8-m2-completion-001/core-regression.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-18-8-m4-implementation-001/regression.log",
+            "rounds/vnext-18-8-m5-replay-002/corrected-focused/tests.log",
+            "rounds/vnext-18-8-m5-replay-002/storage-contracts/tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log",
+            "rounds/vnext-d8-audit-004/contracts-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log",
+            "rounds/vnext-semantic-001/pointer-reader-tests.log",
+            "rounds/vnext-semantic-001/suite-verified-bytes-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_assembly.AssemblyTests.test_each_operation_reproduces_literal_bytes_and_preserves_unrelated_sections",
+          "path": "tests/test_vnext_assembly.py",
+          "line": 18,
+          "sha256": "263d8407a8a720d1e0ae5906bc64377b64473b7eafd8f087fa2a21a676bdb66c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_registry.CandidateRegistryTests.test_latest_uses_creation_ordinal_not_round_timestamp_or_identifier",
+          "path": "tests/test_vnext_candidate_registry.py",
+          "line": 137,
+          "sha256": "a276a2a015a1cfc571937947c1f18de9eb5815d8385e76dc27000dd6c4a6166c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-readback-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        }
+      ],
+      "remaining": "One Python implementation and fixed vectors found. Two processes are not two implementations. Need an independent bounded reference implementation for candidate/map/hash and persisted selection/disposition, or an explicit normative decision.",
+      "direct_implementation_imports": [
+        "src/whetstone/contracts.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_conformance.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_sections.py",
+        "src/whetstone/vnext_unit_proposals.py"
+      ]
+    },
+    {
+      "id": "P0-14",
+      "scenario": "Normative Weakening Without Deletion",
+      "requirement": "An Editor changes `MUST` to `SHOULD` without deletion authorization. The preservation report classifies the unit as weakened and rejects the candidate before semantic verification.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#normative-weakening-without-deletion",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_inventory_diff.InventoryDiffTests.test_rfc_weakening_is_detected_even_when_the_editor_claims_clarification",
+          "path": "tests/test_vnext_inventory_diff.py",
+          "line": 47,
+          "sha256": "ec12ce2a8634d721fc74b174c55c03678a588b55aab13f7884c450a4dd1429bc",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_candidate_validation.CandidateValidationTests.test_known_weakening_and_silent_deletion_fail_with_exact_unit_ids",
+          "path": "tests/test_vnext_candidate_validation.py",
+          "line": 85,
+          "sha256": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_semantics.VerifiedSemanticTests.test_deterministic_rejection_stops_before_verifier_and_cannot_reopen",
+          "path": "tests/test_vnext_verified_semantics.py",
+          "line": 187,
+          "sha256": "6ae26af2c84ac4cd7e06f7117cf424e9c6e0ed18affb4fbff436dbd49b970690",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log",
+            "rounds/vnext-promotion-001/promotion-semantic-regression-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing weakening/authorization failure and no-Verifier gate; qualify consuming suite.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_assertions.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_closeout.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-15",
+      "scenario": "Stale And Overlapping Patches",
+      "requirement": "A patch has a stale base or target hash, or contains undeclared overlapping operations. Candidate assembly fails without changing the current verified draft.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#stale-and-overlapping-patches",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_proposals.ProposalTests.test_stale_bindings_and_forged_ids_reject",
+          "path": "tests/test_vnext_proposals.py",
+          "line": 88,
+          "sha256": "bc899796ea3f370b443cf4c6971b10536b721112862a054dbc7c58e0970013ac",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_patch_operations.PatchOperationTests.test_overlapping_subtrees_refuse_even_when_dependency_is_present",
+          "path": "tests/test_vnext_patch_operations.py",
+          "line": 74,
+          "sha256": "f80ec4fd7f967b2055a33d25244033cdf62c312acb0b2f57a400fab066bd2e33",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing stale base/target and overlap refusal; preserve unchanged authority in qualification.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_decisions.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_proposals.py",
+        "src/whetstone/vnext_sections.py"
+      ]
+    },
+    {
+      "id": "P0-16",
+      "scenario": "Markdown Parser Edge Cases",
+      "requirement": "Headings inside fenced code blocks, duplicate headings, escaped table delimiters, Unicode text, CRLF input, and missing final newlines produce the contract-defined identity and canonical bytes.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#markdown-parser-edge-cases",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_admission.SeedParserTests.test_fences_duplicates_preamble_and_exact_subtree_hashes",
+          "path": "tests/test_vnext_admission.py",
+          "line": 252,
+          "sha256": "db97531d8f3ee8c0219c1ffc4a69b99f05bcaf3716f516f8c3caa3dae681cf3d",
+          "audit_mentions": [],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/cli-compatibility-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/operator-compatibility-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_inventory.InventoryTests.test_primary_units_partition_preamble_unicode_crlf_and_missing_final_newline",
+          "path": "tests/test_vnext_inventory.py",
+          "line": 20,
+          "sha256": "120cf384ded95af16deca648449a836ba06df43f538002a00f05aa9808b3d7ec",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/unit-lineage-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_inventory.InventoryTests.test_typed_lexical_facts_cover_lists_tables_identifiers_conditions_and_links",
+          "path": "tests/test_vnext_inventory.py",
+          "line": 30,
+          "sha256": "120cf384ded95af16deca648449a836ba06df43f538002a00f05aa9808b3d7ec",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/unit-lineage-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_assembly.AssemblyTests.test_normalize_once_after_assembly_and_reject_altered_payload_bytes",
+          "path": "tests/test_vnext_assembly.py",
+          "line": 77,
+          "sha256": "263d8407a8a720d1e0ae5906bc64377b64473b7eafd8f087fa2a21a676bdb66c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing parser/normalization/escaped-table cases; pin parser and assembler versions.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_sections.py"
+      ]
+    },
+    {
+      "id": "P0-17",
+      "scenario": "Verifier Failure",
+      "requirement": "The Semantic Verifier times out, returns invalid JSON, reports uncertainty, or requests an operator decision. The candidate does not promote.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#verifier-failure",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_semantic_run.SemanticRunTests.test_invalid_semantic_output_is_nonfinal_and_cannot_retry",
+          "path": "tests/test_vnext_semantic_run.py",
+          "line": 151,
+          "sha256": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_run.SemanticRunTests.test_timeout_continuation_preserves_cause_and_exhaustion_never_opens_another_slot",
+          "path": "tests/test_vnext_semantic_run.py",
+          "line": 86,
+          "sha256": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_protocol.SemanticProtocolTests.test_loss_and_coverage_uncertainty_require_exact_reject_rules",
+          "path": "tests/test_vnext_semantic_protocol.py",
+          "line": 159,
+          "sha256": "d538720e9ce31ae8e2ee6afa5d821c30c0c84bf8d15d0625052e31c96f9b57f8",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_run.SemanticOperatorRunTests.test_real_authority_choice_pauses_with_final_rejection_and_exact_request_id",
+          "path": "tests/test_vnext_semantic_run.py",
+          "line": 249,
+          "sha256": "f479a377ee269edb34c646082318d98534c5050267d86827b444d264ac6c8b4c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-semantic-001/admission-routing-compatibility-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing technical-failure/uncertainty/operator cases; scripted judgment is not live-soak evidence.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_proposal_run.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_decisions.py",
+        "src/whetstone/vnext_semantic_protocol.py",
+        "src/whetstone/vnext_semantic_requests.py"
+      ]
+    },
+    {
+      "id": "P0-18",
+      "scenario": "Promotion Crash Recovery",
+      "requirement": "Fault injection at every promotion step yields exactly one authoritative current verified pointer. Before pointer commit, the old pointer remains authoritative and a prepared candidate-scoped intent, promotion event, and next-ordinal pointer snapshot remain ineffective. After commit, the pointer's byte-identical snapshot plus its intent, verification, registration, map, and event bindings prove the promotion and recovery completes materialization without allocating another event or ordinal. A stale intent never promotes.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#promotion-crash-recovery",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_all_precommit_prefixes_reuse_claimant_and_timestamp",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 145,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/verified-promotion-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_real_process_death_before_and_after_pointer_commit_recovers_once",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 318,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/regression.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/promotion-process-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_runtime_faults.RuntimePromotionFaultTests.test_killed_runtime_writer_before_and_after_second_pointer_rename",
+          "path": "tests/test_vnext_verified_runtime_faults.py",
+          "line": 120,
+          "sha256": "5f4f9b3fbbf5cafed2c7efb433de8a4e8dea7a368248100198b3d2fbcdbb638d",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-runtime-faults-001/tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_materialization.VerifiedMaterializationTests.test_each_interrupted_mirror_prefix_recovers_without_another_promotion",
+          "path": "tests/test_vnext_verified_materialization.py",
+          "line": 73,
+          "sha256": "cde4d4980d6311399b863fe78d863457dfb1a3eef68f98d146b5ec8767c85e2a",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log"
+          ]
+        }
+      ],
+      "remaining": "Component prefix matrix plus real process deaths/runtime representative; no physical power-loss or arbitrary fault cross-product claim.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_proposal_run.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-19",
+      "scenario": "Concurrent Promotion Preparation",
+      "requirement": "Two final verified candidates already exist when separate callers attempt to prepare the same next promotion ordinal. After acquiring the run-wide promotion lock, both implementations select the higher creation-ordinal `latest_candidate`; the caller and lock winner cannot select the older candidate. A crash after the selected candidate's intent, event, or snapshot write causes recovery to reacquire the lock and complete that same claimant's valid artifact prefix before any other candidate may prepare. If a later candidate registers after lock loss, the prepared claimant remains reserved. Multiple eligible claimants, a non-prefix artifact combination, or conflicting snapshot bytes halt artifact-invalid; no uncommitted candidate can poison or bypass the ordinal.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#concurrent-promotion-preparation",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_verified_concurrent_selection.ConcurrentSelectionTests.test_two_verified_candidates_select_latest_with_either_process_holding_first",
+          "path": "tests/test_vnext_verified_concurrent_selection.py",
+          "line": 103,
+          "sha256": "0d0321cf28de819c1f069de8854e9bfee8d427b18d01a60d2c3ce5446fbb1da5",
+          "audit_mentions": [
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-concurrent-selection-001/selection.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_reserved_older_claimant_survives_a_later_verified_registration",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 207,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/promotion-selection-boundaries.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_competing_valid_intents_refuse_without_choosing_a_winner",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 247,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/verified-promotion-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_nonprefix_or_changed_preparation_never_overwrites_evidence",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 291,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-boundary-reconciliation-001/materialization-promotion.log",
+            "rounds/vnext-concurrent-selection-001/regressions.log",
+            "rounds/vnext-promotion-001/promotion-journey-tests.log"
+          ]
+        }
+      ],
+      "remaining": "G1 covers both lock-winner orders; retain reservation/conflicting-prefix evidence, not cross-implementation credit.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-20",
+      "scenario": "Promotion Ordinal Continuity",
+      "requirement": "The seed pointer and immutable history snapshot start at promotion ordinal 0. The first successful candidate promotion commits ordinal 1, and each later successful promotion advances by exactly one. Validation walks the immutable previous-pointer snapshot chain to ordinal 0. An intent, current pointer, or history chain that reuses, regresses, skips, or breaks an ordinal is artifact-invalid and cannot change authority.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#promotion-ordinal-continuity",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_verified_promotion.VerifiedPromotionTests.test_two_successive_promotions_use_the_production_pointer_owner",
+          "path": "tests/test_vnext_verified_promotion.py",
+          "line": 285,
+          "sha256": "334450dbfd34a9032d04298cb4fd82a39441ca2c223e4dee6dd1fe42baf39fb1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": []
+        },
+        {
+          "id": "test_vnext_pointer_history.PointerHistoryTests.test_predecessor_alias_gap_and_self_reference_refuse",
+          "path": "tests/test_vnext_pointer_history.py",
+          "line": 172,
+          "sha256": "cb14ce71ee30b3ecc0eeb80aabd8c15236a1fb3a04eded6a77e7bf2fe131491c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log"
+          ]
+        },
+        {
+          "id": "test_vnext_pointer_history.PointerHistoryTests.test_rehashed_promotion_event_cannot_skip_its_verified_predecessor",
+          "path": "tests/test_vnext_pointer_history.py",
+          "line": 198,
+          "sha256": "cb14ce71ee30b3ecc0eeb80aabd8c15236a1fb3a04eded6a77e7bf2fe131491c",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_G2_VALIDATION.json",
+            "docs/audits/VNEXT_CONCURRENT_SELECTION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-g2-refresh-001/components.log"
+          ]
+        }
+      ],
+      "remaining": "Existing continuity/corrupt ancestors plus separately scoped M5 four-promotion evidence.",
+      "direct_implementation_imports": [
+        "src/whetstone/clients.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_pointer_history.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_sections.py",
+        "src/whetstone/vnext_semantic_admission.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_semantics.py"
+      ]
+    },
+    {
+      "id": "P0-21",
+      "scenario": "Decision Staleness",
+      "requirement": "An operator response is created for an older base or authority map. It cannot authorize a later transaction.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#decision-staleness",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_operator_decisions.OperatorDecisionTests.test_stale_binding_unknown_targets_and_cross_section_grants_fail_before_writes",
+          "path": "tests/test_vnext_operator_decisions.py",
+          "line": 87,
+          "sha256": "0fe1c3d21d25ae1bdc3a4d4d3ed0c4bf8afaa70c0270110c4db19b27009ef6a7",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-assembly-001/operator-integration-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_unit_authorization.UnitAuthorizationTests.test_inventory_drift_or_retargeted_request_invalidates_an_old_selection",
+          "path": "tests/test_vnext_unit_authorization.py",
+          "line": 87,
+          "sha256": "5e8dc5ae13459507d9d1e1571a27b8e8284937ba10d6560f7e0d00855c6178b1",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/operator-integration-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-assembly-001/unit-lineage-tests.log",
+            "rounds/vnext-assembly-001/vnext-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Existing stale base/authority/effect checks; qualify consuming suite.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_decisions.py",
+        "src/whetstone/vnext_identity.py",
+        "src/whetstone/vnext_inventory.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_operator_decisions.py",
+        "src/whetstone/vnext_plans.py",
+        "src/whetstone/vnext_proposal_run.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_unit_authorization.py"
+      ]
+    },
+    {
+      "id": "P0-22",
+      "scenario": "Changed External Source",
+      "requirement": "The run converges on a promoted verified candidate, but the external source changed after seeding. Apply-back refuses unless the existing explicit source-reconciliation policy is followed; candidate verification does not bypass the source hash guard.",
+      "authority": "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md#changed-external-source",
+      "inventory_status": "mapped",
+      "release_status": "unqualified",
+      "tests": [
+        {
+          "id": "test_vnext_apply_back.ApplyBackTests.test_stale_source_approval_and_corrupt_lineage_refuse_before_intent",
+          "path": "tests/test_vnext_apply_back.py",
+          "line": 146,
+          "sha256": "f12e4eff1126b062fa149e2271d7cfc0ea49fc64d5b0d2b93de24837244dc32f",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m4-implementation-001/acceptance.log"
+          ]
+        },
+        {
+          "id": "test_vnext_apply_back.ApplyBackTests.test_converged_seed_exact_apply_reopen_and_later_source_drift",
+          "path": "tests/test_vnext_apply_back.py",
+          "line": 78,
+          "sha256": "f12e4eff1126b062fa149e2271d7cfc0ea49fc64d5b0d2b93de24837244dc32f",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m4-implementation-001/acceptance.log"
+          ]
+        },
+        {
+          "id": "test_vnext_apply_back.ApplyBackVersionTests.test_promoted_version_convergence_apply_preserves_history_and_closeout",
+          "path": "tests/test_vnext_apply_back.py",
+          "line": 290,
+          "sha256": "f12e4eff1126b062fa149e2271d7cfc0ea49fc64d5b0d2b93de24837244dc32f",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/vnext-18-8-m4-implementation-001/version-final.log"
+          ]
+        }
+      ],
+      "remaining": "M4 source guards/promoted integration exist; public strop and its normative amendment remain gated.",
+      "direct_implementation_imports": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_semantic_admission.py"
+      ]
+    }
+  ],
+  "supplemental": [
+    {
+      "id": "S-01",
+      "scenario": "Valid simplification (plan requirement, not a separate P0 heading)",
+      "tests": [
+        {
+          "id": "test_vnext_candidate_validation.CandidateValidationTests.test_passing_merge_reports_every_predecessor_and_pending_semantics",
+          "path": "tests/test_vnext_candidate_validation.py",
+          "line": 37,
+          "sha256": "5ae56fa50ffaed4e8f3033a3f1ce9661b8d52f50bb3ca4a762c318b57ae73732",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+            "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log",
+            "rounds/vnext-18-8-m3-implementation-001/core.log",
+            "rounds/vnext-assembly-001/candidate-reports-focused-tests.log",
+            "rounds/vnext-assembly-001/candidate-reports-vnext-tests.log",
+            "rounds/vnext-assembly-001/handoff-vnext-tests.log",
+            "rounds/vnext-assembly-001/native-vnext-tests.log",
+            "rounds/vnext-assembly-001/preflight-vnext-tests.log",
+            "rounds/vnext-assembly-001/registration-vnext-tests.log",
+            "rounds/vnext-assembly-001/requests-vnext-tests.log",
+            "rounds/vnext-assembly-001/storage-vnext-tests.log",
+            "rounds/vnext-semantic-001/followup-compatibility-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_coverage.SemanticCoverageTests.test_merge_covers_each_required_unit_and_separate_complete_group",
+          "path": "tests/test_vnext_semantic_coverage.py",
+          "line": 46,
+          "sha256": "af4fc77476807fd0e7d0948e70d6facad7d3a82168fdf89d3e8cb8245c455235",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log"
+          ]
+        },
+        {
+          "id": "test_vnext_semantic_coverage.SemanticCoverageTests.test_split_binds_all_successors",
+          "path": "tests/test_vnext_semantic_coverage.py",
+          "line": 62,
+          "sha256": "af4fc77476807fd0e7d0948e70d6facad7d3a82168fdf89d3e8cb8245c455235",
+          "audit_mentions": [
+            "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json"
+          ],
+          "retained_passing_logs": [
+            "rounds/reconciliation-18-5-18-7-001/full-tests.log"
+          ]
+        }
+      ],
+      "remaining": "Positive merge/split checks exist; include explicit release vector. Shortening alone is not proof."
+    }
+  ],
+  "ratification_delta": [
+    {
+      "surface": "---",
+      "anchors": "---",
+      "required_amendment": "---",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Family routing and role authority",
+      "anchors": "`docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map`, `#core-roles`",
+      "required_amendment": "Add this leaf to the family map; route proposal validation, semantic verification, candidate disposition, and promotion authority; state that Editor output is untrusted.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Run inputs, outputs, configuration, and design principle",
+      "anchors": "`docs/specs/WHETSTONE_COORDINATING_SPEC.md#primary-inputs`, `#primary-outputs`, `#configuration`, `#design-principle`",
+      "required_amendment": "Add the job descriptor, editing modes, current verified pointer, candidate artifacts, and fail-closed promotion principle; stop describing raw full-document Editor output as a directly mutable primary output in vNext mode.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Halting and terminal artifacts",
+      "anchors": "`docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#halting-conditions-ordered-precedence`, `#halt-artifact-matrix`, `#phase-1-failure-handling`",
+      "required_amendment": "Define precedence and required artifacts for proposal, validation, verification, decision, promotion, and recovery failures while preserving the prior verified pointer.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Verified lineage versus quality state",
+      "anchors": "`docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#accepted-draft-definition`, `#spec-version-lifecycle`, `#definition-clean-profile`",
+      "required_amendment": "Distinguish verified lineage from accepted-draft, profile-clean, Phase 1 stable, and converged status; prevent `last_accepted_draft_hash` from serving as candidate-verification proof.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Proposal-to-promotion scheduling",
+      "anchors": "`docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-scheduling-algorithm`, `#state-machine-full-transitions`",
+      "required_amendment": "Replace direct full-document mutation transitions in vNext mode with proposal capture, deterministic validation, semantic verification, candidate decision, run-wide serialized promotion, and atomic authority transitions.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Budgets, retries, resume, and read-only status",
+      "anchors": "`docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md#round-budget-handling`, `#resume-policy`",
+      "required_amendment": "Bind replay to the immutable descriptor and current verified pointer; preserve incomplete candidates; validate current committed lineage before next-ordinal search; select a no-claimant promotion only from `latest_candidate`; distinguish pre-commit base-current recovery from post-commit materialization; reacquire the promotion lock and reconcile the sole prepared next-ordinal claimant; prohibit retries or resume from unverified bytes.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Public artifacts, locking, and attempt semantics",
+      "anchors": "`docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#artifact-schemas-minimum-required-fields`, `#artifact-validation-policy`",
+      "required_amendment": "Define and validate the vNext contract suite, mutually exclusive candidate-registration and run-wide promotion-lock critical sections, fencing semantics, immutable raw attempts, canonical `proposals/{proposal_id}/proposed_patch.json`, candidate creation events and identity-map bindings, verification artifacts and pointers, candidate-scoped promotion intents, commit-bound disposition events, ordinal-indexed current-verified history snapshots, current verified pointers, and terminal fields.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Versioned normalization and hashing",
+      "anchors": "`docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#content-normalization-and-hashing`",
+      "required_amendment": "Bind parser, assembler, inventory, normalization, candidate, candidate identity-map, report, pointer, and pointer-history hashes to the immutable job descriptor and exact persisted bytes.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Scope, finding admission, authority, and decisions",
+      "anchors": "`docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#scope-contract`, `#expanding-contract-surface`, `#decision-summary`",
+      "required_amendment": "Add pre-Editor finding classification, authority and prospective-spec gates, hash-bound decision responses, staleness checks, and candidate-blocking decision status.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Phase 2 and convergence lineage",
+      "anchors": "`docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#phase-2-failure-handling`, `#target-matrix-precedence`, `#convergence-declaration`, `#reproducibility`",
+      "required_amendment": "Require Phase 2, declaration generation, and reproducibility evidence to resolve and bind the promoted current verified draft rather than an unverified candidate or unverified `spec.md` mirror.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Operator defaults and recovery guidance",
+      "anchors": "`docs/OPERATOR_QUICKSTART.md#mental-model`, `#recommended-defaults`, `#running-whetstone-from-an-agent`, `#recover-a-timeout`, `#terminal-states`, `#safety-rules`",
+      "required_amendment": "Default unfamiliar jobs to reviewer-only mode; document proposal-only and verified-promotion opt-in, candidate inspection, safe recovery, and the prohibition on treating Editor output as current.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    },
+    {
+      "surface": "Strop/apply-back normative ownership designation",
+      "anchors": "`docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map`",
+      "required_amendment": "The coordinating spec now designates `SCHEDULER_STATE_AND_RESUME_SPEC.md` as the target normative owner for the pending bounded amendment to full strop/apply-back eligibility and the external source-write lifecycle, routed to this leaf's verified-candidate eligibility guard. Detailed vNext policy remains unratified until that scheduler amendment is completed. Until then, current operative behavior continues under the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. This leaf does not otherwise absorb external source-spec apply-back policy.",
+      "disposition": "Existing partial normative routing must be reconciled to the consuming release; no amendment or activation performed."
+    }
+  ],
+  "historical_source_snapshots": [
+    {
+      "path": "rounds/reconciliation-18-5-18-7-001/test-source-manifest.json",
+      "checked_files": 464,
+      "matching_files": 426,
+      "different_or_missing": [
+        "src/.DS_Store",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_verified_work.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "tests/test_vnext_proposal_run.py",
+        "tests/test_vnext_verified_run.py",
+        "tests/.DS_Store",
+        "tests/test_vnext_verified_work.py",
+        "tests/test_vnext_local_storage.py",
+        "contracts/.DS_Store",
+        "contracts/algorithms/vnext_local_storage_kernel_v1.md",
+        "contracts/schemas/vnext_local_storage_binding_v1.schema.json"
+      ],
+      "irrelevant_desktop_metadata": [
+        "src/.DS_Store",
+        "tests/.DS_Store",
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-5-acceptance-001/source-manifest.json",
+      "checked_files": 483,
+      "matching_files": 453,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-6-acceptance-001/source-manifest.json",
+      "checked_files": 483,
+      "matching_files": 453,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-7-acceptance-001/source-manifest.json",
+      "checked_files": 482,
+      "matching_files": 452,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-corrected-source-manifest.json",
+      "checked_files": 597,
+      "matching_files": 550,
+      "different_or_missing": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_phase2_repair.py",
+        "src/whetstone/vnext_phase2_rubric.py",
+        "src/whetstone/vnext_phase2_source_correction.py",
+        "src/whetstone/vnext_phase2_targets.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_phase1_closeout.py",
+        "src/whetstone/vnext_verified_phase1_operator.py",
+        "src/whetstone/vnext_verified_phase1_status.py",
+        "src/whetstone/vnext_verified_phase2_closeout.py",
+        "src/whetstone/vnext_verified_phase2_correction_failure.py",
+        "src/whetstone/vnext_verified_phase2_eligibility.py",
+        "src/whetstone/vnext_verified_phase2_entry.py",
+        "src/whetstone/vnext_verified_phase2_failure.py",
+        "src/whetstone/vnext_verified_phase2_findings.py",
+        "src/whetstone/vnext_verified_phase2_halt.py",
+        "src/whetstone/vnext_verified_phase2_review.py",
+        "src/whetstone/vnext_verified_phase2_review_only.py",
+        "src/whetstone/vnext_verified_phase2_round.py",
+        "src/whetstone/vnext_verified_phase2_sequence.py",
+        "src/whetstone/vnext_verified_phase2_signals.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_phase2_eligibility.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-002/acceptance-source-manifest.json",
+      "checked_files": 597,
+      "matching_files": 541,
+      "different_or_missing": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_phase2_repair.py",
+        "src/whetstone/vnext_phase2_rubric.py",
+        "src/whetstone/vnext_phase2_source_correction.py",
+        "src/whetstone/vnext_phase2_targets.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_phase1_closeout.py",
+        "src/whetstone/vnext_verified_phase1_operator.py",
+        "src/whetstone/vnext_verified_phase1_status.py",
+        "src/whetstone/vnext_verified_phase2_closeout.py",
+        "src/whetstone/vnext_verified_phase2_correction_failure.py",
+        "src/whetstone/vnext_verified_phase2_eligibility.py",
+        "src/whetstone/vnext_verified_phase2_entry.py",
+        "src/whetstone/vnext_verified_phase2_failure.py",
+        "src/whetstone/vnext_verified_phase2_findings.py",
+        "src/whetstone/vnext_verified_phase2_halt.py",
+        "src/whetstone/vnext_verified_phase2_review.py",
+        "src/whetstone/vnext_verified_phase2_review_only.py",
+        "src/whetstone/vnext_verified_phase2_round.py",
+        "src/whetstone/vnext_verified_phase2_sequence.py",
+        "src/whetstone/vnext_verified_phase2_signals.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_phase2_rubric.py",
+        "tests/test_vnext_verified_phase2_eligibility.py",
+        "tests/test_vnext_verified_phase2_rubric.py",
+        "tests/test_vnext_verified_phase2_targets.py",
+        "tests/test_vnext_verified_review.py",
+        "contracts/algorithms/vnext_verified_phase2_rubric_v1.md",
+        "contracts/algorithms/vnext_verified_phase2_targets_v1.md",
+        "contracts/schemas/vnext_phase2_configuration_v2.schema.json",
+        "contracts/schemas/vnext_phase2_review_request_v4.schema.json",
+        "contracts/schemas/vnext_phase2_review_request_v5.schema.json",
+        "contracts/schemas/vnext_phase2_review_request_v6.schema.json"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m1-003/delivery-source-manifest.json",
+      "checked_files": 605,
+      "matching_files": 565,
+      "different_or_missing": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_phase2_repair.py",
+        "src/whetstone/vnext_phase2_source_correction.py",
+        "src/whetstone/vnext_phase2_targets.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_phase1_closeout.py",
+        "src/whetstone/vnext_verified_phase1_operator.py",
+        "src/whetstone/vnext_verified_phase1_status.py",
+        "src/whetstone/vnext_verified_phase2_closeout.py",
+        "src/whetstone/vnext_verified_phase2_eligibility.py",
+        "src/whetstone/vnext_verified_phase2_entry.py",
+        "src/whetstone/vnext_verified_phase2_review.py",
+        "src/whetstone/vnext_verified_phase2_round.py",
+        "src/whetstone/vnext_verified_phase2_sequence.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_phase2_eligibility.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-completion-001/baseline-sources.json",
+      "checked_files": 635,
+      "matching_files": 610,
+      "different_or_missing": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_phase2_repair.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_phase1_budget.py",
+        "src/whetstone/vnext_verified_phase2_entry.py",
+        "src/whetstone/vnext_verified_phase2_round.py",
+        "src/whetstone/vnext_verified_phase2_sequence.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_run.py",
+        "tests/test_vnext_verified_phase1_budget.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m2-completion-001/delivery-sources.json",
+      "checked_files": 635,
+      "matching_files": 612,
+      "different_or_missing": [
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_phase2_repair.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_phase2_entry.py",
+        "src/whetstone/vnext_verified_phase2_round.py",
+        "src/whetstone/vnext_verified_phase2_sequence.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_run.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m4-implementation-001/sources-initial.json",
+      "checked_files": 658,
+      "matching_files": 653,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py",
+        "tests/test_vnext_source_file.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m4-implementation-001/sources.json",
+      "checked_files": 658,
+      "matching_files": 654,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-baseline.json",
+      "checked_files": 658,
+      "matching_files": 654,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-joined-initial.json",
+      "checked_files": 659,
+      "matching_files": 654,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py",
+        "tests/test_vnext_m5_integration.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-replay-correction.json",
+      "checked_files": 662,
+      "matching_files": 659,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources-supervised.json",
+      "checked_files": 661,
+      "matching_files": 656,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py",
+        "tests/test_vnext_m5_integration.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-acceptance-001/sources.json",
+      "checked_files": 659,
+      "matching_files": 654,
+      "different_or_missing": [
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_version_entry.py",
+        "tests/test_vnext_m5_integration.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/authority-sources.json",
+      "checked_files": 9,
+      "matching_files": 9,
+      "different_or_missing": [],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-closeout-005/sources.json",
+      "checked_files": 660,
+      "matching_files": 657,
+      "different_or_missing": [
+        "contracts/.DS_Store",
+        "src/.DS_Store",
+        "tests/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store",
+        "src/.DS_Store",
+        "tests/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-journal-004/sources.json",
+      "checked_files": 660,
+      "matching_files": 657,
+      "different_or_missing": [
+        "contracts/.DS_Store",
+        "src/.DS_Store",
+        "tests/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store",
+        "src/.DS_Store",
+        "tests/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/source-manifest.json",
+      "checked_files": 656,
+      "matching_files": 651,
+      "different_or_missing": [
+        "contracts/.DS_Store",
+        "src/whetstone/vnext_replay_memo.py",
+        "src/whetstone/vnext_verified_history.py",
+        "tests/test_vnext_history_replay_memo.py",
+        "tests/test_vnext_replay_memo.py"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-18-8-m5-replay-002/sources-corrected.json",
+      "checked_files": 656,
+      "matching_files": 654,
+      "different_or_missing": [
+        "contracts/.DS_Store",
+        "src/whetstone/vnext_verified_history.py"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-boundary-reconciliation-001/initial-source-manifest.json",
+      "checked_files": 471,
+      "matching_files": 440,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py",
+        "tests/test_vnext_verified_runtime_boundaries.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-boundary-reconciliation-001/source-manifest.json",
+      "checked_files": 471,
+      "matching_files": 441,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-concurrent-selection-001/regression-source-manifest.json",
+      "checked_files": 473,
+      "matching_files": 443,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-concurrent-selection-001/selection-source-manifest.json",
+      "checked_files": 474,
+      "matching_files": 444,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-g2-refresh-001/source-manifest.json",
+      "checked_files": 483,
+      "matching_files": 453,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-decision-refs-001/source-manifest.json",
+      "checked_files": 472,
+      "matching_files": 442,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-faults-001/source-manifest.json",
+      "checked_files": 295,
+      "matching_files": 264,
+      "different_or_missing": [
+        "tests/test_vnext_verified_review.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "contracts/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-materialization-001/source-manifest.json",
+      "checked_files": 296,
+      "matching_files": 265,
+      "different_or_missing": [
+        "tests/test_vnext_verified_review.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "contracts/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-mirror-uncertainty-001/source-manifest.json",
+      "checked_files": 470,
+      "matching_files": 439,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-publication-prefixes-001/initial-source-manifest.json",
+      "checked_files": 473,
+      "matching_files": 442,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py",
+        "tests/test_vnext_verified_runtime_publication_prefixes.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-publication-prefixes-001/source-manifest.json",
+      "checked_files": 473,
+      "matching_files": 443,
+      "different_or_missing": [
+        "src/whetstone/oscillation.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-recovery-001/corrected-source-manifest.json",
+      "checked_files": 296,
+      "matching_files": 265,
+      "different_or_missing": [
+        "tests/test_vnext_verified_review.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "contracts/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-recovery-001/source-manifest.json",
+      "checked_files": 296,
+      "matching_files": 264,
+      "different_or_missing": [
+        "tests/test_vnext_verified_runtime_recovery.py",
+        "tests/test_vnext_verified_review.py",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "contracts/.DS_Store"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-runtime-verifier-001/source-manifest.json",
+      "checked_files": 369,
+      "matching_files": 338,
+      "different_or_missing": [
+        "contracts/.DS_Store",
+        "src/whetstone/vnext_assembly.py",
+        "src/whetstone/vnext_candidate_registry.py",
+        "src/whetstone/vnext_candidate_validation.py",
+        "src/whetstone/vnext_contracts.py",
+        "src/whetstone/vnext_inventory_diff.py",
+        "src/whetstone/vnext_local_storage.py",
+        "src/whetstone/vnext_mutation_admission.py",
+        "src/whetstone/vnext_native_editor.py",
+        "src/whetstone/vnext_proposal_admission.py",
+        "src/whetstone/vnext_proposal_handoff.py",
+        "src/whetstone/vnext_proposal_package.py",
+        "src/whetstone/vnext_proposal_requests.py",
+        "src/whetstone/vnext_section_lineage.py",
+        "src/whetstone/vnext_semantic_context.py",
+        "src/whetstone/vnext_semantic_followup_admission.py",
+        "src/whetstone/vnext_semantic_followup_preflight.py",
+        "src/whetstone/vnext_unit_lineage.py",
+        "src/whetstone/vnext_unit_preflight.py",
+        "src/whetstone/vnext_unit_proposals.py",
+        "src/whetstone/vnext_validation.py",
+        "src/whetstone/vnext_verified_history.py",
+        "src/whetstone/vnext_verified_materialization.py",
+        "src/whetstone/vnext_verified_operator.py",
+        "src/whetstone/vnext_verified_promotion.py",
+        "src/whetstone/vnext_verified_review.py",
+        "src/whetstone/vnext_verified_review_protocol.py",
+        "src/whetstone/vnext_verified_review_requests.py",
+        "src/whetstone/vnext_verified_run.py",
+        "src/whetstone/vnext_verified_work.py",
+        "tests/test_vnext_verified_review.py"
+      ],
+      "irrelevant_desktop_metadata": [
+        "contracts/.DS_Store"
+      ],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    },
+    {
+      "path": "rounds/vnext-semantic-001/validation-answer-source-replay-stage.json",
+      "checked_files": 4,
+      "matching_files": 2,
+      "different_or_missing": [
+        "src/whetstone/vnext_semantic_answers.py",
+        "src/whetstone/vnext_semantic_decisions.py"
+      ],
+      "irrelevant_desktop_metadata": [],
+      "scope": "Only recorded files; subset equality is not a complete dependency proof."
+    }
+  ],
+  "evidence_package": "rounds/vnext-18-9-inventory-001/evidence.tar.gz",
+  "evidence_package_sha256": "c3ae01e9bbacf67a2d34788ffb464e5134caaabb52de85ba19a1bfb1827bfad7",
+  "evidence_files": 387,
+  "evidence_bytes": 9802241,
+  "audit_sources": [
+    {
+      "path": "docs/audits/VNEXT_18_7_ACCEPTANCE_MAP.json",
+      "sha256": "e3dcfb8a11b95ba5cac84e8d93e0fb1fe03f439822b13c7830d6b78145dc908e"
+    },
+    {
+      "path": "docs/audits/VNEXT_RUNTIME_PUBLICATION_PREFIXES.json",
+      "sha256": "85169c3a5ced364c951340442186f94c83f30a2a91f30347adee0a1433cc187b"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_7_BOUNDARY_RECONCILIATION.json",
+      "sha256": "29b9bedaa1e178c08e2ebb53832c1e5db8bfcf3f2729fea6d7cbf4c58895d662"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_5_ACCEPTANCE_MAP.json",
+      "sha256": "bcb1d984ad3565fa6a66ae962ea603f4961163c88e4111b885798f10a0b7df08"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_6_ACCEPTANCE_MAP.json",
+      "sha256": "773ead7a889024e019e6aebd41f7c544825f2fb1cbe56e6c4a0b84b09ba60df7"
+    },
+    {
+      "path": "docs/audits/VNEXT_G2_VALIDATION.json",
+      "sha256": "60f096d9d29e80d0ab4c3b35146ce63714401a3e98868e31d9622e95518ab9fc"
+    },
+    {
+      "path": "docs/audits/VNEXT_CONCURRENT_SELECTION.json",
+      "sha256": "1fad188e675ba24020c9ad8de0d6d8a760299132d53515a83f7674ac2944981a"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M1_GAP_ACCEPTANCE.json",
+      "sha256": "fe53f7be95b97891b3e52d432a82b343e61b4f4c714826dd67391e7b3a12b569"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M1_CONTINUATION.json",
+      "sha256": "f6267f5bca526aa8c5f169c55013955ec6ae95dabd7f52b09c4ff09a50a6bf91"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M2_COMPLETION.json",
+      "sha256": "9b3ab4b69782739d15096356e74d0bc752088e814c2c0da3fba9422eba7a80f7"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M3_IMPLEMENTATION.json",
+      "sha256": "3e62ff898da2b48b13b98a1ff584b69d9ae9853d6b87bca96c8cd37798a81457"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M4_IMPLEMENTATION.json",
+      "sha256": "4435180ef4098f60145b509cc5868362923083a858e253912e22647a61cf7c50"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M5_ACCEPTANCE.json",
+      "sha256": "7a67551829bfafc5369cf0316e7846de7580a478818e157e7aa655963d8a1448"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M5_JOURNAL.json",
+      "sha256": "d56d12f6af3fcdbbaa4706c263e62a0ec234716216dfce6cc00777ec61f4fc08"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M5_REPLAY.json",
+      "sha256": "0b1c5d012a266df62531fbc1a74c3413cbb6efd4b8e51df2c2251b2f6c3c1eeb"
+    },
+    {
+      "path": "docs/audits/VNEXT_18_8_M5_CLOSEOUT.json",
+      "sha256": "0c2c629d227c0e60702b031d8af3e3167f7979c0a153001d55ff502e681574d1"
+    }
+  ],
+  "limits": [
+    "Static method count excludes inherited/dynamic counts; not a test-run total.",
+    "No full-suite/live/public/power-loss qualification executed.",
+    "Evidence package contains explicitly referenced files, not all transitive historical artifacts.",
+    "All P0 rows remain release-unqualified pending version-pinned execution.",
+    "An audit mention is not a test verdict. Retained log passes are not current-source passes unless complete relevant sources match."
+  ],
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "inventory_only": true
+  },
+  "shipping_boundary": {
+    "registered_suites": {
+      "vnext-contracts-1": "69dbe84ce740ccae19126a39514f9bca5bcc036c3152d7a0a623e29bd9214548"
+    },
+    "manifest_sha256": "09172fdc498f9d0189f3530b306fe1098a3c1d449482b68d21478d3786e1a950",
+    "verified_manifest_entries": 79,
+    "qualification_maps": {
+      "QUALIFIED_PROPOSAL_SUITES": {},
+      "QUALIFIED_SEMANTIC_SUITES": {},
+      "QUALIFIED_SEMANTIC_FOLLOWUP_SUITES": {}
+    },
+    "v_public_cli": "No dispatch to open_verified_run/VerifiedRun in vnext_cli or vnext_proposal_cli; capability path advertises reviewer_only and conditionally proposal_only.",
+    "refs": [
+      "src/whetstone/vnext_registry.py",
+      "src/whetstone/vnext_cli.py",
+      "src/whetstone/vnext_proposal_cli.py",
+      "src/whetstone/vnext_admission.py",
+      "src/whetstone/vnext_verified_run.py",
+      "src/whetstone/apply_back.py"
+    ]
+  },
+  "D8": {
+    "authority": "docs/specs/VNEXT_LOCAL_STORAGE_SPEC.md#required-qualification",
+    "scope": "macOS/local APFS, cooperating single-host writers; design ratified, consuming-release qualification open.",
+    "test_methods": [
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_initialization_is_fresh_only_and_does_not_repair",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 81,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_unsupported_platform_refuses_without_fallback",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 90,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_descriptor_and_binding_are_immutable_and_closed",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 94,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_binding_schema_requires_normalized_root_relative_descriptor_path",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 109,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_descriptor_resolution_is_independent_of_process_working_directory",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 122,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_wrong_job_or_physical_copy_cannot_acquire",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 137,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_missing_lock_is_not_recreated",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 144,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_replaced_lock_same_bytes_is_rejected",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 149,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_symlink_and_multilink_locks_are_rejected",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 154,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_live_root_replacement_fences_publication",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 161,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_changed_filesystem_and_cross_device_directory_refuse",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 168,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_lock_bytes_change_is_detected_without_replacing_inode",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 183,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_failed_lineage_validation_grants_no_token",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 189,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_contention_and_stale_foreign_copied_tokens",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 195,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_paused_process_keeps_lock_and_death_releases_it",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 207,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_fork_child_cannot_write_or_unlock_parent",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 218,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_executable_client_does_not_inherit_lock",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 248,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_immutable_replay_is_exact_and_conflict_preserves_bytes",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 260,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_paths_and_symlink_parents_cannot_escape",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 269,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_nonregular_artifact_read_refuses_without_waiting_for_a_pipe_writer",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 281,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_short_writes_are_completed",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 285,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_failure_before_publication_is_known_uncommitted",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 291,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_link_acknowledgement_failure_poisoned_token_and_retains_evidence",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 299,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_post_publication_directory_failure_requires_reconciliation",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 310,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_pointer_is_conditional_and_requires_exact_snapshot",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 320,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_transition_validator_cannot_publish_over_a_changed_expected_pointer",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 332,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_rename_acknowledgement_failure_and_interrupt_are_uncertain",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 341,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_post_rename_full_flush_failure_does_not_roll_back",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 354,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_process_death_before_and_after_pointer_rename_requires_actual_readback",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 369,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_read_only_inspection_does_not_repair_or_change_bytes",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 406,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_release_serializes_with_publication",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 414,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      },
+      {
+        "id": "test_vnext_local_storage.LocalStorageTests.test_readers_see_complete_pointer_bytes",
+        "path": "tests/test_vnext_local_storage.py",
+        "line": 438,
+        "sha256": "be31766677232b82e3c9f07734a87a350d2a6337cd3f4fedfbf25ed58c92d2a5"
+      }
+    ],
+    "additional_modules": [
+      "test_vnext_candidate_registry",
+      "test_vnext_semantic_decisions",
+      "test_vnext_pointer_history",
+      "test_vnext_verified_promotion",
+      "test_vnext_verified_concurrent_selection",
+      "test_vnext_verified_runtime_faults",
+      "test_vnext_verified_runtime_recovery",
+      "test_vnext_verified_runtime_publication_prefixes",
+      "test_vnext_verified_runtime_materialization"
+    ],
+    "remaining": "Run existing process/persisted-prefix/primitive-fault cases against final consuming sources. Preserve process-death vs injected failure vs physical power-loss distinction. No arbitrary every-fault x every-route expansion."
+  },
+  "compatibility_inventory": {
+    "legacy_cli_live_resume_apply": {
+      "modules": [
+        "tests/test_apply_back.py",
+        "tests/test_cli.py",
+        "tests/test_live.py",
+        "tests/test_resume.py"
+      ],
+      "declared_methods": 91,
+      "status": "Existing tests located; category counts may overlap and are not executed totals."
+    },
+    "preservation_bridge": {
+      "modules": [
+        "tests/test_preservation_acceptance.py",
+        "tests/test_preservation_activation.py",
+        "tests/test_preservation_budget.py",
+        "tests/test_preservation_clients.py",
+        "tests/test_preservation_continuation.py",
+        "tests/test_preservation_contracts.py",
+        "tests/test_preservation_inventory.py",
+        "tests/test_preservation_maintenance.py",
+        "tests/test_preservation_phase2_closeout.py",
+        "tests/test_preservation_proposals.py",
+        "tests/test_preservation_qualification.py",
+        "tests/test_preservation_runtime.py",
+        "tests/test_preservation_vertical.py",
+        "tests/test_preservation_vertical_recovery.py"
+      ],
+      "declared_methods": 215,
+      "status": "Existing tests located; category counts may overlap and are not executed totals."
+    },
+    "reviewer_only_audit_sweep": {
+      "modules": [
+        "tests/test_diagnostic_sweep.py",
+        "tests/test_vnext_review.py",
+        "tests/test_vnext_review_requests.py"
+      ],
+      "declared_methods": 35,
+      "status": "Existing tests located; category counts may overlap and are not executed totals."
+    },
+    "proposal_semantic_commands": {
+      "modules": [
+        "tests/test_vnext_proposal_cli.py",
+        "tests/test_vnext_proposal_output_recovery_cli.py",
+        "tests/test_vnext_semantic_cli.py",
+        "tests/test_vnext_semantic_followup_native_cli.py"
+      ],
+      "declared_methods": 24,
+      "status": "Existing tests located; category counts may overlap and are not executed totals."
+    }
+  },
+  "work_packages": [
+    {
+      "id": "Q1",
+      "name": "Release contract and disabled public integration",
+      "deliverable": "Reconcile 13 delta-map surfaces, carry approved M3/M4 decisions into authorized normative publication, stage a new immutable consuming suite and explicit V CLI/status/recovery/strop dispatch with activation still disabled.",
+      "exit": "One declared supported route matrix, exact suite digest/algorithm pins, refusal and positive scripted command journeys. Frozen suite 1 unchanged.",
+      "blocker": "Normative edits/public activation are not authorized by this inventory; V public facade is missing, not just disabled."
+    },
+    {
+      "id": "Q2",
+      "name": "Close the seven specific P0 evidence gaps",
+      "deliverable": "P0-01/02/03/05 exact negative/composed fixtures; P0-07 budget-stop boundary; P0-12 original recurrence golden fixture; P0-13 independent implementation comparison. Include positive simplification vector.",
+      "exit": "Every P0 row has exact executable assertions and expected outputs on pinned sources; no proxy coverage relabeled as a pass.",
+      "blocker": "Original recurrence source must be identified. Cross-implementation requirement cannot be waived implicitly; clarify budget owner before adding new accounting semantics."
+    },
+    {
+      "id": "Q3",
+      "name": "Replay performance and deterministic qualification",
+      "deliverable": "Bound replay optimization by the one/four-promotion measurements; then run affected tests, fixed P0/D8/process/CLI matrix and one complete regression campaign with one supervised worker and exact skip/failure accounting.",
+      "exit": "Correctness evidence on final sources, reproducible timings and an explicit release performance disposition.",
+      "blocker": "Slow replay remains; no latency target or waiver is ratified. Avoid running the expensive full campaign before Q1/Q2 sources settle."
+    },
+    {
+      "id": "Q4",
+      "name": "Separately authorized live soak and activation",
+      "deliverable": "After deterministic gates, authorize exact provider payloads and perform isolated live acceptance; finish operator guidance and explicitly decide capability activation.",
+      "exit": "Approved supported suite only; successful and rejected proposals inspected; disable-future-jobs instructions preserve existing roots.",
+      "blocker": "No live provider, real external apply-back, public activation or push authorized."
+    }
+  ],
+  "decision_before_cross_implementation_work": "Prefer a small independent reference implementation of the specified assembly/map/hash and persisted-selection rules using shared fixed vectors. If a second implementation is not wanted, bring an explicit spec amendment decision; same-code processes or golden vectors alone do not satisfy the current wording.",
+  "cleanup": {
+    "status": "removed",
+    "checkout": "/private/tmp/whetstone-18-9-inventory-uqx3s6vo/checkout",
+    "temporary_parent": "/private/tmp/whetstone-18-9-inventory-uqx3s6vo",
+    "preserved_archive": "rounds/vnext-18-9-inventory-001/evidence.tar.gz",
+    "archive_sha256": "c3ae01e9bbacf67a2d34788ffb464e5134caaabb52de85ba19a1bfb1827bfad7",
+    "unchanged_checkout_verified_before_removal": true,
+    "verified_archived_files": 387
+  },
+  "integrity": {
+    "clean_checkout_unchanged": true,
+    "tracked_hashes_verified": 1145,
+    "evidence_recorded_hash_mismatches": 0,
+    "product_tests_executed": 0
+  },
+  "inventory_evidence": [
+    {
+      "path": "rounds/vnext-18-9-inventory-001/build_inventory.py",
+      "sha256": "5358570d4f3bc9f2e28719fa5efce1f23245d8fee3793b3b2c9be3658625a632"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/checkout-sources.json",
+      "sha256": "0b23a2f6508d982a7a2e3f4b7e17786f919f65b1aed96e0270dd77fb1a521140"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/cleanup.json",
+      "sha256": "641da9f596eea668da809e4097761ea511dc101c32d5ea83b0436ab35cb4a458"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/evidence-package.json",
+      "sha256": "f7a6d2041dd4efc14e7b0395f1ffe40f6aa89e02cf582c6ef1d2893cb5c59743"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/evidence.tar.gz",
+      "sha256": "c3ae01e9bbacf67a2d34788ffb464e5134caaabb52de85ba19a1bfb1827bfad7"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/final-inventory.json",
+      "sha256": "8c6412e33f375123f0ecc2b1b0dbdaba24ffe7097fb4207480a115f529837dc0"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/finalize_inventory.py",
+      "sha256": "fcb4c13072a08e272d971a1e459943d333e3e4bb88ae973343a4f11ad753c53f"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/inventory.json",
+      "sha256": "4fa9c0d5c83bd94c2c17eed5873bd53b95c00bbbf88e321562f8e6afb57c46a4"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/package_evidence.py",
+      "sha256": "3dc6b8abeefb2c08ad3dd729966ea3b49345f1a09616b5cdf3dcf57a7746906e"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/setup.json",
+      "sha256": "78703bde2f690e994c8f09ef17d154d59978430b7660962b81a0b5c6d62a8487"
+    },
+    {
+      "path": "rounds/vnext-18-9-inventory-001/test-methods.json",
+      "sha256": "7e059185f9d41da972b731700d99bd1accce0fa9c48d7ec85f13de5ff1d9718a"
+    }
+  ]
+}
