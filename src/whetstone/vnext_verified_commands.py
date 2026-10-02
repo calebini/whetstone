@@ -13,8 +13,9 @@ class SelectionChanged(ValueError):
     """The selected boundary changed before its actual writer fence."""
 
 
-def guarded(run, expected, operation):
+def guarded(run, expected, operation, *, validate_inputs=None):
     def validate(read):
+        if validate_inputs is not None: validate_inputs()
         current = inspect_command(run)
         if current == expected: return
         # Promotion owns a second fence for its committed pointer's mirrors.
@@ -53,11 +54,18 @@ def configuration(run, config):
 
 def enter(run, args, config, review):
     packet = configuration(run, config)
+    def selected_inputs():
+        require(configuration(run, config) == packet, 'Phase 2 configuration changed before entry operation')
+        if optional(run, ENTRY_REQUEST) is not None:
+            request = decode_json(run.store.read(ENTRY_REQUEST))
+            require(run.store.read(request['configuration']['path']) == canonical_json_bytes(packet),
+                    'Phase 2 configuration differs from committed binding')
+    def entry_operation(state, operation):
+        return guarded(run, state, operation, validate_inputs=selected_inputs)
     if optional(run, ENTRY_REQUEST) is None:
-        run.bind_phase2_entry(packet)
+        entry_operation(inspect_command(run), lambda: run.bind_phase2_entry(packet))
     else:
         # Preparation binds the supplied bytes even on reentry; it grants no entry.
-        from whetstone.vnext_verified_phase2_binding import _Binding
         proof = run._operator()._proof(run.store.read)
         request = decode_json(run.store.read(ENTRY_REQUEST))
         require(proof.reader.raw(request['configuration']) == canonical_json_bytes(packet),
@@ -73,15 +81,15 @@ def enter(run, args, config, review):
             base = run.store.read(pointer['verified_draft_path'])
             projected, _ = project(base, base, phase='phase_2', transition='phase2_entry')
             if projected != base:
-                guarded(run, state, lambda: run.prepare_phase2_version(created_at=common.stamp()))
+                entry_operation(state, lambda: run.prepare_phase2_version(created_at=common.stamp()))
                 continue
-            return guarded(run, state, run.enter_phase2)
+            return entry_operation(state, run.enter_phase2)
         if state['gate'] == 'verification':
-            result = guarded(run, state, lambda: run.verify(
+            result = entry_operation(state, lambda: run.verify(
                 client=_client('verifier', review, config, args, run.store.root), decided_at=common.stamp()))
             if getattr(result, 'outcome', '') == 'continuation_required': return result
         elif state['gate'] == 'promotion':
-            guarded(run, state, lambda: run.promote(prepared_at=common.stamp()))
+            entry_operation(state, lambda: run.promote(prepared_at=common.stamp()))
         else: return state
 
 

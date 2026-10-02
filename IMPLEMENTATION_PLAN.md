@@ -1705,7 +1705,10 @@ step is completion of the approved implementation and the seven acceptance
 cases above with production activation disabled. The
 [Q1 implementation handoff](docs/VNEXT_18_9_Q1_IMPLEMENTATION.md) records current
 partial progress, the adopted direct Reviewer finding-advice handoff and the
-post-promotion continuation/recovery slice. That slice also addresses historical
+post-promotion continuation/recovery slice and subsequent versioned entry command
+qualification. The versioned slice adds configuration revalidation under each
+entry-operation fence and guards initial configuration/request binding; its
+command/recovery evidence is recorded in the handoff. The prior slice addresses historical
 entry inspection after a correction advances the pointer; its verification
 status is recorded separately from the broader acceptance inventory. Do not mark
 Q1 complete from bootstrap or individual command-journey evidence alone.
