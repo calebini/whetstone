@@ -36,10 +36,18 @@ class _Advice(_Consumption):
     def _advice_view(self, proof, supplied):
         bound, journal, outcomes, consumption, committed = self._consumption_view(proof)
         require(committed, 'Phase 2 advice requires committed result consumption')
+        review = receipt = None
         existing_advice, existing_binding = self._optional(self.advice_path), self._optional(self.binding_path)
         require(existing_binding is None or existing_advice is not None,
                 'committed Phase 2 advice binding is missing its advice')
         advice = deepcopy(supplied)
+        from whetstone.vnext_phase2_reviewer_advice import supported as reviewer_advice_supported
+        if reviewer_advice_supported(proof.reader.suite):
+            _, review, receipt = journal.inspect(bound.request)
+            derived = review['advice']
+            require(advice is None or advice == derived,
+                    'supplied advice differs from the exact Reviewer response')
+            advice = deepcopy(derived)
         if existing_advice is not None:
             retained = proof.reader.json(dict(path=self.advice_path, hash=sha256_bytes(existing_advice)),
                                          'vnext_finding_advice_v1')
@@ -49,7 +57,8 @@ class _Advice(_Consumption):
             require(existing_binding is None, 'Phase 2 advice binding lacks advice')
             return bound, journal, outcomes, consumption, None, dict(status='advice_required', binding=None, pending_paths=())
         journal.schemas.validate(advice, 'vnext_finding_advice_v1')
-        _, review, receipt = journal.inspect(bound.request)
+        if review is None:
+            _, review, receipt = journal.inspect(bound.request)
         inputs = bound.inputs
         findings, evidence = classify_feedback(feedback=review['feedback'], feedback_ref=receipt['feedback'],
             advice=advice, job=inputs['job'], authority=inputs['authority'], invariants=inputs['invariants'],

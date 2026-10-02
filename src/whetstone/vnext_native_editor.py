@@ -54,9 +54,12 @@ class NativePatchProposalClient:
         self.cwd=Path(cwd).resolve();require(self.cwd.is_dir(),'patch Editor working directory is missing')
         self.timeout_seconds=timeout_seconds
         self._schema_bytes=(SCHEMA_DIR/self.provider_schema).read_bytes()
-        require(json.loads(self._schema_bytes)==structural_output_schema(self.canonical_schema,self.schema_title),'native output schema does not reproduce from the transport contract')
+        require(json.loads(self._schema_bytes)==self.output_schema(),'native output schema does not reproduce from the transport contract')
         self.schema_hash=sha256_bytes(self._schema_bytes)
         self.last_telemetry=None
+
+    def output_schema(self):
+        return structural_output_schema(self.canonical_schema,self.schema_title)
 
     @property
     def transport_binding(self):

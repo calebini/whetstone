@@ -1,0 +1,164 @@
+"""Read-only command selection from proven authority and retained request journals."""
+from dataclasses import asdict, is_dataclass
+
+from whetstone.vnext_contracts import decode_json, require
+from whetstone.vnext_proposal_run import round_input_path
+from whetstone.vnext_verified_phase2_binding import REQUEST_PATH as ENTRY_REQUEST
+from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
+from whetstone.vnext_verified_phase2_review import REQUEST_PATH as REVIEW_REQUEST
+
+
+def public(value):
+    if is_dataclass(value): return public(asdict(value))
+    if isinstance(value, dict): return {k: public(v) for k, v in value.items()}
+    if isinstance(value, (tuple, list)): return [public(v) for v in value]
+    return value
+
+
+def optional(run, path):
+    try: return run.store.read(path)
+    except FileNotFoundError: return None
+
+
+def selected(gate, *, phase='phase_1', recovery=None, continuation=None, **evidence):
+    return dict(gate=gate, phase=phase, recovery=recovery, continuation=continuation, **public(evidence))
+
+
+def candidate_state(run, proof):
+    from whetstone.vnext_verified_semantics import VerifiedSemanticDecisionJournal, inspect_verified_semantic_request
+    proof.inspect_registry()
+    if not proof.view.creations: return None
+    creation = proof.view.creations[-1]
+    if creation['candidate_id'] in {p['source_candidate_id'] for p in proof.pointers[1:]}: return None
+    journal = VerifiedSemanticDecisionJournal(proof.router.registry(), admission=proof.router)
+    view = journal._state(creation)[0]
+    evidence = dict(candidate=creation, round_number=creation['round_number'], decision=view.decision)
+    if view.prepared:
+        return selected('verification_publication', recovery='verification', **evidence)
+    if view.decision is not None and view.decision['decision_final']:
+        return selected('candidate_final', **evidence)
+    if view.decision is None: return selected('verification', **evidence)
+    request = inspect_verified_semantic_request(run.store, admission=proof.router,
+                                               candidate_id=creation['candidate_id'])
+    # The journal's status is itself a bounded permission decision.
+    status = request.status
+    return selected('verification', continuation='verifier' if status not in
+        {'not_started', 'invalid_semantic', 'attempts_exhausted'} else None,
+        request_status=status, request_id=request.request_id, attempts=request.attempts, **evidence)
+
+
+def proposal_state(run, proof, number):
+    from whetstone.vnext_proposal_requests import inspect_proposal_request
+    # Selection is read-only. Live _Admission requires a borrowed writer fence
+    # and is used only by the subsequent request owner, never by status.
+    router = proof.transactions()
+    def load(read):
+        proof.guard(read)
+        inputs = router.load_inputs(read, number)
+        require(inputs['base_pointer_ref'] == proof.latest,
+                'proposal selection requires its exact current base pointer')
+        proof.guard(read)
+        return inputs
+    result = inspect_proposal_request(run.store, load_inputs=load, validate_authority=proof.guard)
+    return selected('registration' if result.status == 'complete' else 'proposal', round_number=number,
+        request_status=result.status, request_id=result.request_id, attempts=result.attempts,
+        continuation='editor' if result.status not in
+        {'not_started', 'complete', 'invalid_proposal', 'attempts_exhausted'} else None)
+
+
+def phase2_state(run):
+    from whetstone.vnext_verified_phase2_sequence import _Continuation, sequence, _status
+    entry = public(run.phase2_state())
+    if not entry.get('state_current'):
+        return selected('entry_projection', phase='phase_2', recovery='entry', entry=entry)
+    if optional(run, REVIEW_REQUEST) is None:
+        return selected('first_review_binding', phase='phase_2', entry=entry)
+    owner = _Continuation(run)
+    proof = owner._proof(run.store.read)
+    state = sequence(proof)
+    status = _status(state)
+    gate = status.pop('gate')
+    evidence = dict(sequence=status)
+    # Report repairs always precede another client. These owners validate their
+    # own historical sources, rather than interpreting mutable state as consent.
+    for name, inspect in (('failure', run.phase2_failure_status),
+                          ('correction_failure', run.phase2_correction_failure_status),
+                          ('resolution', run.phase2_resolution_status),
+                          ('signal', run.phase2_signal_status)):
+        report = public(inspect())
+        if report.get('publication_required') or report.get('pending_paths'):
+            return selected(name+'_publication', phase='phase_2', recovery=name+'_publication', report=report, **evidence)
+        if report.get('state_current') is False or report.get('mirrors_current') is False:
+            return selected(name+'_projection', phase='phase_2', recovery=name+'_projection', report=report, **evidence)
+    closeout = public(run.phase2_closeout())
+    if closeout.get('committed'):
+        if not closeout.get('state_current') or not closeout.get('mirror_current'):
+            return selected('closeout_projection', phase='phase_2', recovery='closeout_projection', closeout=closeout, **evidence)
+        return selected('phase2_complete' if closeout.get('phase_complete') else 'phase2_stopped',
+                        phase='phase_2', closeout=closeout, **evidence)
+    if gate == 'pending_review':
+        frame = state['frames'][-1]
+        outcomes = frame['outcomes']
+        status = ('valid_response' if frame['review'] is not None else
+                  'attempts_exhausted' if len(outcomes) >= 2 else
+                  outcomes[-1]['classification'] if outcomes else 'not_started')
+        evidence.update(request=frame['bound'].request_ref, request_status=status,
+                        pass_number=frame['owner'].ordinal, attempts=len(outcomes))
+        return selected(gate, phase='phase_2', continuation='phase2_reviewer' if
+            status not in {'not_started', 'invalid_review', 'attempts_exhausted'} else None, **evidence)
+    if gate in {'operator_or_advice_required', 'correction_required'}:
+        from whetstone.vnext_phase2_reviewer_advice import supported as advice_supported
+        frame = state['frames'][-1]
+        if advice_supported(proof.reader.suite):
+            advice = frame['owner']._advice_view(frame['owner'].proof, None)[-1]
+            if advice['status'] != 'bound':
+                interrupted = optional(run, frame['owner'].advice_path) is not None
+                return selected('advice_handoff_required', phase='phase_2',
+                    recovery='advice' if interrupted else None, pass_number=frame['owner'].ordinal,
+                    request=frame['bound'].request_ref, advice=advice, **evidence)
+    if gate == 'correction_required':
+        number = status['round_number']
+        if optional(run, round_input_path(number)) is not None:
+            result = candidate_state(run, proof) or proposal_state(run, proof, number)
+            result['phase'] = 'phase_2'
+            # Generic Phase 2 Editor/Verifier continuation is deliberately absent.
+            if result['continuation']: result['continuation'] = 'unsupported_phase2_continuation'
+            return result
+    return selected(gate, phase='phase_2', closeout=closeout, **evidence)
+
+
+def inspect_command(run):
+    work = run.inspect()
+    phase = 'phase_2' if optional(run, ENTRY_REQUEST) is not None else 'phase_1'
+    if work.outcome == 'materialization_required':
+        return selected(work.outcome, phase=phase, recovery='materialization', work=work)
+    if work.outcome == 'registration_recovery_required':
+        return selected(work.outcome, phase=phase, recovery='registration', work=work)
+    if work.outcome == 'promotion_required':
+        from whetstone.vnext_verified_run import _RunPromotion
+        promotion = _RunPromotion(run.store, history=run._history()).inspect()
+        return selected('promotion', phase=phase, recovery='promotion' if promotion.outcome == 'claimant_prepared' else None,
+                        work=work, promotion=promotion)
+    if optional(run, ENTRY_PATH) is not None: return phase2_state(run)
+    proof = run._operator()._proof(run.store.read)
+    candidate = candidate_state(run, proof)
+    if candidate:
+        candidate['phase'] = phase
+        if phase == 'phase_2' and candidate['continuation']:
+            candidate['continuation'] = 'unsupported_phase2_continuation'
+        return candidate
+    if optional(run, ENTRY_REQUEST) is not None:
+        return selected('entry_required', phase='phase_2')
+    status = run.phase1_status()
+    operator = run.operator_status()
+    if operator.next_action in {'reconcile_phase1_state', 'finish_phase1'}:
+        return selected(operator.next_action, recovery='phase1_projection' if
+            operator.next_action == 'reconcile_phase1_state' else 'phase1_publication', operator=operator)
+    if status.review_gate == 'finding_admission' and optional(run, round_input_path(status.review_round)) is not None:
+        return proposal_state(run, proof, status.review_round)
+    review = run.review_status()
+    if operator.terminal_report is not None and status.review_gate != 'pending':
+        return selected('phase1_complete' if operator.accepted else 'phase1_stopped', operator=operator)
+    return selected(status.review_gate, round_number=status.review_round, status=status, review=review,
+        continuation='reviewer' if status.review_gate == 'pending' and review.status not in
+        {'invalid_review', 'attempts_exhausted'} else None)

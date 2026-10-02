@@ -11,9 +11,197 @@ Whetstone has two live phases:
 - Phase 1: technical stabilization across structural integrity, determinism, and operability profiles.
 - Phase 2: convergence review against a selected rubric workflow.
 
-Whetstone persists every round under `rounds/`. The run is controlled by `rounds/run_state.json`; humans should usually read `status --format text` instead of opening that JSON first.
+Whetstone persists every round under `rounds/`. For legacy/bridge runs, `rounds/run_state.json` records scheduler state. For V, run-state and `spec.md` are projections of committed evidence and current verified authority. Humans should read `status --format text` for the applicable gate rather than treating a projection as independent authority.
 
 ## Recommended Defaults
+
+### Proposed V release command surface (qualification-gated)
+
+This section describes the future config-selected V consumer. It MUST NOT be
+presented as available until the implementation advertises the qualified suite.
+The suite version below is a placeholder, not an accepted current version.
+
+```yaml
+editing_mode: verified_promotion
+contract_suite_version: <qualified-V-suite-version>
+vnext_input_package:
+  path: inputs/package.json
+  hash: <SHA-256-of-exact-package-bytes>
+# Required when requesting Phase 2; its path is relative to the admitted root.
+vnext_phase2_configuration:
+  path: inputs/phase2/configuration.json
+  hash: <SHA-256-of-exact-configuration-bytes>
+```
+
+Prepare the immutable input package locally from the explicit seed, review,
+authority, invariants and approved scope. Its descriptor must agree with the
+config mode/suite. This setup requirement is not permission to infer missing
+approvals. Use `vnext-admit --root NEW_ROOT --config /absolute/run.yaml --dry-run`
+to validate without creating the root; omit `--dry-run` for explicit fresh-root
+initialization. Keep the launch config/package outside the nonexistent destination.
+Subsequent commands use the admitted root and the same config selection, or
+retained inputs where their documented read-only/recovery gate permits it.
+
+For V, `spec.md` and run-state projections are derived views; current verified
+pointer plus committed evidence own draft authority. Inspect `status --format
+text` for the actual gate. Choosing V does not approve external source writes.
+Never use legacy source-mismatch/non-converged overrides or supplied-draft flags
+on a V root. Removing config selectors must not route it to a legacy writer.
+
+The command matrix below is the proposed complete first-release surface. Existing
+legacy/bridge/reviewer-only/proposal interfaces retain their own semantics.
+
+For the new Q1 consuming suite, the Phase 2 Reviewer supplies guidance directly
+with each review. Whetstone validates and binds it automatically before admitting
+routine corrections. Humans supply product or authority decisions when requested;
+there is no routine advice-file handoff at entry or between rounds. Interrupted
+advice publication uses the recovery-only row below. Older suites keep their
+existing explicit-advice contract.
+
+| Command | Supported scope | Behavior / boundary | Existing owner or required adapter |
+| --- | --- | --- | --- |
+| vnext-admit | New V root; --dry-run is read-only | Validate config/package/suite; initialize only a nonexistent destination; no clients | V bootstrap adapter + D8 initializer |
+| live-phase1 | Standard horizontal or vertical; new or existing V root | Run bounded verified review/correction gates; stop at Phase 1 terminal/decision/failure; no source apply | review_next/admit_reviewed_round/request/register/verify/promote/finish_phase1 |
+| live-focused-phase1 | One profile selected in immutable focused review config | CLI --profile/explicit --budget must match pins; omitted CLI defaults cannot override pins; focused clean never grants Phase 2 | focused review owner + Phase 1 verified owners |
+| promote-phase2 | Complete Phase 1; bound Phase 2 configuration | Run required verified metadata transition and distinct entry commit only; no ordinary Phase 2 reviews | bind_phase2_entry/prepare_phase2_version/verify/promote/enter_phase2 |
+| live-phase2 | Entered or eligible standard/fixed-rubric V job | Use shared entry owner, then existing bounded sequence through declaration/convergence or blocker | phase2_sequence_status/continue_phase2_pass/phase2 correction and closeout owners |
+| status | Any inspectable V root | Read-only current authority/candidate/failure/decision and exact next gate; malformed authority reports invalid | inspect/phase1_status/phase2_state/operator/failure/apply status |
+| resume | Existing V root; --dry-run is read-only | Only the exact recovery/continuation subtable below; plain resume stops at its selected boundary; --continue is Phase 1 only | materialization and role-specific recovery/continuation; extend_phase1_budget |
+| vnext-decisions | Bound Phase 1 or Phase 2 operator context | Inspect; with mutually exclusive explicit `--options FILE` prepare exact requests, or use `--advice FILE` for an exact advice replay (new-suite advice is derived automatically from the Reviewer and cannot be overridden); `--dry-run` writes nothing; no clients | operator_status / phase2_operator_context / request or advice preparation |
+| vnext-decide | One exact operator input | Existing --selections; proposed alternatives --repair-request or --gap-acceptance for Phase 2; exactly one input, no clients | response/selection owners; admit_phase2_repair / accept_phase2_gaps |
+| vnext-semantic-answers | Explicit --candidate | Read-only original question and retained answers; no implicit latest selection | answers |
+| vnext-semantic-answer | Explicit --candidate and --input | Record exact answer; --dry-run read-only; no candidate reopening or client | submit_answer |
+| vnext-semantic-followup | Explicit candidate and receipt/hash | Admit exact new child transaction; no client or automatic promotion | select_followup |
+| strop / apply-back | V inspection or retained-intent recovery; new writes require complete current eligibility | Separate assessment/status, apply/retry and historical recovery as defined below; recovery never rewrites | review_apply_back/apply_back/recover_apply_back |
+| Other commands on a V root | Not in the declared matrix | Refuse unsupported gate before client/writer; standalone audits/intake/decomposition use their own roots | existing protocol preflight refusal |
+
+The following are proposed V-only operand extensions, not existing supported
+flags: `vnext-decide --repair-request FILE` and `--gap-acceptance FILE` replace
+`--selections` for their one exact request type; `strop`/`apply-back` add
+`--config`, `--approval FILE`, `--approval-hash HASH`, `--exclusive-source-access`,
+`--recover`, and `--retry-apply`. These are operation inputs, not mode selectors.
+
+
+#### Exact V recovery and continuation routes
+
+This table is the complete initial V `resume` surface. It does not change the
+earlier R/P interfaces. Every row requires valid retained inputs, the pinned
+consumer and fresh evidence validation under D8. Status reports the exact row,
+request/transaction/pass references and proposed invocation; it cannot authorize
+another row. Recheck the selected row inside the same fence as its mutation;
+if another invocation completed it, return its result rather than falling through
+to new work. `--dry-run` on any row performs reads only, with no client or repair.
+
+Selection comes from the unique active committed request/transaction and current
+verified lineage, not an arbitrary newest filename. An explicit `--vnext-round N`
+must match that selection and is required where shown. Missing, ambiguous, stale
+or conflicting evidence refuses before a client. Candidate selection follows
+the candidate leaf's ordering/finality rules and its sole prepared-claimant
+exception; no operator selector can choose an older candidate for new work.
+
+| Retained condition / gate | Explicit invocation and evidence selector | Owner / client permission | End of this invocation |
+| --- | --- | --- | --- |
+| Current committed pointer has missing/stale permitted materializations | `resume`; select that pointer and its committed source | Verified materialization owner through its recovery branch; no client and no next promotion | Repair those projections and stop. |
+| Interrupted registration or verification-decision publication, with all producer output complete | `resume --vnext-round N`; bind the retained transaction, candidate/creation evidence and exact pending decision | `recover_registration` or the existing verification commit owner; reuse complete bytes, no Editor/Verifier | Finish only that publication and its required projections; stop before verification, promotion or another request. |
+| One valid prepared next-ordinal promotion claimant | `resume`; bind its exact intent, verified decision, ordinal and expected base | `promote` prepared-claimant recovery; no client and no fresh claimant selection | Complete that reserved promotion/materialization and stop, even if a later candidate exists. |
+| Phase 1 terminal/report/state publication incomplete | `resume`; bind exact current closeout or retained failure/review evidence | Existing Phase 1 publication/reconciliation owner; no client | Publish/repair that outcome and stop before another review. |
+| Phase 2 entry already committed but projection incomplete, or pending failure/correction-failure/resolution/signal/findings/blocked/closeout publication | `resume`; bind exact entry or active pass/outcome references | Existing entry and Phase 2 publication/reconciliation owners; no client | Complete that outcome's reports/state and stop. Mere configuration publication cannot authorize entry; uncommitted entry remains with `promote-phase2`. |
+| Phase 1 Reviewer request interrupted and journal permits continuation | `resume`; select unique active Phase 1 review request/profile/cycle | `review_next(continuation=True)`; only that Reviewer request may use its remaining attempt/shape allowance | Retain result and required recovery/failure projections, then stop before finding admission or another role. |
+| Phase 1 Editor proposal request interrupted and journal permits continuation | `resume --vnext-round N`; exact selected immutable plan/transaction/request | `request(..., continuation=True)`; only that Editor request's existing remaining allowance | Retain the proposal/failure and stop before registration, verification or promotion. |
+| Phase 1 semantic request interrupted, candidate non-final and journal permits continuation | `resume --vnext-round N`; exact latest eligible candidate, base and semantic request | `verify(..., continuation=True)`; only that Verifier request's existing remaining allowance | Complete its verification decision/projections and stop before promotion. |
+| Phase 2 advice attachment retained without its binding | `resume`; select the exact consumed pass and request | First/later advice owner reconstructs only the exact Reviewer-derived attachment and binding; no clients | Stop after attachment repair, before correction admission, Editor, Verifier or next review. |
+| Phase 2 Reviewer request interrupted, failure projections current and journal permits continuation | `resume`; select exact unique active pass ordinal and committed request | First pass: `run_phase2_review(continuation=True)`; later pass: `continue_phase2_pass(pass_number, action="execute", continuation=True)`; only that Reviewer request's remaining allowance | Retain the review/failure outcome and required projections; stop before consumption, advice, correction or the next pass. |
+| Phase 1 additional-budget admission | `resume --extend-review-budget N`; bind the retained budget-exhausted context | `extend_phase1_budget`; explicit grant only, no client | Record grant and stop; a separate `live-phase1` invocation executes ordinary work. |
+| External source-write uncertainty | `strop --recover --exclusive-source-access` (or `apply-back` alias); bind retained historical intent | Source readback/receipt owner only; no model and no source replacement | Return the reconciled historical result or explicit operator-attention state. |
+| Any other condition | Refuse `resume` | No client or authority write | Includes exhausted/closed requests, final candidate rejection, corrupt/ambiguous authority, generic Phase 2 Editor/Verifier continuation, freeze and unchanged valid declaration disagreement. Supported report repair does not waive these refusals. |
+
+Pending publication/projection recovery takes precedence over client continuation.
+If such repair is needed, even `resume --continue` repairs and stops; the operator
+must invoke continuation separately after inspecting the new status. Repair must
+never silently spend the allowance whose failure it is reporting.
+
+For V, `--continue` is an optional Phase 1 loop request after successful technical
+continuation of the selected logical request. It resumes ordinary Phase 1 gates
+within existing budgets and stops at a decision, failure, exhaustion or Phase 1
+terminal. It is invalid on Phase 2, on source recovery, and when combined with
+`--extend-review-budget`. Plain `resume` always ends at the boundary in the table.
+Existing automatic shape-retry limits remain within a logical request; this
+table grants no new retry slot. Complete retained valid output is reused without
+calling a client. A live-command rerun, including `live-phase2` or
+`promote-phase2`, cannot implicitly retry an interrupted request; it reports the
+explicit continuation above or an unsupported/refused gate. An ordinary live
+invocation after successful continuation may consume the retained result.
+
+#### Source assessment, write and historical recovery
+
+These are distinct subcases of `strop` / `apply-back`. Do not run fresh-write
+eligibility as a shared precondition for read-only diagnostics or historical
+recovery. Ordinary config/suite and lineage validation still applies; historical
+recovery does not excuse corrupt authority.
+
+| Operation | Eligibility and evidence | Result / permitted effect |
+| --- | --- | --- |
+| Default read-only review/status | Inspect the V root and descriptor source binding; current convergence is evaluated, not required to produce diagnostics | Return an eligible assessment plus diff, or blockers with `assessment: null`. A retained intent also returns its historical readback status; no repair, new approval or source write. |
+| New `--apply --approve` | Exact canonical assessment file/hash, current complete convergence, current verified pointer and unchanged descriptor-bound source; explicit exclusive access | Revalidate under D8 and perform only the approved M4 write/no-op. A different retained intent refuses; the same intent returns its retained result/recovery state without another write. |
+| `--apply --approve --retry-apply` | Retained intent reports `apply_required`; same exact assessment/hash plus all current new-write eligibility and exclusive-access checks | Explicit further attempt, never automatic recovery or approval refresh. Stale pointer, convergence, source bytes or physical identity refuse a new write. |
+| `--recover --exclusive-source-access` | Valid retained intent and its historical approved pointer/draft/convergence, with exact source identity/readback checks | Reconcile durability and receipt without replacing the source. Current-pointer advancement or loss of current new-write eligibility alone must not block historical reconciliation. Original bytes return `apply_required`; third/missing bytes or identity conflict require attention; completed evidence after drift stays historical. |
+
+`--recover` cannot be combined with `--apply`, `--approve`, `--retry-apply`,
+`--approval` or `--approval-hash`; it uses the retained intent rather than a fresh
+approval file. No retained intent means `not_started`, with no source write or
+receipt fabricated. New writes always require the exact descriptor source;
+legacy mismatch/non-converged overrides remain invalid. Exclusivity is the
+operator's assertion of actual exclusive source access throughout review, write
+and unresolved recovery, not a lock acquired over other editors or runs.
+
+Read-only stdout is the **review-result envelope**, not the approval subject.
+It exposes `eligible`, `apply_back_permitted` (false during review), `blockers`
+and `assessment`. Eligible review also includes `diff`; existing-intent review
+includes `recovery`. For an ineligible review `assessment` is null; a source-less
+descriptor yields blockers rather than a write target. The adapter preserves
+these existing owner-result distinctions without adding fields to the frozen
+`vnext-apply-back-review-v1` assessment schema. Referenced verified bytes and
+evidence remain inspectable through their exact retained paths/hashes.
+
+The approval subject is only the non-null `assessment` object. Save its D6
+canonical JSON bytes as a separate file outside the run root. `--approval-hash`
+is lowercase SHA-256 of those exact file bytes, not the envelope, diff, a pretty
+JSON rendering or a newline-terminated variant. The adapter rejects a wrong
+digest, noncanonical bytes, duplicate keys, an envelope submitted as assessment,
+or a null assessment before the write owner runs. It validates the unchanged
+assessment schema and then passes the packet to the existing M4 owner, which
+revalidates current approval under D8.
+
+For example, after the operator saves read-only stdout to `review.json` outside
+the root, this local extraction creates `approval.json` without overwriting a
+file and prints the value for `--approval-hash` (both paths must be outside the
+run root):
+
+```python
+from pathlib import Path
+from whetstone.vnext_contracts import canonical_json_bytes, decode_json, sha256_bytes
+
+review = decode_json(Path("review.json").read_bytes())
+if review.get("eligible") is not True or review.get("assessment") is None:
+    raise ValueError("review has no approvable assessment")
+raw = canonical_json_bytes(review["assessment"])
+with Path("approval.json").open("xb") as output:
+    output.write(raw)
+print(sha256_bytes(raw))
+```
+
+Saving/extracting the packet grants no write permission. The operator must still
+review the diff and evidence and explicitly invoke `--apply --approve` with the
+assessment file/hash and exclusive-access acknowledgement. Read-only strop itself
+does not write either file or publish/repair a run artifact.
+
+The declared initial matrix is standard workflow, stateful-system profiles and
+fixed standard-v1 rubric. Horizontal Phase 2 targets cover mid/final ×
+permissive/strict; vertical is final/strict until other combinations are qualified.
+Focused routes never enter Phase 2. Supported numeric metadata and unversioned
+routes retain M3 rules. Other workflow/profile/rubric/target combinations refuse;
+no custom/MVP/governance, distributed writer or generic freeze-resume support is
+inferred. Publication of this matrix is not proof of its implementation.
 
 ### Preservation Capability Notice
 
@@ -67,6 +255,13 @@ WORKFLOW="standard"
 ```
 
 ## Create An Isolated Run
+
+For a config-selected V job, use the qualification-gated V command matrix
+under Recommended Defaults. The following legacy/bridge examples do not grant
+V initialization, generic resume, source-mismatch override or unbound apply
+approval. In particular, prepare V inputs outside its nonexistent destination;
+V source writes require the exact assessment/hash and exclusive-access
+acknowledgement, and recovery-only calls never initiate another write.
 
 ```bash
 mkdir -p "$RUN_ROOT"
@@ -487,6 +682,13 @@ That state means the selected profile is clean for the focused draft. It does no
 
 ## Recover A Timeout
 
+For a config-selected V job, use the qualification-gated V command matrix
+under Recommended Defaults. The following legacy/bridge examples do not grant
+V initialization, generic resume, source-mismatch override or unbound apply
+approval. In particular, prepare V inputs outside its nonexistent destination;
+V source writes require the exact assessment/hash and exclusive-access
+acknowledgement, and recovery-only calls never initiate another write.
+
 If status says:
 
 ```text
@@ -659,6 +861,13 @@ Per-round reports measure the concrete files written under `round-N/context/`. T
 
 ## Review Before Apply-Back
 
+For a config-selected V job, use the qualification-gated V command matrix
+under Recommended Defaults. The following legacy/bridge examples do not grant
+V initialization, generic resume, source-mismatch override or unbound apply
+approval. In particular, prepare V inputs outside its nonexistent destination;
+V source writes require the exact assessment/hash and exclusive-access
+acknowledgement, and recovery-only calls never initiate another write.
+
 Before changing the source spec, inspect:
 
 - `$RUN_ROOT/spec.md`
@@ -684,6 +893,13 @@ $RUN_ROOT/rounds/apply_back_review.md
 The dry-run should show that the run is eligible and the final draft hash matches `run_state.current_draft_hash`.
 
 ## Apply Back
+
+For a config-selected V job, use the qualification-gated V command matrix
+under Recommended Defaults. The following legacy/bridge examples do not grant
+V initialization, generic resume, source-mismatch override or unbound apply
+approval. In particular, prepare V inputs outside its nonexistent destination;
+V source writes require the exact assessment/hash and exclusive-access
+acknowledgement, and recovery-only calls never initiate another write.
 
 Only after human review:
 

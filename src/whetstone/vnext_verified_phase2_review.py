@@ -90,6 +90,10 @@ class _FirstReview(_Entry):
         if rubric_supported(proof.reader.suite):
             from whetstone.vnext_phase2_rubric import RESPONSE_SCHEMA as response_schema
             rubric_pins(proof.reader.suite)
+            from whetstone.vnext_phase2_reviewer_advice import supported as advice_supported, pins as advice_pins
+            if advice_supported(proof.reader.suite):
+                from whetstone.vnext_phase2_reviewer_advice import RESPONSE_SCHEMA as response_schema
+                advice_pins(proof.reader.suite)
             path = 'schemas/'+response_schema+'.schema.json'
             schemas[response_schema] = dict(path=path, hash=sha256_bytes(confined_file(CONTRACT_ROOT,path).read_bytes()))
         require(transport['reviewer'] == config['reviewer'], 'Phase 2 Reviewer transport changes pinned role')
@@ -153,6 +157,13 @@ class _FirstReview(_Entry):
             if config['target_phase'] == 'mid':
                 prompt += ('The bound standard rubric has no explicit mid-target requirements. '
                            'Return no rubric annotations or rubric-impact claims; ordinary source findings remain available.\n')
+            if advice_supported(proof.reader.suite):
+                prompt += ('The pinned v2 envelope also requires classifications: one advisory item per feedback_id, '
+                           'or an empty list for an empty review. Supply classification, requested_effects, '
+                           'authority_scope_ids, source_authority_binding_ids, scope_surface_ids and compatibility_change. '
+                           'Cite only bound authority and scope. Product choices, policy changes, destructive effects '
+                           'and authority conflicts require operator resolution. Advice grants no mutation authority; '
+                           'do not invent approvals, run bindings or hashes.\n')
         prompt += canonical_json_bytes(inputs).decode('utf-8')
         request = dict(schema_version=schema.replace('_','-'), phase='phase_2',
             job_id=config['job_id'], entry=entry.entry_ref, configuration=binding.configuration_ref,

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnext-phase2-rubric-response-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["review", "rubric_findings", "classifications"],
+  "properties": {
+    "review": {"$ref": "phase2_reviewer_feedback_input.schema.json"},
+    "rubric_findings": {"$ref": "vnext_phase2_rubric_response_v1.schema.json#/properties/rubric_findings"},
+    "classifications": {"$ref": "vnext_finding_advice_v1.schema.json#/properties/findings"}
+  }
+}

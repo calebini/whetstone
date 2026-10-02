@@ -53,7 +53,7 @@ Owns scope contracts, first-contact intake, lightweight change audits, decision 
 
 See [Scheduler State And Resume Spec](SCHEDULER_STATE_AND_RESUME_SPEC.md).
 
-Owns halting precedence, halt artifacts, accepted-draft semantics, version lifecycle, round scheduling, profile budgets, focused profile runs, Phase 1 failure handling, resume behavior, and the state machine. For the pending bounded ratification amendment, it is the designated normative owner for full strop/apply-back eligibility and the external source-write lifecycle; the candidate-editing leaf will supply the additional verified-candidate eligibility guard, and the Operator Quickstart will remain the operational procedure. This designation does not ratify detailed vNext strop/apply-back policy by itself. Until that scheduler amendment is completed, current operative apply-back behavior remains governed by the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. Use the scheduler leaf for changes that affect when Whetstone advances, stops, resumes, declares Phase 1 stable, or may apply a run result back to its source.
+Owns halting precedence, halt artifacts, accepted-draft semantics, version lifecycle, round scheduling, profile budgets, focused profile runs, Phase 1 failure handling, resume behavior, and the state machine. For the pending bounded ratification amendment, it is the designated normative owner for full strop/apply-back eligibility and the external source-write lifecycle; the candidate-editing leaf will supply the additional verified-candidate eligibility guard, and the Operator Quickstart will remain the operational procedure. The scheduler section `Verified-Promotion Source Write And Readback` defines the bounded future V consumer policy; publication does not activate it. Existing operative legacy/bridge apply-back behavior remains governed by its earlier lineage/hash guards and the Operator Quickstart procedure. Use the scheduler leaf for changes that affect when Whetstone advances, stops, resumes, declares Phase 1 stable, or may apply a run result back to its source.
 
 ### Artifacts, Validation, Hashing, And Telemetry
 
@@ -127,6 +127,62 @@ The first failing check determines `reason_code` in this order; retain the actua
 | All applicable checks pass | `none` | `run_requested_gate` |
 
 Fresh-admission failures above use `CONFIG_INVALID`; invalid committed lineage uses `HALTED_ARTIFACT_INVALID`. Ownership refusal is an invocation diagnostic and does not overwrite the active owner's run state. Read-only status reports the failure without choosing guessed authority. Mode/gate support must be checked before attempting to load a nonexistent optional client; an unused Editor/Verifier transport is not a requirement of reviewer-only admission.
+
+#### Config-selected verified-promotion release surface
+
+For the separately qualified V consumer, the associated run configuration is the
+user-facing opt-in. New-job configuration MUST explicitly select
+`editing_mode: verified_promotion` and a nonempty supported
+`contract_suite_version`. There is no CLI mode override. These values are copied
+into the immutable descriptor during local input preparation. If a prepared
+descriptor is supplied, its values MUST already agree; admission MUST NOT rewrite
+it. Missing, conflicting, unknown or unqualified selections fail before clients
+or authority writes. Config selection does not satisfy the activation gate.
+
+The first V release uses an explicitly prepared, immutable input package selected
+by `vnext_input_package: {path, hash}` in the run configuration. The package MUST
+bind the descriptor, review configuration, seed and all required authority,
+scope and invariant inputs, and MUST contain no prior runtime authority. Input
+preparation cannot infer missing product authority from a mode selection. The
+package locator resolves relative to the configuration file; package-internal
+references remain confined to the package. D8 initializes a nonexistent canonical
+destination outside the input package, and refuses even an empty existing root.
+The V initializer MUST open the verified owner, never a proposal-only owner.
+
+On an existing V root, the retained descriptor and inputs are authoritative.
+Commands MUST validate any supplied config mode, suite or input selectors against
+those bytes. Omitting operational selectors permits read-only inspection or
+supported recovery from retained inputs, not legacy fallback or a mode change.
+A changed descriptor-bound value requires a fresh job/root; mutable transport
+timeouts retain their existing per-attempt treatment. Earlier reviewer-only and
+proposal-only selector interfaces keep their existing semantics. Existing CLI
+file locators, when accepted, can only corroborate the config/retained selection;
+they cannot independently opt a new job into V.
+
+Phase 2 inputs are selected by the V-only configuration Ref
+`vnext_phase2_configuration: {path, hash}`, relative to the admitted run root.
+It names a closed, supported Phase 2 configuration bound to this job and the
+immutable review configuration. It may be prepared after initialization. Before
+entry its exact rubric and client/profile/target bindings are validated and its
+immutable configuration and request are committed under D8. Once bound, a changed
+Ref or changed bytes refuse; config publication is not Phase 2 entry. This Ref is
+not an extra field in the existing closed two-Ref `vnext` selector block.
+
+The first declared V command surface is `vnext-admit`, `live-phase1`,
+`live-focused-phase1`, `promote-phase2`, `live-phase2`, `status`, `resume`,
+`vnext-decisions`, `vnext-decide`, the existing semantic-answer/follow-up commands,
+and separately approved `strop`/`apply-back`. Command availability MUST be checked
+against the qualified suite and the supported route/gate matrix. No unsupported
+command may enter the legacy writer. `live-round`, generic supplied-draft/overwrite
+controls, incompatible bridge selection, and automatic external apply are not
+V fallbacks. The command matrix in the Operator Quickstart names the exact gates.
+
+A new immutable consuming suite MUST pin the delivered D8, transaction,
+scheduler, metadata, Phase 2 and source-write consumers. The frozen
+`vnext-contracts-1` suite MUST NOT be extended in place. Test-only suite pins do
+not populate production qualification maps. Publication of this contract alone
+neither advertises a supported suite nor activates V; all candidate-safety
+activation conditions still apply.
 
 ### Preservation Bridge Activation
 

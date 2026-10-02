@@ -84,6 +84,12 @@ def _add_apply_back_parser(subparsers: argparse._SubParsersAction, command: str,
     )
     parser.add_argument("--apply", action="store_true", help="write the final Whetstone draft back to --source")
     parser.add_argument("--approve", action="store_true", help="required with --apply")
+    parser.add_argument("--config", default="orchestrator_config.yaml", help="V run configuration (qualification-gated)")
+    parser.add_argument("--approval", help="exact canonical V assessment file")
+    parser.add_argument("--approval-hash", help="SHA-256 of exact V assessment bytes")
+    parser.add_argument("--exclusive-source-access", action="store_true", help="acknowledge actual exclusive source access")
+    parser.add_argument("--recover", action="store_true", help="V historical readback/receipt recovery only")
+    parser.add_argument("--retry-apply", action="store_true", help="explicit V retry of the same retained approval")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -529,12 +535,17 @@ def main(argv: list[str] | None = None) -> int:
     vnext_decisions = subparsers.add_parser("vnext-decisions", help="inspect finding evidence or prepare explicit operator options")
     vnext_decisions.add_argument("--root", default=".")
     vnext_decisions.add_argument("--config", default="orchestrator_config.yaml")
-    vnext_decisions.add_argument("--options", help="JSON options input bound to the exact retained review")
+    decision_inputs = vnext_decisions.add_mutually_exclusive_group()
+    decision_inputs.add_argument("--options", help="JSON options input bound to the exact retained review")
+    decision_inputs.add_argument("--advice", help="optional exact Phase 2 advice replay; the new verified suite hands Reviewer guidance off automatically")
     vnext_decisions.add_argument("--dry-run", action="store_true", help="preview requests without writing")
     vnext_decide = subparsers.add_parser("vnext-decide", help="record explicit operator selections without invoking clients")
     vnext_decide.add_argument("--root", default=".")
     vnext_decide.add_argument("--config", default="orchestrator_config.yaml")
-    vnext_decide.add_argument("--selections", required=True, help="JSON selections with exact requests, actors, rationales and timestamps")
+    choices = vnext_decide.add_mutually_exclusive_group(required=True)
+    choices.add_argument("--repair-request", help="exact V Phase 2 repair input")
+    choices.add_argument("--gap-acceptance", help="exact V Phase 2 gap acceptance input")
+    choices.add_argument("--selections", help="JSON selections with exact requests, actors, rationales and timestamps")
     vnext_decide.add_argument("--dry-run", action="store_true", help="preview responses without writing")
     semantic_answers = subparsers.add_parser("vnext-semantic-answers", help="inspect a rejected candidate's interpretation question and answers")
     semantic_answer = subparsers.add_parser("vnext-semantic-answer", help="record an explicit interpretation answer without starting editing")
@@ -554,10 +565,16 @@ def main(argv: list[str] | None = None) -> int:
         child.add_argument("--vnext-round", type=int, help="explicit stored proposal round for inspection or continuation")
         child.add_argument("--vnext-decisions", help="explicit retained operator selection receipt, relative to the run root")
     args = parser.parse_args(argv)
+    import sys
+    supplied = sys.argv[1:] if argv is None else argv
+    args._budget_explicit = any(value == "--budget" or value.startswith("--budget=") for value in supplied)
     from whetstone.vnext_cli import dispatch
     handled = dispatch(args)
     if handled is not None:
         return handled
+    if any(getattr(args, name, None) for name in ("repair_request", "gap_acceptance", "approval", "approval_hash", "exclusive_source_access", "recover", "retry_apply")):
+        print("CONFIG_INVALID: verified-promotion operands require a qualified V root")
+        return 2
     if args.command.startswith("preservation-"):
         from dataclasses import asdict
         from whetstone.preservation_runtime import acceptance_service

@@ -1644,8 +1644,8 @@ All four acceptance tasks below remain open until their full requirements pass.
 
 Operator direction recorded on 2026-10-01: **the associated run configuration
 is the user-facing opt-in for verified promotion; do not add a separate CLI mode
-flag.** This settles the interface direction, not public activation or permission
-to amend authoritative specifications. Existing reviewer-only CLI selectors and
+flag.** The operator subsequently ratified the bounded Q1 amendments and
+authorized implementation on 2026-10-02. Public activation remains deferred. Existing reviewer-only CLI selectors and
 legacy/bridge behavior remain supported at their existing boundaries.
 
 The core transaction, D7 scheduling and D8 storage contracts already define the
@@ -1654,7 +1654,7 @@ integration package: reconcile the existing owning sections, connect supported
 commands to the delivered internal owners, and demonstrate the declared routes
 with scripted clients before any activation decision.
 
-**Configuration contract to finish:** the coordinating spec already reserves
+**Ratified configuration contract:** the coordinating spec already reserves
 `editing_mode` and `contract_suite_version` for a new vNext job, while current
 D7 admission selects immutable descriptor/review-configuration references through
 the closed `vnext` block. Define their creation-time relationship in the existing
@@ -1694,19 +1694,23 @@ be silently weakened to make the integration pass.
 The [bounded Q1 proposal and command matrix](docs/VNEXT_18_9_Q1_PROPOSAL.md) and
 [review-only amendment patch](docs/VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch) were
 prepared on 2026-10-01 against `fb57a24`. The patch targets six existing normative
-owners and the Operator Quickstart; no authoritative file has been edited.
+owners and the Operator Quickstart. Following approval on 2026-10-02, that exact
+patch was applied to all seven owners in the working tree.
 It carries the approved M3/M4 rules, proposes exact config/operation inputs, and
 traces all 14 delta surfaces. The earlier 13-row inventory count was a parser
 error; the 22 P0 classifications and frozen evidence remain unchanged.
 [Document-only validation](docs/audits/VNEXT_18_9_Q1_PROPOSAL.json) records patch
 applicability and unchanged source boundaries. Q1 remains incomplete: the next
-step is approval of this concrete package, followed by its bounded implementation
-and the seven acceptance cases above with production activation disabled.
+step is completion of the approved implementation and the seven acceptance
+cases above with production activation disabled. The
+[Q1 implementation handoff](docs/VNEXT_18_9_Q1_IMPLEMENTATION.md) records current
+partial progress and the concrete Phase 2 finding-advice input decision. Do not
+mark Q1 complete from bootstrap or clean-journey evidence alone.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The
 [focused fix recheck](docs/audits/VNEXT_18_9_Q1_FIX_RECHECK.md) records the bounded
-resolution. These are proposal fixes, not authoritative publication or Q1 completion.
+resolution. Those audits remain preparation evidence, not Q1 completion evidence.
 No push, public activation, live transmission or real external apply-back is
 authorized by this planning update.
 
@@ -1966,3 +1970,12 @@ proposal is accepted. No additional factual input is needed to finish the design
 Outside this release: semantic equivalence guarantees, automatic scope waivers,
 objective generation, cross-run registries, signing/quorum, editing, repair loops,
 promotion, source apply-back, and retroactive assessment of historical audits.
+
+
+Q1 operator clarification (2026-10-02): adopt direct Phase 2 Reviewer guidance,
+including later rounds, with human involvement for product/authority decisions.
+The new consuming suite versions the response envelope and automatically binds
+its classifications after consumption under D8; existing suites remain unchanged.
+Interrupted attachment recovery is a separate finite recovery row. The
+[Q1 implementation handoff](docs/VNEXT_18_9_Q1_IMPLEMENTATION.md) retains the
+acceptance inventory and verification limits. Q1 is not yet complete or activated.

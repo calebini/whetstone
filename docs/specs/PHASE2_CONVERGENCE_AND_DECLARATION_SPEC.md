@@ -23,6 +23,22 @@ When bridge enforcement prevents entry or declaration, report the actual categor
 
 ## PHASE 2 FAILURE HANDLING
 
+For a new explicitly pinned V consumer, Phase 2 MUST resolve the current
+verified pointer and the separate committed entry record, and bind the exact
+configuration, rubric, target and configured ordered review steps. The declared
+V command route MUST consume that owner; it cannot fall back to the full-draft
+Phase 2 executor or import bridge maintenance authority. A versioned entry uses
+the candidate leaf's system-only metadata transaction before the distinct entry
+commit. Unversioned entry still requires every other prerequisite.
+
+Correction, resolution, operator, failure, conflict/oscillation and declaration
+consumers retain their existing D7 ordering, original finding debt and finite
+review allowances. A declaration or clean later review cannot erase unresolved
+blocking evidence. Convergence MUST bind current verified bytes and required
+reviews; technical failures and recovery-only reentry cannot synthesize a clean
+review or imply convergence. Only the exact supported technical continuation gate
+may invoke a client after an explicit continuation command.
+
 Produces:
 
 /rounds/convergence_failure_report.json
@@ -115,6 +131,12 @@ For permissive targets, this creates an intentional asymmetry: major issues cann
 ---
 
 ## CONVERGENCE DECLARATION
+
+In V, the declaration MUST bind the exact current verified draft and the
+configured target/rubric/review evidence. An earlier accepted hash, mere candidate,
+stale declaration or newly generated declaration cannot replace the current
+lineage and required review gates. Existing blocked declaration-disagreement and
+unresolved finding-debt behavior remains in force.
 
 `convergence_declaration.md` MUST exist before `CONVERGED`.
 
@@ -232,3 +254,20 @@ Phase 2 reviewer prompt snapshots MUST include the full oscillation classificati
 reviewer_working_notes.md is part of the audit trail and MUST be persisted, but it is not required for deterministic replay.
 
 ---
+
+
+### Q1 direct Reviewer guidance amendment (2026-10-02)
+
+For consuming suites that pin `vnext_phase2_reviewer_advice_v1`, each Phase 2
+Reviewer response uses `vnext_phase2_rubric_response_v2`. It includes one advisory
+classification per feedback item alongside the review and rubric findings; clean
+reviews carry an empty classification list. Whetstone computes exact run, draft,
+feedback and authority bindings and validates the result before accepting it.
+After result consumption, source-correction guidance is attached automatically
+under D8 through the existing advice owner, including on later passes. This adds
+no Reviewer call or human-authored handoff requirement. Existing deterministic
+classification, mutation admission, verification and promotion controls remain
+mandatory. Product choices and authority, scope, policy or protected-invariant
+decisions still require explicit operator resolution. Recovery of an interrupted
+advice attachment stops after repair and invokes no clients. Older pinned suites
+retain their existing response and explicitly supplied advice semantics.

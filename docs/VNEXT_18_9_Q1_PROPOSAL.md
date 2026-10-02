@@ -1,12 +1,12 @@
-# 18.9 Q1: bounded release-contract proposal
+# 18.9 Q1: ratified bounded release contract
 
 Prepared 2026-10-01 against `fb57a2406074520630fa99242161d9662e18653b`.
-**Draft for approval. No authoritative amendment has been applied and no public
-verified-promotion capability has been enabled.**
+**Ratified by the operator on 2026-10-02. The approved amendments are applied in
+this checkpoint. Q1 implementation is in progress; public activation remains off.**
 
-The proposed [amendment patch](VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch) updates six
+The ratified [amendment patch](VNEXT_18_9_Q1_SPEC_AMENDMENTS.patch) updates six
 existing specification owners and the Operator Quickstart. This document is the
-review guide and proposed supported-command matrix, not a new normative owner.
+review guide and ratified supported-command matrix, not a new normative owner.
 The [implementation plan](../IMPLEMENTATION_PLAN.md#q1--config-selected-verified-promotion-release-integration)
 and [qualification inventory](VNEXT_18_9_INVENTORY.md) retain Q1–Q4 as the finite
 release work. Internal M5 completion does not establish public release readiness.
@@ -19,8 +19,8 @@ the config requests the mode and suite for a fresh job; admission validates and
 retains the prepared inputs; existing jobs continue under those immutable bindings.
 Editing a config cannot convert a job or bypass suite qualification.
 
-The release surface below is proposed for approval. New config/command operands
-are not currently available. Existing internal owners implement the transaction
+The release surface below is approved for bounded implementation. New
+config/command operands remain unavailable in production. Existing internal owners implement the transaction
 protocol; Q1 must still provide and test the public adapters, bootstrap, suite
 manifest and diagnostics. Merely recognizing a suite is insufficient to enable it.
 
@@ -72,10 +72,17 @@ omitting selectors must never trigger legacy fallback. A descriptor-bound change
 requires a fresh job. A new consuming suite must pin the delivered contracts and
 vectors; `vnext-contracts-1` remains frozen and production activation remains off.
 
-## Proposed supported-command matrix
+## Ratified supported-command matrix
 
 All rows below are the intended V release contract, **not a claim of current
 public support**. Commands execute only qualified route/gate combinations.
+
+For the new Q1 consuming suite, the Phase 2 Reviewer supplies guidance directly
+with each review. Whetstone validates and binds it automatically before admitting
+routine corrections. Humans supply product or authority decisions when requested;
+there is no routine advice-file handoff at entry or between rounds. Interrupted
+advice publication uses the recovery-only row below. Older suites keep their
+existing explicit-advice contract.
 
 | Command | Supported scope | Behavior / boundary | Existing owner or required adapter |
 | --- | --- | --- | --- |
@@ -86,7 +93,7 @@ public support**. Commands execute only qualified route/gate combinations.
 | live-phase2 | Entered or eligible standard/fixed-rubric V job | Use shared entry owner, then existing bounded sequence through declaration/convergence or blocker | phase2_sequence_status/continue_phase2_pass/phase2 correction and closeout owners |
 | status | Any inspectable V root | Read-only current authority/candidate/failure/decision and exact next gate; malformed authority reports invalid | inspect/phase1_status/phase2_state/operator/failure/apply status |
 | resume | Existing V root; --dry-run is read-only | Only the exact recovery/continuation subtable below; plain resume stops at its selected boundary; --continue is Phase 1 only | materialization and role-specific recovery/continuation; extend_phase1_budget |
-| vnext-decisions | Bound Phase 1 or Phase 2 operator context | Inspect; with explicit --options prepare exact requests; --dry-run writes nothing; no clients | operator_status / phase2_operator_context / request preparation |
+| vnext-decisions | Bound Phase 1 or Phase 2 operator context | Inspect; with mutually exclusive explicit `--options FILE` prepare exact requests, or use `--advice FILE` for an exact advice replay (new-suite advice is derived automatically from the Reviewer and cannot be overridden); `--dry-run` writes nothing; no clients | operator_status / phase2_operator_context / request or advice preparation |
 | vnext-decide | One exact operator input | Existing --selections; proposed alternatives --repair-request or --gap-acceptance for Phase 2; exactly one input, no clients | response/selection owners; admit_phase2_repair / accept_phase2_gaps |
 | vnext-semantic-answers | Explicit --candidate | Read-only original question and retained answers; no implicit latest selection | answers |
 | vnext-semantic-answer | Explicit --candidate and --input | Record exact answer; --dry-run read-only; no candidate reopening or client | submit_answer |
@@ -101,7 +108,7 @@ Focused Phase 1 never grants Phase 2 entry. Both supported numeric metadata and
 unversioned paths retain M3 semantics. Custom/MVP/governance workflows, distributed
 writers, generic freeze resume and arbitrary supplied-draft editing are excluded.
 
-### Proposed operation inputs
+### Ratified operation inputs
 
 Reuse existing command names and ordinary selectors. Add only these V inputs:
 
@@ -139,6 +146,7 @@ exception; no operator selector can choose an older candidate for new work.
 | Phase 1 Reviewer request interrupted and journal permits continuation | `resume`; select unique active Phase 1 review request/profile/cycle | `review_next(continuation=True)`; only that Reviewer request may use its remaining attempt/shape allowance | Retain result and required recovery/failure projections, then stop before finding admission or another role. |
 | Phase 1 Editor proposal request interrupted and journal permits continuation | `resume --vnext-round N`; exact selected immutable plan/transaction/request | `request(..., continuation=True)`; only that Editor request's existing remaining allowance | Retain the proposal/failure and stop before registration, verification or promotion. |
 | Phase 1 semantic request interrupted, candidate non-final and journal permits continuation | `resume --vnext-round N`; exact latest eligible candidate, base and semantic request | `verify(..., continuation=True)`; only that Verifier request's existing remaining allowance | Complete its verification decision/projections and stop before promotion. |
+| Phase 2 advice attachment retained without its binding | `resume`; select the exact consumed pass and request | First/later advice owner reconstructs only the exact Reviewer-derived attachment and binding; no clients | Stop after attachment repair, before correction admission, Editor, Verifier or next review. |
 | Phase 2 Reviewer request interrupted, failure projections current and journal permits continuation | `resume`; select exact unique active pass ordinal and committed request | First pass: `run_phase2_review(continuation=True)`; later pass: `continue_phase2_pass(pass_number, action="execute", continuation=True)`; only that Reviewer request's remaining allowance | Retain the review/failure outcome and required projections; stop before consumption, advice, correction or the next pass. |
 | Phase 1 additional-budget admission | `resume --extend-review-budget N`; bind the retained budget-exhausted context | `extend_phase1_budget`; explicit grant only, no client | Record grant and stop; a separate `live-phase1` invocation executes ordinary work. |
 | External source-write uncertainty | `strop --recover --exclusive-source-access` (or `apply-back` alias); bind retained historical intent | Source readback/receipt owner only; no model and no source replacement | Return the reconciled historical result or explicit operator-attention state. |
@@ -303,21 +311,24 @@ none of those gates.
 
 ## Approval and validation status
 
-The approval requested next is limited to this amendment/interface package and its
-Q1 implementation with activation disabled. M3/M4 policy is already approved;
-publication into authoritative owners and the new public interface details are
-pending. No push, live provider transmission or real source apply-back is implied.
+The operator approved this amendment/interface package and its Q1 implementation
+on 2026-10-02, with activation disabled. The approved patch has been applied to
+the seven owning files. No commit, push, live provider transmission or real source
+apply-back is implied. See the [implementation handoff](VNEXT_18_9_Q1_IMPLEMENTATION.md)
+for tested progress, incomplete routes and the adopted direct Reviewer handoff decision.
 
 The [initial bounded audit](audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) found three
 interface gaps. This revision fixes Q1-A1 with the finite recovery/continuation
 subtable, Q1-A2 with separate source-operation preconditions, and Q1-A3 with the
 review-envelope/canonical-approval contract. The
 [focused recheck](audits/VNEXT_18_9_Q1_FIX_RECHECK.md) records their disposition;
-the earlier audit remains historical evidence. Ratification and implementation
-are still pending.
+the earlier audit remains historical evidence. These reports are historical preparation evidence; they do not establish
+implementation completion.
 
 Preparation validation is document-only: patch application check, source/proposed
 hashes, approved-rule preservation, matrix/delta counts, local links and whitespace.
 The [proposal evidence record](audits/VNEXT_18_9_Q1_PROPOSAL.json) records results
 and baseline hashes. No product test campaign, clients or real source writes were needed for
-this preparation. A local canonical-approval round-trip check accompanies the fixes. All changes remain uncommitted.
+this preparation. A local canonical-approval round-trip check accompanies the fixes.
+The proposal was committed as `78dfa8b`; this checkpoint retains the subsequent
+partial implementation and its scoped evidence. Q1 qualification remains open.

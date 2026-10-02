@@ -444,6 +444,21 @@ class _Continuation(_HistoricalAdvice):
         if work.outcome!='work_available': return work
         return _status(sequence(proof))
 
+    def prepare_advice(self, ordinal, advice):
+        """Preview exact later-pass advice without taking a writer fence."""
+        require(type(ordinal) is int and ordinal > 1,
+                'continuation advice requires an explicit later pass')
+        proof = self._proof(self.store.read)
+        work = self._observe(proof)
+        if work.outcome != 'work_available': return work
+        state = sequence(proof)
+        frame = next((row for row in state['frames'] if row['owner'].ordinal == ordinal), None)
+        require(frame is not None, 'Phase 2 pass is not committed')
+        owner = frame['owner']
+        require(owner.proof.latest == proof.latest, 'historical Phase 2 pass cannot launch current work')
+        require(frame is state['frames'][-1], 'completed predecessor replay cannot advance a successor')
+        return owner.prepare(advice)
+
     def bind_next(self, transport):
         def perform(store,proof):
             state=sequence(proof)

@@ -1,11 +1,19 @@
 """Offline suite registry; no vNext runtime mode is enabled by this registry."""
 SUPPORTED_SUITES = {
     "vnext-contracts-1": "69dbe84ce740ccae19126a39514f9bca5bcc036c3152d7a0a623e29bd9214548",
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58",
 }
 
 # Implementation-owned dispatch, paired with the registered manifest digest.
 # Adding files or changing a descriptor cannot select a different algorithm.
 SUITE_ALGORITHM_VERSIONS = {
+    "vnext-verified-consumer-1": {
+        'normalization_version': 'whetstone-markdown-normalization-v1',
+        'parser_contract_version': 'markdown-atx-v1',
+        'assembler_version': 'patch-assembler-v3',
+        'inventory_version': 'preservation-inventory-v2',
+        'semantic_verifier_policy_version': 'semantic-policy-v2',
+    },
     "vnext-contracts-1": {
         'normalization_version': 'whetstone-canonical-json-v1',
         'parser_contract_version': 'markdown-atx-v1',

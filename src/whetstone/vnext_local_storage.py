@@ -243,6 +243,8 @@ class LocalAuthorityStore:
     def __init__(self,root,*,job_id):
         with _FORK_GATE:
             self._mutex=threading.RLock();self._pid=os.getpid();self._lock_fd=None;self._token=None;self._nonce=None
+            self._invocation_guard=None
+            self._invocation_owner=None
             self._tree=_Tree(root)
             try:
                 self._binding_raw=self._tree.read(BINDING_PATH);self._binding=decode_json(self._binding_raw)
@@ -290,13 +292,20 @@ class LocalAuthorityStore:
         require(callable(validate_lineage),'locked lineage validator is required')
         with _FORK_GATE,self._mutex:
             self._check_binding()
+            if self._invocation_owner not in (None,threading.get_ident()):
+                raise StorageBusy('another thread owns the selected invocation')
             if self._lock_fd is not None:raise StorageBusy('this storage object already holds authority')
             with self._tree.parent(LOCK_PATH) as (parent,leaf):
                 self._lock_fd=os.open(leaf,os.O_RDWR|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
             try:
                 try:fcntl.flock(self._lock_fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
                 except BlockingIOError as exc:raise StorageBusy('another process holds authority') from exc
-                self._check_binding();validate_lineage(self._tree.read);self._check_binding()
+                self._check_binding()
+                if self._invocation_guard is not None:
+                    thread,guard=self._invocation_guard
+                    if thread!=threading.get_ident():raise StorageBusy('another thread owns the selected invocation')
+                    guard(self._tree.read)
+                validate_lineage(self._tree.read);self._check_binding()
                 self._nonce=secrets.token_hex(32);self._token=_Ownership(self,self._nonce)
                 return self._token
             except BaseException:self._invalidate();raise
@@ -305,6 +314,26 @@ class LocalAuthorityStore:
         with _FORK_GATE,self._mutex:
             # Closing our descriptor must remain possible after path tampering.
             self._check_token(token);self._invalidate()
+
+    @contextmanager
+    def guard_invocation(self, validate_selection):
+        """Recheck one caller-selected operation under each actual fence.
+
+        This grants no authority. The owner's lineage validator still runs, and
+        later projection fences retain their own normal validation. Retain the
+        thread binding so another thread cannot consume this invocation's guard.
+        """
+        require(callable(validate_selection), 'invocation guard must be callable')
+        with _FORK_GATE,self._mutex:
+            require(self._invocation_owner is None and self._token is None,
+                    'cannot nest invocation selection guards')
+            self._invocation_owner=threading.get_ident()
+            self._invocation_guard=(threading.get_ident(),validate_selection)
+        try:yield
+        finally:
+            with _FORK_GATE,self._mutex:
+                self._invocation_guard=None
+                self._invocation_owner=None
 
     @contextmanager
     def locked(self,validate_lineage):

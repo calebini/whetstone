@@ -656,7 +656,7 @@ Every removed normative unit that is not validly classified as `superseded` MUST
 - be authorized by a valid operator decision response;
 - be acknowledged by semantic verification.
 
-Every modified, weakened, moved, or renamed normative unit MUST be attributable to an admitted finding and allowed mutation surface. Requirement weakening always requires an operator decision.
+Every Editor-modified, weakened, moved, or renamed normative unit MUST be attributable to an admitted finding and allowed mutation surface. Separately pinned system metadata changes require the exact scheduler authority and protected-unit checks below, not fictional findings. Requirement weakening always requires an operator decision; system metadata authority does not waive that rule.
 
 Replacing concrete contracts with placeholders, summaries, ellipses, statements that sections are unchanged, or vague references to removed material MUST fail preservation validation even if overall document size remains above a configured threshold.
 
@@ -744,7 +744,7 @@ Operation semantics:
 - `append_child_section` appends one payload section as the final child of the target section and MUST use a heading level exactly one greater than its parent.
 - `delete_section_subtree` removes the target and all descendants, requires a null payload, and requires explicit deletion authorization for every removed normative unit.
 
-An operation MUST address at least one admitted finding. `reason`, `addressed_finding_ids`, and `normative_change` are Editor claims and do not satisfy verification by themselves.
+An Editor patch operation MUST address at least one admitted finding. The separately pinned scheduler-authorized system metadata operation below is not an Editor patch operation. `reason`, `addressed_finding_ids`, and `normative_change` are Editor claims and do not satisfy verification by themselves.
 
 Operations claiming `remove`, `weaken`, `authority_change`, or `scope_change` MUST cite a derived editor-fixable finding whose source operator response authorizes that exact effect. Otherwise the proposal is invalid before candidate assembly.
 
@@ -823,6 +823,48 @@ The Orchestrator MUST:
 The candidate hash evaluated by validators MUST identify the exact bytes eligible for promotion. Promotion-time version stamping, formatting, or cleanup is forbidden because it would create unverified bytes.
 
 Two conforming implementations applying the same validated patch set, payloads, base, and descriptor-bound parser, assembler, inventory, and normalization versions MUST produce byte-identical candidate artifacts and identical candidate hashes.
+
+### Scheduler-authorized system metadata
+
+For a new consuming suite explicitly pinning the approved system-metadata
+algorithm, the following six rules publish the internal M3 decision of
+2026-09-29. They are requirements of that consumer and do not change older
+assembler versions, descriptors or the preservation bridge.
+
+1. Define a separately pinned **system metadata operation**, distinct from an
+   Editor patch operation. Its authority is the exact scheduler transition and
+   immutable base, not a Reviewer finding. Editor patches retain their existing
+   finding attribution and allowed-section rules. Do not invent findings.
+2. Limit its mutable surface to supported numeric version anchors and the
+   scheduler-required Phase 1 `Status: Accepted` to `Status: Draft` token change.
+   Bind exact input spans, preimages, output bytes, phase and transition. Support
+   heading and frontmatter anchors without granting a whole-root/body rewrite.
+   Anchor precedence, conflict refusal and numeric transformations follow the
+   existing scheduler rules. Do not infer a general metadata-edit capability.
+3. Attribute and count these exact system spans separately from the Editor's
+   admitted surface. They do not enlarge the Editor's budgets or allow adjacent
+   edits. Existing blocking invariants, authority/scope conflicts and applicable
+   deletion/weakening gates still fail closed; metadata authority is not a waiver.
+4. For a mutating review round, assemble the Editor changes and required metadata
+   into the **same candidate** before final normalization, hashing, preservation
+   assessment and independent semantic verification. Editor no-ops receive no
+   stamp. Editor-selected version changes cannot supply system authority.
+5. For Phase 2 entry requiring a stamp, admit a system-only candidate from the
+   fully qualified Phase 1 pointer and committed entry request/configuration.
+   The admitted finding set may be empty; the independent Verifier still assesses
+   the exact candidate, protected units and assertions. No fabricated Editor
+   invocation, review round or review-budget charge is required for the transition.
+6. Both forms retain registration, final candidate decisions, exact-base checks,
+   D8 fencing and atomic verified-pointer promotion. Preserve before/after versions
+   and hashes in immutable evidence and derived history. No rejected or unpromoted
+   candidate changes authoritative metadata. Interruption/reentry cannot stamp
+   twice. Phase 2 entry remains a distinct commit after its verified prerequisites;
+   configuration publication or candidate promotion alone is not entry.
+
+This is the sole finding-attribution exception for these system spans. Existing
+Editor operation schemas and their nonempty admitted-finding requirements remain
+unchanged. Empty findings for a system-only entry do not waive independent
+verification of protected units, assertions and exact final candidate bytes.
 
 ### Candidate Identity And Disposition
 
@@ -905,7 +947,7 @@ Validation order:
 5. Compare heading hierarchy and stable identity transfer.
 6. Compare normative and protected units.
 7. Evaluate deterministic protected invariants.
-8. Verify every change is within allowed sections and attributable to admitted findings.
+8. Verify every Editor change is within allowed sections and attributable to admitted findings. Verify each separately pinned system metadata change against its exact scheduler transition, base and spans under the system-metadata rules in Scheduler-authorized system metadata; it grants no adjacent Editor authority.
 9. Verify deletion and weakening authorizations.
 10. Reject placeholders, unresolved patch markers, forbidden corruption characters, and abbreviated unchanged-section representations.
 
@@ -1786,7 +1828,7 @@ The following table is the section-addressed amendment plan for ratification. Ca
 | Phase 2 and convergence lineage | `docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#phase-2-failure-handling`, `#target-matrix-precedence`, `#convergence-declaration`, `#reproducibility` | Require Phase 2, declaration generation, and reproducibility evidence to resolve and bind the promoted current verified draft rather than an unverified candidate or unverified `spec.md` mirror. |
 | Operator defaults and recovery guidance | `docs/OPERATOR_QUICKSTART.md#mental-model`, `#recommended-defaults`, `#running-whetstone-from-an-agent`, `#recover-a-timeout`, `#terminal-states`, `#safety-rules` | Default unfamiliar jobs to reviewer-only mode; document proposal-only and verified-promotion opt-in, candidate inspection, safe recovery, and the prohibition on treating Editor output as current. |
 | Current strop/apply-back operational surface | `docs/OPERATOR_QUICKSTART.md#review-before-apply-back`, `#apply-back`, `#troubleshooting` | Require strop/apply-back review and write paths to select only bytes referenced by a committed current verified pointer and to refuse unverified, rejected, or merely accepted candidates. |
-| Strop/apply-back normative ownership designation | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map` | The coordinating spec now designates `SCHEDULER_STATE_AND_RESUME_SPEC.md` as the target normative owner for the pending bounded amendment to full strop/apply-back eligibility and the external source-write lifecycle, routed to this leaf's verified-candidate eligibility guard. Detailed vNext policy remains unratified until that scheduler amendment is completed. Until then, current operative behavior continues under the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. This leaf does not otherwise absorb external source-spec apply-back policy. |
+| Strop/apply-back normative ownership designation | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map` | The coordinating spec now designates `SCHEDULER_STATE_AND_RESUME_SPEC.md` as the target normative owner for the pending bounded amendment to full strop/apply-back eligibility and the external source-write lifecycle, routed to this leaf's verified-candidate eligibility guard. The scheduler section `Verified-Promotion Source Write And Readback` publishes the bounded M4 policy for an explicitly pinned future consuming suite; it remains unavailable until the full activation gate passes. Until then, current operative behavior continues under the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. This leaf does not otherwise absorb external source-spec apply-back policy. |
 
 ## Ratification Checklist
 

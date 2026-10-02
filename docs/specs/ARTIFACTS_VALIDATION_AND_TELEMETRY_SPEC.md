@@ -13,6 +13,25 @@ target_spec_role: leaf_spec
 
 ### vNext identity and suite-manifest invariant
 
+The future V consuming suite MUST include the delivered registration,
+verification, D8 publication/recovery, system-metadata, scheduler, Phase 2 and
+source-write schemas and algorithms, with their executable positive and negative
+vectors. The registry digest is implementation-owned and derived from exact
+manifest bytes; a config field cannot supply or override it. Existing suite bytes
+remain frozen. New schemas/pins are versioned rather than silently extending a
+previously qualified shape.
+
+Command-facing diagnostics MUST preserve separate fields for lineage validity,
+quality/convergence, candidate disposition, outstanding decisions, source-match
+eligibility, approval and actual write outcome. A legacy `last_accepted_draft_hash`
+or old `apply_back_permitted` field is never verified-promotion or source-write
+proof. Read-only CLI inspection MUST NOT publish a report/state repair. Reports
+from earlier failed attempts remain immutable; current status may identify their
+supersession but MUST NOT erase them. CLI operators consume closed request and
+approval schemas with exact references, and may not construct persisted identities
+from untrusted client claims. Existing owning schemas retain their authority;
+this amendment does not add fields to frozen artifacts.
+
 All public vNext artifacts MUST obey the exact D6 identity rules in the candidate
 leaf. The artifact schema owning an identifier MUST define its ASCII type prefix,
 versioned domain-separation label, ordered canonical preimage and collision role.
@@ -1211,3 +1230,17 @@ mechanical_change_key = SHA256(
 `mechanical_change_key` deliberately excludes polarity so an exact add/remove reversal can be compared mechanically. Polarity remains a separate field on the semantic change record.
 
 ---
+
+
+### Q1 Reviewer guidance envelope (2026-10-02)
+
+Suites pinning `vnext_phase2_reviewer_advice_v1` use the closed
+`vnext_phase2_rubric_response_v2` envelope: `review`, `rubric_findings` and
+`classifications`. The existing request pins its exact response schema. Raw
+response/outcome provenance includes the classifications; Whetstone derives
+all run/feedback/authority references from bound inputs and canonical feedback.
+After consumption the existing advice and binding artifacts retain that exact
+derivation. They are not operator approvals. Missing or contradictory coverage
+cannot silently fall back to manual or generated advice. Earlier suites keep their
+original envelope and result hashes. See the [direct guidance supplement](../../contracts/algorithms/vnext_phase2_reviewer_advice_v1.md)
+and Phase 2 specification for validation, handoff and recovery rules.

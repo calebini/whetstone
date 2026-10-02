@@ -70,6 +70,23 @@ approval:
 
 ## vNext Decision Routing (D7)
 
+For the config-selected V consumer, command adapters MUST use the current bound
+operator context and existing immutable request/response/selection owners.
+Phase 1 and Phase 2 decisions remain distinct; a caller cannot choose a more
+permissive owner by passing another phase. `vnext-decisions` may inspect or
+explicitly prepare requests; `vnext-decide` records an explicit selection, never
+implied approval through status, absence of response or a rerun command.
+
+A Phase 2 repair request and draft-bound gap-acceptance request are separate,
+closed explicit inputs. They preserve the existing M1 authority, budgets,
+rejected parent and unresolved finding debt. Recording them MUST NOT start an
+Editor, grant extra review capacity or create convergence. Semantic interpretation
+answers retain their exact candidate/verifier/source bindings and require a new
+transaction with full verification. Freeze and an unchanged mechanically valid
+declaration disagreement remain blocked with report/state recovery only.
+No generic operator flag may accept arbitrary candidate bytes or reopen a final
+rejection.
+
 For prospective vNext only, the [D7 processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) routes a concrete unresolved product, scope or authority choice to `PAUSED_DECISION`. The candidate leaf's Operator Decision Response contract owns exact request/response, base, authority and scope bindings; a generic decision checkpoint is not a substitute. Prior to proposal admission, a validated response may enable a new immutable mutation plan. A valid Semantic Verifier operator-decision verdict finally rejects its candidate; later operator input requires a new transaction and both verification layers, never retroactive candidate approval. Invalid/missing verifier output is a technical failure and cannot fabricate an operator choice.
 
 Changed descriptor-bound authority, scope, invariant or review inputs require a new job/root. A same-job decision may authorize a new transaction only while its exact base and other bindings remain valid. Operator silence, declined choices and budget exhaustion do not grant authority. D7 does not change the current-runtime bridge's post-proposal evidence-adoption workflow or activate vNext.

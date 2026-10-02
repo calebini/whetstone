@@ -191,6 +191,8 @@ def _execute(run,args,config,review,number,decisions=None):
 
 
 def dispatch_proposal(args):
+    if getattr(args,'repair_request',None) or getattr(args,'gap_acceptance',None):
+        print(json.dumps({'reason_code':'vnext_gate_unavailable','reason':'Phase 2 decision operands require verified promotion'}));return 2
     root=Path(getattr(args,'run_root',None) or getattr(args,'root','.'))
     config_path=root/getattr(args,'config','orchestrator_config.yaml')
     flag=getattr(args,'vnext_input_package',None)

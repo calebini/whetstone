@@ -12,6 +12,9 @@ from whetstone.vnext_review import _client, read_state, run_review
 
 def dispatch(args):
     """Return None for legacy dispatch, otherwise the handled exit status."""
+    from whetstone.vnext_verified_cli import dispatch_verified
+    handled = dispatch_verified(args)
+    if handled is not None: return handled
     from whetstone.vnext_proposal_cli import dispatch_proposal
     handled=dispatch_proposal(args)
     if handled is not None:return handled

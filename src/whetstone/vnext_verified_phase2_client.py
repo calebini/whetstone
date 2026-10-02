@@ -42,13 +42,19 @@ class _Journal(_Request):
 
     def decode_review(self, raw):
         annotations = None
+        classifications = None
         try:
             packet = decode_json(raw)
             require(isinstance(packet, dict), 'Phase 2 Reviewer response must be an object')
             if 'rubric_catalogue' in self.bound.inputs:
                 from whetstone.vnext_phase2_rubric import RESPONSE_SCHEMA as rubric_schema, pins as rubric_pins
                 rubric_pins(self.proof.reader.suite)
+                from whetstone.vnext_phase2_reviewer_advice import supported as advice_supported, pins as advice_pins
+                if advice_supported(self.proof.reader.suite):
+                    from whetstone.vnext_phase2_reviewer_advice import RESPONSE_SCHEMA as rubric_schema
+                    advice_pins(self.proof.reader.suite)
                 self.schemas.validate(packet, rubric_schema)
+                if advice_supported(self.proof.reader.suite): classifications = packet['classifications']
                 annotations = packet['rubric_findings'];packet = packet['review']
         except ValueError as exc:
             raise ReviewShapeError(str(exc)) from exc
@@ -73,6 +79,12 @@ class _Journal(_Request):
         require(len(ids) == len(set(ids)), 'Phase 2 Reviewer repeats a feedback ID')
         self.schemas.validate(packet, 'phase2_reviewer_feedback')
         result = dict(feedback=packet)
+        if classifications is not None:
+            from whetstone.vnext_phase2_reviewer_advice import bind
+            # Structurally valid contradictory authority remains invalid_review;
+            # missing/extra response fields use the existing shape retry policy.
+            result['advice'] = bind(self.proof.reader.suite, self.bound.inputs, packet,
+                                    self.feedback_path, classifications)
         if annotations is not None:
             from whetstone.vnext_phase2_rubric import attribute
             try:

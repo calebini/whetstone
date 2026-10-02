@@ -12,7 +12,7 @@ from types import MappingProxyType
 from whetstone.vnext_review_configuration import read as read_review_configuration
 from whetstone.vnext_contracts import (CONTRACT_ROOT,VNextSchemaRegistry,canonical_json_bytes,decode_json,
     require,sha256_bytes,validate_contract_suite,validate_job_descriptor)
-from whetstone.vnext_proposal_admission import initialize_proposal_storage,prepare_proposal_storage_inputs
+from whetstone.vnext_proposal_admission import ProposalAdmission,initialize_proposal_storage,prepare_proposal_storage_inputs
 from whetstone.vnext_sections import seed_section_map
 from whetstone.vnext_validation import ArtifactReader,validate_bootstrap_reader
 
@@ -89,22 +89,27 @@ class PreparedProposalPackage:
     artifacts: object
     selectors_json: bytes
     input_paths: tuple
+    admission_type: type = ProposalAdmission
 
     def create(self,destination):
         """Revalidate exact source bytes and suite before creating any root."""
         require(not Path(destination).resolve().is_relative_to(self.source_root),
                 'destination must be outside the read-only source package')
-        current=prepare_proposal_package(self.source_root,manifest_path=self.manifest_path,suite_path=self.suite_path)
+        current=prepare_proposal_package(self.source_root,manifest_path=self.manifest_path,suite_path=self.suite_path,_admission_type=self.admission_type)
         require(current.suite_digest==self.suite_digest and current.artifacts==self.artifacts
                 and current.selectors_json==self.selectors_json,'staged package changed after preflight')
         store,_=initialize_proposal_storage(destination,artifacts=dict(self.artifacts),suite_path=self.suite_path,
-            input_paths=self.input_paths,**decode_json(self.selectors_json))
+            input_paths=self.input_paths,_admission_type=self.admission_type,**decode_json(self.selectors_json))
         from whetstone.vnext_proposal_run import ProposalRun
-        try:return ProposalRun(store,suite_path=self.suite_path)
+        if self.admission_type is not ProposalAdmission:
+            from whetstone.vnext_verified_run import VerifiedRun
+            owner = VerifiedRun
+        else: owner = ProposalRun
+        try:return owner(store,suite_path=self.suite_path)
         except BaseException:store.close();raise
 
 
-def prepare_proposal_package(root,*,manifest_path='proposal_package.json',suite_path=None):
+def prepare_proposal_package(root,*,manifest_path='proposal_package.json',suite_path=None,_admission_type=ProposalAdmission):
     """Read only referenced inputs, derive seed authority, and validate all bytes."""
     source=_Source(root)
     stage='vnext_config_invalid'
@@ -150,11 +155,11 @@ def prepare_proposal_package(root,*,manifest_path='proposal_package.json',suite_
             review_ref=package['review_configuration'],seed_map_ref=map_ref,round_refs={},
             launch_package_ref={'path':PACKAGE_PATH,'hash':sha256_bytes(raw)})
         frozen,selectors,job=prepare_proposal_storage_inputs(artifacts=artifacts,suite_path=path,
-                                                          input_paths=input_paths,**selectors)
+                                                          input_paths=input_paths,_admission_type=_admission_type,**selectors)
         # Re-read all source inputs after constructing the complete snapshot.
         for name,content in tuple(source.reads.items()):require(source.read(name)==content,'package input changed during preflight')
         return PreparedProposalPackage(source.root,manifest_path,path.resolve(),suite.digest,
-            MappingProxyType(frozen),canonical_json_bytes(selectors),input_paths)
+            MappingProxyType(frozen),canonical_json_bytes(selectors),input_paths,_admission_type)
     except (ValueError,OSError,KeyError,TypeError) as exc:
         raise ProposalPackageError(stage,str(exc)) from exc
     finally:source.close()

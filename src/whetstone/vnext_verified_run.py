@@ -257,6 +257,9 @@ class VerifiedRun:
     def continue_phase2_pass(self, pass_number, *, action, **options):
         from whetstone.vnext_verified_phase2_sequence import _Continuation
         return _Continuation(self).operation(pass_number, action, **options)
+    def prepare_phase2_continuation_advice(self, pass_number, advice):
+        from whetstone.vnext_verified_phase2_sequence import _Continuation
+        return _Continuation(self).prepare_advice(pass_number, advice)
     def admit_phase2_round(self):
         from whetstone.vnext_verified_phase2_round import admit_phase2_round
         return admit_phase2_round(self)

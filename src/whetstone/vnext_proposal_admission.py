@@ -163,7 +163,7 @@ class ProposalAdmission:
 
 
 def prepare_proposal_storage_inputs(*, artifacts, suite_path, descriptor_ref, review_ref, seed_map_ref, round_refs,
-                                    launch_package_ref=None,input_paths=()):
+                                    launch_package_ref=None,input_paths=(), _admission_type=ProposalAdmission):
     """Validate and freeze complete initialization bytes without filesystem writes."""
     frozen = deepcopy(artifacts)
     allowed = {'job_descriptor.json', 'rounds/current_verified.json',
@@ -188,7 +188,7 @@ def prepare_proposal_storage_inputs(*, artifacts, suite_path, descriptor_ref, re
     staged = StagedInputs()
     selectors = deepcopy(dict(descriptor_ref=descriptor_ref, review_ref=review_ref,
                               seed_map_ref=seed_map_ref, round_refs=round_refs,launch_package_ref=launch_package_ref))
-    admission = ProposalAdmission(staged, suite_path=suite_path, **selectors)
+    admission = _admission_type(staged, suite_path=suite_path, **selectors)
     for number in sorted(round_refs):admission.load_inputs(staged.read, number)
     values = admission._base(staged.read)[1]
     job=values['job']
@@ -206,7 +206,7 @@ def prepare_proposal_storage_inputs(*, artifacts, suite_path, descriptor_ref, re
 
 
 def initialize_proposal_storage(root, *, artifacts, suite_path, descriptor_ref, review_ref, seed_map_ref, round_refs,
-                                launch_package_ref=None,input_paths=()):
+                                launch_package_ref=None,input_paths=(), _admission_type=ProposalAdmission):
     """Validate an exact package, then create a genuinely fresh physical root.
 
     Existing roots are never upgraded. Failed initialization retains evidence.
@@ -214,13 +214,13 @@ def initialize_proposal_storage(root, *, artifacts, suite_path, descriptor_ref, 
     """
     frozen,selectors,job=prepare_proposal_storage_inputs(artifacts=artifacts,suite_path=suite_path,
         descriptor_ref=descriptor_ref,review_ref=review_ref,seed_map_ref=seed_map_ref,round_refs=round_refs,
-        launch_package_ref=launch_package_ref,input_paths=input_paths)
+        launch_package_ref=launch_package_ref,input_paths=input_paths,_admission_type=_admission_type)
     initialize_storage(root, job_id=job['job_id'], descriptor_ref=selectors['descriptor_ref'], artifacts=frozen)
     store = LocalAuthorityStore(root, job_id=job['job_id'])
     try:
         from whetstone.vnext_proposal_run import RUN_INPUT_PATH
         require(store.read(RUN_INPUT_PATH)==frozen[RUN_INPUT_PATH], 'retained proposal run selectors failed readback')
-        admitted = ProposalAdmission(store, suite_path=suite_path, **selectors)
+        admitted = _admission_type(store, suite_path=suite_path, **selectors)
         for number in sorted(round_refs):admitted.load_inputs(store.read, number)
     except BaseException:
         store.close()
