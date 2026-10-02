@@ -26,9 +26,11 @@ is not release-qualified and does not establish coverage of every pinned feature
 Command adapters have been written over existing owners for Phase 1, distinct
 Phase 2 entry and execution, operator/semantic inputs, bounded recovery and source
 operations. The new Phase 2 native transport retains the complete review/rubric
-response shape and leaves attempts to the existing journal. D8 command selection
-is rechecked inside each actual fence, including the promotion projection fence.
-These are implementation drafts; the evidence below establishes only tested paths.
+response shape and leaves attempts to the existing journal. A command-selection
+guard rechecks selected boundaries inside actual D8 owner fences, including the
+selected promotion's projection fence. Guard integration across the full command
+surface remains part of Q1 acceptance. These are implementation drafts; the
+evidence below establishes only tested paths.
 
 ## Adopted direct Reviewer handoff decision
 
@@ -58,8 +60,8 @@ is recovery-only and cannot start an Editor or another review.
 | 1. Fresh config-selected admission | Focused CLI tests exercise injected exact qualification, dry-run, fresh initialization and V reopening. Production gate remains empty. |
 | 2. Unknown/unqualified/conflicting selectors | Public refusal, suite conflict, existing destination and no-client/no-write assertions covered; expand the selector/Phase 2 Ref matrix. |
 | 3. Retained mode | Removed config selectors still select V status; new work without mode refuses. Broaden edited-selector negative cases. |
-| 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion. Post-correction convergence, versioned entry, vertical/focused and all target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The original ratified 12-row table plus the new advice-attachment recovery row remain unqualified as a complete set: prepared registration/decision/promotion, report/state publication, first/later Phase 2 continuation, exhausted refusal and repair-only `--continue` need complete command evidence and any resulting fixes. |
+| 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned entry, vertical/focused and the remaining target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal families, first/later Phase 2 continuation, exhausted refusal and repair-only `--continue` need complete command evidence and any resulting fixes. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. Real disposable-fixture command apply/retry, uncertain write, pointer advancement and historical drift journeys remain to run. No real external source was written. |
 | 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. Broader legacy/bridge/R/P route qualification remains Q1 work; release-wide qualification remains Q3. |
 
@@ -121,6 +123,62 @@ local D8 roots, one supervised worker, a 60% duty limit and finite deadlines.
 This remains bounded implementation evidence, not suite-wide qualification or
 permission to activate V, invoke live providers or apply to external sources.
 
+## Post-promotion continuation verification
+
+Started from checkpoint `de09ab5` on 2026-10-02. This bounded slice covers one
+unversioned horizontal final/strict correction through promotion, resolution
+publication, declaration preparation, follow-up review and convergence. It uses
+the ratified scheduler recovery row and existing owners; no new product policy,
+scheduler, contract pin or public mode is introduced.
+
+The command selector now exposes pending findings and closeout publication and
+prepares a scheduled strict review's declaration package before binding its
+request. Later review execution reselects the committed request under its actual
+D8 fence. Resolution and closeout recovery publish and project only the selected
+outcome, with fresh selection at each fence; a changed outcome cannot be projected.
+
+Committed entry inspection/recovery now uses its proven original ancestor after
+a correction advances the pointer, preserving the actual current-head/read
+guards. Uncommitted entry still requires the current head. Versioned historical
+entry replay now matches the older historical branch: immutable entry evidence
+proves the past; its mutable state projection does not. Live projection validity
+remains with the entry owner.
+
+The complete command journey passed **1 test in 5,259.147s** (5,259.655s supervised
+wall time, 60% duty limit). It asserts exactly three Phase 2 Reviewer calls, one
+Editor call, one Verifier call and promotion ordinal 1 through these boundaries:
+
+- Interrupted resolution publication, followed by removal and recovery of the
+  derived historical entry reference, without replacing the entry or advancing work.
+- Read-only status/dry-run, refusal of implicit live-command repair, and explicit
+  resolution publication plus state recovery that stops before another review.
+- Post-correction declaration preparation and follow-up reviews, then interrupted
+  closeout publication with the same read-only/refusal checks.
+- Lost acknowledgement after the final state write, independent `CONVERGED`
+  status, unchanged completed-run reentry and refusal of an unnecessary resume.
+
+The focused regression batch passed **18 tests in 723.389s**: four publication
+selection/fence tests, three invocation-guard tests, eight existing entry
+interruption/tamper/barrier tests, the supported versioned-entry owner test, clean
+Phase 2 command convergence and disabled public-admission refusal. Together with
+the composed journey, **19 tests passed on the final runtime/test source hashes**.
+Targeted compilation, whitespace checks and both suite validations passed; all
+production qualification maps remain empty. All workers from this slice exited.
+The full fault/reentry journey took **87.7 minutes** at the stated duty limit.
+That is a practical qualification cost, not an isolated promotion benchmark or
+production-throughput claim. Replay profiling/optimization remains Q3 work.
+
+Evidence is retained under `rounds/vnext-18-9-q1-post-promotion-001/`, including
+exact input hashes, failed and completed logs, and four stable disposable-fixture
+snapshots for diagnosis/replay profiling. `verification.json` records the exact
+commands, outcomes, source hashes, preserved-file hashes and scope limits. Two
+earlier attempts expired their
+supervision leases and count as neither passes nor assertion failures. Three
+actual failures exposed the entry-base, mutable historical projection and missing
+declaration-preparation defects described above. The successful run used one
+worker, a 300-second lease and a finite 6,000-second ceiling. No live provider,
+real external source write, public activation, commit or push occurred.
+
 ## Resume the implementation
 
 The direct Reviewer handoff decision is resolved. Its implementation and
@@ -129,9 +187,19 @@ open. Continue the **same Q1 package**, without creating another delivery
 milestone or marking any acceptance row complete early. Finish the remaining
 adapter/recovery paths and their seven-case evidence, reconcile
 the supported-command matrix with actual results, then perform the bounded review.
-In particular, audit report-publication plus state-projection stop points, semantic
-follow-up selection, Phase 2 configuration revalidation and first/later request
-selection under the fence. Do not infer that a written adapter has passed those cases.
+In particular, finish the other report/terminal publication and projection
+compositions, declaration-preparation interruption coverage, semantic follow-up
+selection, Phase 2 configuration revalidation and remaining request-selection
+boundaries under the fence. Versioned/vertical/focused/target command routes and
+the disposable V source-apply/retry/recovery journeys remain open. Do not infer
+that a written adapter has passed those cases.
+
+The next unproven command boundary in acceptance case 4 is versioned
+`promote-phase2`: a config-selected run must prepare its system candidate with
+zero Editor calls, independently verify and promote it, then commit distinct
+entry and support recovery-only reentry. The existing owner regression is not
+that command-level qualification. Keep it within the same Q1 package and its
+offline qualification gate.
 
 Keep Q2's seven P0 gaps, Q3 replay/full qualification and Q4 live soak/activation
 separate. Preserve `notes/future-improvements.md` and the pre-existing untracked

@@ -31,8 +31,8 @@ def execute_phase2(run, args, config, review):
         elif gate == 'review':
             client = phase2_client(run, args, config, review)
             guarded(run, state, lambda: run.bind_phase2_next_review(client.transport_binding))
-            result = run.continue_phase2_pass(ordinal, action='execute', client=client)
-            if getattr(result, 'status', '') != 'complete': return inspect_command(run)
+            # Reselect the committed request; pending_review guards its actual
+            # invocation under D8, including when another command raced binding.
         elif gate == 'pending_review':
             if state['request_status'] != 'not_started': return state
             client = phase2_client(run, args, config, review)
@@ -73,10 +73,9 @@ def execute_phase2(run, args, config, review):
         elif gate == 'declaration_maintenance_required':
             guarded(run, state, run.prepare_phase2_declaration)
         elif gate in {'declaration_closeout_required', 'closeout_required'}:
-            if gate == 'declaration_closeout_required': run.reconcile_phase2_findings()
-            result = run.finish_phase2()
-            if result.get('committed'): return run.reconcile_phase2_state()
-            return result
+            # Ready publication is selected explicitly by inspect_command.
+            # Remaining declaration blockers belong to their existing owners.
+            return state
         else:
             # Unhandled gates retain their owner and require explicit action.
             return state

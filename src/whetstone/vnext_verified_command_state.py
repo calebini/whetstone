@@ -96,6 +96,21 @@ def phase2_state(run):
             return selected('closeout_projection', phase='phase_2', recovery='closeout_projection', closeout=closeout, **evidence)
         return selected('phase2_complete' if closeout.get('phase_complete') else 'phase2_stopped',
                         phase='phase_2', closeout=closeout, **evidence)
+    if closeout.get('gate') == 'closeout_publication_required':
+        return selected('closeout_publication', phase='phase_2', recovery='closeout_publication',
+                        closeout=closeout, **evidence)
+    if gate == 'declaration_closeout_required':
+        findings = public(run.phase2_final_findings())
+        if not findings.get('committed'):
+            return selected('findings_publication', phase='phase_2', recovery='findings_publication',
+                            findings=findings, **evidence)
+    if gate == 'review':
+        from whetstone.vnext_verified_phase2_closeout import _DeclarationPass, _bundle
+        if isinstance(state['owner'], _DeclarationPass):
+            package = _bundle(state['owner'], state['frames'], state['clean'])
+            if not package['committed']:
+                return selected('declaration_maintenance_required', phase='phase_2',
+                    declaration={k: v for k, v in package.items() if k != 'assets'}, **evidence)
     if gate == 'pending_review':
         frame = state['frames'][-1]
         outcomes = frame['outcomes']

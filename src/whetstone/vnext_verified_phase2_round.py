@@ -1,5 +1,6 @@
 """First Phase 2 correction: acyclic historical provenance and round admission."""
 from copy import copy, deepcopy
+from dataclasses import replace
 from types import SimpleNamespace
 
 from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, require, sha256_bytes
@@ -88,7 +89,9 @@ class _HistoricalAdvice(_Advice):
             from whetstone.vnext_version_entry import entry_view
             result=entry_view(self,proof,binding)
             require(result.committed,'historical version entry is not committed')
-            return result
+            # Match the original historical branch below: a mutable projection
+            # cannot invalidate or authorize the immutable entry being replayed.
+            return replace(result, outcome='historical_entry', state_current=True, pending_paths=())
         raw = proof.reader.raw(binding.request['current_verified_draft'])
         text, before, after, changed = promote_spec_text_for_phase2(raw.decode('utf-8'))
         require(not changed and text.encode('utf-8') == raw and before == after,

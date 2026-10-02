@@ -87,6 +87,19 @@ def enter(run, args, config, review):
 
 def repair(run, state, args):
     row = state['recovery']
+    if row in {'resolution_publication', 'closeout_publication'}:
+        # One selected outcome includes its reports and derived state. Bind each
+        # owner under its own fence; the second fence may only project the exact
+        # result just published, never select a successor or spend an allowance.
+        family = row.removesuffix('_publication')
+        publish, project, field = ((run.publish_phase2_resolutions, run.reconcile_phase2_resolution_state, 'report')
+            if family == 'resolution' else (run.finish_phase2, run.reconcile_phase2_state, 'closeout'))
+        published = public(guarded(run, state, publish))
+        current = inspect_command(run)
+        require(current['recovery'] == family+'_projection' and current[field] == published
+                and current['sequence']['current_pointer'] == state['sequence']['current_pointer'],
+                'published outcome changed before projection; inspect before resuming')
+        return guarded(run, current, project)
     if row in {'registration', 'verification'}:
         number = getattr(args, 'vnext_round', None)
         require(number is not None, 'publication recovery requires --vnext-round')
@@ -117,6 +130,7 @@ def repair(run, state, args):
         'signal_publication': run.publish_phase2_signals,
         'signal_projection': run.reconcile_phase2_signal_state,
         'closeout_projection': run.reconcile_phase2_state,
+        'findings_publication': run.reconcile_phase2_findings,
         'advice': (run.bind_phase2_advice if state.get('pass_number') == 1 else
                    lambda: run.continue_phase2_pass(state['pass_number'], action='advice')),
     }

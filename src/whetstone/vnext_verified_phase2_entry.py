@@ -92,7 +92,17 @@ class _Entry(_Binding):
             proof.guard(self.store.read)
             self.run._guard(self.store.read)
             return work
+        proof = self._entry_proof(proof)
         return self._entry_view(proof, self._committed_binding(proof))
+
+    def _entry_proof(self, proof):
+        if self._optional(ENTRY_PATH) is not None:
+            # A committed entry retains its original proven ancestor after
+            # Phase 2 corrections. The prefix keeps the actual head/read guard;
+            # an uncommitted entry must still validate against the current head.
+            from whetstone.vnext_verified_phase2_round import _entry_prefix
+            return _entry_prefix(proof)
+        return proof
 
     def _synchronize_entry_sources(self, store, proof, binding):
         if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and proof.latest!=binding.request['current_verified_pointer']:
@@ -113,6 +123,7 @@ class _Entry(_Binding):
 
     def enter(self):
         def publish(store, proof):
+            proof = self._entry_proof(proof)
             binding = self._committed_binding(proof)
             if proof.seed_values['job']['assembler_version']=='patch-assembler-v3' and self._optional(ENTRY_PATH) is None:
                 from whetstone.vnext_version_entry import prefix_at

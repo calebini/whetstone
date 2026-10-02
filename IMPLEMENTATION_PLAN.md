@@ -1704,8 +1704,11 @@ applicability and unchanged source boundaries. Q1 remains incomplete: the next
 step is completion of the approved implementation and the seven acceptance
 cases above with production activation disabled. The
 [Q1 implementation handoff](docs/VNEXT_18_9_Q1_IMPLEMENTATION.md) records current
-partial progress and the concrete Phase 2 finding-advice input decision. Do not
-mark Q1 complete from bootstrap or clean-journey evidence alone.
+partial progress, the adopted direct Reviewer finding-advice handoff and the
+post-promotion continuation/recovery slice. That slice also addresses historical
+entry inspection after a correction advances the pointer; its verification
+status is recorded separately from the broader acceptance inventory. Do not mark
+Q1 complete from bootstrap or individual command-journey evidence alone.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The
