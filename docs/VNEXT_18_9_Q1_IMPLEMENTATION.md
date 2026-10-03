@@ -61,7 +61,7 @@ is recovery-only and cannot start an Editor or another review.
 | 2. Unknown/unqualified/conflicting selectors | Public refusal, suite conflict, existing destination and no-client/no-write assertions covered; expand the selector/Phase 2 Ref matrix. |
 | 3. Retained mode | Removed config selectors still select V status; new work without mode refuses. Broaden edited-selector negative cases. |
 | 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. Versioned convergence, vertical/focused and the remaining target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal cases, remaining interruption points and Phase 1 repair-only `--continue` need complete command evidence and any resulting fixes. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The operator-input campaign adds fence-bound input/selection refusal across ten adapter branches and real Phase 1/2 options-response plus Phase 1 semantic-answer/child-selection journeys; recording and selection do not execute the selected work. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal cases, remaining interruption points and Phase 1 repair-only `--continue` need complete command evidence and any resulting fixes. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. Real disposable-fixture command apply/retry, uncertain write, pointer advancement and historical drift journeys remain to run. No real external source was written. |
 | 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. Broader legacy/bridge/R/P route qualification remains Q1 work; release-wide qualification remains Q3. |
 
@@ -551,8 +551,8 @@ between batches. All workers exited and the bounded-worker lock is available.
 Targeted compilation, `git diff --check`, and offline validation of both suites
 passed. Suite digests are unchanged and all four production qualification maps
 remain empty. The unrelated notes and pre-existing audit retain their hashes.
-This slice is uncommitted; no push, live provider call, real external source write
-or specification amendment occurred. Q1 remains incomplete.
+This slice was checkpointed at `aca3951`; no push, live provider call, real external
+source write or specification amendment occurred. Q1 remains incomplete.
 
 This qualifies retained declaration disagreement after the first scheduled
 review under the consuming suite; it does not qualify every final-step,
@@ -560,6 +560,72 @@ post-promotion, target/route, mixed authority/rubric or signal disposition. Sour
 corruption and other owner cases retain their earlier separate evidence. There
 is no new durable blocked-report writer, arbitrary repair/review authorization,
 or full finite-table/release qualification. No replay optimization was attempted.
+
+## Operator and semantic input fences
+
+The findings/reporting slice was checkpointed at `aca3951`. This slice routes
+explicit operator mutations through the existing command-selection guard. The
+current selection is revalidated inside each actual owner fence before owner
+validation or publication. File operands are read once into a frozen packet and
+their exact bytes are rechecked at the fence; even JSON-equivalent replacement
+refuses. Read-only previews retain the existing owner validation, take no writer
+fence, and recheck the operand before returning.
+
+This applies to Phase 1 and Phase 2 options/responses, first/later explicit advice,
+Phase 2 repair and gap-acceptance requests, and semantic answers. Semantic
+follow-up selection freezes the explicit candidate and answer Ref and uses the
+same state guard; its owner retains exact receipt and current-base validation.
+Context/answer inspection remains read-only. No schemas, retry allowances,
+authority policy or legacy/bridge/proposal owners change. The authority is the
+existing verified-command algorithm, verified-operator algorithm and scope/intake
+spec's config-selected V decision-routing section.
+
+Verification is retained under `rounds/vnext-18-9-q1-operator-inputs-001/`:
+
+- **27 guard/regression methods passed in 3.171s** (3.588s supervised). Seven new
+  methods exercise all ten mutating branches through real D8 storage with recording
+  owners: Phase 1/2 options and responses, first/later advice, repair, gap
+  acceptance, semantic answer and follow-up selection. Changed command selection
+  refuses before owner validation; every file operand rejects JSON-equivalent
+  byte replacement. Supported previews acquire no fence. Mismatched candidates,
+  duplicate JSON keys and input changes during preview refuse. Read-only context
+  and answer inspection install no mutation guard. Existing publication,
+  declaration, findings and Reviewer-continuation guard regressions also pass.
+- **Three actual config-to-command journeys passed in 674.062s** (674.621s
+  supervised). Phase 1 and Phase 2 each reach a genuine operator-decision finding,
+  preview options without writes, reject file replacement before the actual owner
+  fence, publish requests and explicit responses, and repeat the exact response
+  without changes. The original finding/evidence remains unresolved, no round is
+  admitted, and no Editor or Verifier runs. Phase 2 preserves its distinct entry.
+  The semantic journey uses one scripted Reviewer, Editor and Verifier to retain
+  a final interpretation rejection. Answer inspection and preview are read-only;
+  changed answer bytes refuse before publication. An explicit answer grants no
+  mutation effects. An incorrect receipt hash refuses without writes; the exact
+  receipt selects a child transaction and repeated selection is idempotent. The
+  rejected parent artifacts and pointer remain unchanged, registry creation count
+  stays one, and no child request, promotion or Phase 2 entry executes.
+- **40 legacy/public-admission regression tests passed in 7.154s** (7.590s
+  supervised), including refusal of unqualified public V admission.
+
+Together **70 distinct methods passed**, including ten new methods, on unchanged
+runtime/test sources. All recorded batches used one worker at a time at 60% duty,
+with finite deadlines and supervision leases. All workers exited and the bounded
+worker lock is available. Targeted compilation, whitespace checks and offline
+validation of both suites passed. Suite digests and all four empty production
+qualification maps are unchanged. The unrelated notes and pre-existing audit
+retain their original hashes. `verification.json` records exact commands, results,
+source/log hashes and limitations.
+
+The adapter fence coverage spans the ten branches; the three real-owner command
+journeys establish only the specific options/response and Phase 1 semantic-answer
+cases above. Repair, gap acceptance and explicit advice payload/fault journeys,
+Phase 2 semantic follow-up and selected-child execution remain separate command
+qualification work. This does not qualify all operator policies, routes, targets,
+interruption points or the full finite resume table. No replay optimization or
+release-wide qualification was attempted. No new product/authority decision was
+required. This slice is uncommitted; no push, public activation, live provider
+call, real external source write or specification amendment occurred. Q1 remains
+incomplete.
 
 ## Resume the implementation
 
@@ -583,10 +649,14 @@ point. Correction-failure and signal publication/projection now have the bounded
 command evidence above; other dispositions and interruption points remain open.
 Ordinary-exhaustion maintenance/closeout now has the bounded command evidence
 above. The final-findings/blocked-status slice is recorded separately above;
-use its final verification status and coverage limits when resuming. The next
-bounded implementation area is operator and semantic input admission: revalidate
-the selected request/candidate and exact supplied inputs at each existing owner
-fence, and qualify dry-run and stale-input refusal through the command adapter.
+use its final verification status and coverage limits when resuming. Operator
+and semantic input admission is recorded above; its guarded recording/selection
+boundary must not be confused with execution of the selected work. The next
+bounded area is ordinary execution after explicit selection: inspect how Phase 1
+and Phase 2 consume operator selection receipts and semantic child transactions,
+revalidate exact execution inputs at the owner fences, and qualify the selected
+work through its existing execution owners. Check the existing specs before
+changing routing; do not reopen a rejected parent or infer extra review budget.
 Preserve the finite resume table and existing authority decisions. Keep this in
 the same Q1 package with production qualification disabled. Later declaration
 preparation, other terminal dispositions, route/target and source-operation

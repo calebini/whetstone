@@ -30,6 +30,21 @@ def guarded(run, expected, operation, *, validate_inputs=None):
         return operation()
 
 
+def selected_input(run, state, path, operation, *, dry_run):
+    """Bind a file operand's exact bytes to the selected owner invocation."""
+    path = Path(path)
+    def read(): return confined_file(path.parent, path.name).read_bytes()
+    raw = read()
+    packet = decode_json(raw)
+    def validate():
+        require(read() == raw, 'selected operator input changed before operation completed')
+    if dry_run:
+        result = operation(packet)
+        validate()
+        return result
+    return guarded(run, state, lambda: operation(packet), validate_inputs=validate)
+
+
 def phase2_client(run, args, config, review):
     from whetstone.vnext_native_phase2_reviewer import NativePhase2ReviewerClient
     return NativePhase2ReviewerClient(review=review,
@@ -272,35 +287,42 @@ def execute(run, args, config, review):
     if command == 'resume': return resume(run, args, config, review, state)
     if command.startswith('vnext-semantic-'):
         if command == 'vnext-semantic-answers': return run.answers(candidate_id=args.candidate)
+        candidate = args.candidate
         if command == 'vnext-semantic-answer':
-            from whetstone.vnext_verified_cli import read_input
-            packet = read_input(args.input)
-            require(packet.get('candidate_id') == args.candidate, 'answer differs from selected candidate')
-            return run.submit_answer(packet=packet, dry_run=args.dry_run)
-        return run.select_followup(candidate_id=args.candidate,
-                                   answer_reference=dict(path=args.answer_receipt, hash=args.answer_hash))
+            def submit(packet):
+                require(packet.get('candidate_id') == candidate, 'answer differs from selected candidate')
+                return run.submit_answer(packet=packet, dry_run=args.dry_run)
+            return selected_input(run, state, args.input, submit, dry_run=args.dry_run)
+        reference = dict(path=args.answer_receipt, hash=args.answer_hash)
+        return guarded(run, state, lambda: run.select_followup(candidate_id=candidate, answer_reference=reference))
     if command in {'vnext-decisions', 'vnext-decide'}:
-        from whetstone.vnext_verified_cli import read_input
-        if getattr(args, 'repair_request', None): return run.admit_phase2_repair(read_input(args.repair_request), dry_run=args.dry_run)
-        if getattr(args, 'gap_acceptance', None): return run.accept_phase2_gaps(read_input(args.gap_acceptance), dry_run=args.dry_run)
+        for operand, owner in (('repair_request', run.admit_phase2_repair), ('gap_acceptance', run.accept_phase2_gaps)):
+            path = getattr(args, operand, None)
+            if path is not None:
+                require(state['phase'] == 'phase_2', 'repair and gap acceptance require Phase 2')
+                return selected_input(run, state, path, lambda packet: owner(packet, dry_run=args.dry_run),
+                                      dry_run=args.dry_run)
         advice = getattr(args, 'advice', None)
         if advice is not None:
             require(command == 'vnext-decisions' and state['phase'] == 'phase_2',
                     'finding advice is available only from Phase 2 vnext-decisions')
-            packet = read_input(advice)
             ordinal = state.get('sequence', {}).get('pass_number')
             require(type(ordinal) is int and ordinal > 0,
                     'finding advice requires an exact active Phase 2 pass')
-            if ordinal == 1:
-                return run.prepare_phase2_advice(packet) if args.dry_run else run.bind_phase2_advice(packet)
-            return (run.prepare_phase2_continuation_advice(ordinal, packet) if args.dry_run else
-                    run.continue_phase2_pass(ordinal, action='advice', advice=packet))
+            def bind(packet):
+                if ordinal == 1:
+                    return run.prepare_phase2_advice(packet) if args.dry_run else run.bind_phase2_advice(packet)
+                return (run.prepare_phase2_continuation_advice(ordinal, packet) if args.dry_run else
+                        run.continue_phase2_pass(ordinal, action='advice', advice=packet))
+            return selected_input(run, state, advice, bind, dry_run=args.dry_run)
         from whetstone.vnext_verified_phase1_decisions import Phase1Decisions
         from whetstone.vnext_verified_phase2_operator import Phase2Operator
         owner = Phase2Operator(run) if state['phase'] == 'phase_2' else Phase1Decisions(run)
         locator = getattr(args, 'options', None) if command == 'vnext-decisions' else args.selections
         if locator is None: return owner.context()
-        return owner.publish(read_input(locator), responses=command == 'vnext-decide', dry_run=args.dry_run)
+        return selected_input(run, state, locator,
+            lambda packet: owner.publish(packet, responses=command == 'vnext-decide', dry_run=args.dry_run),
+            dry_run=args.dry_run)
     if getattr(args, 'dry_run', False): return state
     if state['continuation'] or (state['recovery'] and state['recovery'] not in {'phase1_projection', 'phase1_publication'}):
         return dict(state, next_action='resume')

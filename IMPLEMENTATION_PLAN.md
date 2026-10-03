@@ -1737,6 +1737,10 @@ The final-findings slice exposes committed reconciliation and the existing
 read-only blocked report without granting another review, repair or terminal.
 Its interrupted-publication and retained-disagreement command verification is
 recorded in the handoff; the broader Q1 acceptance inventory remains incomplete.
+The operator/semantic input slice routes explicit mutations through the existing
+command-selection guard and rechecks file operand bytes inside each owner fence.
+Its exact command coverage and verification status are recorded in the handoff;
+recording a decision or selecting a child does not execute that child transaction.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The
