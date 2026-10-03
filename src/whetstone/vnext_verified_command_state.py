@@ -141,6 +141,11 @@ def phase2_state(run):
         if not findings.get('committed'):
             return selected('findings_publication', phase='phase_2', recovery='findings_publication',
                             findings=findings, **evidence)
+        evidence['findings'] = findings
+        if findings['packet']['blocking_reasons']:
+            # This owner explains retained disagreement without publishing or
+            # granting repair/review permission. Keep the existing stopped gate.
+            evidence['blocked_report'] = public(run.phase2_blocked_report())
     if gate == 'review':
         from whetstone.vnext_verified_phase2_closeout import _DeclarationPass, _bundle
         if isinstance(state['owner'], _DeclarationPass):

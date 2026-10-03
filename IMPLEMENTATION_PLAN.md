@@ -1733,6 +1733,10 @@ declaration maintenance and failure-closeout publication through the existing
 fenced command branches. Shared report projection includes that terminal outcome
 while preserving earlier failure artifacts. Its exact fault/reentry coverage and
 verification status are recorded in the handoff; Q1 remains incomplete.
+The final-findings slice exposes committed reconciliation and the existing
+read-only blocked report without granting another review, repair or terminal.
+Its interrupted-publication and retained-disagreement command verification is
+recorded in the handoff; the broader Q1 acceptance inventory remains incomplete.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The
