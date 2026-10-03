@@ -46,7 +46,7 @@ def projections(owner, proof, *, reviewer=None, correction=None, signals=None):
             raw=r['assets'][ref['path']]
             allowed=plan[path]['allowed'] if path in plan else []
             plan[path]=dict(ref=ref,raw=raw,allowed=allowed+[raw],dependencies=dependencies,sources=sources)
-    if state and state['gate']=='declaration_closeout_required':
+    if state and state['gate'] in {'declaration_closeout_required', 'budget_exhausted', 'closeout_required'}:
         closeout=(correction_reader._closeout(correction_proof) if correction_reader is not None else owner._closeout(proof))
         if closeout.get('committed') and 'failure_report' in closeout['packet']:
             ref=closeout['packet']['failure_report'];raw=closeout['assets'][0][1]

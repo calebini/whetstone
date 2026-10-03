@@ -1728,6 +1728,11 @@ to two more report families. Selection gives their own pending publication/state
 repair precedence over an unrelated shared-mirror mismatch. The handoff records
 the command, fault and guard evidence and its verification status; other terminal
 and route/target cases remain open, and public qualification remains disabled.
+The subsequent non-converged terminal slice exposes ordinary-exhaustion
+declaration maintenance and failure-closeout publication through the existing
+fenced command branches. Shared report projection includes that terminal outcome
+while preserving earlier failure artifacts. Its exact fault/reentry coverage and
+verification status are recorded in the handoff; Q1 remains incomplete.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The

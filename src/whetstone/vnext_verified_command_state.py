@@ -119,16 +119,23 @@ def phase2_state(run):
         # not steal a later family's own pending publication/state projection.
         if report.get('mirrors_current') is False and mirror_repair is None:
             mirror_repair = selected(name+'_projection', phase='phase_2', recovery=name+'_projection', report=report, **evidence)
-    if mirror_repair is not None: return mirror_repair
     closeout = public(run.phase2_closeout())
     if closeout.get('committed'):
         if not closeout.get('state_current') or not closeout.get('mirror_current'):
             return selected('closeout_projection', phase='phase_2', recovery='closeout_projection', closeout=closeout, **evidence)
+        if mirror_repair is not None: return mirror_repair
         return selected('phase2_complete' if closeout.get('phase_complete') else 'phase2_stopped',
                         phase='phase_2', closeout=closeout, **evidence)
-    if closeout.get('gate') == 'closeout_publication_required':
+    if closeout.get('gate') in {'closeout_publication_required', 'failure_report_publication_required'}:
         return selected('closeout_publication', phase='phase_2', recovery='closeout_publication',
                         closeout=closeout, **evidence)
+    if mirror_repair is not None: return mirror_repair
+    if gate in {'budget_exhausted', 'closeout_required'} and closeout.get('gate') == 'declaration_maintenance_required':
+        from whetstone.vnext_verified_phase2_halt import maintenance_owner
+        from whetstone.vnext_verified_phase2_closeout import _bundle
+        package = _bundle(maintenance_owner(run, proof, state), state['frames'], state['clean'])
+        return selected('declaration_maintenance_required', phase='phase_2', closeout=closeout,
+                        declaration={k: v for k, v in package.items() if k != 'assets'}, **evidence)
     if gate == 'declaration_closeout_required':
         findings = public(run.phase2_final_findings())
         if not findings.get('committed'):

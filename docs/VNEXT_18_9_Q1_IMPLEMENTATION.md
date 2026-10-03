@@ -61,7 +61,7 @@ is recovery-only and cannot start an Editor or another review.
 | 2. Unknown/unqualified/conflicting selectors | Public refusal, suite conflict, existing destination and no-client/no-write assertions covered; expand the selector/Phase 2 Ref matrix. |
 | 3. Retained mode | Removed config selectors still select V status; new work without mode refuses. Broaden edited-selector negative cases. |
 | 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. Versioned convergence, vertical/focused and the remaining target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal cases, remaining interruption points and Phase 1 repair-only `--continue` need complete command evidence and any resulting fixes. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal cases, remaining interruption points and Phase 1 repair-only `--continue` need complete command evidence and any resulting fixes. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. Real disposable-fixture command apply/retry, uncertain write, pointer advancement and historical drift journeys remain to run. No real external source was written. |
 | 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. Broader legacy/bridge/R/P route qualification remains Q1 work; release-wide qualification remains Q3. |
 
@@ -411,7 +411,7 @@ Targeted compilation, whitespace checks and offline suite validation passed;
 both suite digests are unchanged and all four production qualification maps are
 empty. All workers exited and the bounded-worker lock is available. The unrelated
 notes and pre-existing audit retain their original hashes. No new product or
-authority decision was needed. This slice remains uncommitted; no push, live
+authority decision was needed. At that verification checkpoint the slice was uncommitted; no push, live
 provider call, external source write or specification amendment occurred.
 
 This evidence covers the Editor-timeout and blocker-conflict command cases above.
@@ -419,6 +419,86 @@ It does not qualify every correction disposition, nonblocking signal, freeze,
 oscillation, mirror-only interruption or combined historical-report scenario.
 Existing owner tests remain separate evidence. Other terminal, final-findings,
 route/target and source-operation command cases remain open. Q1 is incomplete.
+
+## Non-converged terminal closeout
+
+The report-recovery slice was checkpointed at `d75f887`. This bounded slice
+connects ordinary Phase 2 exhaustion to the existing declaration-maintenance and
+failure-closeout owners. The scheduler's Phase 2 exhaustion rules, finite resume
+table and `vnext_verified_phase2_targets_v1` already require current declaration
+maintenance followed by `TARGET_NOT_REACHED`; no new budget, client permission
+or terminal policy is introduced.
+
+Read-only command selection exposes the exact pending halt declaration package.
+The existing live-command preparation branch rechecks that selection at its
+owner fence. Partial declaration publication remains preparation, with no new
+resume row. Once maintenance is committed, failure-report readiness selects the
+existing closeout publication/projection composition. Each operation retains its
+own fence and fresh selection check.
+
+Ordinary-exhaustion closeouts now participate in the existing shared failure
+mirror ordering. Their committed report can replace a proven historical failure
+mirror without removing the historical artifacts. The closeout's own pending
+projection takes precedence over its shared-mirror mismatch; an otherwise
+current closeout still exposes unrelated pending mirror repair. Completed halt
+selection is `phase2_stopped`, with no inferred convergence or continuation.
+
+The guard/selection campaign passed **25 tests in 2.069s** (2.482s supervised
+wall time), including seven new
+methods. They cover both ordinary-exhaustion preparation gates, unstamped failure
+report readiness, closeout/shared-mirror precedence, stopped terminal selection,
+and actual D8 maintenance-fence acceptance/refusal when a peer changes the
+selected package. Earlier report, publication and Reviewer-continuation guards
+remain in the fixed batch.
+The selection/fence unit cases use stub views/owners; the command journey uses
+the real declaration, report and recovery owners.
+
+The new config-to-command journey passed **1 test in 875.405s** (875.879s
+supervised wall time). It publishes a distinct one-round Phase 2 configuration
+before entry, retains a Reviewer timeout, repairs that failure and explicitly
+continues the same request to a valid deferred major finding. Exhaustion then
+uses the existing maintenance/closeout owners without an Editor, Verifier,
+promotion or another Reviewer request. It exercises:
+
+- Lost acknowledgement after partial halt-declaration publication. Status is
+  read-only, resume/plain dry-run refuse, and ordinary live reentry finishes the
+  exact package before report publication.
+- Interrupted terminal failure-report publication. Status selects the closeout
+  repair; dry-run does not take a writer fence, ordinary live reentry refuses,
+  and Phase 2 still rejects `--continue`.
+- Lost acknowledgement after the final closeout state write. The owned active
+  failure mirror is replaced by the terminal report; all earlier immutable
+  failure artifacts remain unchanged. Reopened status is `phase2_stopped` with
+  `TARGET_NOT_REACHED`, `halt_complete=true`, `phase_complete=false` and no
+  apply-back permission. Resume/live reentry changes no files or client counts.
+
+The request uses exactly two Reviewer attempts (timeout and explicit continuation)
+within one profile-budget round. The current pointer, entry and final declaration
+binding remain unchanged through terminal recovery. Fixtures forbid live
+providers and legacy full-draft execution. Evidence is under
+`rounds/vnext-18-9-q1-terminal-closeout-001/`.
+
+The final clean-convergence and disabled-public-admission regression pair passed
+**2 tests in 544.536s** (545.002s supervised wall time). Together **28 distinct
+methods passed**, including eight new methods, on unchanged runtime/test sources.
+All campaigns used one worker at a time at 60% duty with finite deadlines and
+supervision leases. Combined supervised test time was about 23.7 minutes; this
+is qualification cost, not a production latency or replay-performance result.
+
+`verification.json` records commands, results, logs and source hashes. Targeted
+compilation, whitespace checks and offline suite validation passed. Both suite
+digests are unchanged, and all four production qualification maps remain empty.
+All workers exited and the bounded-worker lock is available. The unrelated notes
+and pre-existing audit retain their original hashes. No new product/authority
+decision was required. This slice is uncommitted; no push, live provider call,
+external source write or specification amendment occurred. Q1 is incomplete.
+
+This is an unpromoted exhaustion command journey with historical Reviewer-failure
+reports. It does not qualify post-promotion exhaustion, every target/route,
+blocked final-declaration disposition, source apply-back or every interruption
+point. The earlier promoted-exhaustion owner tests remain separate evidence.
+Final-findings and the broader Q1 acceptance inventory remain open; Q2 P0 work,
+Q3 replay/full qualification and Q4 live activation remain separate.
 
 ## Resume the implementation
 
@@ -440,13 +520,14 @@ first/later Reviewer continuation cases now have command evidence above; do not
 repeat them as unimplemented owners or infer qualification of every interruption
 point. Correction-failure and signal publication/projection now have the bounded
 command evidence above; other dispositions and interruption points remain open.
-The next bounded command work is non-converged terminal closeout: connect the
-existing declaration-maintenance and halt/closeout owners to the supported
-command gates, then qualify interrupted terminal publication/projection and
-terminal reentry. Preserve the finite resume table; do not infer a generic
+Ordinary-exhaustion maintenance/closeout now has the bounded command evidence
+above. The next bounded command qualification is final-findings reconciliation
+and blocked-declaration reporting: verify retained disagreement, interrupted
+publication and repair-only reentry against the existing owners, and fix any
+adapter gaps exposed. Preserve the finite resume table; do not infer a generic
 Phase 2 continuation. Keep this within the same Q1 package and its offline
-qualification gate, then continue the remaining final-findings, route/target
-and source-operation acceptance inventory.
+qualification gate, then continue the remaining terminal dispositions,
+route/target and source-operation acceptance inventory.
 
 Keep Q2's seven P0 gaps, Q3 replay/full qualification and Q4 live soak/activation
 separate. Preserve `notes/future-improvements.md` and the pre-existing untracked
