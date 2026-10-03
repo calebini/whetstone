@@ -97,6 +97,12 @@ def phase2_state(run):
     status = _status(state)
     gate = status.pop('gate')
     evidence = dict(sequence=status)
+    if state['frames']:
+        frame = state['frames'][-1]
+        evidence['review_evidence'] = dict(request=frame['bound'].request_ref,
+            pass_number=frame['owner'].ordinal, request_id=frame['journal'].id,
+            attempts=len(frame['outcomes']), last_outcome=frame['outcomes'][-1] if frame['outcomes'] else None,
+            receipt=frame['receipt'], consumed=bool(frame.get('consumed')))
     # Report repairs always precede another client. These owners validate their
     # own historical sources, rather than interpreting mutable state as consent.
     for name, inspect in (('failure', run.phase2_failure_status),

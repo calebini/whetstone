@@ -61,7 +61,7 @@ is recovery-only and cannot start an Editor or another review.
 | 2. Unknown/unqualified/conflicting selectors | Public refusal, suite conflict, existing destination and no-client/no-write assertions covered; expand the selector/Phase 2 Ref matrix. |
 | 3. Retained mode | Removed config selectors still select V status; new work without mode refuses. Broaden edited-selector negative cases. |
 | 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. Versioned convergence, vertical/focused and the remaining target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal families, first/later Phase 2 continuation, exhausted refusal and repair-only `--continue` need complete command evidence and any resulting fixes. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The original ratified 12-row table plus the advice-attachment row remain unqualified as a complete set: prepared registration/decision/promotion, other report/terminal families, remaining interruption points and Phase 1 repair-only `--continue` need complete command evidence and any resulting fixes. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. Real disposable-fixture command apply/retry, uncertain write, pointer advancement and historical drift journeys remain to run. No real external source was written. |
 | 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. Broader legacy/bridge/R/P route qualification remains Q1 work; release-wide qualification remains Q3. |
 
@@ -284,6 +284,74 @@ remaining report composition, route/target and source-operation qualification
 remain outside these cases. Q1 remains incomplete and production gates remain
 empty.
 
+## Reviewer continuation and failure recovery
+
+The previous first-review slice was checkpointed at `7a4eb17`. This slice stays
+within Q1's existing finite continuation table in
+`SCHEDULER_STATE_AND_RESUME_SPEC.md` and `vnext_verified_commands_v1`; it introduces
+no new recovery permission or retry allowance.
+
+Explicit resume of a retained Reviewer failure publication now completes that
+failure's reports and state projection, then stops. Publication and projection
+use separate real owner fences, with an exact-outcome check between them.
+Continuation remains a separate invocation after the repair is current.
+
+First/later Phase 2 Reviewer continuation now projects its own retained failure
+outcome, including clearing an earlier active failure after a valid response.
+Selection carries the journal's request, pass, attempt count, last outcome,
+receipt and consumption status. The adapter checks those against the returned
+result and current pointer before projection, and rechecks selection inside the
+projection fence. A peer completing or consuming another outcome ends the stale
+invocation. Resume stops before result consumption, advice, correction or another
+review; ordinary `live-phase2` cannot implicitly retry, and Phase 2 still rejects
+`--continue`. Complete retained valid output can finish its receipt without
+another client call.
+
+The three new config-to-command journeys passed **3 tests in 1006.234s**
+(1006.805s supervised wall time) at a 60% duty limit:
+
+- First-pass timeout, interrupted failure publication, repair-only resume,
+  successful explicit retry and lost acknowledgement after the final failure
+  state write. Reentry does not repeat the Reviewer; the request, historical
+  failure records and current pointer remain unchanged.
+- Clean first pass followed by a second-pass timeout, projection-only repair
+  and another timeout on the last retained attempt. Status exposes exhaustion;
+  resume/live reentry cannot spend another allowance or consume the result.
+- Valid retained response with interrupted result-receipt publication. Resume
+  finishes the receipt with no client call and stops before consumption.
+
+All three check read-only status/dry-run, refusal of implicit live-command retry
+and Phase 2 refusal of `--continue`. Fixtures forbid live providers and legacy
+full-draft execution. Evidence is retained under
+`rounds/vnext-18-9-q1-reviewer-resume-001/`.
+
+The fixed regression batch passed **14 tests in 505.605s** (506.038s supervised
+wall time): three invocation guards, five publication-command tests, four
+Reviewer-continuation guards, clean Phase 2 convergence and disabled public
+admission. The new guard tests exercise exact-result projection, result
+replacement, peer consumption at the projection fence and peer advancement to
+another role. Together **17 distinct tests passed**, including eight new methods.
+Both campaigns used one worker at a time, 60% duty, a 300-second heartbeat lease
+and finite deadlines. Combined supervised test time was about 25.2 minutes;
+this is qualification cost, not production latency.
+
+Source scope is explicit: the journey worker loaded the implementation before
+two result-selection lookups were hardened to refuse a peer's different-role
+selection without a `KeyError`. The final regression exercises both matching
+and changed selections on the hardened sources. The three journey tests were
+not repeated after that narrow defensive change. `input-snapshot.json`,
+`regression-input-snapshot.json` and `guard-hardening.json` record this distinction;
+`verification.json` records exact commands, results, logs and source hashes.
+
+Targeted compilation, whitespace checks and offline suite validation passed.
+Both suite digests are unchanged, all four production qualification maps remain
+empty, both workers exited and the bounded-worker lock is available. The unrelated
+notes and pre-existing audit retain their original hashes. This new slice is
+uncommitted; no push, live provider call, external source write or specification
+amendment occurred. There is no new product/authority blocker for this slice.
+Other report families, remaining interruption points and the broader route/target
+and source-operation matrix remain open. Q1 is incomplete.
+
 ## Resume the implementation
 
 The direct Reviewer handoff decision is resolved. Its implementation and
@@ -299,14 +367,16 @@ boundaries under the fence. Versioned convergence, vertical/focused/target comma
 the disposable V source-apply/retry/recovery journeys remain open. Do not infer
 that a written adapter has passed those cases.
 
-Versioned `promote-phase2` and first-review preparation/invocation now have the
-bounded command evidence above; do not repeat them as unimplemented owners.
-The next bounded command work is first/later Reviewer interruption and explicit
-continuation, including the required failure report/state repair before a retry
-and stopping before consumption or another role. Preserve the finite resume
-table; do not infer a generic Phase 2 continuation. Keep this within the same Q1
-package and its offline qualification gate, then continue the remaining
-route/target and source-operation acceptance inventory.
+Versioned `promote-phase2`, first-review preparation/invocation and the bounded
+first/later Reviewer continuation cases now have command evidence above; do not
+repeat them as unimplemented owners or infer qualification of every interruption
+point. The next bounded command work is the remaining correction-failure and
+signal report publication/projection compositions: select one retained outcome,
+complete its reports/state under fresh fences and stop without a client or
+successor operation. Preserve the finite resume table; do not infer a generic
+Phase 2 continuation. Keep this within the same Q1 package and its offline
+qualification gate, then continue the remaining terminal, route/target and
+source-operation acceptance inventory.
 
 Keep Q2's seven P0 gaps, Q3 replay/full qualification and Q4 live soak/activation
 separate. Preserve `notes/future-improvements.md` and the pre-existing untracked

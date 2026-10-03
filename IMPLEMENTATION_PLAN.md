@@ -1716,6 +1716,13 @@ The following first-review slice separately guards declaration preparation,
 request binding and invocation, with publication-prefix and peer-race command
 tests. Its handoff records verification status; it does not complete the remaining
 Reviewer continuation/report or route/target acceptance matrix.
+The subsequent Reviewer-resume slice completes a selected failure's publication
+and projection before retry, and binds explicit first/later continuation to its
+exact unconsumed result before projecting required failure state. Three command
+journeys cover timeout repair, later exhaustion, retained response reuse and a
+lost final-state acknowledgement; regression status and source limits are recorded
+in the handoff. Remaining report/terminal compositions and the broader Q1 matrix
+stay open; these cases do not qualify the full finite resume table.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The

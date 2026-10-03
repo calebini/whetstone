@@ -95,13 +95,17 @@ def enter(run, args, config, review):
 
 def repair(run, state, args):
     row = state['recovery']
-    if row in {'resolution_publication', 'closeout_publication'}:
+    if row in {'resolution_publication', 'closeout_publication', 'failure_publication'}:
         # One selected outcome includes its reports and derived state. Bind each
         # owner under its own fence; the second fence may only project the exact
         # result just published, never select a successor or spend an allowance.
         family = row.removesuffix('_publication')
-        publish, project, field = ((run.publish_phase2_resolutions, run.reconcile_phase2_resolution_state, 'report')
-            if family == 'resolution' else (run.finish_phase2, run.reconcile_phase2_state, 'closeout'))
+        if family == 'resolution':
+            publish, project, field = run.publish_phase2_resolutions, run.reconcile_phase2_resolution_state, 'report'
+        elif family == 'failure':
+            publish, project, field = run.publish_phase2_failure, run.reconcile_phase2_failure_state, 'report'
+        else:
+            publish, project, field = run.finish_phase2, run.reconcile_phase2_state, 'closeout'
         published = public(guarded(run, state, publish))
         current = inspect_command(run)
         require(current['recovery'] == family+'_projection' and current[field] == published
@@ -229,6 +233,21 @@ def resume(run, args, config, review, state):
         operation = (lambda: run.run_phase2_review(client=client, continuation=True)) if state['pass_number'] == 1 else (
             lambda: run.continue_phase2_pass(state['pass_number'], action='execute', client=client, continuation=True))
     result = guarded(run, state, operation)
+    if role == 'phase2_reviewer':
+        # Continuation includes only this request's outcome and its projections.
+        # Bind the returned journal result as well as the pass/current pointer:
+        # a peer consuming it or completing another attempt ends this invocation.
+        after = inspect_command(run)
+        expected = dict(request=state['request'], pass_number=state['pass_number'],
+            request_id=result.request_id, attempts=result.attempts,
+            last_outcome=result.last_outcome, receipt=result.receipt, consumed=False)
+        require(after.get('sequence', {}).get('current_pointer') == state['sequence']['current_pointer']
+                and after.get('review_evidence') == public(expected),
+                'Reviewer outcome changed before projection; inspect before resuming')
+        require(after['recovery'] in {None, 'failure_projection'},
+                'Reviewer continuation requires separate recovery of another outcome')
+        if after['recovery'] == 'failure_projection':
+            guarded(run, after, run.reconcile_phase2_failure_state)
     if getattr(args, 'continue_run', False):
         after = inspect_command(run)
         if not after['continuation'] and not after['recovery']: return phase1(run, args, config, review)

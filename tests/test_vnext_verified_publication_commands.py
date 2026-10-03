@@ -15,7 +15,7 @@ class PublicationCommandTests(unittest.TestCase):
     open_store = storage.LocalStorageTests.open_store
 
     def scenario(self, family):
-        field = 'report' if family == 'resolution' else 'closeout'
+        field = 'closeout' if family == 'closeout' else 'report'
         ref = dict(path='outcomes/commit.json', hash='a'*64)
         result = dict(reference=ref, state_current=False, committed=True)
         initial = dict(gate=family+'_publication', recovery=family+'_publication', phase='phase_2',
@@ -35,6 +35,8 @@ class PublicationCommandTests(unittest.TestCase):
             return dict(result,state_current=True)
         if family == 'resolution':
             run.publish_phase2_resolutions=publish;run.reconcile_phase2_resolution_state=project
+        elif family == 'failure':
+            run.publish_phase2_failure=publish;run.reconcile_phase2_failure_state=project
         else:
             run.finish_phase2=publish;run.reconcile_phase2_state=project
         return run, initial
@@ -50,6 +52,13 @@ class PublicationCommandTests(unittest.TestCase):
         run,state=self.scenario('closeout')
         self.assertEqual(resume(run,SimpleNamespace(dry_run=True),{}, {},state),state)
         self.assertEqual(run.calls,[])
+
+    def test_reviewer_failure_publication_projects_and_stops_without_continuation(self):
+        run,state=self.scenario('failure')
+        with patch('whetstone.vnext_verified_commands.inspect_command',side_effect=lambda run: deepcopy(run.state)):
+            result=resume(run,SimpleNamespace(dry_run=False),{}, {},state)
+        self.assertTrue(result['state_current'])
+        self.assertEqual(run.calls,['publish','project'])
 
     def test_other_outcome_cannot_replace_the_just_published_closeout(self):
         run,state=self.scenario('closeout')
