@@ -1712,6 +1712,10 @@ command/recovery evidence is recorded in the handoff. The prior slice addresses 
 entry inspection after a correction advances the pointer; its verification
 status is recorded separately from the broader acceptance inventory. Do not mark
 Q1 complete from bootstrap or individual command-journey evidence alone.
+The following first-review slice separately guards declaration preparation,
+request binding and invocation, with publication-prefix and peer-race command
+tests. Its handoff records verification status; it does not complete the remaining
+Reviewer continuation/report or route/target acceptance matrix.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The

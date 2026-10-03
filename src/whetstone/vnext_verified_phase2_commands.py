@@ -23,11 +23,13 @@ def execute_phase2(run, args, config, review):
         gate = state['gate']
         ordinal = state.get('sequence', {}).get('pass_number')
         if gate == 'first_review_binding':
-            run.prepare_phase2_declaration()
+            if state.get('declaration', {}).get('committed') is False:
+                guarded(run, state, run.prepare_phase2_declaration)
+                continue
             client = phase2_client(run, args, config, review)
-            run.bind_phase2_review(client.transport_binding)
-            result = run.run_phase2_review(client=client)
-            if getattr(result, 'status', '') != 'complete': return inspect_command(run)
+            guarded(run, state, lambda: run.bind_phase2_review(client.transport_binding))
+            # Reselect the committed first request before any client invocation,
+            # just as for later requests. Declaration preparation is separately selected.
         elif gate == 'review':
             client = phase2_client(run, args, config, review)
             guarded(run, state, lambda: run.bind_phase2_next_review(client.transport_binding))

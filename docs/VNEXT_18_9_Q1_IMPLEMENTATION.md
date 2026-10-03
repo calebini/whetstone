@@ -227,6 +227,63 @@ This scope does not qualify versioned Phase 2 convergence, all numeric anchor
 forms, the full recovery table or the remaining route/target matrix. Q1 remains
 incomplete.
 
+## First-review command fencing
+
+Started from `16e3fbd` on 2026-10-03. This slice addresses declaration
+preparation, first Reviewer request binding and first invocation through the Q1
+command adapter. The scheduler's declared `live-phase2` route and finite resume
+table, plus `vnext_verified_commands_v1`, supply the authority. No new recovery
+row or specification amendment is introduced.
+
+Read-only first-review selection now reproduces the declaration package through
+the existing owner and records visible request-input/prompt dependencies. The
+adapter guards declaration preparation and request binding separately, reselects
+after each, and invokes the first Reviewer through the same guarded
+`pending_review` branch used by later reviews. Peer completion or changed
+preparation bytes cannot silently advance the stale invocation.
+
+Partial declaration/request publication remains preparation on `live-phase2`.
+Without a started client request or another retained recovery condition,
+`resume` refuses. A committed, unstarted request may be invoked once by ordinary
+`live-phase2`; it does not consume a technical retry allowance merely because
+its publication acknowledgement was lost. Existing owner barriers, immutable
+inputs and attempt budgets continue to apply.
+
+The two new command journeys passed **2 tests in 552.412s** at a 60% duty limit;
+evidence is retained under `rounds/vnext-18-9-q1-first-review-001/`.
+The publication journey injects lost acknowledgements after a declaration asset,
+request inputs and the request commit. Read-only status acquires no writer fence;
+plain/dry-run resume refuses those unstarted preparations without writes or
+clients. Ordinary reentry invokes the Reviewer once and stops at its product
+decision, retaining the exact request, entry and current pointer. The peer-race
+journey advances declaration preparation, request binding and review completion
+immediately before each selected invocation acquires its actual fence. All
+three stale commands refuse before further writes or calls; subsequent result
+consumption does not repeat the peer's one Reviewer invocation.
+
+The fixed regression batch passed **12 tests in 907.568s** (908.038s supervised
+wall time): three invocation-guard tests, four publication-command tests, two
+request/client source-barrier tests, versioned entry with recovery, clean Phase 2
+convergence and disabled public admission. Together, **14 distinct tests passed**
+on the final runtime/test sources. Both runs used one worker at a time, a 60%
+duty limit, 300-second supervision leases and finite deadlines. The two new
+journeys took 552.912s supervised wall time; the combined test cost was about
+24.3 minutes at that duty limit. This is qualification cost, not a single-review
+latency or production-throughput measurement. Replay optimization remains Q3.
+
+Exact commands, results, logs and source hashes are retained in
+`verification.json` in the evidence directory. Targeted compilation and
+whitespace checks passed; both suite digests are unchanged and all four
+production qualification maps remain empty. Both workers exited, and the
+bounded-worker lock is available. The unrelated notes and pre-existing audit
+report retain their original hashes. No live providers, external source writes,
+specification amendments, commits or pushes occurred in this slice.
+
+Broader client-timeout/result-publication continuation,
+remaining report composition, route/target and source-operation qualification
+remain outside these cases. Q1 remains incomplete and production gates remain
+empty.
+
 ## Resume the implementation
 
 The direct Reviewer handoff decision is resolved. Its implementation and
@@ -236,19 +293,20 @@ milestone or marking any acceptance row complete early. Finish the remaining
 adapter/recovery paths and their seven-case evidence, reconcile
 the supported-command matrix with actual results, then perform the bounded review.
 In particular, finish the other report/terminal publication and projection
-compositions, declaration-preparation interruption coverage, semantic follow-up
+compositions, later declaration-preparation interruption coverage, semantic follow-up
 selection, remaining execution/recovery configuration and request-selection
 boundaries under the fence. Versioned convergence, vertical/focused/target command routes and
 the disposable V source-apply/retry/recovery journeys remain open. Do not infer
 that a written adapter has passed those cases.
 
-Versioned `promote-phase2` now has the bounded command-level evidence above;
-do not repeat that slice as an unimplemented entry owner. The next adapter work
-is the first Phase 2 review's declaration preparation, request binding and
-invocation selection under D8, with interruption/reentry checks. Later review
-execution is already guarded; remaining binding boundaries still need evidence.
-Keep this within the same Q1 package and its offline qualification gate, then
-continue the remaining route/target and source-operation acceptance inventory.
+Versioned `promote-phase2` and first-review preparation/invocation now have the
+bounded command evidence above; do not repeat them as unimplemented owners.
+The next bounded command work is first/later Reviewer interruption and explicit
+continuation, including the required failure report/state repair before a retry
+and stopping before consumption or another role. Preserve the finite resume
+table; do not infer a generic Phase 2 continuation. Keep this within the same Q1
+package and its offline qualification gate, then continue the remaining
+route/target and source-operation acceptance inventory.
 
 Keep Q2's seven P0 gaps, Q3 replay/full qualification and Q4 live soak/activation
 separate. Preserve `notes/future-improvements.md` and the pre-existing untracked

@@ -1,7 +1,7 @@
 """Read-only command selection from proven authority and retained request journals."""
 from dataclasses import asdict, is_dataclass
 
-from whetstone.vnext_contracts import decode_json, require
+from whetstone.vnext_contracts import decode_json, require, sha256_bytes
 from whetstone.vnext_proposal_run import round_input_path
 from whetstone.vnext_verified_phase2_binding import REQUEST_PATH as ENTRY_REQUEST
 from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
@@ -72,7 +72,25 @@ def phase2_state(run):
     if not entry.get('state_current'):
         return selected('entry_projection', phase='phase_2', recovery='entry', entry=entry)
     if optional(run, REVIEW_REQUEST) is None:
-        return selected('first_review_binding', phase='phase_2', entry=entry)
+        from whetstone.vnext_verified_phase2_review import _FirstReview, INPUT_PATH, PROMPT_PATH
+        from whetstone.vnext_phase2_targets import supported, initial_owner
+        owner = _FirstReview(run)
+        proof = owner._proof(run.store.read)
+        evidence = dict(entry=entry)
+        if supported(proof.reader.suite):
+            from whetstone.vnext_phase2_routes import first_round
+            from whetstone.vnext_verified_phase2_closeout import _bundle
+            binding = owner._committed_binding(proof)
+            bound_entry = owner._entry_view(proof, binding)
+            first = initial_owner(run, proof, binding, bound_entry, first_round(proof, bound_entry.entry))
+            package = _bundle(first, [], [])
+            evidence['declaration'] = {k: v for k, v in package.items() if k != 'assets'}
+        # A partial dependency publication is still preparation, not a client
+        # request or a new resume row. Bind visible bytes into the fence check.
+        evidence['preparation'] = [dict(path=path, hash=sha256_bytes(raw))
+            for path in (INPUT_PATH, PROMPT_PATH) if (raw := optional(run, path)) is not None]
+        proof.guard(run.store.read)
+        return selected('first_review_binding', phase='phase_2', **evidence)
     owner = _Continuation(run)
     proof = owner._proof(run.store.read)
     state = sequence(proof)
