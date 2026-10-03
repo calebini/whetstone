@@ -1723,6 +1723,11 @@ journeys cover timeout repair, later exhaustion, retained response reuse and a
 lost final-state acknowledgement; regression status and source limits are recorded
 in the handoff. Remaining report/terminal compositions and the broader Q1 matrix
 stay open; these cases do not qualify the full finite resume table.
+The correction-failure/signal report slice extends that same bounded composition
+to two more report families. Selection gives their own pending publication/state
+repair precedence over an unrelated shared-mirror mismatch. The handoff records
+the command, fault and guard evidence and its verification status; other terminal
+and route/target cases remain open, and public qualification remains disabled.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The

@@ -95,7 +95,8 @@ def enter(run, args, config, review):
 
 def repair(run, state, args):
     row = state['recovery']
-    if row in {'resolution_publication', 'closeout_publication', 'failure_publication'}:
+    if row in {'resolution_publication', 'closeout_publication', 'failure_publication',
+               'correction_failure_publication', 'signal_publication'}:
         # One selected outcome includes its reports and derived state. Bind each
         # owner under its own fence; the second fence may only project the exact
         # result just published, never select a successor or spend an allowance.
@@ -104,6 +105,10 @@ def repair(run, state, args):
             publish, project, field = run.publish_phase2_resolutions, run.reconcile_phase2_resolution_state, 'report'
         elif family == 'failure':
             publish, project, field = run.publish_phase2_failure, run.reconcile_phase2_failure_state, 'report'
+        elif family == 'correction_failure':
+            publish, project, field = run.publish_phase2_correction_failure, run.reconcile_phase2_correction_failure_state, 'report'
+        elif family == 'signal':
+            publish, project, field = run.publish_phase2_signals, run.reconcile_phase2_signal_state, 'report'
         else:
             publish, project, field = run.finish_phase2, run.reconcile_phase2_state, 'closeout'
         published = public(guarded(run, state, publish))

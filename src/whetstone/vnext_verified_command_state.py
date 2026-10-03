@@ -105,6 +105,7 @@ def phase2_state(run):
             receipt=frame['receipt'], consumed=bool(frame.get('consumed')))
     # Report repairs always precede another client. These owners validate their
     # own historical sources, rather than interpreting mutable state as consent.
+    mirror_repair = None
     for name, inspect in (('failure', run.phase2_failure_status),
                           ('correction_failure', run.phase2_correction_failure_status),
                           ('resolution', run.phase2_resolution_status),
@@ -112,8 +113,13 @@ def phase2_state(run):
         report = public(inspect())
         if report.get('publication_required') or report.get('pending_paths'):
             return selected(name+'_publication', phase='phase_2', recovery=name+'_publication', report=report, **evidence)
-        if report.get('state_current') is False or report.get('mirrors_current') is False:
+        if report.get('state_current') is False:
             return selected(name+'_projection', phase='phase_2', recovery=name+'_projection', report=report, **evidence)
+        # Failure families share report mirrors. A mirror mismatch alone must
+        # not steal a later family's own pending publication/state projection.
+        if report.get('mirrors_current') is False and mirror_repair is None:
+            mirror_repair = selected(name+'_projection', phase='phase_2', recovery=name+'_projection', report=report, **evidence)
+    if mirror_repair is not None: return mirror_repair
     closeout = public(run.phase2_closeout())
     if closeout.get('committed'):
         if not closeout.get('state_current') or not closeout.get('mirror_current'):

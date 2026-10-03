@@ -37,6 +37,10 @@ class PublicationCommandTests(unittest.TestCase):
             run.publish_phase2_resolutions=publish;run.reconcile_phase2_resolution_state=project
         elif family == 'failure':
             run.publish_phase2_failure=publish;run.reconcile_phase2_failure_state=project
+        elif family == 'correction_failure':
+            run.publish_phase2_correction_failure=publish;run.reconcile_phase2_correction_failure_state=project
+        elif family == 'signal':
+            run.publish_phase2_signals=publish;run.reconcile_phase2_signal_state=project
         else:
             run.finish_phase2=publish;run.reconcile_phase2_state=project
         return run, initial
@@ -72,6 +76,47 @@ class PublicationCommandTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'published outcome changed'):
                 repair(run,state,SimpleNamespace())
         self.assertEqual(run.calls,['publish'])
+
+    def test_correction_and_signal_resume_complete_only_the_selected_outcome(self):
+        for family in ('correction_failure', 'signal'):
+            with self.subTest(family=family):
+                run,state=self.scenario(family)
+                self.assertEqual(resume(run,SimpleNamespace(dry_run=True),{}, {},state),state)
+                self.assertEqual(run.calls,[])
+                with patch('whetstone.vnext_verified_commands.inspect_command',side_effect=lambda run: deepcopy(run.state)):
+                    result=resume(run,SimpleNamespace(dry_run=False),{}, {},state)
+                self.assertTrue(result['state_current'])
+                self.assertEqual(run.calls,['publish','project'])
+
+    def test_correction_and_signal_replaced_outcome_refuse_projection(self):
+        for family in ('correction_failure', 'signal'):
+            with self.subTest(family=family):
+                run,state=self.scenario(family)
+                name='publish_phase2_correction_failure' if family=='correction_failure' else 'publish_phase2_signals'
+                publish=getattr(run,name)
+                def changed():
+                    result=publish()
+                    run.state['report']['reference']['hash']='c'*64
+                    return result
+                setattr(run,name,changed)
+                with patch('whetstone.vnext_verified_commands.inspect_command',side_effect=lambda run: deepcopy(run.state)):
+                    with self.assertRaisesRegex(ValueError,'published outcome changed'):
+                        repair(run,state,SimpleNamespace())
+                self.assertEqual(run.calls,['publish'])
+
+    def test_correction_and_signal_recheck_inside_projection_fence(self):
+        for family in ('correction_failure', 'signal'):
+            with self.subTest(family=family):
+                run,state=self.scenario(family)
+                name='reconcile_phase2_correction_failure_state' if family=='correction_failure' else 'reconcile_phase2_signal_state'
+                project=getattr(run,name)
+                def raced():
+                    run.state=dict(run.state,recovery=None,gate='review')
+                    return project()
+                setattr(run,name,raced)
+                with patch('whetstone.vnext_verified_commands.inspect_command',side_effect=lambda run: deepcopy(run.state)):
+                    with self.assertRaises(SelectionChanged):repair(run,state,SimpleNamespace())
+                self.assertEqual(run.calls,['publish'])
 
     def test_selection_is_rechecked_inside_projection_fence(self):
         run,state=self.scenario('resolution')
