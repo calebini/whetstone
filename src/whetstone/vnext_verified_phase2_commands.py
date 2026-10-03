@@ -3,7 +3,7 @@ from whetstone import vnext_admission as common
 from whetstone.vnext_contracts import canonical_json_bytes, require
 from whetstone.vnext_proposal_cli import _client
 from whetstone.vnext_verified_command_state import ENTRY_PATH, inspect_command, optional
-from whetstone.vnext_verified_commands import enter, guarded, phase2_client, repair
+from whetstone.vnext_verified_commands import enter, guarded, phase2_client, repair, admit_selection, transaction_selection
 
 
 def execute_phase2(run, args, config, review):
@@ -51,7 +51,7 @@ def execute_phase2(run, args, config, review):
         elif gate in {'operator_or_advice_required', 'correction_required'}:
             selector = getattr(args, 'vnext_decisions', None)
             if selector:
-                guarded(run, state, lambda: run.admit_phase2_operator_round(common.local_ref(run.store.root, selector)))
+                admit_selection(run, state, selector, phase2=True)
             else:
                 if gate == 'operator_or_advice_required':
                     return dict(state, operator=run.phase2_operator_context())
@@ -60,12 +60,13 @@ def execute_phase2(run, args, config, review):
         elif gate == 'proposal':
             if state['request_status'] != 'not_started': return state
             result = guarded(run, state, lambda: run.request(round_number=state['round_number'],
-                client=_client('editor', review, config, args, run.store.root)))
+                client=_client('editor', review, config, args, run.store.root), **transaction_selection(state)))
             if result.value.status != 'complete':
                 run.publish_phase2_correction_failure(); run.reconcile_phase2_correction_failure_state()
                 return inspect_command(run)
         elif gate == 'registration':
-            guarded(run, state, lambda: run.register(round_number=state['round_number'], created_at=common.stamp()))
+            guarded(run, state, lambda: run.register(round_number=state['round_number'], created_at=common.stamp(),
+                                                   **transaction_selection(state)))
         elif gate == 'verification':
             result = guarded(run, state, lambda: run.verify(
                 client=_client('verifier', review, config, args, run.store.root), decided_at=common.stamp()))

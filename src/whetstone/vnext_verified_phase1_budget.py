@@ -118,6 +118,19 @@ def effective_profiles(proof, profiles):
     return result
 
 
+def recovery_record(proof, *, last_completed=None, grants=None):
+    """The exact committed grant still eligible for idempotent operator reentry."""
+    from whetstone.vnext_verified_review import _sequence
+    from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, completed_round
+    if grants is None: grants = records(proof)
+    if not grants: return None
+    if last_completed is None:
+        frames, _, _ = _sequence(proof)
+        last_completed = (completed_round(sequence(proof)) if enabled(proof.seed_values['review'])
+                          else max([f.request.number for f in frames if f.receipt is not None], default=0))
+    return grants[-1] if last_completed == grants[-1][1]['event']['previous_current_round'] else None
+
+
 def synchronize(store, proof):
     """Immutable grant dependencies must be durable before any appended work."""
     for reference, value in records(proof):
@@ -186,7 +199,7 @@ def extend(run, *, added_rounds_per_profile, reason=DEFAULT_REASON, generated_at
         last_completed = (completed_round(sequence(proof)) if enabled(proof.seed_values['review'])
                           else max([f.request.number for f in frames if f.receipt is not None], default=0))
         # A committed grant with no appended completed round is recovery, never a second grant.
-        recovery = bool(grants and last_completed == grants[-1][1]['event']['previous_current_round'])
+        recovery = recovery_record(proof, last_completed=last_completed, grants=grants) is not None
         if recovery:
             reference, value = grants[-1]
             require(value['event']['added_rounds_per_profile'] == added_rounds_per_profile

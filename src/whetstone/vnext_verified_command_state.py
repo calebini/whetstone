@@ -1,7 +1,7 @@
 """Read-only command selection from proven authority and retained request journals."""
 from dataclasses import asdict, is_dataclass
 
-from whetstone.vnext_contracts import decode_json, require, sha256_bytes
+from whetstone.vnext_contracts import canonical_json_bytes, decode_json, require, sha256_bytes
 from whetstone.vnext_proposal_run import round_input_path
 from whetstone.vnext_verified_phase2_binding import REQUEST_PATH as ENTRY_REQUEST
 from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
@@ -31,11 +31,27 @@ def candidate_state(run, proof):
     creation = proof.view.creations[-1]
     if creation['candidate_id'] in {p['source_candidate_id'] for p in proof.pointers[1:]}: return None
     journal = VerifiedSemanticDecisionJournal(proof.router.registry(), admission=proof.router)
-    view = journal._state(creation)[0]
+    decision_state = journal._state(creation)
+    view = decision_state[0]
     evidence = dict(candidate=creation, round_number=creation['round_number'], decision=view.decision)
     if view.prepared:
-        return selected('verification_publication', recovery='verification', **evidence)
+        pending = decision_state[3]
+        from whetstone.vnext_verified_history import _ref
+        reference = _ref(journal.paths(creation, pending['decision_ordinal'])[1], pending)
+        return selected('verification_publication', recovery='verification', pending_decision=reference, **evidence)
     if view.decision is not None and view.decision['decision_final']:
+        from whetstone.vnext_semantic_followup_admission import _selection_path
+        path = _selection_path(creation)
+        raw = optional(run, path)
+        if raw is not None:
+            reference = dict(path=path, hash=sha256_bytes(raw))
+            marker = proof.reader.json(reference, 'vnext_semantic_followup_selection_v1')
+            require(marker['job_id'] == creation['job_id'] and marker['candidate_id'] == creation['candidate_id'],
+                    'child selection differs from the latest candidate')
+            result = proposal_state(run, proof, creation['round_number'], selected_ref=marker['transaction_input'],
+                                    source_candidate=creation)
+            result.update(source_candidate=creation, source_decision=view.decision, selection=reference)
+            return result
         return selected('candidate_final', **evidence)
     if view.decision is None: return selected('verification', **evidence)
     request = inspect_verified_semantic_request(run.store, admission=proof.router,
@@ -47,13 +63,23 @@ def candidate_state(run, proof):
         request_status=status, request_id=request.request_id, attempts=request.attempts, **evidence)
 
 
-def proposal_state(run, proof, number):
+def proposal_state(run, proof, number, *, selected_ref=None, source_candidate=None):
     from whetstone.vnext_proposal_requests import inspect_proposal_request
     # Selection is read-only. Live _Admission requires a borrowed writer fence
     # and is used only by the subsequent request owner, never by status.
-    router = proof.transactions()
+    if selected_ref is None:
+        router = proof.transactions()
+    else:
+        from whetstone.vnext_verified_history import _VerifiedTransactions, _ref
+        require(source_candidate is not None, 'child selection requires its exact source candidate')
+        parent = _ref(f"rounds/candidate_index/creation-{source_candidate['candidate_creation_ordinal']}.json", source_candidate)
+        router = _VerifiedTransactions(proof.store, original=proof.admission, selected_ref=selected_ref)
     def load(read):
         proof.guard(read)
+        if selected_ref is not None:
+            require(router.selected_record(read)['source_creation'] == parent,
+                    'selected child admission belongs to another parent')
+            router.validate_selected(read)
         inputs = router.load_inputs(read, number)
         require(inputs['base_pointer_ref'] == proof.latest,
                 'proposal selection requires its exact current base pointer')
@@ -63,7 +89,8 @@ def proposal_state(run, proof, number):
     return selected('registration' if result.status == 'complete' else 'proposal', round_number=number,
         request_status=result.status, request_id=result.request_id, attempts=result.attempts,
         continuation='editor' if result.status not in
-        {'not_started', 'complete', 'invalid_proposal', 'attempts_exhausted'} else None)
+        {'not_started', 'complete', 'invalid_proposal', 'attempts_exhausted'} else None,
+        **(dict(selected_ref=selected_ref) if selected_ref is not None else {}))
 
 
 def phase2_state(run):
@@ -185,12 +212,39 @@ def phase2_state(run):
 
 
 def inspect_command(run):
+    state = _inspect_command(run)
+    from whetstone.vnext_verified_phase1_budget import DIRECTORY, recovery_record
+    # Materialization recovery deliberately precedes current scheduler replay.
+    # Optional grant metadata must not add that dependency back to this row.
+    if (state['phase'] == 'phase_1' and state['recovery'] != 'materialization'
+            and optional(run, DIRECTORY+'/extension-1.json') is not None):
+        proof = run._operator()._proof(run.store.read)
+        grant = recovery_record(proof)
+        if grant is not None:
+            reference, value = grant
+            state['budget_reentry'] = dict(reference=reference, event=value['event'])
+        proof.guard(run.store.read)
+    return state
+
+
+def _inspect_command(run):
     work = run.inspect()
     phase = 'phase_2' if optional(run, ENTRY_REQUEST) is not None else 'phase_1'
     if work.outcome == 'materialization_required':
         return selected(work.outcome, phase=phase, recovery='materialization', work=work)
     if work.outcome == 'registration_recovery_required':
-        return selected(work.outcome, phase=phase, recovery='registration', work=work)
+        proof = run._operator()._proof(run.store.read)
+        proof.inspect_registry()
+        require(len(proof.view.orphans) == 1, 'registration recovery requires one claimant')
+        previous = proof.view.creations[-1] if proof.view.creations else None
+        creation, _ = proof.router.registry()._validate_preparation(proof.view.orphans[0],
+            ordinal=len(proof.view.creations) + 1,
+            previous=sha256_bytes(canonical_json_bytes(previous)) if previous else None)
+        path = proof.view.orphans[0] + '/registration_preparation.json'
+        proof.guard(run.store.read)
+        return selected(work.outcome, phase=phase, recovery='registration', work=work,
+            round_number=creation['round_number'], candidate=creation,
+            preparation=dict(path=path, hash=sha256_bytes(run.store.read(path))))
     if work.outcome == 'promotion_required':
         from whetstone.vnext_verified_run import _RunPromotion
         promotion = _RunPromotion(run.store, history=run._history()).inspect()

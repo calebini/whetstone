@@ -1741,6 +1741,22 @@ The operator/semantic input slice routes explicit mutations through the existing
 command-selection guard and rechecks file operand bytes inside each owner fence.
 Its exact command coverage and verification status are recorded in the handoff;
 recording a decision or selecting a child does not execute that child transaction.
+The selected-execution slice carries exact committed child transactions through
+ordinary request/registration and supported Phase 1 continuation, and revalidates
+explicit operator receipts under admission fences. Its command evidence and
+limits are recorded in the handoff; parent finality and Phase 2 continuation
+restrictions remain unchanged. The bounded evidence includes four selected-work
+promotion journeys, Phase 1 continuation and Phase 2 repair-before-child
+execution; it does not close Q1 or qualify convergence/recovery in all cases.
+The recovery/operator delivery pass is complete within its
+[fixed inventory](docs/VNEXT_18_9_Q1_RECOVERY_OPERATOR_PASS.md): 92 distinct passing
+methods, including five real-owner command journeys, with historical evidence
+and source-cohort limits recorded separately. It fixes exact candidate recovery
+selection and budget-grant reentry without activating public V. The preceding
+selected-execution work and this pass remain uncommitted; Q1 remains incomplete.
+The remaining Q1 delivery passes are supported workflow routes, source-operation
+qualification, configuration/compatibility, and final reconciliation/review.
+This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
 historical source recovery, and review-envelope/approval-byte handling. The

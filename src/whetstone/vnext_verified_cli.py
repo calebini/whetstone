@@ -59,8 +59,11 @@ def _controls(args, config, *, fresh):
     common.check(args.command in COMMANDS, 'vnext_gate_unavailable', 'unsupported verified command')
     for name in ('overwrite', 'draft_after', 'allow_source_hash_mismatch', 'allow_non_converged', 'output_dir'):
         common.check(not getattr(args, name, None), 'vnext_selection_conflict', 'unsupported V control: '+name)
+    grant = getattr(args, 'extend_review_budget', None)
+    require(grant is None or (type(grant) is int and grant > 0),
+            'budget extension requires an explicit positive integer')
     require(not getattr(args, 'continue_run', False) or
-            (args.command == 'resume' and not getattr(args, 'extend_review_budget', None)),
+            (args.command == 'resume' and grant is None),
             'continue and budget grant cannot be combined')
     number = getattr(args, 'vnext_round', None)
     require(number is None or (type(number) is int and number > 0), 'round must be a positive integer')

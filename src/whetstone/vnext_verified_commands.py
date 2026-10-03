@@ -45,6 +45,29 @@ def selected_input(run, state, path, operation, *, dry_run):
     return guarded(run, state, lambda: operation(packet), validate_inputs=validate)
 
 
+def transaction_selection(state):
+    return dict(selected_ref=state['selected_ref']) if 'selected_ref' in state else {}
+
+
+def admit_selection(run, state, selector, *, phase2):
+    reference = common.local_ref(run.store.root, selector)
+    def validate():
+        require(common.local_ref(run.store.root, selector) == reference,
+                'selected operator receipt changed before admission')
+    if phase2:
+        operation = lambda: run.admit_phase2_operator_round(reference)
+    else:
+        from whetstone.vnext_verified_phase1_decisions import Phase1Decisions
+        decisions = Phase1Decisions(run).selected(reference)
+        def validate_phase1():
+            validate()
+            require(Phase1Decisions(run).selected(reference) == decisions,
+                    'selected operator decisions changed before admission')
+        return guarded(run, state, lambda: run.admit_reviewed_round(decision_refs=decisions),
+                       validate_inputs=validate_phase1)
+    return guarded(run, state, operation, validate_inputs=validate)
+
+
 def phase2_client(run, args, config, review):
     from whetstone.vnext_native_phase2_reviewer import NativePhase2ReviewerClient
     return NativePhase2ReviewerClient(review=review,
@@ -135,16 +158,7 @@ def repair(run, state, args):
     if row in {'registration', 'verification'}:
         number = getattr(args, 'vnext_round', None)
         require(number is not None, 'publication recovery requires --vnext-round')
-        if state.get('round_number') is not None:
-            require(number == state['round_number'], 'publication recovery round differs')
-        else:
-            proof = run._operator()._proof(run.store.read)
-            proof.inspect_registry()
-            # Reconciliation may only finish producer bytes for the explicit round.
-            import re
-            require(len(proof.view.orphans) == 1, 'registration recovery requires one claimant')
-            match = re.fullmatch(r'rounds/round-([1-9][0-9]*)/candidates/cand_[0-9a-f]{64}', proof.view.orphans[0])
-            require(match is not None and int(match[1]) == number, 'orphan belongs to another round')
+        require(number == state.get('round_number'), 'publication recovery round differs')
     operations = {
         'materialization': run.recover_registration,
         'registration': run.recover_registration,
@@ -198,7 +212,8 @@ def phase1(run, args, config, review):
             context = owner.context()
             selector = getattr(args, 'vnext_decisions', None)
             if selector:
-                decisions = owner.selected(common.local_ref(run.store.root, selector))
+                admit_selection(run, state, selector, phase2=False)
+                continue
             else:
                 if any(row['classification'] not in {'editor_fixable', 'deferable'} for row in context['findings']):
                     return dict(state, operator=context)
@@ -207,10 +222,11 @@ def phase1(run, args, config, review):
         elif gate == 'proposal':
             if state['request_status'] != 'not_started': return state
             result = guarded(run, state, lambda: run.request(round_number=state['round_number'],
-                client=_client('editor', review, config, args, run.store.root)))
+                client=_client('editor', review, config, args, run.store.root), **transaction_selection(state)))
             if result.value.status != 'complete': return inspect_command(run)
         elif gate == 'registration':
-            guarded(run, state, lambda: run.register(round_number=state['round_number'], created_at=common.stamp()))
+            guarded(run, state, lambda: run.register(round_number=state['round_number'], created_at=common.stamp(),
+                                                   **transaction_selection(state)))
         elif gate == 'verification':
             result = guarded(run, state, lambda: run.verify(
                 client=_client('verifier', review, config, args, run.store.root), decided_at=common.stamp()))
@@ -225,8 +241,14 @@ def resume(run, args, config, review, state):
         require(state['phase'] == 'phase_1', '--continue is only a Phase 1 operation')
     grant = getattr(args, 'extend_review_budget', None)
     if grant is not None:
-        require(state['phase'] == 'phase_1' and state['gate'] == 'phase1_stopped',
+        reentry = state.get('budget_reentry')
+        require(state['phase'] == 'phase_1' and (state['gate'] == 'phase1_stopped' or reentry),
                 'additional budget requires a retained exhausted Phase 1 context')
+        if reentry:
+            from whetstone.vnext_verified_phase1_budget import DEFAULT_REASON
+            require(reentry['event']['added_rounds_per_profile'] == grant
+                    and reentry['event']['reason'] == DEFAULT_REASON,
+                    'pending extension has different explicit parameters')
         if args.dry_run: return dict(state, proposed_budget_grant=grant)
         return guarded(run, state, lambda: run.extend_phase1_budget(added_rounds_per_profile=grant))
     require(state['recovery'] or state['continuation'], 'no supported recovery or continuation is selected')
@@ -243,7 +265,8 @@ def resume(run, args, config, review, state):
         operation = lambda: run.review_next(client=_client('reviewer', review, config, args, run.store.root), continuation=True)
     elif role == 'editor':
         operation = lambda: run.request(round_number=state['round_number'],
-            client=_client('editor', review, config, args, run.store.root), continuation=True)
+            client=_client('editor', review, config, args, run.store.root), continuation=True,
+            **transaction_selection(state))
     elif role == 'verifier':
         operation = lambda: run.verify(client=_client('verifier', review, config, args, run.store.root),
                                        decided_at=common.stamp(), continuation=True)
@@ -271,6 +294,11 @@ def resume(run, args, config, review, state):
     if getattr(args, 'continue_run', False):
         after = inspect_command(run)
         if not after['continuation'] and not after['recovery']: return phase1(run, args, config, review)
+    if role == 'editor':
+        # The durable receipt identifies the proposal. Its in-memory assembled
+        # payload bytes are internal to registration, not a JSON command result.
+        result = public(result)
+        result['value'].pop('proposal')
     return result
 
 
@@ -281,7 +309,7 @@ def execute(run, args, config, review):
         return execute_source(run, args)
     state = inspect_command(run)
     number = getattr(args, 'vnext_round', None)
-    require(number is None or number == state.get('round_number') or state['recovery'] == 'registration',
+    require(number is None or number == state.get('round_number'),
             'explicit round differs from current command boundary')
     if command == 'status': return state
     if command == 'resume': return resume(run, args, config, review, state)
