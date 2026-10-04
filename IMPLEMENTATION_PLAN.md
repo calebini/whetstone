@@ -1759,9 +1759,15 @@ is complete within its fixed seven-method command inventory plus a sensitive-mer
 regression: 99 distinct methods pass across documented source cohorts. It fixes
 focused-command success and prepares the committed vertical merge before operator
 classification. The final vertical recheck took 89.1 minutes at 60% duty; slow
-replay remains a release limitation. This pass remains uncommitted.
-The three remaining Q1 delivery passes are source-operation qualification,
-configuration/compatibility, and final reconciliation/review.
+replay remains a release limitation. This pass is committed in `63f7a21`.
+The [disposable source-operations pass](docs/VNEXT_18_9_Q1_SOURCE_OPERATIONS_PASS.md)
+is complete within its fixed four-journey CLI inventory and historical-pointer
+composition guards: 72 distinct methods pass across documented source cohorts.
+It fixes approval-file containment through parent aliases; the source owners and
+legacy/bridge policy remain unchanged. Advanced-pointer coverage uses proof/readback
+guards, not a new post-convergence scheduler route. This pass remains uncommitted.
+The two remaining Q1 delivery passes are configuration/compatibility and final
+reconciliation/review.
 This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate

@@ -26,8 +26,10 @@ def execute_source(run, args):
     require(args.approve and args.exclusive_source_access and args.approval and args.approval_hash,
             'apply requires explicit approval, exact assessment/hash and exclusive source access')
     path = Path(args.approval).absolute()
-    require(not path.is_relative_to(run.store.root), 'assessment file must be outside the run root')
-    raw = confined_file(path.parent, path.name).read_bytes()
+    # Check the actual file location, not a parent alias or lexical '..' path.
+    path = confined_file(path.parent, path.name)
+    require(not path.is_relative_to(run.store.root.resolve()), 'assessment file must be outside the run root')
+    raw = path.read_bytes()
     require(sha256_bytes(raw) == args.approval_hash, 'assessment file hash differs')
     packet = decode_json(raw)
     require(raw == canonical_json_bytes(packet), 'assessment file must contain exact canonical JSON')

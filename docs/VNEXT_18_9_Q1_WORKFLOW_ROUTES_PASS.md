@@ -2,8 +2,8 @@
 
 This is delivery pass 2 of the five-pass Q1 closure plan, starting at `31e1ff7`.
 The preceding selected-execution and recovery/operator work is committed there.
-This pass is **complete within the fixed inventory below**, remains uncommitted,
-and leaves Q1 incomplete with three delivery passes remaining.
+This pass is **complete within the fixed inventory below** and was subsequently
+committed in `63f7a21`. It left Q1 incomplete with three delivery passes remaining.
 
 ## Fixed acceptance inventory
 
@@ -78,7 +78,8 @@ Evidence belongs under `rounds/vnext-18-9-q1-workflow-routes-001/`.
 Run one bounded worker at a time, 60% duty, finite deadline and heartbeat lease.
 Preserve failed diagnostics and exact source snapshots; correct fixture mistakes
 without claiming they were production defects. Stop for a genuine product or
-authority decision. No commit or push is authorized in this pass.
+authority decision. At verification no commit or push had occurred; the later
+local checkpoint is recorded above.
 
 ## Evidence scope and handoff
 
@@ -99,10 +100,11 @@ classification and any sensitive decision still precede proposal admission. It
 adds no candidate, retry, Editor invocation or authority. Existing review and
 admission entry points retain their behavior.
 
-The next Q1 delivery pass is **disposable V source operations**: exact separate
+The next Q1 delivery pass at that checkpoint was **disposable V source operations**: exact separate
 approval, apply/alias/retry, uncertain-write recovery,
 advanced-pointer handling and historical-source drift. Configuration/compatibility
-and closure review then remain. No actual external source write is authorized.
+and closure review followed it. The [source-operations handoff](VNEXT_18_9_Q1_SOURCE_OPERATIONS_PASS.md)
+records its subsequent result. No actual external source write is authorized.
 Q2 independent P0 obligations, Q3 performance/exhaustive qualification and Q4
 separately authorized live soak/activation are unchanged. Slow replay is a known
 release limitation; this campaign does not establish an SLA or waive it.

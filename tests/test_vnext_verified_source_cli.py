@@ -66,3 +66,18 @@ class SourceCommandTests(unittest.TestCase):
                 execute_source(self.run,self.args(recover=True,exclusive_source_access=True,**change))
         with self.assertRaises(ValueError):execute_source(self.run,self.args(source=str(self.base/'other.md')))
         self.run.apply_back.assert_not_called();self.run.recover_apply_back.assert_not_called()
+
+
+    def test_approval_parent_aliases_cannot_hide_a_file_inside_run_root(self):
+        raw = canonical_json_bytes(self.assessment)
+        root = self.run.store.root
+        (root/'approval.json').write_bytes(raw)
+        alias = self.base/'run-alias'; alias.symlink_to(root, target_is_directory=True)
+        neighbor = self.base/'neighbor'; neighbor.mkdir()
+        for path in (root/'approval.json', alias/'approval.json', neighbor/'..'/'run'/'approval.json'):
+            with self.subTest(path=path):
+                args = self.approval(raw); args.approval = str(path)
+                self.run.apply_back.reset_mock()
+                with self.assertRaisesRegex(ValueError, 'outside the run root'):
+                    execute_source(self.run, args)
+                self.run.apply_back.assert_not_called()
