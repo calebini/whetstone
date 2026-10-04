@@ -1605,6 +1605,7 @@ and closeout evidence are checkpointed at **`648a6ea`** on 2026-10-01.
 The unrelated `notes/future-improvements.md` edit remains preserved outside the
 feature checkpoint.
 
+Historical inventory snapshot, superseded by the Q1/Q2 dispositions below:
 The [18.9 clean-checkout inventory](docs/VNEXT_18_9_INVENTORY.md) is complete on
 `648a6ea`: all 22 P0 rows are mapped, with 15 having existing executable coverage,
 five partial compositions and two missing required evidence sources. This is an
@@ -1647,8 +1648,9 @@ All four acceptance tasks below remain open until their full requirements pass.
 cases and the supported-command matrix, fixes three command-boundary findings,
 and records 119 distinct fresh passing methods with explicit source/evidence
 limits. The operator authorized the closure checkpoint and push. Earlier partial-progress notes below
-describe their checkpoints; this disposition supersedes them. Q2–Q4 and all
-release acceptance gates remain open; public qualification is disabled.
+describe their checkpoints; this disposition supersedes them. Q2's subsequent
+closure is recorded below. Q3–Q4 and all release acceptance gates remain open;
+public qualification is disabled.
 
 Operator direction recorded on 2026-10-01: **the associated run configuration
 is the user-facing opt-in for verified promotion; do not add a separate CLI mode
@@ -1785,8 +1787,8 @@ the [closure handoff](docs/VNEXT_18_9_Q1_CLOSURE.md) reconciles all seven accept
 cases and the supported-command matrix. It records the three reviewed fixes,
 119 distinct passing methods, failed attempts and historical evidence limits.
 Q1's finite integration scope is complete; public qualification remains disabled.
-The next work package is Q2's seven named P0 gaps, preserving its fixture and
-independent-implementation blockers. The closure checkpoint and push are authorized.
+At that checkpoint the next work package was Q2's seven named P0 gaps; its
+subsequent fixture and independent-comparison disposition is recorded below. The closure checkpoint and push are authorized.
 This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
@@ -1829,13 +1831,28 @@ apply-back; no public accounting controls or runtime/spec changes were introduce
 methods and 21 registration methods. Both offline suites, targeted compilation and
 diff checks pass. The linked Q2 handoff records the exact verification and limits.
 
-Six named gaps now have focused coverage. P0-13 remains the one approved but
-unimplemented and unverified Q2 area. Q2 remains incomplete until its independent
-comparison and required verification pass. Q3 replay/performance and final
-qualification, and Q4 separately authorized live soak/activation, remain separate.
-The earlier work and scope decisions are checkpointed at `a0d3a4d`; this subsequent
-P0-07 pass remains uncommitted. No commit, push or public activation is implied
-by the implementation request.
+**Q2 is complete within its finite fixture scope.** P0-07 was checkpointed at
+`1ddaeee`. The subsequent P0-13 pass adds a standalone standard-library reference
+and a ten-method differential corpus: assembly/section-map/hash/identity and
+version-operation comparisons, plus persisted latest/effective-disposition and
+promotion-claimant selection. It imports no production Whetstone code, consumes no
+expected outputs and adds no second scheduler. The linked handoff distinguishes
+v2 kernel vectors, v3 metadata vectors and genuine current-consuming-suite stored
+artifacts, and states the validated-input boundary.
+
+Closure reconciliation also moves the P0-03 rejection assertion inside its five
+identifier cases and reruns that affected method. This corrects an earlier coverage
+overstatement; no production behavior or normative contract changed. This closure
+pass has 65 distinct passing methods (ten new differential methods, 54 existing
+checks and the corrected compatibility case), plus passing compile/diff/offline
+suite checks. Source cohorts and exact evidence limits are in the Q2 handoff.
+
+The next delivery milestone is Q3: settle the replay performance disposition,
+then run the fixed final deterministic release inventory on checkpointed sources.
+Q4's live soak/activation still needs separate authorization. All release gates
+below remain open; finite Q2 fixtures are not exhaustive release qualification.
+The independent comparison and P0-03 assertion fix remain uncommitted. No push,
+public activation, provider call or real external apply-back was performed.
 
 ##### 18.9 Release Acceptance Gates
 

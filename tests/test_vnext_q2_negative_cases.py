@@ -86,7 +86,7 @@ class NegativeCases(unittest.TestCase):
                 self.candidate(f,[('Timing','replace_section_body',f'Queue MUST wait.\nUse `{word}` behavior for older queues.\n',False)])
                 packet=json.loads(f.editor.prompts[0].splitlines()[-1])
                 self.assertTrue(any(b['role']=='implementation_context' for b in packet['authority_map']['bindings']))
-        self.rejected(f,'blocking_assertion_failed')
+                self.rejected(f,'blocking_assertion_failed')
 
     def test_p0_05_three_fixes_with_regression_reject_then_reduced_patch_is_fully_reverified(self):
         base=b'# Queue\n## Alpha\nQueue waits.\n## Beta\nWorkers wait.\n## Gamma\nJobs wait.\n## Reports\nReports include every failure.\n'

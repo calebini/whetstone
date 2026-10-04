@@ -1,9 +1,10 @@
 # Q2 qualification gaps
 
 Started from Q1 closure checkpoint `47cdf33`; the first Q2 package was committed
-at `a0d3a4d`. **Six of the seven named gaps now have focused executable coverage.
-P0-13 has approved scope but remains unimplemented and unverified.** Q2 is
-incomplete. Its finish line is the seven named P0 gaps in the [finite inventory](VNEXT_18_9_INVENTORY.md),
+at `a0d3a4d`, followed by P0-07 at `1ddaeee`. **Q2 is complete within its finite
+qualification-fixture scope: all seven named gaps and the simplification control
+have executable evidence.** This is not a release qualification or activation
+verdict. Its finish line is the seven named P0 gaps in the [finite inventory](VNEXT_18_9_INVENTORY.md),
 plus positive simplification. This work does not activate a mode, amend normative
 specifications, optimize replay, run the Q3 full campaign, call real providers,
 write back to external specifications or push. The operator authorized a local
@@ -19,7 +20,7 @@ checkpoint of the verified work and both remaining scope decisions.
 | P0-05: three fixes plus regression | Three resolved findings plus one unrelated report regression must receive a final semantic rejection. A separately admitted transaction on the unchanged immutable base omits the offending operation, fully reassembles and reverifies, and alone promotes once. Rejected evidence remains unchanged; final recheck passes. |
 | P0-07: token/time stop | The candidate spec defines persistence outcomes before/after registration, but no public run-wide token/time accounting contract was found. The operator approved qualifying caller-owned stops at those boundaries, without adding built-in accounting controls. Five methods now cover token/time stops around registration and semantic invocation, orphan/latest selection, unchanged authority, apply-back ineligibility and explicit recovery/continuation. Complete within this caller-stop fixture scope; verification is recorded below. Retry slots and profile extensions are not substitutes. |
 | P0-12: historical recurrence | Exact original draft pair frozen and replayed with the three evidence boundaries below: original metadata refusal under the current suite, exact loss replay under pinned v2, and body-identical M3 metadata adaptation under the current suite. All three pass. No raw historical acceptance under M3 is claimed. |
-| P0-13: independent implementations | The operator approved the inventory's bounded independent reference for assembly, maps, candidate hashes and persisted selection/disposition. Implementation and comparison remain outstanding. No second scheduler, production imports, golden-output lookup or second execution of the production implementation may stand in for an independent implementation. |
+| P0-13: independent implementations | The approved independent standard-library reference now compares candidate bytes, section maps, hashes/IDs, version operations, latest-candidate selection, effective disposition and next promotion claimant against production. The bounded corpus and exact limits are recorded below. No second scheduler, production imports, golden-output lookup or second execution of the production implementation may stand in for an independent implementation. |
 | S-01: valid simplification | Many-to-one normative correspondence passes deterministic and scripted semantic verification, then promotes to a shorter draft. Promotion before verification is refused; final recheck passes. |
 
 ## Fixture and authority boundaries
@@ -91,8 +92,9 @@ The operator accepted both recommendations before checkpoint `a0d3a4d`:
    on the same inputs. It must not import production Whetstone code, substitute
    golden-output lookup, rerun the same implementation or add a second scheduler.
 
-P0-13 is now the only remaining Q2 implementation area. Its approved scope still
-requires executable comparison and verification before Q2 can close.
+Both approved scopes now have executable coverage. Q3 owns the next delivery
+milestone: replay performance disposition and the final deterministic release
+campaign on settled sources. Q4 live soak and activation remain separately gated.
 
 ## First package verification (checkpoint `a0d3a4d`)
 
@@ -124,7 +126,7 @@ existing notes and both Q1 audit reports remain protected and uncommitted.
 
 ## P0-07 caller-owned budget stops
 
-The next pass adds [five focused methods](../tests/test_vnext_q2_budget_stops.py)
+Checkpoint `1ddaeee` adds [five focused methods](../tests/test_vnext_q2_budget_stops.py)
 covering eight scenarios on the exact offline `vnext-verified-consumer-1` suite:
 
 - A token stop immediately before the creation event preserves an earlier rejected
@@ -173,11 +175,92 @@ records commands, method identities, tested-source/log/status hashes and suite
 pins. Targeted compilation, `git diff --check` and both offline suite validations
 pass. All four qualification maps remain empty; workers have exited and the
 bounded-worker lock is available. Runtime, contracts, normative specs and existing
-non-Q2 tests retain their baseline hashes. This pass remains uncommitted with an
-empty index; no push was performed. The existing notes and two Q1 audit reports
-remain unchanged and uncommitted.
+non-Q2 tests retain their baseline hashes. At the verification snapshot this pass was uncommitted with an empty index; it
+was subsequently checkpointed at `1ddaeee`. No push was performed. The existing
+notes and two Q1 audit reports remain unchanged and uncommitted.
 
-Q2 cannot be declared complete while P0-13 implementation or any required
-verification remain outstanding. Q3 still owns final consuming-release regression,
-P0/D8/process/CLI qualification and the replay performance disposition. Q4 still
-owns separately authorized live soak and activation.
+## P0-13 independent implementation comparison
+
+The [reference executable](../tests/vnext_q2_reference.py) uses only Python's
+standard library. The [differential driver](../tests/test_vnext_q2_determinism.py)
+runs it with an isolated interpreter and supplies only inputs, never expected
+production outputs. Independence comes from separate byte-tag splicing, an ATX
+and fence scanner, a recursive structural matcher, identity/canonicalization
+functions and a persisted-record reader—not from running production twice.
+The import whitelist and input envelope are checked by the corpus.
+
+The comparisons cover:
+
+- All six patch operations in the v2 assembly kernel, identity-preserving and
+  identity-replacing subtrees, retired rows, inserted descendants, ordered shared
+  anchors and input-array permutation.
+- UTF-8 text, fenced heading-like content, CRLF/trailing-space normalization,
+  repeated siblings, rename/reorder/reparent transfers, and refusal of ambiguous
+  identities or destructive joins.
+- v3 candidate bytes, maps, hashes/IDs and version-operation records for four
+  numeric version forms with all four supported anchor kinds. Independent phase
+  arithmetic also covers Phase 2 entry/rounds and canonical-content no-ops.
+- A real registered candidate on the exact offline `vnext-verified-consumer-1`
+  suite, independently rebuilt from its admitted base/map/plan/patch/payloads.
+- Actual fenced-owner persisted empty, orphan, registered-unverified, nonfinal
+  decision, final-verified, prepared intent/event/snapshot and committed-promotion
+  states. Both readers select the same latest candidate, exact effective event
+  and decision references, and next promotion claimant.
+- A later rejected candidate with an earlier reserved claimant, and no fallback
+  to an older verified candidate when no claimant exists. Reversed artifact
+  enumeration and older timestamps cannot override creation ordinals. Changed
+  bound map/creation bytes and changed payload bytes refuse.
+
+This is the approved bounded reference over validated inputs. It is not a second
+scheduler, semantic verifier, storage writer, schema/admission implementation or
+replacement runtime. It does not prove all malformed-input behavior, all parser
+inputs or full release conformance. The six-operation kernel corpus uses v2;
+v3 stamping and the current consuming-suite registration are separately joined.
+Production qualifies semantic/admission history; the independent persisted reader
+checks deterministic byte/hash/identity/cross-link selection, not those judgments.
+No public mode or qualification map is enabled by this comparison.
+
+Evidence is retained in `rounds/vnext-18-9-q2-003/`. The initial run found a fixture
+expectation error: an unmarked prose edit was unverified, not deterministically
+rejected. The corrected fixture supplies a real scripted semantic rejection.
+The independent and production readers agreed before and after this correction;
+no runtime algorithm fix was required. The failed run adds no passing credit.
+
+A final review then found a defect in the new reference's ordered sibling match:
+it normalized each sibling's depth separately and could guess identities for
+repeated identical headings after an unequal depth change. `depth-reproducer`
+confirmed the incorrect acceptance. The reference now compares the entire ordered
+stream against one common depth origin; both implementations reject that ambiguous
+case. The full differential module passed after this reference-only correction;
+earlier differential passes and the pre-review receipt are superseded.
+
+Closure reconciliation also found the P0-03 rejection assertion outside its loop.
+It now runs inside each of the five compatibility-identifier cases, checking the
+full rejection/no-Verifier/no-promotion/current-authority boundary for every term.
+The earlier package's description overstated that part of its executable checks;
+the focused closure rerun supplies the missing evidence.
+
+**65 distinct methods pass** in this closure pass: ten new differential methods,
+54 existing assembly/lineage/version/contract methods and the corrected P0-03
+method. Verification ran serially at 60% duty:
+
+- `final-comparison`: all ten differential methods pass on the corrected reference
+  in 272.734s (273.000s supervised).
+- `regression`: 55 methods pass in 6.389s (6.818s supervised). Only the 54 existing
+  methods receive credit here; the metadata comparison's earlier pass is superseded
+  by `final-comparison`.
+- `compatibility-recheck`: the corrected five-identifier method passes in 48.482s
+  (48.892s supervised).
+
+`verification.json` records source cohorts, method identities, exact commands,
+log/status hashes, suite digests and prior Q2 receipts. Targeted compilation,
+`git diff --check` and both offline suite validations pass. The four production
+qualification maps remain empty. All test workers have exited, the bounded-worker
+lock is available, the index is empty and protected notes/audits retain their
+original hashes. Runtime and contract sources remain unchanged.
+
+Q2 closes only this finite fixture inventory. Q3 still owns final consuming-release
+regression, P0/D8/process/CLI qualification and replay performance disposition;
+Q4 still owns separately authorized live soak and activation. The P0-13 and P0-03
+closure changes remain uncommitted. No push, public activation, live provider call
+or real external apply-back was performed.
