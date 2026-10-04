@@ -1796,6 +1796,37 @@ resolution. Those audits remain preparation evidence, not Q1 completion evidence
 No push, public activation, live transmission or real external apply-back is
 authorized by this planning update.
 
+##### Q2 — Seven Named Qualification Gaps
+
+The operator authorized beginning Q2 after committing and pushing Q1 closure
+`47cdf33`. The [fixed Q2 inventory and handoff](docs/VNEXT_18_9_Q2_QUALIFICATION.md)
+owns this package: P0-01/02/03/05 joined negative cases, P0-07 token/time-budget
+stops, P0-12 the actual recurrence golden fixture, P0-13 independent implementation
+comparison, and the positive simplification control. Do not turn individual test
+failures into new milestones or weaken an acceptance requirement to close Q2.
+
+Current work uses the exact offline consuming suite and real existing fenced
+owners with scripted clients. No runtime or normative changes are needed for
+the four negative compositions. The original destructive recurrence draft pair
+was located in the sibling Spine run `recurrence-flex-synthesis-005`, round 1,
+and frozen with provenance; it is no longer a missing-input blocker. Five named
+gaps (P0-01/02/03/05/12) and the simplification control now have focused coverage:
+47 distinct methods pass, including eight new Q2 methods. The historical case
+separates exact v2 replay, current-suite metadata refusal and a body-identical
+M3 metadata adaptation. No raw historical acceptance under M3 or final release
+qualification is claimed. The linked handoff records exact results and limits.
+
+The operator approved both recommended scopes: P0-07 caller-owned token/time
+stops before/after registration without new built-in accounting controls, and
+P0-13 the bounded independent assembly/map/hash and persisted-selection/disposition
+reference, without production Whetstone imports or a second scheduler. These two
+areas remain unimplemented and unverified; scope approval is not completion.
+Q2 remains incomplete until all seven cases have the required coverage and
+verification. Q3 replay/performance and final qualification, and Q4 separately
+authorized live soak/activation, remain separate. The operator authorized a local
+checkpoint of the verified Q2 work and these decisions; no push is authorized
+by this request.
+
 ##### 18.9 Release Acceptance Gates
 
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.

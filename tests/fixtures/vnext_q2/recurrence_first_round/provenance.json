@@ -1,0 +1,34 @@
+{
+  "source_repository": "calebini/spine",
+  "source_run": "whetstone_runs/recurrence-flex-synthesis-005",
+  "round_number": 1,
+  "source_files": {
+    "draft_before.md": {
+      "bytes": 99006,
+      "sha256": "3bed5964554f7213a34f4d0da11903c414691250ee5fe72d45c81b4097637853"
+    },
+    "draft_after.md": {
+      "bytes": 44844,
+      "sha256": "051ca84cfc7e99c59bd2f0e1cd56a475dfea036af546006ef94f3bdadc4142a1"
+    }
+  },
+  "editor_summary_sha256": "3ac39462b1aba5c1dc361aaede3d90f8909c289be34ca3eebbb2652f93e47a8e",
+  "accepted_feedback_ids": [
+    "fb_001",
+    "fb_002",
+    "fb_003"
+  ],
+  "resolved_issue_ids": [
+    "iss_e16594fb32a25302",
+    "iss_d6ff9bf8189abe6b",
+    "iss_8e156e50abe8ab0c"
+  ],
+  "extraction": "Exact UTF-8 draft pair only; no telemetry, prompts or private machine paths copied; no text substitutions.",
+  "removed_top_level_sections": [
+    "7. Mutation, Revision Lineage, and Occurrence Lifecycle",
+    "9. Implementation Slices and Failures",
+    "10. Downstream Provenance and Side-Effect Boundary",
+    "11. Conformance Vectors",
+    "12. Acceptance Criteria"
+  ]
+}

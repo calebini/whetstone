@@ -2,6 +2,11 @@
 
 Date: 2026-10-01. Inspected commit: `648a6ead53efafaf40e5c41f859861a010ec7423`.
 
+This is the original inventory snapshot. [Q1 closure](VNEXT_18_9_Q1_CLOSURE.md)
+and the [Q2 handoff](VNEXT_18_9_Q2_QUALIFICATION.md) record subsequent work,
+including recovery of the original recurrence fixture. The classifications and
+evidence below retain their historical scope; they are not current release passes.
+
 **The inventory is complete; release qualification has not been executed.** A
 fresh detached local checkout supplied the code, specifications and tests. All
 1,145 tracked file hashes remained unchanged during inspection. There were no
