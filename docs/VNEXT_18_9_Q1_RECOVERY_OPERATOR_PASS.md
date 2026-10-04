@@ -163,5 +163,6 @@ one worker, 60% CPU duty, a finite wall deadline and a supervision heartbeat.
 Changed Python files compile; whitespace and both offline suite validations pass.
 Both suite digests, all four empty production qualification maps, the unrelated
 notes and pre-existing audit hashes are unchanged. The prior selected-execution
-work and this pass remain uncommitted. No known defect remains within this fixed
-inventory; the next delivery pass is supported workflow-route qualification.
+work and this pass were uncommitted at verification and subsequently checkpointed
+in `31e1ff7`. No known defect remained within this fixed inventory; the next
+delivery pass at that checkpoint was supported workflow-route qualification.

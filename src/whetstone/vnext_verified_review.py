@@ -256,6 +256,27 @@ class VerifiedReview(VerifiedWork):
             return result
         return self._execute(checkpoint)
 
+    def consolidate(self):
+        """Publish the vertical context before decisions, without admitting a proposal."""
+        def perform(store, proof):
+            from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, publish_merge
+            from whetstone.vnext_verified_phase1_budget import require_projected, project_review_state, synchronize
+            require_projected(proof)
+            synchronize(store, proof)
+            require(enabled(proof.seed_values['review']), 'consolidation requires vertical review')
+            from whetstone.vnext_verified_phase2_entry import ENTRY_PATH
+            try: store.read(ENTRY_PATH)
+            except FileNotFoundError: pass
+            else: require(False, 'Phase 1 consolidation cannot run after Phase 2 entry')
+            state = sequence(proof)
+            require(state.gate in {'finding_admission', 'merge_required'} and state.merges
+                    and not state.merges[-1][3],
+                    'no completed vertical cycle awaits consolidation')
+            publish_merge(store, proof, state)
+            project_review_state(self.run, store, proof)
+            return ReviewStep('merge_complete', state.number, 'vertical')
+        return self._execute(perform)
+
     def admit(self, *, decision_refs=()):
         decisions = deepcopy(list(decision_refs))
         def perform(store, proof):

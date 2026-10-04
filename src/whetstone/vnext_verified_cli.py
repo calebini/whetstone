@@ -121,6 +121,20 @@ def _phase2_selector(config, root, job, selectors):
                 'Phase 2 configuration differs from committed binding')
 
 
+def command_succeeded(command, packet):
+    if command == 'promote-phase2':
+        return bool(packet.get('committed') and packet.get('state_current'))
+    if packet.get('gate') in {'phase1_complete', 'phase2_complete'} or packet.get('phase_complete'):
+        return True
+    # Focused stability completes the selected command without accepting Phase 1.
+    # Only a reconciled terminal owner result can supply that narrower success.
+    operator = packet.get('operator') or {}
+    return bool(command == 'live-focused-phase1' and packet.get('phase') == 'phase_1'
+        and packet.get('gate') == 'phase1_stopped' and not packet.get('recovery')
+        and not packet.get('continuation') and operator.get('state_current')
+        and (operator.get('terminal_report') or {}).get('terminal_state') == 'FOCUSED_PROFILE_STABLE')
+
+
 def dispatch_verified(args):
     root = Path(getattr(args, 'run_root', None) or getattr(args, 'root', '.'))
     path = root / getattr(args, 'config', 'orchestrator_config.yaml')
@@ -180,10 +194,7 @@ def dispatch_verified(args):
         result = execute(run, args, config, values['review'])
         emit(args, result)
         if args.command in {'live-phase1', 'live-focused-phase1', 'live-phase2', 'promote-phase2'}:
-            packet = public(result)
-            succeeded = packet.get('gate') in {'phase1_complete', 'phase2_complete'} or packet.get('phase_complete')
-            if args.command == 'promote-phase2': succeeded = packet.get('committed') and packet.get('state_current')
-            return 0 if succeeded else 2
+            return 0 if command_succeeded(args.command, public(result)) else 2
         return 0
     except (ValueError, OSError, KeyError, TypeError, RuntimeError) as exc:
         emit(args, dict(protocol='vnext', mode='verified_promotion', admitted=False,

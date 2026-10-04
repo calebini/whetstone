@@ -199,9 +199,11 @@ def phase1(run, args, config, review):
             repair(run, state, args)
             continue
         gate = state['gate']
-        if gate in {'review', 'merge_required'}:
+        if gate == 'merge_required':
+            guarded(run, state, run.consolidate_phase1_review)
+        elif gate == 'review':
             result = guarded(run, state, lambda: run.review_next(
-                client=_client('reviewer', review, config, args, run.store.root) if gate == 'review' else None))
+                client=_client('reviewer', review, config, args, run.store.root)))
             if getattr(result, 'status', '') in {'timeout', 'client_error', 'invalid_review', 'attempts_exhausted'}:
                 # Existing closeout owner publishes the technical outcome, not a retry.
                 run.finish_phase1(); run.reconcile_phase1_state()

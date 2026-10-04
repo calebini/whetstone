@@ -1753,9 +1753,15 @@ The recovery/operator delivery pass is complete within its
 methods, including five real-owner command journeys, with historical evidence
 and source-cohort limits recorded separately. It fixes exact candidate recovery
 selection and budget-grant reentry without activating public V. The preceding
-selected-execution work and this pass remain uncommitted; Q1 remains incomplete.
-The remaining Q1 delivery passes are supported workflow routes, source-operation
-qualification, configuration/compatibility, and final reconciliation/review.
+selected-execution work and this pass are committed in `31e1ff7`; Q1 remains incomplete.
+The [supported workflow routes pass](docs/VNEXT_18_9_Q1_WORKFLOW_ROUTES_PASS.md)
+is complete within its fixed seven-method command inventory plus a sensitive-merge
+regression: 99 distinct methods pass across documented source cohorts. It fixes
+focused-command success and prepares the committed vertical merge before operator
+classification. The final vertical recheck took 89.1 minutes at 60% duty; slow
+replay remains a release limitation. This pass remains uncommitted.
+The three remaining Q1 delivery passes are source-operation qualification,
+configuration/compatibility, and final reconciliation/review.
 This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate

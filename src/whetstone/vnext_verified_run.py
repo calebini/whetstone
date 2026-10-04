@@ -333,6 +333,10 @@ class VerifiedRun:
         from whetstone.vnext_verified_review import VerifiedReview
         return VerifiedReview(self).admit(decision_refs=decision_refs)
 
+    def consolidate_phase1_review(self):
+        from whetstone.vnext_verified_review import VerifiedReview
+        return VerifiedReview(self).consolidate()
+
     def close(self): self.store.close()
     def __enter__(self): return self
     def __exit__(self, *exc): self.close()

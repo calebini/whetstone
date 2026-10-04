@@ -6,6 +6,10 @@ The operator authorized this partial implementation checkpoint on 2026-10-02.
 Production qualification remains empty; no live provider calls, real external
 apply-back operations or pushes have occurred during this implementation.
 
+The acceptance inventory and delivery-pass list describe the current boundary.
+Individual campaign notes below retain the evidence limits at their checkpoints;
+later passes may close work that those historical notes left open.
+
 ## Applied and implemented so far
 
 The approved amendment patch was applied to the six specification owners and the
@@ -60,8 +64,8 @@ is recovery-only and cannot start an Editor or another review.
 | 1. Fresh config-selected admission | Focused CLI tests exercise injected exact qualification, dry-run, fresh initialization and V reopening. Production gate remains empty. |
 | 2. Unknown/unqualified/conflicting selectors | Public refusal, suite conflict, existing destination and no-client/no-write assertions covered; expand the selector/Phase 2 Ref matrix. |
 | 3. Retained mode | Removed config selectors still select V status; new work without mode refuses. Broaden edited-selector negative cases. |
-| 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. Versioned convergence, vertical/focused and the remaining target combinations still need command-level evidence. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The operator-input campaign adds fence-bound input/selection refusal across ten adapter branches and real Phase 1/2 options-response plus Phase 1 semantic-answer/child-selection journeys; recording and selection do not execute the selected work. The selected-execution campaign adds real Phase 1/2 operator-selected promotion and distinct semantic-child promotion; Phase 1 child timeout/explicit continuation stops before registration, and Phase 2 stale parent-failure projection repair stops without clients before child execution. The completed recovery/operator delivery pass adds exact prepared registration/decision/promotion repair, Phase 1 repair-only `--continue`, retained Verifier output, interrupted budget admission/state acknowledgement, real advice/repair/gap and semantic publication, and later declaration-preparation interruption. Its linked inventory distinguishes new command journeys, composition guards and historical owner evidence. Source recovery and route/selector qualification remain in the following passes; exhaustive combinations remain Q3. |
+| 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. The completed [workflow-routes pass](VNEXT_18_9_Q1_WORKFLOW_ROUTES_PASS.md) adds versioned final/strict convergence and unchanged reentry, vertical consolidation/promotion/both-profile rereview through final/strict convergence, focused stability with exact pins and Phase 2 refusal, and horizontal mid/permissive, mid/strict and final/permissive targets. Its sensitive-merge regression preserves the operator stop before Editor admission. This is bounded dimension coverage, not every route/target/fault combination. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The operator-input campaign adds fence-bound input/selection refusal across ten adapter branches and real Phase 1/2 options-response plus Phase 1 semantic-answer/child-selection journeys; recording and selection do not execute the selected work. The selected-execution campaign adds real Phase 1/2 operator-selected promotion and distinct semantic-child promotion; Phase 1 child timeout/explicit continuation stops before registration, and Phase 2 stale parent-failure projection repair stops without clients before child execution. The completed recovery/operator delivery pass adds exact prepared registration/decision/promotion repair, Phase 1 repair-only `--continue`, retained Verifier output, interrupted budget admission/state acknowledgement, real advice/repair/gap and semantic publication, and later declaration-preparation interruption. Its linked inventory distinguishes new command journeys, composition guards and historical owner evidence. Source recovery and selector/compatibility qualification remain in the following passes; exhaustive combinations remain Q3. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. Real disposable-fixture command apply/retry, uncertain write, pointer advancement and historical drift journeys remain to run. No real external source was written. |
 | 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. Broader legacy/bridge/R/P route qualification remains Q1 work; release-wide qualification remains Q3. |
 
@@ -699,7 +703,7 @@ a time, 60% duty, finite deadlines and supervision leases. Targeted compilation,
 whitespace checks and offline validation of both suites passed. Suite digests,
 all four empty production qualification maps, the unrelated notes and the
 pre-existing audit hashes remain unchanged. No new product/authority decision
-was needed. This slice remains uncommitted; no push, public activation, live
+was needed. This slice was subsequently committed in `31e1ff7`; no push, public activation, live
 provider call, real external source write or specification amendment occurred.
 
 The four command cases stop at real durable promotion, before subsequent review
@@ -716,24 +720,30 @@ cover the remaining recovery/operator command compositions as one package.
 That pass is **complete within its fixed inventory**: 92 distinct passing methods,
 including five new real-owner command journeys and the affected budget regressions.
 Its evidence records test corrections, source cohorts and reused historical
-coverage. The preceding selected-execution work is preserved; both remain
-uncommitted. Q1 is still incomplete, with four delivery passes remaining.
+coverage. Both this pass and the preceding selected-execution work were committed
+in `31e1ff7`. At that checkpoint four delivery passes remained. The following
+workflow-routes pass closes the second; Q1 remains incomplete with three remaining.
 
 ## Resume the implementation
 
 Continue the same Q1 package using these five delivery passes. They replace the
 older slice-by-slice next-action list; an individual test or fault is not another
 milestone. The recovery/operator inventory above records pass 1's completion;
-pass 2 is next.
+[pass 2](VNEXT_18_9_Q1_WORKFLOW_ROUTES_PASS.md) is also complete within its fixed
+inventory, with 99 distinct passing methods across documented source cohorts.
+It fixes focused-command success and vertical merge preparation before operator
+classification. Its 89-minute final vertical recheck preserves the known slow-replay
+limitation. The current pass is uncommitted; source operations are next.
 
 1. **Recovery and operator boundaries — complete.** The fixed command journeys,
    affected regressions and reconciliation are recorded in the linked pass.
    Preserve its stated evidence limits; do not reopen unchanged owners or invent
    new generic resume routes.
-2. **Supported workflow routes — next.** Close the remaining declared command matrix:
-   versioned convergence, vertical and focused workflows, and supported Phase 2
-   target combinations. Preserve focused non-acceptance and unsupported-route
-   refusal. Existing versioned-entry evidence is not versioned convergence.
+2. **Supported workflow routes — complete within the fixed inventory.** The linked
+   pass records versioned convergence, vertical and focused workflows, supported
+   Phase 2 target dimensions and unchanged reentry. Focused non-acceptance,
+   sensitive operator stops and unsupported-route refusal are preserved.
+   Historical owner evidence and source-cohort limits remain explicit.
 3. **Source operations.** Exercise actual V command adapters against disposable
    fixture sources: separate exact approval, apply/alias/retry, uncertain-write
    recovery, advanced-pointer and historical-source drift. No real external

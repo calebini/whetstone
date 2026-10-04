@@ -24,6 +24,18 @@ def selected(gate, *, phase='phase_1', recovery=None, continuation=None, **evide
     return dict(gate=gate, phase=phase, recovery=recovery, continuation=continuation, **public(evidence))
 
 
+def pending_vertical_merge(proof):
+    from whetstone.vnext_verified_vertical_phase1 import enabled, sequence
+    if not enabled(proof.seed_values['review']): return None
+    state = sequence(proof)
+    if state.gate not in {'finding_admission', 'merge_required'}: return None
+    packet, _, _, present = state.merges[-1]
+    if present: return None
+    from whetstone.vnext_verified_phase2_binding import _ref
+    return selected('merge_required', round_number=state.number,
+                    merge=_ref(f'rounds/round-{state.number}/vertical_merge.json', packet))
+
+
 def candidate_state(run, proof):
     from whetstone.vnext_verified_semantics import VerifiedSemanticDecisionJournal, inspect_verified_semantic_request
     proof.inspect_registry()
@@ -265,6 +277,9 @@ def _inspect_command(run):
     if operator.next_action in {'reconcile_phase1_state', 'finish_phase1'}:
         return selected(operator.next_action, recovery='phase1_projection' if
             operator.next_action == 'reconcile_phase1_state' else 'phase1_publication', operator=operator)
+    if status.review_gate in {'finding_admission', 'merge_required'}:
+        merge = pending_vertical_merge(proof)
+        if merge is not None: return merge
     if status.review_gate == 'finding_admission' and optional(run, round_input_path(status.review_round)) is not None:
         return proposal_state(run, proof, status.review_round)
     review = run.review_status()
