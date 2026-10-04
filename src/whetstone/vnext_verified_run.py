@@ -81,6 +81,26 @@ class _RunHistory(VerifiedHistoryAdmission):
                 'installed verified run algorithm differs from pinned suite')
         return reader, values
 
+    def _recheck_review_seed(self, proof):
+        """Reuse only successful validation inside this historical proof.
+
+        ReplayMemo rereads every observed byte/path dependency on a hit. The
+        dynamic round-selector guard must still run: newly resolved rounds may
+        not have been dependencies of the first seed validation. No suite,
+        admission values or writer permission are returned from the memo.
+        """
+        read = proof.store.read
+        def guard():
+            self.run._guard(read)
+            self._refs['rounds'].guard()
+            proof.guard(read)
+        def validate():
+            self._seed_inputs(read, expected_mode='verified_promotion')
+        selectors = {key: value for key, value in self._refs.items() if key != 'rounds'}
+        key = ('review-seed', proof.memo_context(), str(self.suite_path),
+               sha256_bytes(canonical_json_bytes(selectors)), self.run._record['job_id'], bool(self.run._staged))
+        proof.memo.call(key, validate, guard)
+
     def _validate_round_review(self, proof, number, record):
         from whetstone.vnext_verified_phase2_round import FEEDBACK_PATH, validate_round
         if record['feedback']['path'].startswith('rounds/phase2/review_requests/pass-'):

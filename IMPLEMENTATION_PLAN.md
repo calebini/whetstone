@@ -1875,13 +1875,39 @@ worker at 60% duty with an actively refreshed lease; preserve failed/interrupted
 attempts and avoid redundant passing cohorts. Q3 and all release gates remain
 open until the linked execution record establishes their exit conditions.
 
-The current-suite whole four-promotion baseline passes in 1160.728s with eight
+The Q3-001 current-suite whole four-promotion baseline passes in 1160.728s with eight
 exact-output/read-only replay samples. At four promotions, plain history and
-Phase 1 state reads take 19.644s and 32.576s at 60% duty. Repeated seed/suite
-validation is the recorded bounded optimization target; no runtime optimization,
-performance waiver or final regression verdict is claimed. The measurement
-supervisor exited. The operator authorized checkpointing this Q3 baseline,
+Phase 1 state reads take 19.644s and 32.576s at 60% duty. That baseline identified
+repeated seed/suite validation as the bounded optimization target; it did not
+claim a runtime optimization, performance waiver or final regression verdict.
+The measurement supervisor exited. The operator authorized checkpointing this Q3 baseline,
 tooling and handoff; Q3 remains open.
+
+Q3-002 implements the selected bounded historical seed-validation reuse on
+`ff007bf`: validation outcomes remain inside one proof, observed bytes and paths
+are reread on hits, and live run/round/current-pointer guards remain active.
+Public entry and live borrowed-fence preparation still validate fresh. The whole
+current-suite comparison journey passes in 1164.993s, including four promotions,
+16 paired reads and the reopened clean review. Paired four-promotion history and
+Phase 1 state reads improve by 12.7%/11.1%; one-promotion reads regress by
+0.183s/0.142s (8.1%/3.4%). This is bounded local evidence, not a production SLA or
+an end-to-end speedup claim. The bounded optimization is retained after 28
+distinct focused/affected-consumer methods and the separate current-suite journey
+variant pass. Both registered suites, compilation and diff checks pass; protected
+notes/audits and all four empty public qualification maps are preserved. Exact
+method identities, timings, source hashes and the superseded fixture failure are
+joined in `rounds/vnext-18-9-q3-002/verification.json`. The operator subsequently
+authorized checkpointing this bounded optimization, tests and handoff; the local
+checkpoint receipt joins the original evidence to the commit. All supervised
+workers exited, with no push or live provider activity.
+
+**Next action:** execute and reconcile the fixed final deterministic campaign on
+settled sources (1,635 distinct methods in 210 modules), preserving source/scope
+limits when crediting the 28 ordinary passes. The current-suite comparison variant
+does not replace the generated-suite regression journey. Then bring the complete
+evidence and remaining latency back for explicit release performance disposition.
+No further optimization experiment, SLA or waiver is assumed. Q3 and release
+acceptance remain open; Q4 live soak and activation remain separately gated.
 
 ##### 18.9 Release Acceptance Gates
 

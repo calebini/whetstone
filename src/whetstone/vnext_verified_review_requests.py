@@ -25,7 +25,11 @@ class _ReviewInputs:
 
     def values(self):
         self.guard()
-        self.proof.owner._seed_inputs(self.store.read, expected_mode='verified_promotion')
+        if self.store is self.proof.store:
+            self.proof.owner._recheck_review_seed(self.proof)
+        else:
+            # Live borrowed-fence preparation retains its fresh admission path.
+            self.proof.owner._seed_inputs(self.store.read, expected_mode='verified_promotion')
         values = self.proof.values(self.base_reference)
         pointer = self.proof.reader.json(self.base_reference, 'current_verified_pointer_v1')
         require(sha256_bytes(values['base']) == pointer['verified_draft_hash'],

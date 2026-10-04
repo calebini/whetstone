@@ -105,7 +105,7 @@ each public entry, ascending proof of exact committed ancestors, fresh current
 pointer/descriptor barriers and proof state confined to that invocation. A
 process-persistent cache or an inferred authority grant is outside this task.
 
-## Current baseline and next optimization target
+## Q3-001 baseline and selected optimization target
 
 The current-suite samples on `83d7198` runtime sources are:
 
@@ -128,7 +128,7 @@ seed-input revalidations. Suite validation takes 10.995s cumulative within
 14.950s of seed-input revalidation, within the 40.082s profiled history read.
 These overlapping costs identify a bounded target; they are not additive savings.
 
-**Next implementation experiment:** reduce repeated immutable seed/suite
+**Selected experiment (executed in Q3-002 below):** reduce repeated immutable seed/suite
 validation during historical Reviewer input reconstruction
 (`_ReviewInputs.values`). Keep fresh public-entry validation, live run and round
 selector guards, byte/confined-path rechecks, and invocation-local lifetime.
@@ -150,11 +150,112 @@ bounded-worker lock is available. Existing runtime/tests/contracts and protected
 notes/audits retain their kickoff hashes. Both workspace and fixture parent are
 local APFS. All four public qualification maps remain empty.
 
-**Q3 remains open.** The bounded optimization experiment, release performance
-disposition and final deterministic campaign are outstanding. Runtime, frozen
+**At the Q3-001 checkpoint, Q3 remained open.** The bounded optimization experiment,
+release performance disposition and final deterministic campaign were outstanding. Runtime, frozen
 contracts, authoritative specs, public activation, live providers, external
 apply-back and push remain unchanged by this kickoff. The operator subsequently
 authorized checkpointing the measurement and inventory tooling and updated
 handoff. The original verification receipt retains its precommit source and
 documentation hashes; `rounds/vnext-18-9-q3-001/checkpoint.json` records the commit
 join and committed file hashes.
+
+## Q3-002 — historical seed-validation experiment
+
+The baseline and inventory are checkpointed at `ff007bf`. On the next resume,
+only the protected notes and two local Q1 audit reports were uncommitted, so no
+additional feature checkpoint was needed before beginning this experiment.
+
+The bounded change routes historical Reviewer seed checks through a private
+callback. Stored-run history uses the existing proof-local `ReplayMemo` to retain
+only successful validation (`None`, not a suite, input object or permission).
+The key includes proof context and bound selectors; every hit repeats observed
+D8 reads and confined contract reads. Live run/round-selector and current
+pointer/descriptor guards execute before and after reuse. Public proof
+construction remains fresh, and a live borrowed-fence Reviewer input continues
+to call the original fresh validation path. The generic historical owner retains
+fresh validation as its default. No shared memo implementation, contract, mode,
+legacy or bridge code changes are involved.
+
+Four new current-suite methods exercise output isolation, fresh invocations,
+changed/missing/symlinked inputs, invalid contract bytes, valid manifest-whitespace
+changes, late round-selector resolution, head changes during readback, expired
+borrowed fences and fresh live reads. Together with the existing memo,
+promoted-history and historical-journal tests, **15 methods pass in 155.466s**.
+The initial attempt failed because a test wrongly expected valid manifest
+whitespace to be refused. The corrected assertion requires a rebuild and
+preserved acceptance; the failed attempt and exact original test source are
+retained without passing credit. No production correction was needed for that
+fixture error.
+
+`tests/q3_replay_comparison.py` runs the existing current-suite four-promotion
+journey. At one and four promotions, it alternates control/reuse/reuse/control
+on the same live fixture. Control substitutes the inherited callback that always
+performs fresh seed validation. Both arms keep the same dispatch and surrounding
+implementation. Plain wall/process times, exact outputs, unchanged artifact
+hashes and seed/run/round/proof guard counts are recorded. Guard counts supplement
+the fault tests; counts alone do not prove guard correctness. The driver refuses
+live native providers and does not alter public qualification gates.
+
+```sh
+PYTHONPATH=src:tests /opt/homebrew/bin/python3 tests/m5_bounded_runner.py \
+  --output rounds/<fresh-q3-directory>/comparison \
+  --wall-seconds 3000 --lease-seconds 180 --duty .6 -- \
+  /opt/homebrew/bin/python3 -u tests/q3_replay_comparison.py \
+  --output rounds/<fresh-q3-directory>/comparison
+```
+
+Evidence is under `rounds/vnext-18-9-q3-002/`. Its source inventory includes
+1,635 distinct methods in 210 modules (the prior inventory plus the four new
+fault methods). Collection remains an inventory, not a full regression verdict.
+The paired plain-read means at 60% duty are:
+
+| Promotions | Operation | Control wall | Reuse wall | Wall change | CPU change |
+| --- | --- | --- | --- | --- | --- |
+| 1 | History | 2.272s | 2.455s | 8.1% slower | 4.7% slower |
+| 1 | Phase 1 state | 4.226s | 4.368s | 3.4% slower | 3.4% slower |
+| 4 | History | 19.203s | 16.767s | 12.7% faster | 13.0% faster |
+| 4 | Phase 1 state | 32.562s | 28.949s | 11.1% faster | 11.1% faster |
+
+Both four-promotion reuse samples improve on both control samples. Seed
+validations fall from 31 to six for history and from 45 to seven for Phase 1
+state. Exact serialized outputs match across all four arms, run artifacts remain
+unchanged, and run/round/proof guard counts increase. One-promotion reads cost
+an additional 0.183s/0.142s on average. These are two repeats per arm on one local
+fixture, not a latency distribution or a claim of improvement for every workload.
+The whole-journey duration also includes the extra comparison reads and must not
+be compared with the earlier profiled baseline as an end-to-end speedup.
+
+The whole current-suite journey passes in **1164.993s**, including the reopened
+clean review and all 16 comparison reads (one variant, no failures, errors or
+skips). The selected affected-consumer cohort passes **13 methods in 394.519s**:
+all seven review-request methods, three Reviewer evidence/fresh-process methods,
+two altered-source/same-round-follow-up history methods, and the bound-owner
+manifest/input refusal method. Together with the focused cohort this is **28
+distinct ordinary methods plus one current-suite journey variant**. Generated
+component fixtures retain their scope; this is not a full regression verdict.
+
+**Disposition: retain this bounded optimization.** The two longer-history pairs
+show consistent wall/CPU benefit with exact outputs and preserved source/fence
+refusals. The documented short-history overhead remains a limitation. Retention
+is an implementation decision, not release acceptance of the remaining latency.
+No further cache experiment is opened by this result.
+
+`rounds/vnext-18-9-q3-002/verification.json` joins the frozen source inventory,
+exact method identities, comparison samples, supervisor exits, evidence hashes
+and this handoff. Compilation, diff checks and both registered suite validations
+pass. All four public qualification maps remain empty. Protected notes and local
+audits retain their kickoff hashes; at verification the staging index was empty
+and the bounded worker lock was available. The operator subsequently authorized
+checkpointing this bounded optimization, tests and handoff. The verification
+receipt retains its precommit hashes; `rounds/vnext-18-9-q3-002/checkpoint.json`
+joins that receipt to the commit and committed file hashes. No push, live
+provider use, public activation or external apply-back occurred.
+
+**Next: the fixed final deterministic campaign on settled sources.** Reconcile
+the 1,635-method inventory and its P0/D8/process/CLI/compatibility indexes,
+crediting already passing ordinary methods only when their source cohort and
+execution scope match. The current-suite journey variant does not replace the
+ordinary generated-suite journey. Record remaining methods, failures, skips and
+interruptions explicitly, then bring the complete evidence and remaining latency
+back for release performance disposition. Q3 remains open; no SLA, waiver or Q4
+live-soak/activation authority is inferred.

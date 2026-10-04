@@ -290,6 +290,9 @@ class VerifiedHistoryAdmission(ProposalAdmission):
     def _validate_round_review(self, proof, number, record):
         """Stored-run consumers may require bounded original Reviewer replay."""
 
+    def _recheck_review_seed(self, proof):
+        self._seed_inputs(proof.store.read, expected_mode='verified_promotion')
+
     def _prove(self, read):
         return _Proof(self, read).run()
 
