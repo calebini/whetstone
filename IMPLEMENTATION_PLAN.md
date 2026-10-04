@@ -1851,8 +1851,37 @@ The next delivery milestone is Q3: settle the replay performance disposition,
 then run the fixed final deterministic release inventory on checkpointed sources.
 Q4's live soak/activation still needs separate authorization. All release gates
 below remain open; finite Q2 fixtures are not exhaustive release qualification.
-The independent comparison and P0-03 assertion fix remain uncommitted. No push,
+The independent comparison and P0-03 assertion fix are checkpointed at `83d7198`.
+The receipt, source and log hashes were revalidated before that commit. No push,
 public activation, provider call or real external apply-back was performed.
+
+##### Q3 — Replay Performance And Deterministic Qualification
+
+The operator authorized Q3 after the Q2 closure checkpoint. The
+[Q3 execution record](docs/VNEXT_18_9_Q3_QUALIFICATION.md) owns the finite order:
+current consuming-suite replay measurement and bounded optimization, final-source
+P0/D8/process/CLI/full regression, then evidence reconciliation and an explicit
+release performance disposition. No performance SLA or waiver is inferred.
+
+Kickoff adds a reproducible inventory collector and a current-suite replay
+measurement driver. Collection finds 1,631 distinct methods in 209 modules;
+1,669 discovery occurrences include 38 identical imported-test duplicates. All
+22 P0 rows resolve, with Q2 additions and positive simplification included.
+Collection is not an execution pass. The replay driver uses the existing whole
+four-promotion journey with the actual disabled consuming suite, separate plain
+and profiled samples, exact output comparisons and read-only artifact checks.
+Historical generated-suite timings remain separately scoped. Run one supervised
+worker at 60% duty with an actively refreshed lease; preserve failed/interrupted
+attempts and avoid redundant passing cohorts. Q3 and all release gates remain
+open until the linked execution record establishes their exit conditions.
+
+The current-suite whole four-promotion baseline passes in 1160.728s with eight
+exact-output/read-only replay samples. At four promotions, plain history and
+Phase 1 state reads take 19.644s and 32.576s at 60% duty. Repeated seed/suite
+validation is the recorded bounded optimization target; no runtime optimization,
+performance waiver or final regression verdict is claimed. The measurement
+supervisor exited. The operator authorized checkpointing this Q3 baseline,
+tooling and handoff; Q3 remains open.
 
 ##### 18.9 Release Acceptance Gates
 

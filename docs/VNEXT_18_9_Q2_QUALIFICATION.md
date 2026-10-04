@@ -262,5 +262,8 @@ original hashes. Runtime and contract sources remain unchanged.
 Q2 closes only this finite fixture inventory. Q3 still owns final consuming-release
 regression, P0/D8/process/CLI qualification and replay performance disposition;
 Q4 still owns separately authorized live soak and activation. The P0-13 and P0-03
-closure changes remain uncommitted. No push, public activation, live provider call
-or real external apply-back was performed.
+closure changes were subsequently checkpointed at `83d7198` after source, handoff
+and log hashes were revalidated. The original receipt retains its precommit state;
+`rounds/vnext-18-9-q2-003/checkpoint.json` records the commit join. Q3 has begun in
+the [Q3 execution record](VNEXT_18_9_Q3_QUALIFICATION.md). No push, public activation,
+live provider call or real external apply-back was performed.
