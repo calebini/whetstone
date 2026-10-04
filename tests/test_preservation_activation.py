@@ -78,8 +78,21 @@ class ActivationConfigTests(unittest.TestCase):
             for text in cases:
                 with self.subTest(text=text):
                     self.path.write_text(text)
+                    # Direct legacy configuration still rejects mixed modes.
                     with self.assertRaisesRegex(ValueError, 'CONFIG_INVALID'):
-                        main(['live-phase1', '--root', str(self.root)])
+                        load_config(self.path)
+                    if 'editing_mode:' in text or 'contract_suite_version:' in text:
+                        # Reserved V selectors enter its structured refusal path.
+                        output = io.StringIO()
+                        with redirect_stdout(output):
+                            code = main(['live-phase1', '--root', str(self.root)])
+                        packet = json.loads(output.getvalue())
+                        self.assertEqual(code, 2, packet)
+                        self.assertFalse(packet['admitted'])
+                        self.assertIn(packet['reason_code'], {'vnext_config_invalid', 'vnext_mode_mismatch'})
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'CONFIG_INVALID'):
+                            main(['live-phase1', '--root', str(self.root)])
             reviewer.assert_not_called()
             editor.assert_not_called()
         self.assertFalse((self.root/'rounds/run_state.json').exists())

@@ -48,10 +48,15 @@ def emit(args, value):
 def _requested(args, path, root):
     if (root / RUN_INPUT_PATH).is_file():
         job = decode_json(confined_file(root, 'job_descriptor.json').read_bytes())
+        require(isinstance(job, dict), 'retained descriptor must be an object')
         if job.get('editing_mode') == 'verified_promotion': return True
     text = path.read_text() if path.is_file() else ''
-    if re.search(r'(?m)^\s*editing_mode\s*:|"editing_mode"\s*:', text):
-        return common.config_packet(path).get('editing_mode') == 'verified_promotion'
+    # Presence selects validation, not permission. Invalid or incomplete V
+    # selectors must not fall through to a legacy writer. Package-only R/P
+    # interfaces retain their existing dispatch below this adapter.
+    names = ('editing_mode', 'contract_suite_version', 'vnext_phase2_configuration')
+    if any(re.search(r'(?m)^\s*'+name+r'\s*:|"'+name+r'"\s*:', text) for name in names):
+        return any(name in common.config_packet(path) for name in names)
     return False
 
 
@@ -108,6 +113,7 @@ def _phase2_selector(config, root, job, selectors):
     require(sha256_bytes(raw) == reference['hash'], 'Phase 2 configuration hash differs')
     packet = decode_json(raw)
     require(raw == canonical_json_bytes(packet), 'Phase 2 configuration must be canonical')
+    require(isinstance(packet, dict), 'Phase 2 configuration must be an object')
     from whetstone.vnext_contracts import VNextSchemaRegistry
     require(packet.get('schema_version') == 'vnext-phase2-configuration-v3',
             'verified command suite requires the Phase 2 v3 configuration')

@@ -1,8 +1,8 @@
 # Q1 disposable source operations delivery pass
 
 Delivery pass 3 starts at `63f7a21`, the committed workflow-route pass.
-This pass is **complete within the fixed inventory below** and remains
-uncommitted. Q1 remains incomplete with two delivery passes left. Public
+This pass is **complete within the fixed inventory below**, committed in
+`b947e77`. At that checkpoint Q1 remained incomplete with two delivery passes left. Public
 qualification and Q2–Q4 remain incomplete.
 
 ## Fixed inventory
@@ -89,10 +89,11 @@ verified files. `source-final.patch` reproduces the code/tests against `63f7a21`
 and passes an isolated apply check. Compilation, whitespace checks and offline
 validation of both suites pass. All four production qualification maps remain
 empty. All bounded workers exited and the worker lock is available. The unrelated
-notes and pre-existing audit are unchanged, HEAD remains `63f7a21`, and the index
-is empty. No new authority decision was needed.
+notes and pre-existing audit were unchanged, HEAD was `63f7a21`, and the index
+was empty at verification; the subsequent checkpoint is `b947e77`. No new authority decision was needed.
 
-The next Q1 milestone is **configuration and compatibility**: finish the finite
+The next Q1 milestone at this checkpoint was **configuration and compatibility**
+([handoff](VNEXT_18_9_Q1_CONFIGURATION_COMPATIBILITY_PASS.md)): finish the finite
 selector/Phase 2 Ref and retained-mode refusal matrix plus the representative
 legacy/bridge/reviewer-only/proposal command routes. Then perform the closure
 review and reconcile all seven acceptance rows. This pass does not close Q1 or

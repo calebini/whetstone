@@ -1765,9 +1765,16 @@ is complete within its fixed four-journey CLI inventory and historical-pointer
 composition guards: 72 distinct methods pass across documented source cohorts.
 It fixes approval-file containment through parent aliases; the source owners and
 legacy/bridge policy remain unchanged. Advanced-pointer coverage uses proof/readback
-guards, not a new post-convergence scheduler route. This pass remains uncommitted.
-The two remaining Q1 delivery passes are configuration/compatibility and final
-reconciliation/review.
+guards, not a new post-convergence scheduler route. This pass is committed in `b947e77`.
+The [configuration/compatibility pass](docs/VNEXT_18_9_Q1_CONFIGURATION_COMPATIBILITY_PASS.md)
+is complete within its finite selector/Phase 2 Ref, retained-mode and representative
+legacy/bridge/R/P inventory: 84 distinct methods pass, including eleven new methods.
+Invalid V-only selectors now refuse before legacy dispatch, and malformed retained
+or Phase 2 objects return structured refusal. Final production bytes are common to
+all credited runs; test corrections and failed attempts are explicitly reconciled.
+These changes remain uncommitted. The one remaining Q1 delivery pass is final
+reconciliation/review across all seven acceptance cases and the supported-command
+matrix. Q1 itself remains incomplete and public qualification remains disabled.
 This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate
