@@ -51,10 +51,14 @@ class Editor(requests.Client):
         return canonical_json_bytes(response)
 
 
-def fixture(test, base, targets, *, claims=None, assertions=(), prospective=False, legacy_assembly=False):
+def fixture(test, base, targets, *, claims=None, assertions=(), prospective=False, legacy_assembly=False,
+            source_path=None):
     original=unit.UnitPreflightTests.setUp
     def configure(owner):
         original(owner);f=owner.c.f;f.base=base
+        if source_path is not None:
+            source_path.write_bytes(base)
+            f.job['source_spec']=dict(path=str(source_path.resolve()),expected_hash=sha256_bytes(base))
         f.invariants.update(assertions=deepcopy(list(assertions)),discovery_rules=[])
         f.constraints.update(max_operations=20,max_changed_sections=500,max_changed_normative_units=20000)
         prototype=deepcopy(f.feedback['feedback'][0])

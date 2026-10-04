@@ -1,9 +1,9 @@
 # Q2 qualification gaps
 
-Started from Q1 closure checkpoint `47cdf33`. **Five of the seven named gaps now
-have focused executable coverage; P0-07 and P0-13 have approved scope but remain
-unimplemented and unverified.** Q2 is incomplete. Its finish
-line is the seven named P0 gaps in the [finite inventory](VNEXT_18_9_INVENTORY.md),
+Started from Q1 closure checkpoint `47cdf33`; the first Q2 package was committed
+at `a0d3a4d`. **Six of the seven named gaps now have focused executable coverage.
+P0-13 has approved scope but remains unimplemented and unverified.** Q2 is
+incomplete. Its finish line is the seven named P0 gaps in the [finite inventory](VNEXT_18_9_INVENTORY.md),
 plus positive simplification. This work does not activate a mode, amend normative
 specifications, optimize replay, run the Q3 full campaign, call real providers,
 write back to external specifications or push. The operator authorized a local
@@ -17,7 +17,7 @@ checkpoint of the verified work and both remaining scope decisions.
 | P0-02: unrelated enum/table loss | Separate schema enum-member and table-row removal cases assert the exact removed inventory IDs, final rejection, zero Verifier calls and unchanged authority. Complete within this fixture scope; final recheck passes. |
 | P0-03: forbidden compatibility | Prospective mutable target, older implementation context and a blocking lexical invariant. Five explicit compatibility identifiers (`legacy`, `transition`, `adapter`, `migration`, `dual-model`) are rejected before semantic verification. This tests exact lexical assertions, not universal detection of compatibility semantics in prose. Complete within this fixture scope; final recheck passes. |
 | P0-05: three fixes plus regression | Three resolved findings plus one unrelated report regression must receive a final semantic rejection. A separately admitted transaction on the unchanged immutable base omits the offending operation, fully reassembles and reverifies, and alone promotes once. Rejected evidence remains unchanged; final recheck passes. |
-| P0-07: token/time stop | The candidate spec defines persistence outcomes before/after registration, but no public run-wide token/time accounting contract was found. The operator approved qualifying caller-owned stops at those boundaries, without adding built-in accounting controls. Implementation and verification remain outstanding. Retry slots and profile extensions are not substitutes. |
+| P0-07: token/time stop | The candidate spec defines persistence outcomes before/after registration, but no public run-wide token/time accounting contract was found. The operator approved qualifying caller-owned stops at those boundaries, without adding built-in accounting controls. Five methods now cover token/time stops around registration and semantic invocation, orphan/latest selection, unchanged authority, apply-back ineligibility and explicit recovery/continuation. Complete within this caller-stop fixture scope; verification is recorded below. Retry slots and profile extensions are not substitutes. |
 | P0-12: historical recurrence | Exact original draft pair frozen and replayed with the three evidence boundaries below: original metadata refusal under the current suite, exact loss replay under pinned v2, and body-identical M3 metadata adaptation under the current suite. All three pass. No raw historical acceptance under M3 is claimed. |
 | P0-13: independent implementations | The operator approved the inventory's bounded independent reference for assembly, maps, candidate hashes and persisted selection/disposition. Implementation and comparison remain outstanding. No second scheduler, production imports, golden-output lookup or second execution of the production implementation may stand in for an independent implementation. |
 | S-01: valid simplification | Many-to-one normative correspondence passes deterministic and scripted semantic verification, then promotes to a shorter draft. Promotion before verification is refused; final recheck passes. |
@@ -80,23 +80,21 @@ reject the same unauthorized deletions under the current v3 consuming suite. The
 original checked-in golden files remain untouched. This fixture adaptation does
 not authorize changing the external Spine source or broadening version parsing.
 
-## Approved remaining scope
+## Approved scope and remaining work
 
-The operator accepted both recommendations and authorized the local checkpoint.
-The next implementation work is:
+The operator accepted both recommendations before checkpoint `a0d3a4d`:
 
-1. P0-07: caller-owned token/time stop fixtures before and after registration,
-   checking orphan/latest/unverified persistence, unchanged current authority and
-   apply-back refusal. This does not introduce public budget accounting controls.
+1. P0-07: caller-owned token/time stop fixtures before and after registration.
+   Implemented in the subsequent pass below, without public accounting controls.
 2. P0-13: an independent reference for candidate assembly, maps and hashes, plus
    persisted selection/disposition, compared against the production implementation
    on the same inputs. It must not import production Whetstone code, substitute
    golden-output lookup, rerun the same implementation or add a second scheduler.
 
-These decisions resolve scope, not acceptance. Both areas still require executable
-coverage and verification before Q2 can close.
+P0-13 is now the only remaining Q2 implementation area. Its approved scope still
+requires executable comparison and verification before Q2 can close.
 
-## Verification and remaining work
+## First package verification (checkpoint `a0d3a4d`)
 
 Evidence and failed attempts are retained in `rounds/vnext-18-9-q2-001/`.
 Verification runs one supervised worker at 60% duty with a wall deadline and
@@ -124,7 +122,62 @@ normative specs and existing tests retained their baseline hashes. The subsequen
 local checkpoint is authorized; no push is authorized by this request. The
 existing notes and both Q1 audit reports remain protected and uncommitted.
 
-Q2 cannot be declared complete while P0-07/P0-13 implementation or any required
+## P0-07 caller-owned budget stops
+
+The next pass adds [five focused methods](../tests/test_vnext_q2_budget_stops.py)
+covering eight scenarios on the exact offline `vnext-verified-consumer-1` suite:
+
+- A token stop immediately before the creation event preserves an earlier rejected
+  candidate as latest; the new complete orphan recovers once at the next ordinal.
+- A time stop at the same boundary with no predecessor leaves latest empty and
+  recovers once at ordinal 1.
+- Token and time stops after candidate bytes but before the full registration
+  package leave an incomplete orphan. Recovery refuses and preserves every byte.
+- Token and time stops after registration prevent Verifier invocation. Fresh-store
+  reentry selects the registered candidate as unverified, without a decision.
+- Token and time stops at semantic invocation preserve the initial nonfinal
+  deterministic decision and the interrupted request. Ordinary reentry does not
+  invoke the Verifier; explicit continuation completes verification once and
+  preserves the original decision.
+
+Each boundary reopens the persisted run, checks the real registered/effective
+state, preserves the current pointer and `spec.md`, refuses promotion, and finds
+apply-back ineligible through the real read-only review owner. The source is a
+bound disposable temporary file and remains unchanged. Complete-orphan recovery
+writes only its missing creation event and invokes no clients. Verification after
+an explicit new caller budget does not itself promote. No public qualification
+map is patched or activated.
+
+The test-only budget uses a finite token counter and deterministic clock. It
+models cooperative caller cancellation at a checkpoint, including cancellation
+before the provider receives a claimed request. It does not measure provider
+usage, implement public run-wide accounting, introduce a terminal state, or claim
+asynchronous process-kill coverage. Existing D8/process qualification remains Q3.
+The only shared-fixture change adds optional temporary source binding; no runtime,
+contract or normative specification changes were needed.
+
+Evidence is in `rounds/vnext-18-9-q2-002/`. The initial failed attempts are retained:
+the promotion API raises on an orphan rather than returning a recovery status,
+and the first cancellation wrapper omitted the pinned transport/actor interface.
+The corrected fixture cancels through the existing Verifier's method, retaining
+its identity. These failures add no passing credit and required no runtime fixes.
+**34 distinct methods pass**, including all five new methods. Both cohorts run
+serially through the bounded supervisor at 60% duty with heartbeat leases:
+
+- `budget-recheck`: four new methods pass in 211.536s (212.097s supervised).
+- `regression`: 30 methods pass in 218.185s (218.715s supervised): the new
+  partial-orphan method, all eight previous Q2 methods and 21 registration methods.
+
+There is no overlap between these two credited cohorts. `verification.json`
+records commands, method identities, tested-source/log/status hashes and suite
+pins. Targeted compilation, `git diff --check` and both offline suite validations
+pass. All four qualification maps remain empty; workers have exited and the
+bounded-worker lock is available. Runtime, contracts, normative specs and existing
+non-Q2 tests retain their baseline hashes. This pass remains uncommitted with an
+empty index; no push was performed. The existing notes and two Q1 audit reports
+remain unchanged and uncommitted.
+
+Q2 cannot be declared complete while P0-13 implementation or any required
 verification remain outstanding. Q3 still owns final consuming-release regression,
 P0/D8/process/CLI qualification and the replay performance disposition. Q4 still
 owns separately authorized live soak and activation.

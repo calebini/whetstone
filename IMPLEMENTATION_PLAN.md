@@ -1809,9 +1809,9 @@ Current work uses the exact offline consuming suite and real existing fenced
 owners with scripted clients. No runtime or normative changes are needed for
 the four negative compositions. The original destructive recurrence draft pair
 was located in the sibling Spine run `recurrence-flex-synthesis-005`, round 1,
-and frozen with provenance; it is no longer a missing-input blocker. Five named
-gaps (P0-01/02/03/05/12) and the simplification control now have focused coverage:
-47 distinct methods pass, including eight new Q2 methods. The historical case
+and frozen with provenance; it is no longer a missing-input blocker. At checkpoint
+`a0d3a4d`, five named gaps (P0-01/02/03/05/12) and the simplification control had
+focused coverage: 47 distinct methods passed, including eight new Q2 methods. The historical case
 separates exact v2 replay, current-suite metadata refusal and a body-identical
 M3 metadata adaptation. No raw historical acceptance under M3 or final release
 qualification is claimed. The linked handoff records exact results and limits.
@@ -1819,13 +1819,23 @@ qualification is claimed. The linked handoff records exact results and limits.
 The operator approved both recommended scopes: P0-07 caller-owned token/time
 stops before/after registration without new built-in accounting controls, and
 P0-13 the bounded independent assembly/map/hash and persisted-selection/disposition
-reference, without production Whetstone imports or a second scheduler. These two
-areas remain unimplemented and unverified; scope approval is not completion.
-Q2 remains incomplete until all seven cases have the required coverage and
-verification. Q3 replay/performance and final qualification, and Q4 separately
-authorized live soak/activation, remain separate. The operator authorized a local
-checkpoint of the verified Q2 work and these decisions; no push is authorized
-by this request.
+reference, without production Whetstone imports or a second scheduler. The next
+pass implements P0-07 in five methods: partial/complete orphan stops, preservation
+of a prior latest candidate, registered unverified stops and interrupted semantic
+invocation with explicit continuation. Both token and time budgets are caller-owned
+test inputs. Reopened stores preserve current authority and refuse promotion and
+apply-back; no public accounting controls or runtime/spec changes were introduced.
+34 distinct methods pass, including all five new methods, the eight earlier Q2
+methods and 21 registration methods. Both offline suites, targeted compilation and
+diff checks pass. The linked Q2 handoff records the exact verification and limits.
+
+Six named gaps now have focused coverage. P0-13 remains the one approved but
+unimplemented and unverified Q2 area. Q2 remains incomplete until its independent
+comparison and required verification pass. Q3 replay/performance and final
+qualification, and Q4 separately authorized live soak/activation, remain separate.
+The earlier work and scope decisions are checkpointed at `a0d3a4d`; this subsequent
+P0-07 pass remains uncommitted. No commit, push or public activation is implied
+by the implementation request.
 
 ##### 18.9 Release Acceptance Gates
 
