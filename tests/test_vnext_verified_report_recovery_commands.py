@@ -37,6 +37,8 @@ class ReportRecoveryCommandTests(unittest.TestCase):
     def pending(self,family):
         state=self.inspect_readonly()
         self.assertEqual(state['recovery'],family+'_publication',state)
+        self.assertEqual(state['recovery_invocation'][:4],
+                         ['whetstone','resume','--root',str(self.root.resolve())])
         before=self.files()
         with patch.object(LocalAuthorityStore,'acquire',side_effect=AssertionError('inspection took a writer fence')):
             code,result=self.call('resume','--dry-run');self.assertEqual(code,0,result)
@@ -75,6 +77,7 @@ class ReportRecoveryCommandTests(unittest.TestCase):
         state=self.inspect_readonly()
         self.assertIsNone(state['recovery'],state)
         self.assertEqual(state['continuation'],'unsupported_phase2_continuation',state)
+        self.assertIsNone(state['recovery_invocation'])
         projection=json.loads((self.root/STATE_PATH).read_bytes())[CORRECTION_FIELD]
         self.assertEqual(len(projection['history']),1)
         before=self.files()

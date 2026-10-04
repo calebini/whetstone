@@ -1,14 +1,18 @@
 # 18.9 Q1 implementation handoff
 
 Started 2026-10-02 from `78dfa8b27b896e3d90e990774aebfd80b7e40486`, following
-operator approval of the bounded amendment/interface package. **Q1 is incomplete.**
-The operator authorized this partial implementation checkpoint on 2026-10-02.
+operator approval of the bounded amendment/interface package. **Q1 is complete
+within its finite integration scope**, as reconciled in the
+[closure review](VNEXT_18_9_Q1_CLOSURE.md). The operator authorized its checkpoint
+and push; the preceding configuration pass is committed in `c2849cd`. The operator authorized
+the initial partial implementation checkpoint on 2026-10-02.
 Production qualification remains empty; no live provider calls, real external
 apply-back operations or pushes have occurred during this implementation.
 
 The acceptance inventory and delivery-pass list describe the current boundary.
 Individual campaign notes below retain the evidence limits at their checkpoints;
-later passes may close work that those historical notes left open.
+later passes may close work that those historical notes left open. The closure
+review supersedes their incomplete-Q1 statements without expanding their evidence.
 
 ## Applied and implemented so far
 
@@ -32,9 +36,9 @@ Phase 2 entry and execution, operator/semantic inputs, bounded recovery and sour
 operations. The new Phase 2 native transport retains the complete review/rubric
 response shape and leaves attempts to the existing journal. A command-selection
 guard rechecks selected boundaries inside actual D8 owner fences, including the
-selected promotion's projection fence. Guard integration across the full command
-surface remains part of Q1 acceptance. These are implementation drafts; the
-evidence below establishes only tested paths.
+selected promotion's projection fence. The closure review completes the finite
+command-boundary inventory, including post-client failure reporting. The evidence
+below and linked closure handoff establish only their stated tested paths.
 
 ## Adopted direct Reviewer handoff decision
 
@@ -62,12 +66,12 @@ is recovery-only and cannot start an Editor or another review.
 | Q1 acceptance case | Current evidence / remaining work |
 | --- | --- |
 | 1. Fresh config-selected admission | Focused CLI tests exercise injected exact qualification, dry-run, fresh initialization and V reopening. Production gate remains empty. |
-| 2. Unknown/unqualified/conflicting selectors | The completed [configuration/compatibility pass](VNEXT_18_9_Q1_CONFIGURATION_COMPATIBILITY_PASS.md) covers the finite mode/suite/package, corroborating CLI, duplicate-key and Phase 2 Ref matrix, including malformed/cross-job inputs and fence-time entry input drift. Invalid V-only selectors now refuse instead of reaching legacy dispatch. |
+| 2. Unknown/unqualified/conflicting selectors | The completed [configuration/compatibility pass](VNEXT_18_9_Q1_CONFIGURATION_COMPATIBILITY_PASS.md) covers the finite mode/suite/package, corroborating CLI, duplicate-key and Phase 2 Ref matrix, including malformed/cross-job inputs and fence-time entry input drift. Invalid V-only selectors now refuse instead of reaching legacy dispatch. Closure also rejects ignored Phase 2 controls and conflicting CLI workflow/rubric selectors. |
 | 3. Retained mode | Removed or missing config retains V inspection/recovery selection; new work without opt-in refuses. The configuration pass adds edited mode/suite/package/descriptor cases, unsupported controls and retained-root qualification refusal, with no legacy fallback. |
 | 4. Genuine verification/promotion/entry/convergence | Clean unversioned horizontal command journey passes through distinct entry and two real scripted review owners to convergence. A first-pass automatic Reviewer-to-Editor-to-Verifier correction now passes through one durable promotion, declaration preparation, follow-up reviews and convergence, including report recovery. Versioned `promote-phase2` now passes a system-only candidate through independent verification, promotion and distinct entry, including entry recovery. The completed [workflow-routes pass](VNEXT_18_9_Q1_WORKFLOW_ROUTES_PASS.md) adds versioned final/strict convergence and unchanged reentry, vertical consolidation/promotion/both-profile rereview through final/strict convergence, focused stability with exact pins and Phase 2 refusal, and horizontal mid/permissive, mid/strict and final/permissive targets. Its sensitive-merge regression preserves the operator stop before Editor admission. This is bounded dimension coverage, not every route/target/fault combination. Core M1–M5 tests are prior owner evidence, not substitute command qualification. |
-| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The operator-input campaign adds fence-bound input/selection refusal across ten adapter branches and real Phase 1/2 options-response plus Phase 1 semantic-answer/child-selection journeys; recording and selection do not execute the selected work. The selected-execution campaign adds real Phase 1/2 operator-selected promotion and distinct semantic-child promotion; Phase 1 child timeout/explicit continuation stops before registration, and Phase 2 stale parent-failure projection repair stops without clients before child execution. The completed recovery/operator delivery pass adds exact prepared registration/decision/promotion repair, Phase 1 repair-only `--continue`, retained Verifier output, interrupted budget admission/state acknowledgement, real advice/repair/gap and semantic publication, and later declaration-preparation interruption. Its linked inventory distinguishes new command journeys, composition guards and historical owner evidence. The completed [source-operations pass](VNEXT_18_9_Q1_SOURCE_OPERATIONS_PASS.md) adds real command retry, uncertain receipt recovery and historical source-drift reporting, with separate historical-pointer composition guards. The completed configuration/compatibility pass supplies the finite selector and representative retained-mode checks; exhaustive combinations remain Q3. |
+| 5. Status/recovery | Storage selection-guard tests pass. Focused Phase 1 stale-selection race, timeout, read-only dry-run, refusal of implicit retry and explicit continuation cases pass. The direct Reviewer campaign also passes a later-pass interrupted advice attachment, read-only dry-run and repair-only resume without another client. The post-promotion journey also passes historical entry-projection repair, resolution and converged-closeout publication/projection repair, lost final-state acknowledgement and terminal reentry. The Reviewer-resume campaign adds first/later timeout continuation, failure publication/projection repair before retry, lost continuation-state acknowledgement, retained valid-response reuse, exhausted refusal and Phase 2 rejection of `--continue`. The report-recovery campaign adds interrupted Editor-timeout reporting with lost final-state acknowledgement, and interrupted blocker-conflict reporting that repairs and preserves the halt. The terminal campaign adds ordinary budget exhaustion with partial declaration/report publication, owned historical-mirror replacement, lost final-state acknowledgement and stopped reentry. The findings campaign adds interrupted residual publication, reconciliation-commit acknowledgement loss, detailed read-only blocked status and unchanged-disagreement reentry refusal with remaining budget. The operator-input campaign adds fence-bound input/selection refusal across ten adapter branches and real Phase 1/2 options-response plus Phase 1 semantic-answer/child-selection journeys; recording and selection do not execute the selected work. The selected-execution campaign adds real Phase 1/2 operator-selected promotion and distinct semantic-child promotion; Phase 1 child timeout/explicit continuation stops before registration, and Phase 2 stale parent-failure projection repair stops without clients before child execution. The completed recovery/operator delivery pass adds exact prepared registration/decision/promotion repair, Phase 1 repair-only `--continue`, retained Verifier output, interrupted budget admission/state acknowledgement, real advice/repair/gap and semantic publication, and later declaration-preparation interruption. Its linked inventory distinguishes new command journeys, composition guards and historical owner evidence. The completed [source-operations pass](VNEXT_18_9_Q1_SOURCE_OPERATIONS_PASS.md) adds real command retry, uncertain receipt recovery and historical source-drift reporting, with separate historical-pointer composition guards. The completed configuration/compatibility pass supplies the finite selector and representative retained-mode checks; closure rechecks post-client failure publication/projection fences and adds read-only supported recovery invocations; exhaustive combinations remain Q3. |
 | 6. Separate source approval | Adapter tests cover envelope/null/noncanonical/duplicate-key/hash rejection, explicit operands and recovery bypass of fresh eligibility using a recording owner. The completed source-operations pass adds four real disposable-fixture CLI journeys for exact approval/aliases, explicit retry, uncertain receipt recovery, historical drift, unfinished diagnostics and no-op. The advanced-pointer rule is covered by proof/readback composition guards, not an end-to-end post-convergence promotion route. A new regression and adapter fix prevent parent aliases from hiding an approval file inside the run root. No real external source was written. |
-| 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. The completed configuration/compatibility pass adds fresh representative legacy, public bridge, reviewer-only and proposal-only command verification. All production qualification maps remain empty. Q1 closure review remains; release-wide qualification remains Q3. |
+| 7. Compatibility and disabled production | The package regression and storage/native/proposal CLI batch pass. The final direct-handoff run also passes the legacy CLI suite and old explicit-advice owner tests. The completed configuration/compatibility pass adds fresh representative legacy, public bridge, reviewer-only and proposal-only command verification. All production qualification maps remain empty. The completed closure review reruns affected command/compatibility boundaries and reconciles all seven cases; release-wide qualification remains Q3. |
 
 ## Verification
 
@@ -724,11 +728,12 @@ coverage. Both this pass and the preceding selected-execution work were committe
 in `31e1ff7`. At that checkpoint four delivery passes remained. The following
 workflow-routes pass closed the second. The source-operations pass below closes
 the third. The configuration/compatibility pass closes the fourth; Q1 remains
-incomplete with closure review remaining.
+incomplete at that checkpoint with closure review remaining. The completed
+[closure review](VNEXT_18_9_Q1_CLOSURE.md) closes the fifth pass and Q1's finite scope.
 
-## Resume the implementation
+## Five delivery passes — complete
 
-Continue the same Q1 package using these five delivery passes. They replace the
+Q1 was completed through these five delivery passes. They replaced the
 older slice-by-slice next-action list; an individual test or fault is not another
 milestone. The recovery/operator inventory above records pass 1's completion;
 [pass 2](VNEXT_18_9_Q1_WORKFLOW_ROUTES_PASS.md) is also complete within its fixed
@@ -742,8 +747,10 @@ The source-operation changes are committed in `b947e77`. The completed
 [configuration/compatibility pass](VNEXT_18_9_Q1_CONFIGURATION_COMPATIBILITY_PASS.md)
 adds 84 distinct passing methods across reconciled source cohorts, including
 eleven new selector/entry-barrier methods. It fixes invalid-selector fallback and
-structured malformed-input refusal. These changes remain uncommitted; closure
-review is next.
+structured malformed-input refusal. These changes are committed in `c2849cd`;
+the [closure review](VNEXT_18_9_Q1_CLOSURE.md) is complete with 119 distinct fresh
+passing methods and explicit historical/source-cohort limits. The operator
+authorized the closure checkpoint and push.
 
 1. **Recovery and operator boundaries — complete.** The fixed command journeys,
    affected regressions and reconciliation are recorded in the linked pass.
@@ -765,9 +772,10 @@ review is next.
    refusal matrix, representative legacy/bridge/R/P commands, and unchanged
    disabled production gates. Failed attempts and final fixture corrections
    remain explicit; this is not exhaustive release qualification.
-5. **Closure review.** Reconcile all seven Q1 acceptance cases, the supported
-   command matrix and exact evidence; perform the bounded review and fix concrete
-   findings. Do not infer Q1 completion from any one campaign.
+5. **Closure review — complete.** All seven Q1 acceptance cases and the supported
+   command matrix are reconciled. Three command-boundary findings are fixed and
+   rechecked; failed attempts and reused evidence remain explicit. This closes
+   Q1's finite scope, without granting release qualification or public activation.
 
 The independent P0 gaps remain Q2, replay/performance and exhaustive qualification
 remain Q3, and separately authorized live soak/activation remains Q4. Reused

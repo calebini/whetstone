@@ -1642,6 +1642,14 @@ All four acceptance tasks below remain open until their full requirements pass.
 
 ##### Q1 — Config-Selected Verified-Promotion Release Integration
 
+**Current disposition: Q1 is complete within its finite integration scope.** The
+[closure review](docs/VNEXT_18_9_Q1_CLOSURE.md) reconciles all seven acceptance
+cases and the supported-command matrix, fixes three command-boundary findings,
+and records 119 distinct fresh passing methods with explicit source/evidence
+limits. The operator authorized the closure checkpoint and push. Earlier partial-progress notes below
+describe their checkpoints; this disposition supersedes them. Q2–Q4 and all
+release acceptance gates remain open; public qualification is disabled.
+
 Operator direction recorded on 2026-10-01: **the associated run configuration
 is the user-facing opt-in for verified promotion; do not add a separate CLI mode
 flag.** The operator subsequently ratified the bounded Q1 amendments and
@@ -1772,9 +1780,13 @@ legacy/bridge/R/P inventory: 84 distinct methods pass, including eleven new meth
 Invalid V-only selectors now refuse before legacy dispatch, and malformed retained
 or Phase 2 objects return structured refusal. Final production bytes are common to
 all credited runs; test corrections and failed attempts are explicitly reconciled.
-These changes remain uncommitted. The one remaining Q1 delivery pass is final
-reconciliation/review across all seven acceptance cases and the supported-command
-matrix. Q1 itself remains incomplete and public qualification remains disabled.
+These changes are committed in `c2849cd`. The final delivery pass is complete:
+the [closure handoff](docs/VNEXT_18_9_Q1_CLOSURE.md) reconciles all seven acceptance
+cases and the supported-command matrix. It records the three reviewed fixes,
+119 distinct passing methods, failed attempts and historical evidence limits.
+Q1's finite integration scope is complete; public qualification remains disabled.
+The next work package is Q2's seven named P0 gaps, preserving its fixture and
+independent-implementation blockers. The closure checkpoint and push are authorized.
 This grouping does not move exhaustive replay/qualification from Q3 into Q1.
 The [bounded audit](docs/audits/VNEXT_18_9_Q1_BOUNDED_AUDIT.md) identified three
 interface gaps; the proposal now defines the exact continuation subtable, separate

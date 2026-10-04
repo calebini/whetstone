@@ -3,7 +3,7 @@ from whetstone import vnext_admission as common
 from whetstone.vnext_contracts import canonical_json_bytes, require
 from whetstone.vnext_proposal_cli import _client
 from whetstone.vnext_verified_command_state import ENTRY_PATH, inspect_command, optional
-from whetstone.vnext_verified_commands import enter, guarded, phase2_client, repair, admit_selection, transaction_selection
+from whetstone.vnext_verified_commands import enter, guarded, phase2_client, repair, admit_selection, transaction_selection, report_failed_request
 
 
 def execute_phase2(run, args, config, review):
@@ -62,8 +62,7 @@ def execute_phase2(run, args, config, review):
             result = guarded(run, state, lambda: run.request(round_number=state['round_number'],
                 client=_client('editor', review, config, args, run.store.root), **transaction_selection(state)))
             if result.value.status != 'complete':
-                run.publish_phase2_correction_failure(); run.reconcile_phase2_correction_failure_state()
-                return inspect_command(run)
+                return report_failed_request(run, args, result, phase2=True, request_state=state)
         elif gate == 'registration':
             guarded(run, state, lambda: run.register(round_number=state['round_number'], created_at=common.stamp(),
                                                    **transaction_selection(state)))

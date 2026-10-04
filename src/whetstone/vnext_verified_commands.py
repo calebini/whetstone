@@ -131,7 +131,7 @@ def enter(run, args, config, review):
         else: return state
 
 
-def repair(run, state, args):
+def repair(run, state, args, *, validate_inputs=None):
     row = state['recovery']
     if row in {'resolution_publication', 'closeout_publication', 'failure_publication',
                'correction_failure_publication', 'signal_publication'}:
@@ -149,12 +149,12 @@ def repair(run, state, args):
             publish, project, field = run.publish_phase2_signals, run.reconcile_phase2_signal_state, 'report'
         else:
             publish, project, field = run.finish_phase2, run.reconcile_phase2_state, 'closeout'
-        published = public(guarded(run, state, publish))
+        published = public(guarded(run, state, publish, validate_inputs=validate_inputs))
         current = inspect_command(run)
         require(current['recovery'] == family+'_projection' and current[field] == published
                 and current['sequence']['current_pointer'] == state['sequence']['current_pointer'],
                 'published outcome changed before projection; inspect before resuming')
-        return guarded(run, current, project)
+        return guarded(run, current, project, validate_inputs=validate_inputs)
     if row in {'registration', 'verification'}:
         number = getattr(args, 'vnext_round', None)
         require(number is not None, 'publication recovery requires --vnext-round')
@@ -181,7 +181,34 @@ def repair(run, state, args):
                    lambda: run.continue_phase2_pass(state['pass_number'], action='advice')),
     }
     require(row in operations, 'no supported publication recovery selected')
-    return guarded(run, state, operations[row])
+    return guarded(run, state, operations[row], validate_inputs=validate_inputs)
+
+
+def report_failed_request(run, args, result, *, phase2=False, request_state=None):
+    """Report only this invocation's retained failure, rechecked at each fence."""
+    def validate():
+        if phase2:
+            from whetstone.vnext_verified_command_state import proposal_state
+            proof = run._operator()._proof(run.store.read)
+            proof.inspect_registry()
+            observed = proposal_state(run, proof, request_state['round_number'],
+                selected_ref=request_state.get('selected_ref'),
+                source_candidate=request_state.get('source_candidate'))
+            require(proof.pointers[-1] == result.current_pointer and all(
+                observed[key] == getattr(result.value, key) for key in ('request_id', 'attempts')),
+                'Editor outcome changed before failure reporting')
+        else:
+            observed = run.review_status()
+            require(all(getattr(observed, key, None) == getattr(result, key) for key in
+                ('request_id', 'round_number', 'profile', 'attempts', 'receipt', 'last_outcome')),
+                'Reviewer outcome changed before failure reporting')
+    family = 'correction_failure' if phase2 else 'phase1'
+    for row in (family+'_publication', family+'_projection'):
+        validate()
+        state = inspect_command(run)
+        if state['recovery'] == row:
+            repair(run, state, args, validate_inputs=validate)
+    return inspect_command(run)
 
 
 def phase1(run, args, config, review):
@@ -206,8 +233,7 @@ def phase1(run, args, config, review):
                 client=_client('reviewer', review, config, args, run.store.root)))
             if getattr(result, 'status', '') in {'timeout', 'client_error', 'invalid_review', 'attempts_exhausted'}:
                 # Existing closeout owner publishes the technical outcome, not a retry.
-                run.finish_phase1(); run.reconcile_phase1_state()
-                return inspect_command(run)
+                return report_failed_request(run, args, result)
         elif gate == 'finding_admission':
             from whetstone.vnext_verified_phase1_decisions import Phase1Decisions
             owner = Phase1Decisions(run)
@@ -304,6 +330,25 @@ def resume(run, args, config, review, state):
     return result
 
 
+def recovery_invocation(run, args, state):
+    """Describe the selected recovery row without granting or executing it."""
+    row, role = state['recovery'], state['continuation']
+    recoveries = {'materialization', 'registration', 'verification', 'promotion',
+        'phase1_publication', 'phase1_projection', 'entry', 'failure_publication',
+        'failure_projection', 'correction_failure_publication', 'correction_failure_projection',
+        'resolution_publication', 'resolution_projection', 'signal_publication',
+        'signal_projection', 'closeout_publication', 'closeout_projection', 'findings_publication', 'advice'}
+    if row not in recoveries and (row is not None or role not in {'reviewer', 'editor', 'verifier', 'phase2_reviewer'}):
+        return None
+    argv = ['whetstone', 'resume', '--root', str(run.store.root),
+            '--config', getattr(args, 'config', 'orchestrator_config.yaml')]
+    if row in {'registration', 'verification'} or (row is None and role in {'editor', 'verifier'}):
+        number = state.get('round_number')
+        if type(number) is not int or number <= 0: return None
+        argv += ['--vnext-round', str(number)]
+    return argv
+
+
 def execute(run, args, config, review):
     command = args.command
     if command in {'strop', 'apply-back'}:
@@ -313,7 +358,7 @@ def execute(run, args, config, review):
     number = getattr(args, 'vnext_round', None)
     require(number is None or number == state.get('round_number'),
             'explicit round differs from current command boundary')
-    if command == 'status': return state
+    if command == 'status': return dict(state, recovery_invocation=recovery_invocation(run, args, state))
     if command == 'resume': return resume(run, args, config, review, state)
     if command.startswith('vnext-semantic-'):
         if command == 'vnext-semantic-answers': return run.answers(candidate_id=args.candidate)

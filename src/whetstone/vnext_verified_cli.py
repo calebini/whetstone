@@ -62,7 +62,8 @@ def _requested(args, path, root):
 
 def _controls(args, config, *, fresh):
     common.check(args.command in COMMANDS, 'vnext_gate_unavailable', 'unsupported verified command')
-    for name in ('overwrite', 'draft_after', 'allow_source_hash_mismatch', 'allow_non_converged', 'output_dir'):
+    for name in ('overwrite', 'draft_after', 'allow_source_hash_mismatch', 'allow_non_converged',
+                 'output_dir', 'closeout_existing', 'rubric_label'):
         common.check(not getattr(args, name, None), 'vnext_selection_conflict', 'unsupported V control: '+name)
     grant = getattr(args, 'extend_review_budget', None)
     require(grant is None or (type(grant) is int and grant > 0),
@@ -86,6 +87,10 @@ def _controls(args, config, *, fresh):
 
 
 def _bound_settings(args, config, *, root, job, review, authority, selectors):
+    for name, expected in (('workflow', review['workflow']), ('rubric', 'standard-v1')):
+        value = getattr(args, name, None)
+        common.check(value is None or value == expected, 'vnext_selection_conflict',
+                     'CLI '+name+' differs from the supported immutable V selection')
     for name in ('editing_mode', 'contract_suite_version'):
         if name in config:
             common.check(config[name] == job[name], 'vnext_mode_mismatch', 'config differs from immutable '+name)

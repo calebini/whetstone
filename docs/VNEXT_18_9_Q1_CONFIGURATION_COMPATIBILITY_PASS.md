@@ -1,9 +1,10 @@
 # Q1 configuration and compatibility delivery pass
 
 Delivery pass 4 starts at `b947e77`, the committed source-operations pass.
-This pass is **complete within the fixed inventory below** and remains
-uncommitted. Q1 remains incomplete; its one remaining delivery pass is closure review.
-Public qualification and Q2–Q4 remain incomplete.
+This pass is **complete within the fixed inventory below**, committed in `c2849cd`.
+Its checkpoint left one Q1 delivery pass: the [closure review](VNEXT_18_9_Q1_CLOSURE.md),
+which now owns the current Q1 disposition. Public qualification and Q2–Q4 remain
+incomplete. The verification narrative below describes this pass's pre-commit state.
 
 ## Fixed inventory and authority
 
