@@ -1909,6 +1909,41 @@ evidence and remaining latency back for explicit release performance disposition
 No further optimization experiment, SLA or waiver is assumed. Q3 and release
 acceptance remain open; Q4 live soak and activation remain separately gated.
 
+The operator then authorized the fixed final campaign and subsequent explicit
+performance acceptance. Q3-003 starts from `bb2e2be` with the same runtime,
+tests, contracts and rubrics as Q3-002. Fresh collection resolves 1,635 distinct
+methods; 28 exact-source ordinary passes are credited and 1,607 methods remain
+at kickoff. The [Q3 execution record](docs/VNEXT_18_9_Q3_QUALIFICATION.md#q3-003--fixed-final-qualification-campaign)
+documents the single-worker 60%-duty, leased, resumable campaign. Qualification
+and performance acceptance remain pending until outcome/source reconciliation;
+no activation, live provider transmission, external apply-back, commit or push
+is implied by this authorization.
+
+Q3-003 inventory execution is complete on the same frozen source: **1,634 passing
+methods, one original unresolved native semantic CLI status/reentry failure, and
+zero unexecuted methods**. The renewed inventory instruction added all 395 remaining
+passes without a new qualification failure. All 22 P0 rows and the P0, D8,
+process/prefix-fault, Q1-command, legacy, bridge, audit/sweep and simplification
+indexes have their mapped passing coverage; proposal/semantic commands remain
+23/24 because of the original failure. Diagnostic passes do not erase that failure.
+The three interrupted cohorts received no credit; every affected method later
+completed and was credited once. All supervisors have exited. Source, method,
+cohort, diagnostic and interruption joins are in
+`rounds/vnext-18-9-q3-003/campaign-outcome.json`, explicitly a failed-qualification
+execution receipt, not release acceptance.
+
+**Next action:** resolve the native status/reentry failure with retained diagnostic
+evidence and an evidence-backed fix or explanation, reconciling affected sources
+and reruns. Do not repeat the entire unchanged inventory or clear the failure by
+blind retries. Then obtain explicit performance disposition against both the paired
+replay measurements and whole-test costs: the longest recorded recovery/reentry
+journey takes 74.8 minutes and the vertical consolidation/final route takes 71.6
+minutes at 60% duty. These are multi-operation test journeys, not single-command
+latencies. Earlier advice to defer tuning until after Q4 remains unaccepted and
+must be reconsidered with this evidence. Correctness qualification, performance
+acceptance, Q3 closure and release acceptance remain open. No public qualification
+map, live soak, external apply-back, commit or push is enabled by this campaign.
+
 ##### 18.9 Release Acceptance Gates
 
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.

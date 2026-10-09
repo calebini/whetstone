@@ -259,3 +259,187 @@ ordinary generated-suite journey. Record remaining methods, failures, skips and
 interruptions explicitly, then bring the complete evidence and remaining latency
 back for release performance disposition. Q3 remains open; no SLA, waiver or Q4
 live-soak/activation authority is inferred.
+
+## Q3-003 — fixed final qualification campaign
+
+**Inventory execution complete: 1,634 passing methods, one unresolved qualification
+failure, and zero unexecuted methods. All qualification workers have exited.
+Qualification has NOT passed; performance acceptance is withheld and Q3 remains open.**
+
+The campaign uses committed source `bb2e2be`: runtime, tests, contracts and rubrics
+remain byte-identical to Q3-002. Fresh discovery resolved 1,635 distinct methods
+in 210 modules (1,673 occurrences, with identical imported instances deduplicated).
+Twenty-eight exact-source ordinary passes carry forward from Q3-002. The other
+1,607 methods completed in normal cohorts: 1,606 passed and one failed. There are
+no errors, skips or fixture errors in those completed cohorts. The current-suite
+comparison journey is supplemental and does not replace ordinary regression credit.
+
+### Final inventory and coverage
+
+| Disposition | Distinct methods |
+| --- | ---: |
+| Passing credit, including 28 carried methods | 1,634 |
+| Original unresolved qualification failure | 1 |
+| Unexecuted or interrupted without later completion | 0 |
+| **Total fixed inventory** | **1,635** |
+
+The renewed instruction to finish the inventory added all 395 remaining passes.
+It introduced no new qualification failure. All methods affected by interrupted
+cohorts 010, 013 and 017 later completed in fresh cohorts and are credited once.
+Passing diagnostic retries do not erase the original failed method.
+
+| Executable index | Passing / mapped |
+| --- | ---: |
+| P0 executable index | 78 / 78 |
+| D8 | 32 / 32 |
+| Process/prefix faults | 64 / 64 |
+| Q1 commands | 65 / 65 |
+| Legacy CLI/live/resume/apply | 91 / 91 |
+| Preservation bridge | 215 / 215 |
+| Reviewer-only audit/sweep | 35 / 35 |
+| Simplification | 4 / 4 |
+| Proposal/semantic commands | 23 / 24 |
+
+These indexes overlap and must not be summed. All 22 P0 rows have passing evidence
+for their mapped methods. That is the declared fixture coverage, not a broader
+conformance or activation claim. Exact method identities, scope limits and row
+joins are retained in `reconciliation.json` and `campaign-outcome.json` under
+`rounds/vnext-18-9-q3-003/`. The only missing passing credit is the original native
+semantic CLI method in the proposal/semantic index.
+
+### Completed and interrupted cohorts
+
+| Cohort | New credited passes | Elapsed | Outcome |
+| --- | ---: | ---: | --- |
+| batch-001 | 364 | 1817.700s | passed |
+| batch-002 | 321 | 2260.326s | passed |
+| batch-003 | 2 | 1979.636s | passed |
+| batch-004 | 277 | 1801.852s | passed |
+| batch-005 | 25 | 1098.431s | 25 passed; one unresolved failure |
+| batch-006 | 37 | 4540.485s | passed |
+| batch-007 | 9 | 5180.480s | passed |
+| batch-008 | 40 | 1855.630s | passed |
+| batch-009 | 80 | 2092.184s | passed |
+| batch-010 | 0 | 1124.608s | heartbeat expiry; 32 provisional passes and one interrupted method, subsequently rerun |
+| batch-011 | 33 | 1964.154s | passed |
+| batch-012 | 23 | 2199.853s | passed |
+| batch-013 | 0 | 964.131s | heartbeat expiry; 2 provisional passes and one interrupted method, subsequently rerun |
+| batch-014 | 8 | 2124.163s | passed |
+| batch-015 | 45 | 1915.807s | passed |
+| batch-016 | 15 | 1944.976s | passed |
+| batch-017 | 0 | 1134.891s | heartbeat expiry; 8 provisional passes and one interrupted method, subsequently rerun |
+| batch-018 | 28 | 1948.105s | passed |
+| batch-019 | 27 | 1802.414s | passed |
+| batch-020 | 17 | 1891.404s | passed |
+| batch-021 | 17 | 1959.403s | passed |
+| batch-022 | 4 | 2289.030s | passed |
+| batch-023 | 16 | 1973.243s | passed |
+| batch-024 | 22 | 6232.320s | passed |
+| batch-025 | 31 | 2189.929s | passed |
+| batch-026 | 30 | 2117.220s | passed |
+| batch-027 | 11 | 3791.038s | passed |
+| batch-028 | 1 | 4298.066s | passed |
+| batch-029 | 23 | 1944.390s | passed |
+| batch-030 | 10 | 2040.428s | passed |
+| batch-031 | 11 | 1932.616s | passed |
+| batch-032 | 21 | 2129.221s | passed |
+| batch-033 | 25 | 1894.911s | passed |
+| batch-034 | 33 | 683.915s | passed |
+
+The 31 completed cohorts total 73893.332s (approximately 20.53 hours).
+This is a sum of cohort monotonic durations, not continuous campaign wall time;
+it excludes the 28 carried methods, diagnostic runs and interrupted attempts.
+Every completed cohort finished teardown, revalidated source hashes and exited
+its supervisor. Cohort 005's passing methods receive individual credit while its
+failure remains unresolved. `campaign-initial.py` and
+`execution-policy-update.json` retain the explicit bookkeeping change.
+Cohort 003 used existing M5 stage logging with profiling disabled. All clients
+were injected/scripted clients or local fixture executables.
+
+### Unresolved correctness failure
+
+`test_vnext_semantic_cli.SemanticCLITests.test_three_native_roles_complete_the_normal_command_and_reentry_without_more_calls`
+fails in cohort 005: the native fixture command reports a verified candidate,
+but immediate read-only `status` returns `HALTED_ARTIFACT_INVALID`. The original
+unittest log truncates the diagnostic difference, and the fixture was cleaned up.
+No supported root cause or runtime fix has been established.
+
+The same method passed in isolation (139.988s), after full discovery (139.956s),
+and in one exact-order replay of the 26-method cohort (1125.217s). Those diagnostic
+runs grant no qualification credit and do not clear the original failure. They
+retained full packet observations but reproduced no failing packet. Later campaign
+failures would retain full comparison operands; none occurred. No runtime source
+or test assertion was changed to obtain these results.
+
+The next correctness step is a bounded investigation that captures the failing
+status reason and retains its fixture if the fault recurs, then establishes an
+evidence-backed fix or explanation. Do not silently clear the failure by repetition.
+If sources change, reconcile affected reruns against a new source manifest before
+claiming qualification. The full unchanged inventory need not be repeated merely
+because the original failure is still open.
+
+### Interruptions and supervision evidence
+
+Cohorts 010, 013 and 017 stopped with `heartbeat_expired`, exit 124. Their
+supervisors terminated their process groups and released the worker lock. Source
+hashes matched after every stop. Partial cohorts receive no credit: their 33,
+three and nine affected methods subsequently completed in cohorts 011, 014 and
+018, respectively. No partial cohort was relabeled as a pass.
+
+Read-only power logs confirmed clamshell sleep at 08:12:04 +0200 on 2026-10-05
+before cohort 010 stopped at wake. The cause of cohort 013's wall-clock gap remains
+unconfirmed. Cohort 017 stopped at 01:55 Paris time on 2026-10-06; a bounded power-log
+query returned no matching sleep event, so that stop is not attributed to sleep.
+
+`resume-001.json` joins the operator's renewed instruction to the stopped checkpoint
+and verifies its evidence/handoff hashes before resumption. After cohort 017,
+`resume-002.json` records one instrumented continuation. Timestamped wall/monotonic
+observations surround short waits; no power settings or supervisor limits changed.
+The worker remained at 60% duty, with a 180-second lease, a 30-minute soft boundary
+between methods and a two-hour hard deadline per cohort. Batches 018–034 completed
+without another interruption. The timing trace contains 2,820 running-worker
+checks; the largest recorded heartbeat age is 106.420s,
+below the lease. The isolated delayed refresh has no established cause.
+`heartbeat-summary.json` and the per-cohort observations retain the measurements.
+
+There is no remaining inventory to restart. All supervisors have exited and the
+worker lock is available. Historical checkpoint/resume receipts remain in place;
+`campaign-outcome.json` is the final execution receipt, explicitly NOT a passing
+qualification or release receipt. Earlier mutable failure/performance/environment
+summaries are preserved under `before-execution-closeout/`.
+
+### Performance disposition and handoff
+
+**No performance acceptance has been granted.** The paired Q3-002 measurements
+remain unchanged: four-promotion history replay at 16.767s and Phase 1 state
+projection at 28.949s, improvements of 12.7% and 11.1%. One-promotion measurements
+are 2.455s and 4.368s, with 8.1% and 3.4% overhead. These are two samples per arm
+on one local fixture at 60% duty, with identical outputs and unchanged artifacts.
+They establish neither an interactive latency SLA nor live-provider performance.
+
+The completed inventory also records substantial whole-test costs:
+
+| Whole-test journey | Seconds | Minutes |
+| --- | ---: | ---: |
+| Post-correction publication/final-state recovery and reentry | 4489.649 | 74.8 |
+| Vertical consolidation, re-review and final strict convergence | 4297.808 | 71.6 |
+| Native follow-up command journey | 3570.184 | 59.5 |
+| Combined follow-up recovery | 3530.009 | 58.8 |
+| Versioned final strict convergence | 2157.182 | 36.0 |
+| Phase 2 selected-child promotion | 1817.381 | 30.3 |
+| Normal follow-up/reopen | 1616.956 | 26.9 |
+| Repeated semantic follow-up | 1426.076 | 23.8 |
+
+These journeys include multiple operations, assertions and sometimes injected
+faults; they are not single-command latency measurements. Exact methods and timings
+are in `performance-proposal.json`. The earlier provisional suggestion to defer
+all further tuning until after Q4 is not an accepted decision and must be
+reconsidered against this complete evidence.
+
+First resolve the correctness failure, then obtain an explicit decision about
+accepting the measured latency limits or requiring further tuning before live
+qualification. No further optimization experiment or performance waiver is implied.
+Registered suites, compilation, whitespace checks, protected notes/audits and all
+four empty public qualification maps are checked by `finish_execution.py` and
+joined in `campaign-outcome.json`. Runtime sources remain unchanged. Q4 live soak,
+public activation, external transmission/apply-back, commit and push remain deferred.
