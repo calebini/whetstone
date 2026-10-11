@@ -1944,6 +1944,18 @@ must be reconsidered with this evidence. Correctness qualification, performance
 acceptance, Q3 closure and release acceptance remain open. No public qualification
 map, live soak, external apply-back, commit or push is enabled by this campaign.
 
+Q3-004 bounded investigation (2026-10-10): static inspection and one instrumented
+unchanged-source native journey established no cause; the journey passed in
+140.681s, which does not clear the original failure. The affected test now
+retains full packets and an inert fixture archive on status/reentry mismatch,
+checks exit codes as well as packets, and preserves untruncated diagnostics.
+Two focused diagnostic-harness tests are outside the original fixed inventory.
+Runtime and contracts remain unchanged. See the
+[investigation handoff](docs/VNEXT_18_9_Q3_QUALIFICATION.md#q3-004--bounded-native-reentry-investigation).
+The original correctness gate remains open pending a captured failing readback
+or independently demonstrated cause; no performance acceptance or waiver follows
+from diagnostic passes.
+
 ##### 18.9 Release Acceptance Gates
 
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.

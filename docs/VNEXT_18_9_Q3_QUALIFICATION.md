@@ -443,3 +443,50 @@ Registered suites, compilation, whitespace checks, protected notes/audits and al
 four empty public qualification maps are checked by `finish_execution.py` and
 joined in `campaign-outcome.json`. Runtime sources remain unchanged. Q4 live soak,
 public activation, external transmission/apply-back, commit and push remain deferred.
+
+## Q3-004 — bounded native reentry investigation
+
+The 2026-10-10 investigation starts from `c79a142`. The original Q3-003
+failure remains unresolved: its log omitted the full rejection reason and its
+temporary fixture was deleted. There is no evidence-backed runtime fix or
+environmental explanation. Do not infer either from a passing reproduction.
+
+Inspection covered proposal dispatch/reopening, active-round selection, seed
+Reviewer request replay, proposal status, semantic request/decision/terminal
+reconstruction, and D8 read/binding checks. The pinned semantic-workflow and
+proposal-run contracts require read-only reentry to validate durable evidence;
+no check may be bypassed to obtain a passing status. No defect was established
+by this bounded inspection.
+
+One unchanged-source instrumented reproduction passed in 140.681s (141.279s
+including supervision), at 60% duty with a 180-second lease and 600-second wall
+cap. Full command/status/reentry packets and an inert archive of the observed
+passing fixture are under `rounds/vnext-18-9-q3-004/native-diagnostic/`.
+The archive is forensic evidence, not a relocatable D8 run. No rejection was
+captured. All clients were local fixture executables; no live provider was used.
+This is a diagnostic observation with zero additional qualification credit.
+
+The affected test now compares both exit code and packet for `status` and
+ordinary reentry. On mismatch it retains full expected/actual packets and a
+fixture archive in a `whetstone-semantic-cli-failure-*` temporary directory,
+prints that location, and leaves the assertion diff untruncated. It preserves
+the original assertion if fixture archival fails. Success creates no diagnostic
+directory. Two focused harness tests cover capture before fixture cleanup,
+both command boundaries, exit-code-only failure, archive failure and the
+success path. These two tests are additions outside the frozen 1,635-method
+inventory; they must not be counted as clearing its failed method.
+
+The amended native journey and both diagnostic tests pass together: three
+methods in 140.751s (141.048s including supervision), under the same limits.
+`focused-check/tests.log`, `focused-check/status.json` and
+`source-reconciliation.json` retain this focused verification. Only the affected
+test file differs from the frozen source manifest, with the diagnostic test
+module added separately. Compilation and whitespace checks pass. Both bounded
+workers exited; no test worker remains active. `investigation-outcome.json`
+joins the source changes, diagnostics and preserved original evidence.
+
+The runtime, contracts, public qualification maps and original campaign evidence
+remain unchanged. The next correctness step requires a captured failing
+readback or another independently demonstrated cause. Further passing retries
+alone cannot close the original failure. Performance acceptance and Q3 closure
+remain withheld; no release waiver is inferred.

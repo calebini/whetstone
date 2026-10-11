@@ -3,6 +3,8 @@ from contextlib import contextmanager
 import json
 import sys
 from pathlib import Path
+import tarfile
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -118,6 +120,28 @@ print('tokens used\\n29')
             patch.object(routing, 'NativePatchProposalClient', NativePatchProposalClient), \
             patch.object(routing, 'NativeSemanticVerifierClient', NativeSemanticVerifierClient):
         yield
+
+
+def assert_native_reentry(test, command, expected, actual):
+    """Retain a failed readback before the fixture's registered cleanup runs.
+
+    The archive is inert forensic evidence, not a relocatable D8 run root.
+    Successful reentry creates no diagnostic directory.
+    """
+    if actual == expected:
+        return
+    output = Path(tempfile.mkdtemp(prefix='whetstone-semantic-cli-failure-'))
+    packets = dict(test=test.id(), command=command, expected=expected, actual=actual,
+                   fixture_root=str(test.subject.root))
+    (output / 'packets.json').write_text(json.dumps(packets, indent=2) + '\n')
+    try:
+        with tarfile.open(output / 'fixture.tar.gz', 'w:gz') as archive:
+            archive.add(test.subject.root.parent, arcname='forensic-fixture')
+    except OSError as exc:
+        # Preserve the original assertion and packets even if archival fails.
+        (output / 'archive-error.txt').write_text(str(exc) + '\n')
+    test.maxDiff = None
+    test.assertEqual(actual, expected, f'{command} readback evidence retained at {output}')
 
 
 @unittest.skipUnless(sys.platform == 'darwin', 'Proposed local storage targets macOS/APFS')
@@ -260,8 +284,8 @@ class SemanticCLITests(unittest.TestCase):
             self.assertEqual(packet['vnext']['reason_code'], 'vnext_proposal_only_complete', packet)
             self.assertEqual(packet['terminal_report']['latest_candidate']['disposition'], 'CANDIDATE_VERIFIED')
             before = self.subject.files()
-            self.assertEqual(self.invoke('status')[1], packet)
-            self.assertEqual(self.invoke('live-phase1')[1], packet)
+            assert_native_reentry(self, 'status', (0, packet), self.invoke('status'))
+            assert_native_reentry(self, 'live-phase1', (2, packet), self.invoke('live-phase1'))
             self.assertEqual(self.subject.files(), before)
         for role in ('reviewer', 'editor', 'verifier'):
             self.assertEqual((self.subject.root.parent / ('semantic-cli-native-' + role + '.count')).read_text(), '1')
