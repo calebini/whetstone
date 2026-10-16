@@ -1956,6 +1956,65 @@ The original correctness gate remains open pending a captured failing readback
 or independently demonstrated cause; no performance acceptance or waiver follows
 from diagnostic passes.
 
+Q3-005 authorized bounded retest: all 26 original cohort methods passed in their
+original order on `c9d1dae`, with improved failure capture, 60% duty and the
+requested 30-minute cap. Total supervised elapsed time was 1143.193s (19m03s).
+No source change or failure recurrence occurred. Evidence and the explicit
+limits are in the [retest handoff](docs/VNEXT_18_9_Q3_QUALIFICATION.md#q3-005--authorized-final-bounded-cohort-retest).
+Stop automatic retries and bring the result to the operator for correctness
+disposition; the original unexplained failure is not erased. Performance
+acceptance and Q3 closure remain open. No waiver, activation, commit or push
+is inferred from the passing diagnostic cohort.
+
+Operator disposition (2026-10-11): the user explicitly accepted the residual
+correctness risk after Q3-005. The original unexplained native status/reentry
+failure no longer blocks Q3 correctness disposition under that scoped acceptance;
+it remains recorded as an unexplained failure, not a fixed defect or passing
+inventory method. The [acceptance record](docs/VNEXT_18_9_Q3_QUALIFICATION.md#q3-005--operator-correctness-risk-acceptance)
+supersedes earlier pending correctness-disposition statements. Stop automatic
+retries. Performance acceptance is now the remaining Q3 disposition; Q3 stays
+open pending that decision. No public activation, live qualification, external
+apply-back, commit or push is granted by this acceptance.
+
+Subsequent operator performance disposition: the user explicitly instructed
+proceeding to Q4 and deferring optimization unless practical latency proves
+unacceptable. Combined with the accepted residual correctness risk, **Q3 is
+closed by operator disposition**, without rewriting its failed-method record
+or claiming a latency SLA. No further automatic retries or profiling are planned.
+The [Q4 live-soak handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md) records a locally
+validated synthetic package and a provider-free command dry run. The concrete
+provider payloads and private test gate await authorization before the first
+live call. Q4 is not complete and public activation remains disabled.
+
+Q4 first live window (2026-10-15): after exact provider-payload approval, the
+bounded run stopped in 16.128s on its first native Reviewer attempt. Codex/OpenAI
+rejected `gpt-6.1-sol` as unsupported for this ChatGPT-account transport. No model
+review, edit, verification, candidate or promotion completed. Read-only status
+preserved the seed pointer and reported Reviewer continuation; all workers exited.
+No fallback or retry occurred. The [Q4 handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#first-live-window-result)
+records the blocker and retained evidence. A supported model requires a new
+immutable configuration/package and fresh isolated run, not changing the bound
+identity on technical resume. Q4 remains incomplete; Q3's acceptances stand.
+
+Q4-002 embedded-CLI run (2026-10-15): the user selected the app's bundled CLI
+and approved proceeding with a fresh bound package. CLI `0.162.0-alpha.17.2`
+successfully obtained two `gpt-6.1-sol` responses, clearing the transport blocker.
+The 64.612s window stopped on the second review: section IDs were supplied as
+scope-contract surface IDs despite no scope contract. The runtime correctly
+refused that advice; no Editor, Verifier, candidate or promotion ran. No retry
+or response repair occurred. See the [Q4-002 handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#q4-002--embedded-cli-and-invalid-reviewer-advice).
+Next is bounded native Reviewer guidance investigation, preserving strict
+admission and returning genuine product decisions to the operator. Q4 remains open.
+
+Q4 Reviewer guidance fix (2026-10-16): fresh verified Phase 1 prompts now explain
+the distinct identifier fields and require empty scope-surface advice without a
+scope contract. Strict classification and contracts are unchanged. Exact prior
+prompt rendering remains supported for historical replay/technical continuation;
+arbitrary prompt changes and invalid-review retries remain refused. Focused
+offline verification and the original-response readback are recorded in the
+[Q4 handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#reviewer-scope-guidance-fix--2026-10-16).
+Live effectiveness remains untested; Q4 is open pending a fresh authorized package.
+
 ##### 18.9 Release Acceptance Gates
 
 - [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.

@@ -69,6 +69,25 @@ class ClassificationTests(unittest.TestCase):
         surface=self.f.scope['scope_surfaces'][0];surface['status']='deferred';self.f.hint['scope_surface_ids']=[surface['id']];self.f.rebind()
         self.assertEqual(self.classify()[0][0]['classification'],'deferable')
 
+    def test_section_identifiers_are_not_surfaces_without_a_scope_contract(self):
+        for field in ('canonical_section_id', 'stable_section_id'):
+            with self.subTest(field=field):
+                self.f.hint['scope_surface_ids'] = [self.f.mapping['sections'][0][field]]
+                self.f.rebind()
+                with self.assertRaisesRegex(ValueError, 'scope surfaces supplied without a scope contract'):
+                    self.classify()
+        self.f.hint['scope_surface_ids'] = []
+        self.f.rebind()
+        self.assertEqual(self.classify()[0][0]['classification'], 'editor_fixable')
+
+    def test_declared_in_scope_surface_remains_admissible(self):
+        self.f.scope = scope_contract_from_notes('# Core Outcome\nQueue tasks.\n', approved=True)
+        surface = self.f.scope['scope_surfaces'][0]
+        surface['status'] = 'in_scope'
+        self.f.hint['scope_surface_ids'] = [surface['id']]
+        self.f.rebind()
+        self.assertEqual(self.classify()[0][0]['classification'], 'editor_fixable')
+
     def test_repeated_issue_retains_sources_and_conflicting_recommendations_pause(self):
         repeated=deepcopy(self.f.feedback['feedback'][0]);repeated['feedback_id']='fb-2'
         repeated['recommended_change']='Use a different interval wording.'

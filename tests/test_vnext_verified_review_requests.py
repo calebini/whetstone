@@ -114,6 +114,57 @@ class VerifiedReviewRequestTests(unittest.TestCase):
         self.assertEqual(reviewer.calls, 1)
         self.assertEqual(self.files(f), before)
 
+    def test_scope_guidance_and_invalid_surface_advice_do_not_allow_retry(self):
+        f = self.seed()
+        def invalid(packet):
+            packet['classifications'][0]['scope_surface_ids'] = ['sec_' + 'a' * 64]
+            return canonical_json_bytes(packet)
+        reviewer = Reviewer(f, invalid)
+        result = self.request(f, client=reviewer)
+        self.assertEqual(result.status, 'invalid_review')
+        self.assertIn('scope surfaces supplied without a scope contract', result.last_outcome['error'])
+        self.assertIn('every classification MUST use "scope_surface_ids": []', reviewer.prompts[0])
+        self.assertIn('scope.scope_surfaces', reviewer.prompts[0])
+        self.assertIn('canonical_section_id values from base_section_map', reviewer.prompts[0])
+        before = self.files(f)
+        self.assertEqual(self.request(f, client=reviewer, continuation=True).status, 'invalid_review')
+        self.assertEqual(reviewer.calls, 1)
+        self.assertEqual(self.files(f), before)
+
+    def test_previous_prompt_replays_exactly_but_tampering_is_rejected(self):
+        from whetstone import vnext_verified_review_protocol as protocol
+        f = self.seed()
+        reviewer = Reviewer(f)
+        with patch.object(protocol, 'SCOPE_GUIDANCE', ''):
+            result = self.request(f, client=reviewer)
+        self.assertEqual(result.status, 'complete')
+        before = self.files(f)
+        request, (_, _, _, receipt) = self.inspect(f)
+        self.assertEqual(receipt, result.receipt)
+        self.assertEqual(request.preflight.prompt, reviewer.prompts[0])
+        self.assertEqual(self.request(f, client=reviewer).status, 'complete')
+        self.assertEqual(reviewer.calls, 1)
+        self.assertEqual(self.files(f), before)
+        path = f.store.root / request.directory / 'original_prompt.txt'
+        path.write_bytes(path.read_bytes() + b'\nChanged guidance')
+        with self.assertRaisesRegex(ValueError, 'Reviewer prompt changed'):
+            self.inspect(f)
+
+    def test_previous_prompt_continuation_keeps_original_instructions(self):
+        from whetstone import vnext_verified_review_protocol as protocol
+        f = self.seed()
+        def timeout(packet):
+            raise TimeoutError('fixture provider timeout')
+        reviewer = Reviewer(f, timeout)
+        with patch.object(protocol, 'SCOPE_GUIDANCE', ''):
+            result = self.request(f, client=reviewer)
+        self.assertEqual(result.status, 'timeout')
+        original = reviewer.prompts[0]
+        reviewer.callback = None
+        self.assertEqual(self.request(f, client=reviewer, continuation=True).status, 'complete')
+        self.assertEqual(reviewer.calls, 2)
+        self.assertEqual(reviewer.prompts[1], original)
+
     def test_same_byte_promotion_cannot_alias_original_request_pointer(self):
         client_type = history.verified.fixtures.Client
         def unchanged(packet):

@@ -1,6 +1,15 @@
 # Q3 — replay performance and deterministic qualification
 
-Status: **started; release qualification remains open.** The user authorized
+Current disposition: **Q3 closed by explicit operator acceptance of the residual
+correctness risk and measured performance for proceeding to Q4.** The original
+failure remains unexplained; the inventory is not relabeled all-passing.
+Performance will be assessed in practice, with optimization reconsidered if
+latency proves unacceptable. This establishes no production latency SLA.
+See the [correctness acceptance](#q3-005--operator-correctness-risk-acceptance)
+and [performance disposition](#q3-005--performance-acceptance-and-q4-handoff).
+Earlier open/pending statements below describe their historical checkpoints.
+
+Initial status: **started; release qualification remains open.** The user authorized
 Q3 after the Q2 closure checkpoint `83d7198`. This package retains the finite
 scope in the [qualification inventory](VNEXT_18_9_INVENTORY.md): replay cost,
 the fixed P0/D8/process/CLI cases and full regression on final sources.
@@ -490,3 +499,78 @@ remain unchanged. The next correctness step requires a captured failing
 readback or another independently demonstrated cause. Further passing retries
 alone cannot close the original failure. Performance acceptance and Q3 closure
 remain withheld; no release waiver is inferred.
+
+## Q3-005 — authorized final bounded cohort retest
+
+The operator authorized one replay of the original 26-method cohort in its
+original order, with improved failure capture and a 30-minute hard cap, then
+requested the result for a Q3 closure decision. The run used committed source
+`c9d1dae`, one worker at 60% CPU duty and a 180-second supervision lease.
+No runtime, test or contract source was changed for this retest.
+
+**All 26 methods passed: zero failures, errors or skips.** Unittest completed
+in 1142.124s; the supervisor completed in 1143.193s (19 minutes 3 seconds),
+below the 1800-second cap. The originally failing native method passed its
+command, immediate status and ordinary reentry comparisons, with exactly one
+call to each native fixture role and unchanged run files on reentry. Full
+packets are retained. No failing readback occurred and no failure archive was
+needed. All clients were scripted/local; no live provider was contacted.
+
+Evidence is under `rounds/vnext-18-9-q3-005/`: `inputs.json` freezes source
+hashes and joins the exact original cohort order; `events.jsonl` records every
+method; `packets.jsonl` retains the native command observations; `tests.log`,
+`result.json` and `status.json` establish completion. `retest-outcome.json`
+joins these records, source readback, protected files and the original campaign
+evidence. The supervisor exited and the worker lock is available.
+
+This is a diagnostic pass, not a root-cause finding or a release waiver. The
+original inventory remains recorded as 1,634 passes and one unresolved failure;
+no additional qualification credit is granted by this retest. Do not run more
+retries automatically. The result is now with the operator for explicit
+correctness disposition: accept the documented residual risk or keep the gate
+blocked pending a demonstrated cause. Performance acceptance remains a separate
+open decision. Q3 is not closed; public activation, live qualification and
+external apply-back remain deferred. Nothing was committed or pushed by this run.
+
+## Q3-005 — operator correctness-risk acceptance
+
+On 2026-10-11, after receiving the complete bounded cohort result, the operator
+explicitly stated: “I accept the the residual correctness risk”. This accepts
+the residual risk of the original Q3-003 native semantic CLI status/reentry
+failure for Q3 correctness disposition. That issue no longer blocks Q3 on
+correctness grounds under this acceptance.
+
+The failure remains unexplained and unfixed. Historical evidence still records
+1,634 passes and one failed method; the 26-method diagnostic retest passed but
+does not rewrite that record or establish a cause. Failure capture remains in
+place for any recurrence. No further automatic correctness retries are planned.
+
+`rounds/vnext-18-9-q3-005/correctness-risk-acceptance.json` binds this decision
+to the original campaign, bounded retest and tested source. Existing evidence
+receipts remain unchanged. This acceptance supersedes the earlier pending
+correctness-disposition statements only. Performance acceptance remains open
+and is the next Q3 decision; profiling is recommended before that decision,
+but no profiling or optimization run is started by this acceptance. Q3 closure,
+public activation, live qualification, external apply-back, commit and push
+are not authorized by this decision.
+
+## Q3-005 — performance acceptance and Q4 handoff
+
+After accepting the residual correctness risk, the operator stated:
+“Let’s proceed to Q4. I’ll see how it goes in practice and if the performance
+proves unbearable, we’ll address it”. This explicitly accepts the measured
+performance for proceeding to Q4 and defers further optimization until informed
+by practical use. The acceptance includes the documented 74.8- and 71.6-minute
+multi-operation journeys at 60% duty; it does not establish single-command
+latency or predict live-provider duration.
+
+Together with the prior correctness-risk acceptance, this closes Q3's
+disposition. The original failed method and all diagnostic observations remain
+intact. No new tests, performance experiment or runtime change are implied.
+`rounds/vnext-18-9-q3-005/performance-acceptance.json` joins the decision to
+the correctness acceptance and completed qualification/retest receipts.
+
+Q4 preparation is authorized. The [Q4 handoff](VNEXT_18_9_Q4_LIVE_SOAK.md)
+names the concrete synthetic input package, provider/model and bounded first
+run. Q4's separately authorized provider-payload boundary remains applicable;
+public activation, external apply-back and push require their own decisions.
