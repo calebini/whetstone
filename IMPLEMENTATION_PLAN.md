@@ -4,9 +4,23 @@ This is Whetstone's traceable implementation plan. The original `0.21` gates and
 
 Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), grounded in candidate-editing design `0.5` and coordinating spec `0.73`. This is the delivery owner for the preservation bridge and later candidate pipeline; the future-improvements list is not a parallel implementation checklist.
 
-Current execution order: [five remaining 18.8 delivery milestones](#188-delivery-milestones), planned from checkpoint `25c1825` on 2026-09-27. This execution map supersedes historical next-slice suggestions below; it does not replace the original acceptance checklist or authorize implementation, specification amendments, or release activation.
+Current handoff: [18.9 Q4 reconciliation](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#reconciled-authority-and-handoff--2026-10-17). Q4-009 resumed and promoted the ledger change, then paused on a Reviewer authority finding; all eight calls are used. Q4 remains incomplete and public activation is disabled. The [18.8 delivery milestones](#188-delivery-milestones), planned from checkpoint `25c1825` on 2026-09-27, remain historical execution context, not the current next-work queue.
 
 ## Build Strategy
+
+Current bounded correction (2026-10-18): Phase 1 decision-history correction
+reviewed and Phase 2 support implemented locally. The review fixed historical
+source rechecks when reusing a proof. The shared Phase 2 renderer binds proven
+history into new immutable input/prompt identities and source barriers, preserving
+exact old partial publication, replay and timeout continuation. Strict validation
+and spent slots remain unchanged; pinned algorithms and schemas are unchanged.
+Eight focused tests and 22 regression tests passed (28 distinct methods).
+See the evidence and bounded coverage in the
+[Q4 current handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#later-reviewer-history-correction--current-handoff).
+No live calls, activation, commit or push are included. The retained round-4
+finding remains unresolved; all prior live calls are consumed. A supported
+resolution/fresh-run plan and fresh provider authorization remain prerequisites
+to another live campaign. Runtime distribution work is separate.
 
 Build deterministic behavior first, then introduce live clients behind narrow gates.
 
@@ -2014,6 +2028,206 @@ arbitrary prompt changes and invalid-review retries remain refused. Focused
 offline verification and the original-response readback are recorded in the
 [Q4 handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#reviewer-scope-guidance-fix--2026-10-16).
 Live effectiveness remains untested; Q4 is open pending a fresh authorized package.
+
+Q4-003 retest (2026-10-16), after checkpoint `1b813be`: fresh isolated live run
+completed in 61.272s with two valid Reviewer responses. The scope-guidance fix
+worked for this run. A major finding about the synthetic fixture's undefined
+job-start event requires an operator decision; gate `finding_admission`, no
+technical continuation, Editor, Verifier, candidate or promotion. Q4 remains open.
+See the [Q4-003 handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#q4-003--guidance-retest-and-product-decision-stop).
+
+Q4-003 continuation: the user approved execution entry as the job-start boundary;
+the exact operator choice is now retained through the ordinary decision owners.
+Continuation refused before any provider call in 14.016s because the finding
+targets two sections and the immutable admission budget permits one. Q4 remains
+open pending approval of a fresh package with a two-section budget (one operation
+and one changed normative unit retained). Do not rewrite the retained package or
+finding targets. See the Q4 handoff's continuation evidence.
+
+Q4-004: the user approved the fresh two-section package with one operation and
+one normative unit retained. Its live run completed in 77.379s with three valid
+reviews, then stopped at `finding_admission` for a different operator choice:
+failed/uncertain start-record creation and observability. Execution-entry approval
+does not authorize that policy. No Editor, Verifier, candidate or promotion ran;
+Q4 remains open. Three calls remain in the aggregate eight-call budget. See the
+Q4 handoff for the exact boundary and retained evidence.
+
+Q4-004 continuation: the approved recording-recovery policy was bound and
+implemented by a live Editor, verified and committed at promotion ordinal 1.
+The three remaining calls completed in 341.976s, exhausting the aggregate
+eight-call budget. A valid round-4 review raises pause-resumption semantics.
+The command also returned `noncanonical operator selection` because its round-3
+selector persisted into round-4 admission. Preserve the promoted state; investigate
+selector lifetime without weakening stale-selection validation, and resolve the
+new product choice before authorizing further calls. Q4 remains open; see the
+Q4 handoff and `rounds/vnext-18-9-q4-004-continuation/` evidence.
+
+Q4 selector fix: consume the Phase 1 invocation-local decision selector only
+after successful fenced admission, allowing later rounds to return their own
+operator context. Strict receipt/current-round validation is unchanged on fresh
+invocations. Offline regression covers promotion to a later blocking review and
+stale-selector reentry. Explicit operator queue resume is recommended but remains
+unapproved; no new live calls or product choices are inferred. See the Q4 handoff.
+
+Q4-005 preparation: the user approved automatic same-process resumption after
+durable same-attempt recording, known non-entry into execution and satisfaction
+of spacing, retaining FIFO/job/attempt identity; crash and execution uncertainty
+remain manual. Bind to the exact retained round-4 finding without expanding
+mutation or review limits. Prepare a new eight-call/30-minute window with the
+tested selector fix; its provider authorization remains false pending explicit
+execution approval. The prior call budget remains exhausted; Q4 is still open.
+
+Q4-005 live window explicitly authorized and completed: 847.191s, two provider
+calls (Editor/Verifier), successful second verified promotion at ordinal 2.
+The command returned normal `phase1_stopped` / `TARGET_NOT_REACHED` due to
+per-profile review-budget exhaustion, without the stale-selector error. Six
+provider calls were unused; that allowance does not grant further review rounds.
+No automatic extension, Phase 2 or public activation occurred. Q4 remains open;
+further post-promotion review requires an explicit bounded review-budget grant.
+See the Q4 handoff and `rounds/vnext-18-9-q4-005/` evidence.
+
+Q4-006: prepared a separate Luna experiment at the operator's request: all three
+roles `gpt-6-luna`/medium, seven fresh rounds per profile, eight provider calls
+and 1800 seconds maximum. Seed imports the exact Sol ordinal-2 promoted bytes
+with approved policies protected; no historical review counts or receipts are
+transferred. Package validation, admission dry run and unauthorized-launch
+refusal passed with zero calls and all 468 prior Sol evidence files unchanged.
+Live authorization remains false; next step is authorization and one supervised
+window, not Q4 closure or public activation. See the Q4 handoff and
+`rounds/vnext-18-9-q4-006/README.md`.
+
+Q4-006 live window explicitly authorized and completed in 45.388s: two valid
+Luna Reviewer calls, clean structural review, then determinism finding requiring
+an attempt-ID uniqueness decision (`iss_c2e9b0b87c9a9be4`). No Editor/Verifier,
+candidate or promotion; seed ordinal 0 unchanged. Read-only status and source/
+input checks passed; all 468 prior Sol evidence files unchanged, workers stopped.
+Next: resolve the exact uniqueness boundary before binding a decision or
+continuing. Six calls unused; no automatic new window. Q4 remains open.
+
+Q4-006 follow-up: operator approved the attempt-ID uniqueness rule; round-2
+selection is now bound and validated. No model calls or spec edits followed:
+the original 30-minute wall window had expired before continuation. Six calls
+remain unused; executing them needs a newly authorized time window. Prior run
+files and all Sol evidence unchanged; see Q4 handoff and continuation evidence.
+
+Q4-006 continuation: newly authorized six-call/1800-second window stopped after
+65.927s and one Luna Editor call at invalid_proposal (client payload hash
+mismatch). Strict validation preserved; no Verifier, candidate or promotion.
+Three of eight aggregate calls consumed; five unused. Read-only status has no
+recovery/continuation invocation. All 468 Sol evidence files unchanged; workers
+stopped. Next investigate Editor hash production and supported retry before
+further calls. See Q4 handoff and sealed continuation/live-outcome.json.
+
+Q4 Luna hash investigation: retained trace reproduces the declared digest from
+malformed Base64 bytes, distinct from the final UTF-8 payload. Strict rejection
+and no-retry policy match the contract; four offline tests passed, zero calls.
+Recommend single-string computation/serialization guidance for future requests;
+current invalid proposal remains closed. Inspect observed nested skill loading
+before another live test. See Q4 handoff and hash-investigation-001 evidence.
+
+Q4-007 prepared (not launched): v2 Editor one-string hashing guidance with exact
+historical prompt replay; strict validation/retry policy unchanged. Invocation-
+local wrapper disables discovered skills and checks a no-model rendered prompt
+before exec; broader discovery flags alone were insufficient. 27 focused tests,
+retained Sol/Luna status replay, fresh admission dry run and launch-refusal check
+passed with zero calls. New Luna seed includes approved uniqueness rule; seven
+rounds/profile, five remaining calls, proposed 30-minute cap. Authorization false;
+no public activation. See Q4 handoff and rounds/vnext-18-9-q4-007/README.md.
+
+Q4-007 live window completed in 26.487s: one valid Luna Reviewer call, then
+operator boundary for manual-reconciliation exit conditions. No Editor/Verifier
+or promotion; four calls unused. Skill guard passed and no skill/shell use was
+observed in the Reviewer trace; Editor hash guidance remains untested live.
+Readonly status and retained-evidence checks passed, workers stopped. Resolve
+the bounded manual-handoff question before continuation; Q4 still open.
+
+Q4-007 continuation: manual reconciliation decision bound. One Editor call within
+the original deadline; stopped after 40.066s at invalid_proposal because Editor
+declined correspondence construction. No payload, Verifier or promotion; three
+calls unused. Strict validation intact, retained evidence unchanged, workers
+stopped. Next inspect the correspondence/guidance boundary locally; do not infer
+missing inputs solely from model rationale. See Q4 handoff and sealed evidence.
+
+Q4 correspondence investigation: actual-input offline probe succeeds with empty
+explicit correspondence (one section/one normative unit; semantic verification
+still required). No missing base inventory demonstrated. Recommend narrow prompt
+guidance explaining existing automatic alignment; no protocol/retry relaxation
+needed for this case. Five tests pass, zero model calls, evidence unchanged.
+See Q4 handoff and correspondence-investigation-001; guidance not yet changed.
+
+Q4-008: applied correspondence guidance; 33 focused tests pass with both older
+prompt renderings preserved. Fresh three-call Luna recheck produced a valid
+Editor proposal using empty correspondence and valid hash; candidate passes
+deterministic checks. Verifier returned obligation_hash=UNKNOWN; shape repair
+blocked by outer cap (durable attempt consumed, no fourth provider call).
+Candidate remains unverified, no promotion; all calls used, workers stopped.
+Next inspect Verifier binding/guidance and retry eligibility locally. See Q4
+handoff and Q4-008-continuation/live-outcome.json. Q4 remains open.
+
+Q4 Verifier investigation: prompt requests copied obligation hashes but supplies
+neither packet nor item hashes. Both returned bindings are wrong. Recommend a
+machine-derived prompt-only copy table with unchanged strict validation and exact
+historical replay. Three offline retry/accounting tests pass; no runtime changes
+or calls. Existing Verifier request exhausted both durable slots; no third retry.
+See Q4 handoff and verifier-hash-investigation-001.
+
+Q4-009 prepared, not launched: Verifier prompt supplies machine-computed coverage
+hash bindings with copy instructions; strict validation/schema/context unchanged.
+Exact old-prompt journal replay preserved. 47 tests pass (130.515s); exhausted
+Q4-008 status readback, fresh admission, isolation and unauthorized-launch refusal
+pass without provider calls. New proposed eight-call/30-minute Luna window requires
+execution authorization; all earlier allowances remain exhausted. See Q4 handoff
+and rounds/vnext-18-9-q4-009/README.md. Q4 not closed; no activation/commit/push.
+
+Q4-009 live: five of eight calls used; first all-Luna verified promotion committed
+at ordinal 1. Verifier copy bindings work with strict validation. Post-promotion
+structural review clean; determinism review stops at new attempt-ID allocation/
+persistence product boundary (iss_7c80cf1684b9bc63). No policy inferred, three
+calls unused, workers stopped; readonly status/evidence checks pass. Q4 remains
+open; no Phase 2/activation/apply-back/commit/push. See Q4 handoff and sealed
+Q4-009/continuation outcomes.
+
+Q4-009 ledger policy approved and bound to round-3 finding: durable ID/job ledger
+before start-record write, pause on ledger uncertainty, original-ID reuse,
+manual-only restart reconciliation. Effects add/clarification/strengthen scoped
+to this requirement; no weakening or scope expansion. Preview/publication match;
+zero calls or draft changes, prior evidence unchanged. Binding-only request,
+no live continuation authorized. See Q4-009-ledger-decision/binding-outcome.json.
+
+Q4 reconciliation (2026-10-17): live testing is paused. The candidate-editing
+leaf now captures exact Editor hash/correspondence guidance, copyable Verifier
+coverage bindings and bounded historical-prompt compatibility; the scope/decision
+leaf captures one-round Phase 1 selector consumption with stale reentry refusal.
+Frozen suite algorithms/schemas/digest are unchanged. Queue recovery/attempt-ledger
+choices belong to the synthetic spec; nested skill isolation remains harness-only.
+The [current Q4 reconciliation handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#reconciled-authority-and-handoff--2026-10-17)
+separates implemented, tested and outstanding work. Existing 33/47-test and selector
+regression logs were checked, not rerun. The approved ledger selection has not
+edited the draft. Q4 and activation remain open; further provider work needs a
+new authorized window. No implementation expansion, commit or push in this pass.
+
+Q4-009 ledger continuation: three remaining Luna calls completed in 647.220s.
+Editor/Verifier passed and promotion ordinal 2 committed. Round-4 structural
+Reviewer raised authority finding iss_721994ea1dcd453a; Phase 1 stopped at
+finding_admission. All eight actual calls are used. Exact prompt/source inspection
+shows prior operator decisions are absent from subsequent Reviewer context;
+investigate that boundary offline before more calls, without dismissing the
+finding or weakening authority checks. Read-only status and source/input/prior
+evidence checks passed; workers stopped. See the Q4 handoff and sealed
+rounds/vnext-18-9-q4-009-ledger-continuation/live-outcome.json. No activation,
+external apply-back, implementation change, commit or push.
+
+Q4 authority-context investigation completed offline: exact ledger approval is
+present in Editor/Verifier prompts but absent from the later Reviewer. The finding
+also misreads the supplied seed, which already contains most criticized recovery
+rules. A focused fixture confirms false introduction permission requires an exact
+operator grant, not an absolute prohibition; changed-base reuse refuses. All 25
+focused tests pass (0.926s); 168 sealed run files unchanged. Recommended next step:
+specify and implement ancestry-bound historical decision evidence for Reviewer
+context, preserving strict current-edit authority and old request replay. Include
+actual-seed guidance and inspect Phase 2 parity. No fix or new live run in this
+investigation; round-4 finding and Q4 remain open. See Q4 handoff and
+rounds/vnext-18-9-q4-review-authority-investigation-001/.
 
 ##### 18.9 Release Acceptance Gates
 

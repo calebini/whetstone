@@ -207,6 +207,10 @@ def validate_semantic_readback(verification, authority_request, *, raw, context)
 
 
 def semantic_verifier_prompt(context):
+    return _semantic_verifier_prompt(context, include_coverage_bindings=True)
+
+
+def _semantic_verifier_prompt(context, *, include_coverage_bindings):
     """A separate read-only role prompt; native capability enforcement is required too."""
     require(context.packet['job']['semantic_verifier_policy_version'] == POLICY_VERSION,
             'unsupported semantic verifier policy version')
@@ -215,6 +219,24 @@ def semantic_verifier_prompt(context):
     # the decoder. The native adapter separately pins its provider schema.
     from whetstone.vnext_native_editor import structural_output_schema
     shape = structural_output_schema('semantic_verification_client_v2', 'Whetstone Independent Semantic Verification')
+    packet = {'response_shape': shape, 'response_schema_version': schema['properties']['schema_version']['const'],
+              'uncertainty_rule_ids': RULES, 'context_hash': context.input_hash, 'context': context.packet}
+    guidance = ''
+    if include_coverage_bindings:
+        obligations = context.packet['semantic_obligations']
+        packet['coverage_bindings'] = {
+            'obligations_hash': sha256_bytes(canonical_json_bytes(obligations)),
+            'results': [{'obligation_id': row['obligation_id'],
+                         'obligation_hash': sha256_bytes(canonical_json_bytes(row))}
+                        for row in obligations['obligations']],
+        }
+        guidance = (
+            'Copy coverage.obligations_hash from coverage_bindings.obligations_hash. '
+            'For each coverage result, copy the exact obligation_id and obligation_hash pair '
+            'from coverage_bindings.results. These are machine-computed bindings, not semantic '
+            'judgments. Do not calculate, guess, replace with UNKNOWN, or omit these hashes. '
+            'Independently assess each obligation and supply its result and evidence.\n'
+        )
     return (
         'Act as the independent Semantic Verifier in a separate read-only invocation. '
         'Return only one JSON object matching the supplied response shape. Do not edit files, '
@@ -243,7 +265,5 @@ def semantic_verifier_prompt(context):
         'Pass only with all findings resolved, no unrelated or lost semantics, authority compliance, all blocking assertions '
         'passing, all preservation obligations passing, and no operator choice. A partially resolved admitted finding or '
         'not_applicable blocking assertion cannot pass. Reject when independent assessment finds an unsafe or insufficient change.\n'
-        + canonical_json_bytes({'response_shape': shape, 'response_schema_version': schema['properties']['schema_version']['const'],
-                                'uncertainty_rule_ids': RULES, 'context_hash': context.input_hash,
-                                'context': context.packet}).decode('utf-8')
+        + guidance + canonical_json_bytes(packet).decode('utf-8')
     )

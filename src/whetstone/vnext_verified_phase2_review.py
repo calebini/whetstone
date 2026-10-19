@@ -164,7 +164,22 @@ class _FirstReview(_Entry):
                            'Cite only bound authority and scope. Product choices, policy changes, destructive effects '
                            'and authority conflicts require operator resolution. Advice grants no mutation authority; '
                            'do not invent approvals, run bindings or hashes.\n')
-        prompt += canonical_json_bytes(inputs).decode('utf-8')
+        # Inputs are published first. Recognize only the exact previous
+        # rendering, including partial publication; arbitrary stored packets
+        # are never adopted. The complete comparison below still binds all
+        # dependencies and refuses a committed request missing any of them.
+        legacy_inputs = canonical_json_bytes(inputs)
+        legacy_prompt = prompt + legacy_inputs.decode('utf-8')
+        retained_inputs = self._optional(input_path)
+        retained_prompt = self._optional(prompt_path)
+        legacy = retained_inputs == legacy_inputs or (
+            retained_inputs is None and retained_prompt == legacy_prompt.encode('utf-8'))
+        if legacy:
+            prompt = legacy_prompt
+        else:
+            from whetstone.vnext_reviewer_decision_history import phase2_history
+            inputs, prompt = phase2_history(proof, inputs, prompt)
+            prompt += canonical_json_bytes(inputs).decode('utf-8')
         request = dict(schema_version=schema.replace('_','-'), phase='phase_2',
             job_id=config['job_id'], entry=entry.entry_ref, configuration=binding.configuration_ref,
             base_pointer=deepcopy(proof.latest), round_number=number, step=step, transport=deepcopy(transport),

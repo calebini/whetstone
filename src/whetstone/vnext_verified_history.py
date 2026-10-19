@@ -178,6 +178,7 @@ class _Proof:
         require(canonical_json_bytes(self.pointers[-1]) == self.head_raw, 'verified history head changed during structural replay')
         self.latest = _snapshot(self.pointers[0])
         self.bases = {self.latest['path']: (self.latest, None)}
+        self.reviewer_decisions = {self.latest['path']: canonical_json_bytes([])}
         from whetstone.vnext_replay_memo import ReplayMemo
         self.memo = ReplayMemo(contract_roots=(CONTRACT_ROOT, self.reader.suite.root))
         self.admission = _ReplayAdmission(self)
@@ -215,6 +216,18 @@ class _Proof:
     def transactions(self, limit=None):
         return _VerifiedTransactions(self.store, original=self.admission, history_limit=limit)
 
+    def decision_history(self, reference):
+        from whetstone.vnext_contracts import decode_json
+        self.values(reference)  # A structural pointer alone is not a proven base.
+        require(reference['path'] in self.reviewer_decisions, 'missing proven Reviewer decision history')
+        self.guard(self.store.read)
+        history = decode_json(self.reviewer_decisions[reference['path']])
+        from whetstone.vnext_reviewer_decision_history import history_sources
+        for source in history_sources(history):
+            self.reader.raw(source)
+        self.guard(self.store.read)
+        return history
+
     def prove_lineage(self):
         for pointer in self.pointers[1:]:
             router = self.transactions(pointer['source_candidate_creation_ordinal'])
@@ -243,8 +256,12 @@ class _Proof:
                 'hash': view.decision['preservation_report_hash']}, 'preservation_report_v2')
             inventory = self.reader.json({'path': directory + '/preservation_inventory_candidate.json',
                 'hash': report['candidate_inventory_hash']}, 'vnext_preservation_inventory_v2')
+            from whetstone.vnext_reviewer_decision_history import promoted_decisions
+            history = self.decision_history(arguments['base_pointer_ref'])
+            history.extend(promoted_decisions(self, router, creation, pointer, arguments))
             self.latest = _snapshot(pointer)
             self.bases[self.latest['path']] = (self.latest, (pointer, inventory))
+            self.reviewer_decisions[self.latest['path']] = canonical_json_bytes(history)
         self.guard(self.store.read)
         return self
 

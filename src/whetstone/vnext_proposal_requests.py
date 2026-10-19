@@ -5,13 +5,13 @@ are run-wide by job/transaction, never by a caller-selected attempt directory.
 No candidate registration, verification or promotion occurs in this module.
 """
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 
 from whetstone.vnext_assembly import ASSEMBLER_VERSION, NORMALIZATION_VERSION
 from whetstone.vnext_contracts import VNextSchemaRegistry, canonical_json_bytes, content_identifier, decode_json, require, sha256_bytes
 from whetstone.vnext_inventory import INVENTORY_VERSION
-from whetstone.vnext_unit_preflight import prepare_unit_preflight
+from whetstone.vnext_unit_preflight import prepare_unit_preflight, PAYLOAD_HASH_GUIDANCE, CORRESPONDENCE_GUIDANCE
 from whetstone.vnext_unit_protocol import ProposalShapeError, decode_unit_response
 
 
@@ -55,7 +55,21 @@ class _Journal:
         values=self.load_inputs(self.store.read)
         arguments={**deepcopy({k:v for k,v in values.items() if k!='suite'}),'suite':values['suite']}
         self.validate_base(arguments)
-        return arguments,prepare_unit_preflight(**arguments)
+        preflight = prepare_unit_preflight(**arguments)
+        # Reproduce only the exact previous deterministic prompt on retained
+        # requests; never adopt arbitrary persisted instructions or rewrite them.
+        request_id = logical_request_id(arguments['job']['job_id'], preflight.plan['transaction_id'])
+        try:
+            original = self.store.read('rounds/client_requests/' + request_id + '/original_prompt.txt')
+        except FileNotFoundError:
+            original = None
+        previous = preflight.prompt.replace(CORRESPONDENCE_GUIDANCE, '', 1)
+        legacy = previous.replace(PAYLOAD_HASH_GUIDANCE, '', 1)
+        for historical in (previous, legacy):
+            if original == historical.encode('utf-8'):
+                preflight = replace(preflight, prompt=historical)
+                break
+        return arguments, preflight
 
     def validate_base(self, arguments):
         pointer=arguments['base_pointer_ref']

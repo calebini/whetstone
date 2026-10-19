@@ -664,6 +664,83 @@ Large rewrites that may be productively useful but fail preservation MUST be qua
 
 ## Patch Protocol
 
+### Client guidance and immutable prompt compatibility
+
+Q4 reconciliation (2026-10-17): these clarifications describe the existing
+unit-proposal and semantic-coverage consumers. They do not activate V, change
+wire schemas or identity preimages, or revise digest-pinned algorithm documents.
+
+The unit-proposal Editor prompt MUST explain that a payload hash covers the
+exact UTF-8 bytes of `payloads[].content`, including trailing newlines. Guidance
+SHOULD direct the Editor to compute the hash and serialize the response from the
+same in-memory string, then parse and recheck the serialized response. A separate
+manually transcribed encoding is not hash evidence. The Orchestrator MUST still
+validate the returned payload bytes and refuse mismatches without repairing them.
+
+Guidance MUST distinguish automatic inventory correspondence from explicit
+split/merge claims. An empty `unit_correspondence` is permitted where the pinned
+inventory algorithm establishes unchanged or unambiguous single changed
+same-kind units between alignment anchors. Missing inventory of a not-yet-authored
+payload alone is not grounds to require guessed selectors. Unresolved mappings
+still require exact selectors; automatic matching grants no semantic equivalence,
+extra mutation authority or validation exemption.
+
+Prompt improvements apply to new requests. A retained request MAY use an exact
+historical deterministic rendering reproduced from its validated frozen inputs.
+It MUST NOT adopt arbitrary persisted instructions, rewrite the retained prompt,
+change request identity, reopen a terminal result or restore an invocation slot.
+The current Editor journal recognizes the two exact prior renderings (before
+both guidance additions, and with hash guidance only); the Verifier journal
+recognizes the exact rendering before the coverage-copy table. All other prompt
+changes remain subject to the existing immutable-header/hash checks. This is
+bounded compatibility, not a general prompt migration mechanism.
+
+### Later-Reviewer decision history — bounded amendment
+
+Later Reviewer requests MUST distinguish historical approval evidence from
+current mutation authority. The admitted seed remains the starting baseline;
+validated decisions explain only the specific subsequent changes they approved.
+History MUST NOT instruct a Reviewer to pass or suppress independent findings.
+
+For a new request, derive the history only from transactions committed in the
+selected base pointer's proven ancestry. Each entry MUST retain the originating
+pointer and round, admitted finding and plan linkage, exact decision request and
+response references and content, selected effects, and promotion linkage. Validate
+the response against its original transaction inputs; do not rebind a historical
+response to the new base as a fresh grant. Exclude orphan, rejected, prepared-only,
+unrelated and future transactions. Missing or invalid evidence required to prove
+an entry MUST refuse request preparation rather than silently omit that entry.
+
+The deterministic packet MUST be bound into the new request's immutable input
+and prompt identity. Reconstruction MUST stop at the selected base prefix and
+MUST NOT depend on the review being reconstructed. Existing requests retain their
+exact historical inputs and prompt bytes; this amendment does not rewrite them,
+restore invocation slots, dismiss findings or reopen terminal requests. Implement
+any required contract evolution without modifying digest-pinned algorithms in
+place. Phase 2 requires an explicit parity check before general Reviewer coverage
+is claimed.
+
+Phase 2 uses the same ancestry-bound history for first, subsequent, declaration
+and review-only Reviewer requests. For new requests, include the packet in the
+hashed input object and prompt, and include its exact source references in the
+existing source-revalidation and durability barriers. Reading a retained in-memory
+history MUST recheck its bound sources; a proof computed before a source change
+is not permission to publish or consume evidence afterward.
+
+Phase 2 publication writes inputs, then prompt, then request commit. Recognize an
+older input/prompt rendering only by exact deterministic reproduction from the
+validated original context. Preserve legitimate old publication prefixes and
+request hashes. A recognizable old prompt MUST NOT repair a committed request
+whose dependencies are missing, and replacing a new request's inputs with an
+old-format packet MUST NOT downgrade its committed identity. The existing closed
+request envelopes bind these presentation changes by input/prompt hashes; this
+amendment does not change pinned wire schemas or algorithm bytes.
+
+Required tests cover approved-history visibility, missing/tampered evidence,
+original-base validation, future/unpromoted decision exclusion, unchanged old
+request replay, and continued pauses for new authority choices. This amendment
+does not itself provide runtime support or public activation.
+
 ### Patch Set
 
 The Editor MUST return patch-set metadata. The Orchestrator MUST preserve each raw client response as immutable `proposals/attempts/proposal-attempt-M.json`; an attempt artifact is evidence and is never the authoritative patch set.
@@ -1011,6 +1088,17 @@ The Semantic Verifier receives:
 - authority map and applicable authority documents;
 - protected invariants;
 - deterministic preservation report.
+
+For the semantic-coverage consumer, the Orchestrator MUST provide copyable
+`coverage_bindings` in the prompt: the SHA-256 of canonical JSON bytes of the
+complete obligations packet, plus each obligation ID and SHA-256 of the complete
+canonical obligation including its ID. This table is derived presentation data
+outside the hashed context and obligation objects; it MUST NOT change their
+bytes, identities or response schemas. The Verifier copies these bindings and
+independently supplies judgments and evidence. The validator recomputes and
+checks the bindings; a supplied table is neither trusted client evidence nor a
+semantic verdict. Wrong, missing or guessed hashes remain invalid under the
+existing shape/binding rules and fixed retry budget.
 
 The verifier SHOULD NOT receive the Editor's resolved/unresolved conclusion as authority. It MAY receive Editor rationale as a labeled claim.
 

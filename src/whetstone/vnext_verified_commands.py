@@ -213,6 +213,7 @@ def report_failed_request(run, args, result, *, phase2=False, request_state=None
 
 def phase1(run, args, config, review):
     seen = set()
+    selector = getattr(args, 'vnext_decisions', None)
     while True:
         state = inspect_command(run)
         key = canonical_json_bytes(state)
@@ -238,9 +239,12 @@ def phase1(run, args, config, review):
             from whetstone.vnext_verified_phase1_decisions import Phase1Decisions
             owner = Phase1Decisions(run)
             context = owner.context()
-            selector = getattr(args, 'vnext_decisions', None)
             if selector:
                 admit_selection(run, state, selector, phase2=False)
+                # Consume only after successful, fenced admission. A later
+                # round needs its own choice; new invocations still validate
+                # their supplied selector through the unchanged owner.
+                selector = None
                 continue
             else:
                 if any(row['classification'] not in {'editor_fixable', 'deferable'} for row in context['findings']):

@@ -78,6 +78,64 @@ class OperatorCommandTests(unittest.TestCase):
         self.assertFalse(current['next_review_authorized']);self.assertFalse(current['resume']['permitted'])
         self.assertEqual((self.root/'rounds/current_verified.json').read_bytes(),self.head)
         self.assertFalse(list(self.root.rglob('candidate_unverified.md')))
+        return result['selection']
+
+    def test_consumed_phase1_selector_stops_at_later_choice_and_stale_reentry_refuses(self):
+        from copy import deepcopy
+        from whetstone.vnext_contracts import sha256_bytes
+        from whetstone.vnext_verified_run import open_verified_run
+        from whetstone.vnext_semantic_admission import load_registered_semantic_context
+        from test_vnext_proposal_requests import Client as Editor
+        from test_vnext_semantic_requests import Client as Verifier
+        self.f.original.review['profiles'][0]['budget'] = 2
+        self.f.original.review_ref = self.f.save('inputs/review.json', self.f.original.review)
+        self.f.job['review_configuration_hash'] = self.f.original.review_ref['hash']
+        self.f.rebind()
+        self.fixture.package.update(job_descriptor=self.f.job_ref,
+                                    review_configuration=self.f.original.review_ref)
+        self.fixture.save_package()
+        self.config['vnext_input_package']['hash'] = sha256_bytes(
+            (self.fixture.source/'proposal_package.json').read_bytes())
+        self.save_config()
+        self.qualify()
+        def review(prompt):
+            self.reviewer.calls += 1
+            inputs = json.loads(prompt.splitlines()[-1])
+            feedback = deepcopy(self.f.feedback)
+            feedback.update(round_number=inputs['round_number'], profile=inputs['profile'],
+                            draft_hash=sha256_bytes(inputs['base'].encode()), reviewer=self.reviewer.identity)
+            hint = deepcopy(self.f.hint)
+            hint['classification'] = 'operator_decision_required'
+            return canonical_json_bytes(dict(schema_version='vnext-review-response-v1',
+                                             feedback=feedback, classifications=[hint]))
+        with patch.object(self.reviewer, 'review', side_effect=review):
+            code, result = self.call('live-phase1')
+            self.assertEqual(code, 2, result)
+            self.head = (self.root/'rounds/current_verified.json').read_bytes()
+            selection = self.choices()
+            editor = Editor(); verifiers = []
+            self.patch('whetstone.vnext_proposal_cli.NativePatchProposalClient', return_value=editor)
+            def verifier(**kwargs):
+                with open_verified_run(self.root) as run:
+                    history = run._history()
+                    creation = history.inspect().creations[-1]
+                    context = load_registered_semantic_context(run.store, admission=history,
+                                                               candidate_id=creation['candidate_id'])
+                client = Verifier(context); verifiers.append(client); return client
+            self.patch('whetstone.vnext_proposal_cli.NativeSemanticVerifierClient', side_effect=verifier)
+            code, result = self.call('live-phase1', '--vnext-decisions', selection['path'])
+            self.assertEqual(code, 2, result)
+            self.assertEqual(result.get('gate'), 'finding_admission', result)
+            self.assertEqual(result['round_number'], 2)
+            self.assertEqual(result['operator']['findings'][0]['classification'], 'operator_decision_required')
+            self.assertEqual(result['status']['current_pointer']['promotion_ordinal'], 1)
+            self.assertEqual((self.reviewer.calls, editor.calls, sum(c.calls for c in verifiers)), (2, 1, 1))
+            before = self.files()
+            code, stale = self.call('live-phase1', '--vnext-decisions', selection['path'])
+            self.assertEqual(code, 2, stale)
+            self.assertIn('noncanonical operator selection', stale['reason'])
+            self.assertEqual(self.files(), before)
+            self.assertEqual((self.reviewer.calls, editor.calls, sum(c.calls for c in verifiers)), (2, 1, 1))
 
     def test_phase1_options_and_responses_bind_exact_input_without_admitting_work(self):
         self.qualify()

@@ -70,12 +70,25 @@ approval:
 
 ## vNext Decision Routing (D7)
 
+Later-Reviewer historical decision evidence follows the candidate leaf's
+"Later-Reviewer decision history — bounded amendment" contract. It explains
+committed changes, never authorizes a new mutation or substitutes for a current
+bound decision. Current selector admission and staleness rules remain unchanged.
+
 For the config-selected V consumer, command adapters MUST use the current bound
 operator context and existing immutable request/response/selection owners.
 Phase 1 and Phase 2 decisions remain distinct; a caller cannot choose a more
 permissive owner by passing another phase. `vnext-decisions` may inspect or
 explicitly prepare requests; `vnext-decide` records an explicit selection, never
 implied approval through status, absence of response or a rerun command.
+
+In Phase 1, an invocation-supplied decision selector MUST be consumed only after
+successful fenced admission for its exact round and bound context. The command
+MUST NOT reuse it for a later round in the same invocation. A later product or
+authority choice requires its own valid selection; a new invocation supplying a
+stale selector MUST still refuse. Consuming a selector does not relax receipt,
+base, finding or authority validation, and publishing a selection alone does not
+edit or promote the draft.
 
 A Phase 2 repair request and draft-bound gap-acceptance request are separate,
 closed explicit inputs. They preserve the existing M1 authority, budgets,

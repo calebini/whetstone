@@ -2,7 +2,7 @@
 from copy import deepcopy
 
 from whetstone.prompts import render_reviewer_prompt
-from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, content_identifier, require, sha256_bytes
+from whetstone.vnext_contracts import CONTRACT_ROOT, canonical_json_bytes, confined_file, content_identifier, decode_json, require, sha256_bytes
 from whetstone.vnext_review_protocol import ReviewPreflight, _decode_review
 from whetstone.vnext_unit_preflight import input_projection
 
@@ -34,6 +34,14 @@ def validate_verified_review_contract(suite):
                 'installed verified Reviewer contract differs from pinned suite', path)
 
 
+def _with_decision_history(arguments, packet, prompt, packet_text, inputs):
+    from whetstone.vnext_reviewer_decision_history import GUIDANCE
+    history = inputs.proof.decision_history(arguments['base_pointer_ref'])
+    arguments['historical_operator_decisions'] = history
+    packet['historical_operator_decisions'] = history
+    return prompt[:-len(packet_text)] + GUIDANCE + canonical_json_bytes(packet).decode('utf-8')
+
+
 def prepare_verified_review(inputs, *, round_number, profile):
     reader, values, pointer = inputs.values()
     require(values['job']['editing_mode'] == 'verified_promotion', 'verified Reviewer requires V mode')
@@ -57,7 +65,6 @@ def prepare_verified_review(inputs, *, round_number, profile):
     arguments.update(round_number=round_number, profile=profile, context=context, suite_digest=reader.suite.digest)
     if values.get('base_inventory') is not None: arguments['base_inventory'] = deepcopy(values['base_inventory'])
     if inputs.launch_package is not None: arguments['launch_package'] = deepcopy(inputs.launch_package)
-    digest = sha256_bytes(canonical_json_bytes(input_projection(arguments)))
     prompt = render_reviewer_prompt(profile=profile, draft=values['base'].decode('utf-8'),
         draft_path=pointer['verified_draft_path'], reference_context_paths=[], scope_contract_path=None,
         section_ids=[row['canonical_section_id'] for row in values['base_map']['sections']],
@@ -83,8 +90,23 @@ def prepare_verified_review(inputs, *, round_number, profile):
         original = inputs.store.read('rounds/client_requests/' + request_id + '/original_prompt.txt')
     except FileNotFoundError:
         original = None
+    # A claim is published before original_prompt.txt. Preserve the exact old
+    # input identity if that publication was interrupted. This only selects a
+    # deterministic rendering; read_claim still validates the entire header,
+    # original/attempt prompts, transport and predecessor chain before use.
+    old_claim_without_prompt = False
+    if original is None:
+        try:
+            claim = decode_json(inputs.store.read(f'rounds/review_index/request-{round_number}.json'))
+        except FileNotFoundError:
+            claim = None
+        old_hash = sha256_bytes(canonical_json_bytes(input_projection(arguments)))
+        old_claim_without_prompt = isinstance(claim, dict) and claim.get('input_hash') == old_hash
     if original == legacy_prompt.encode('utf-8'):
         prompt = legacy_prompt
+    elif original != prompt.encode('utf-8') and not old_claim_without_prompt:
+        prompt = _with_decision_history(arguments, packet, prompt, packet_text, inputs)
+    digest = sha256_bytes(canonical_json_bytes(input_projection(arguments)))
     inputs.guard()
     return ReviewPreflight(digest, arguments, prompt)
 

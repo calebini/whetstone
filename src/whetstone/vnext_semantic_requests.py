@@ -14,7 +14,7 @@ from whetstone.vnext_contracts import (
 from whetstone.vnext_proposal_closeout import ProposalDecisionJournal
 from whetstone.vnext_proposal_handoff import registry_for_proposal_requests
 from whetstone.vnext_semantic_admission import load_registered_semantic_context
-from whetstone.vnext_semantic_protocol import SemanticShapeError, decode_semantic_response, semantic_verifier_prompt
+from whetstone.vnext_semantic_protocol import SemanticShapeError, decode_semantic_response, semantic_verifier_prompt, _semantic_verifier_prompt
 
 
 REQUEST_SCHEMAS = frozenset({'vnext_semantic_request_v1', 'vnext_semantic_request_transport_v1',
@@ -64,6 +64,14 @@ class SemanticRequestJournal:
              self.packet['creation']['transaction_id'], candidate_id])
         self.directory = 'rounds/client_requests/' + self.id
         self.candidate_directory = self.packet['creation']['candidate_path'].rsplit('/', 1)[0]
+        # Only the exact former deterministic rendering is eligible for replay.
+        # The existing journal checks still reject arbitrary prompt changes.
+        original = self.read('original_prompt.txt')
+        if original is not None:
+            legacy = _semantic_verifier_prompt(self.context, include_coverage_bindings=False)
+            if original == legacy.encode('utf-8'):
+                self.original_prompt = legacy
+
 
     def load(self):
         return load_registered_semantic_context(self.store, admission=self.admission, candidate_id=self.candidate_id)

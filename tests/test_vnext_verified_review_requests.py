@@ -135,7 +135,8 @@ class VerifiedReviewRequestTests(unittest.TestCase):
         from whetstone import vnext_verified_review_protocol as protocol
         f = self.seed()
         reviewer = Reviewer(f)
-        with patch.object(protocol, 'SCOPE_GUIDANCE', ''):
+        with patch.object(protocol, 'SCOPE_GUIDANCE', ''), patch.object(protocol,
+                '_with_decision_history', side_effect=lambda args, packet, prompt, text, inputs: prompt):
             result = self.request(f, client=reviewer)
         self.assertEqual(result.status, 'complete')
         before = self.files(f)
@@ -147,8 +148,41 @@ class VerifiedReviewRequestTests(unittest.TestCase):
         self.assertEqual(self.files(f), before)
         path = f.store.root / request.directory / 'original_prompt.txt'
         path.write_bytes(path.read_bytes() + b'\nChanged guidance')
-        with self.assertRaisesRegex(ValueError, 'Reviewer prompt changed'):
+        # Tampering no longer selects an exact historical rendering. The
+        # current input identity therefore fails before the prompt hash check.
+        tampered = self.files(f)
+        with self.assertRaisesRegex(ValueError, 'V Reviewer claim differs from its original base and inputs'):
             self.inspect(f)
+        self.assertEqual(reviewer.calls, 1)
+        self.assertEqual(self.files(f), tampered)
+
+    def test_previous_claim_without_prompt_preserves_input_identity(self):
+        from whetstone import vnext_verified_review_protocol as protocol
+        f = self.seed()
+        reviewer = Reviewer(f)
+        publish = f.store.publish
+        def stop(token, path, value):
+            result = publish(token, path, value)
+            if path == 'rounds/review_index/request-1.json':
+                raise OSError('old claim published before prompt')
+            return result
+        with patch.object(protocol, '_with_decision_history',
+                side_effect=lambda args, packet, prompt, text, inputs: prompt), \
+                patch.object(f.store, 'publish', side_effect=stop):
+            with self.assertRaisesRegex(OSError, 'old claim'):
+                self.request(f, client=reviewer)
+        self.assertEqual(reviewer.calls, 0)
+        before = self.files(f)
+        header = f.store.read('rounds/review_index/request-1.json')
+        request, (_, outcomes, _, receipt) = self.inspect(f)
+        self.assertEqual(outcomes, [])
+        self.assertIsNone(receipt)
+        self.assertNotIn('historical_operator_decisions', request.preflight.arguments)
+        self.assertEqual(self.files(f), before)
+        result = self.request(f, client=reviewer, continuation=True)
+        self.assertEqual(result.status, 'complete')
+        self.assertEqual((result.attempts, reviewer.calls), (1, 1))
+        self.assertEqual(f.store.read('rounds/review_index/request-1.json'), header)
 
     def test_previous_prompt_continuation_keeps_original_instructions(self):
         from whetstone import vnext_verified_review_protocol as protocol
@@ -156,7 +190,8 @@ class VerifiedReviewRequestTests(unittest.TestCase):
         def timeout(packet):
             raise TimeoutError('fixture provider timeout')
         reviewer = Reviewer(f, timeout)
-        with patch.object(protocol, 'SCOPE_GUIDANCE', ''):
+        with patch.object(protocol, 'SCOPE_GUIDANCE', ''), patch.object(protocol,
+                '_with_decision_history', side_effect=lambda args, packet, prompt, text, inputs: prompt):
             result = self.request(f, client=reviewer)
         self.assertEqual(result.status, 'timeout')
         original = reviewer.prompts[0]

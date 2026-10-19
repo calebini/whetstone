@@ -87,6 +87,21 @@ class SemanticRequestTests(unittest.TestCase):
     def path(self, name):
         return self.fixture.root / self.directory / name
 
+    def test_exact_historical_prompt_replays_but_tampering_refuses(self):
+        from whetstone import vnext_semantic_requests as requests
+        from whetstone.vnext_semantic_protocol import _semantic_verifier_prompt
+        with patch.object(requests, 'semantic_verifier_prompt',
+                          side_effect=lambda context: _semantic_verifier_prompt(context, include_coverage_bindings=False)):
+            self.assertEqual(self.run_request().status, 'complete')
+        replacement = Client(self.context)
+        self.assertEqual(self.run_request(client=replacement).status, 'complete')
+        self.assertEqual(replacement.calls, 0)
+        path = self.path('original_prompt.txt')
+        path.write_bytes(path.read_bytes() + b'altered instructions')
+        with self.assertRaises(ValueError):
+            self.run_request(client=replacement)
+        self.assertEqual(replacement.calls, 0)
+
     def test_pass_completes_receipt_without_changing_candidate_or_seed_and_reentry_needs_no_client(self):
         seed = self.store.read('rounds/current_verified.json')
         result = self.run_request()

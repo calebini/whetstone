@@ -321,6 +321,30 @@ class SemanticProtocolTests(unittest.TestCase):
         self.assertIn('claims are untrusted evidence', prompt)
         self.assertNotIn('Produce one JSON object with schema_version = vnext-proposal-response-v2', prompt)
 
+    def test_copyable_coverage_bindings_pass_and_tampering_still_refuses(self):
+        import json
+        before = self.context.raw
+        packet = json.loads(semantic_verifier_prompt(self.context).splitlines()[-1])
+        bindings = packet['coverage_bindings']
+        response = self.response()
+        self.assertEqual(bindings['obligations_hash'], response['coverage']['obligations_hash'])
+        self.assertEqual(bindings['results'], [
+            {k: row[k] for k in ('obligation_id', 'obligation_hash')}
+            for row in response['coverage']['results']])
+        response['coverage']['obligations_hash'] = bindings['obligations_hash']
+        for row, binding in zip(response['coverage']['results'], bindings['results']):
+            row.update(binding)
+        self.decode(response)
+        for field in ('packet', 'item'):
+            changed = deepcopy(response)
+            if field == 'packet':
+                changed['coverage']['obligations_hash'] = '0' * 64
+            else:
+                changed['coverage']['results'][0]['obligation_hash'] = '0' * 64
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.decode(changed)
+        self.assertEqual(self.context.raw, before)
+
     def test_changed_editor_claim_blank_rationale_and_unbound_operator_verdict_refuse(self):
         for variant in ('claim', 'rationale', 'operator'):
             response = self.response()

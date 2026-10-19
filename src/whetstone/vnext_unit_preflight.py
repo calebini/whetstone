@@ -21,6 +21,28 @@ from whetstone.vnext_unit_authorization import bind_unit_response
 from whetstone.vnext_unit_lineage import validate_inventory_facts
 from whetstone.vnext_unit_proposals import build_unit_plan
 
+PAYLOAD_HASH_GUIDANCE = (
+    'Compute each payload hash with a local read-only calculation from the same in-memory '
+    'Unicode string used as payloads[].content. Encode that string as UTF-8, preserving '
+    'punctuation and trailing newlines. Build the response JSON and hash from that one '
+    'string; do not manually transcribe a separate Base64 copy or guess a digest. '
+    'Before returning, parse the serialized JSON and recompute SHA-256 from every '
+    'referenced payload content to confirm the declared hashes. Do not edit files.\n'
+)
+
+
+CORRESPONDENCE_GUIDANCE = (
+    'Explicit correspondence is not required for every replacement. Whetstone inventories '
+    'the returned payload and automatically matches unchanged units and a single changed '
+    'same-kind unit between unchanged alignment anchors. For a local clarification that '
+    'preserves paragraph/line structure and has this unambiguous mapping, use '
+    'unit_correspondence=[]. A missing precomputed inventory of your not-yet-written '
+    'payload is not by itself a reason to decline. Preserve layout when it fits the '
+    'authorized correction; do not change meaning to force alignment. Split/merge or '
+    'otherwise unresolved mappings still require exact selectors; never guess them. '
+    'Automatic matching does not prove semantic preservation or waive validation.\n'
+)
+
 
 def input_projection(value):
     """Exact snapshots: bytes remain distinguishable from client JSON objects."""
@@ -136,11 +158,13 @@ def _prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_m
         'and dependencies name those labels. Copy all exact job, transaction, base and plan bindings.\n'
         'payloads is an array of {path, content}; content is exact Markdown and its patch hash is SHA-256 '
         'of the UTF-8 bytes. Return each referenced payload exactly once.\n'
+        + PAYLOAD_HASH_GUIDANCE +
         'Every operation includes unit_correspondence, empty when unnecessary. For replacement split/merge '
         'or otherwise unresolved mapping, name exact base_unit_ids and payload_units selectors '
         '{kind, ordinal, content_hash}. Ordinal counts the complete raw payload inventory, including '
         'primary lines and overlapping lexical facets. Endpoints cannot be reused. '
         'A correspondence claim establishes no equivalence, deletion permission or verification.\n'
+        + CORRESPONDENCE_GUIDANCE +
         'The full base inventory includes non-addressable preamble units. Edit only the admitted section '
         'targets and findings. Respect the operation and actual section/unit budgets, invariant assertions '
         'and exact named-unit grants. Do not infer approval from context, return a full replacement draft, '

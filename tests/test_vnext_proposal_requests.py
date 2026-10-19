@@ -68,6 +68,37 @@ class ProposalRequestTests(unittest.TestCase):
     def directory(self,result):return self.root/'rounds/client_requests'/result.request_id
     def read(self,result,name):return json.loads((self.directory(result)/name).read_bytes())
 
+    def test_hash_guidance_and_exact_historical_prompt_replay(self):
+        self.check_historical_prompt(False)
+
+    def test_correspondence_guidance_preserves_hash_only_prompt(self):
+        self.check_historical_prompt(True)
+
+    def check_historical_prompt(self, keep_hash):
+        from dataclasses import replace
+        from whetstone import vnext_proposal_requests as requests
+        from whetstone.vnext_unit_preflight import PAYLOAD_HASH_GUIDANCE, CORRESPONDENCE_GUIDANCE
+        prepare = requests.prepare_unit_preflight
+        def historical(**kwargs):
+            result = prepare(**kwargs)
+            self.assertIn(PAYLOAD_HASH_GUIDANCE, result.prompt)
+            self.assertIn(CORRESPONDENCE_GUIDANCE, result.prompt)
+            prompt = result.prompt.replace(CORRESPONDENCE_GUIDANCE, '', 1)
+            if not keep_hash:
+                prompt = prompt.replace(PAYLOAD_HASH_GUIDANCE, '', 1)
+            return replace(result, prompt=prompt)
+        with patch.object(requests, 'prepare_unit_preflight', side_effect=historical):
+            first = self.run_request(Client())
+        self.assertEqual(first.status, 'complete')
+        client = Client()
+        self.assertEqual(self.run_request(client).status, 'complete')
+        self.assertEqual(client.calls, 0)
+        path = self.directory(first)/'original_prompt.txt'
+        path.write_bytes(path.read_bytes()+b'altered instructions')
+        with self.assertRaises(ValueError):
+            self.run_request(client)
+        self.assertEqual(client.calls, 0)
+
     def test_success_replays_without_another_call_or_candidate(self):
         first=Client();result=self.run_request(first)
         self.assertEqual((result.status,result.attempts,first.calls),('complete',1,1))
