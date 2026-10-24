@@ -1,9 +1,8 @@
 # Q4 — isolated live soak and activation decision
 
-Status: **Q4-009 resumed for three remaining calls and promoted the approved
-ledger change (ordinal 2), then stopped at round-4 authority finding
-iss_721994ea1dcd453a. All eight calls are consumed. Q4 remains incomplete and
-public activation remains disabled.**
+Status: **Q4-014 reached PHASE_1_STABLE with three clean Sol 6.1 reviews.
+No edit or promotion was needed, so live decision-history qualification remains
+unexercised. Q4 remains incomplete and public activation remains disabled.**
 Q3 is closed with the operator's explicit correctness-risk and performance
 acceptances. Q4 remains incomplete until live evidence is assessed and activation
 is explicitly decided. The finite Q4 scope remains the inventory's live soak,
@@ -15,6 +14,202 @@ successful/rejected proposal inspection, operator guidance and activation decisi
 implemented locally. Q4 remains open.** The current pass is recorded below;
 the 2026-10-17 evidence remains a historical baseline. Live outcomes and the
 unresolved round-4 finding are unchanged.
+
+### Q4-014 Phase 1 completion — 2026-10-24
+
+Explicitly authorized four-call/new 30-minute window; all pins matched. Three
+Sol 6.1 medium Reviewer calls returned empty feedback for structural_integrity,
+determinism and operability (9.725s, 9.650s, 14.809s). Normal exit 0 after 91.903s,
+`phase1_complete`, terminal `PHASE_1_STABLE`, current state reconciled. One call
+unused. No operator binding, Editor, Verifier or promotion; pointer ordinal 0.
+
+This qualifies this fixture's clean Phase 1 path only. It does not exercise
+nonempty Reviewer history or close Q4. No Phase 2, public activation, external
+apply-back, commit or push. Old Q4-011/012/013 hashes unchanged; worker lock released.
+Evidence: `rounds/vnext-18-9-q4-014/live-outcome.json` and exact request artifacts.
+Next isolate the history question using known decision-bearing promoted ancestry,
+with scripted setup explicitly distinguished from live Reviewer evidence. Do not
+reopen this terminal run or keep restarting natural reviews to manufacture a finding.
+
+### Q4-014 approved fixture reconciliation — 2026-10-24
+
+User approved both Sol findings' proposed policies: the stored UTC timestamp means
+original record preparation, not actual execution entry, and remains unchanged on
+retry/reuse; confirmed execution prohibits reexecution, with completion/queue
+advancement outside the fixture and requiring separate operator disposition.
+Prepared a fresh seed and matching protected invariants at
+`rounds/vnext-18-9-q4-014/`; no old grant, candidate or run was rewritten.
+Seed/invariant consistency, dry admission and unauthorized-launch refusal pass.
+Q4-011/012/013 sealed evidence is unchanged. Zero new live calls.
+
+Sol 6.1 medium roles and mutation limits remain unchanged. A proposed four-call,
+1800-second campaign needs one additional call beyond the three unused: four is
+only the minimum finding/edit/verify/subsequent-review path, not a completion
+promise. Provider authorization remains false pending this budget/window decision.
+The fixture still permits exact binding of prior approved manual/non-entry policies
+if they recur; clean seed reviews alone cannot qualify decision-history delivery.
+
+### Sol Q4-013 and controlled correspondence diagnosis — 2026-10-24
+
+User authorized staging/proceeding with Sol 6.1 to reduce interruptions. Offline
+Q4-012 reproduction established the extra leading newline as the cause of ambiguous
+separator correspondence: removing only it gives zero failures and one normative
+unit, with semantic verification still outstanding. No validator change needed.
+Evidence: `rounds/vnext-18-9-q4-012-correspondence-investigation/`.
+
+Prepared and launched Q4-013: gpt-6.1-sol medium all roles, four-call/1800-second
+cap, same synthetic seed and mutation limits, current CLI 0.163.0-alpha.11.2 pinned
+and locally isolation-checked. One valid Reviewer call (23.663s); normal stop after
+37.265s at two operator findings. No Editor, Verifier or promotion; three calls
+unused. Luna evidence unchanged. No history qualification or Q4 completion claim.
+
+New finding `iss_9214469dde721e29` identifies undefined UTC timestamp semantics
+when a pre-execution durable record is reused after delay. Prior approvals do not
+resolve actual execution time versus record-preparation time. The other finding,
+`iss_15f4cb3961b337f8`, overlaps approved manual resumption but also asks how known
+execution affects pending state/queue advancement, expressly not decided earlier.
+Concrete recommendations and authority limits are recorded in
+`rounds/vnext-18-9-q4-013/product-decision.md`; neither is an approved grant.
+Stop for the real product choice; do not force changed timestamp semantics through
+the original protected invariant, reuse terminal requests, or reset the deadline.
+
+### Q4-012 continuation — correspondence rejection
+
+User requested binding/continuation. Published the already approved manual-resume
+policy against the exact fresh finding, localizing it within the recovery paragraph.
+Five-call continuation remained inside the original deadline (no reset). One Editor
+call returned in 56.494s; supervised command stopped at `candidate_final` after
+98.649s with `ambiguous_unit_correspondence`. Metrics are incomplete; do not describe
+this as another confirmed two-unit budget violation. No semantic call or promotion.
+Two aggregate Q4-012 calls used, four unused; history qualification not reached.
+
+The retained diff adds the manual-resume sentence in the recovery paragraph and
+an extra blank line before the first Reporting requirement. Causality is not yet
+established. Next inspect correspondence and reproduce with controlled local
+counterfactuals before spending more calls. Evidence:
+`rounds/vnext-18-9-q4-012-continuation/`. Q4-011 hashes unchanged; supervisor lock
+released. Preserve final rejection; do not rerun the launcher or widen authority.
+
+### Q4-012 live stop — manual reconciliation finding
+
+User authorized six calls and a new 30-minute window; package pins matched.
+One valid Reviewer call returned in 11.221s; normal decision stop after 24.713s,
+round 1, promotion ordinal 0. Finding `iss_0532ebd801bcc79f` asks for manual
+reconciliation outcomes and resumption guards. This differs from record
+cardinality, so the prepared first-line instruction was not applied. Five calls
+remain unused; no Editor, Verifier or decision-history qualification yet.
+
+The prior approved manual-resumption policy is recorded in
+`rounds/vnext-18-9-q4-009-continuation/options.json`: operator-authorized resume
+only after execution is confirmed never begun, original start record durable,
+and spacing satisfied; otherwise remain paused, retaining job/FIFO/ID, with no
+automatic crash recovery or invented already-started behavior. Next prepare an
+exact fresh binding of that policy, without importing its old response or
+inventing a full new state machine. Recheck the original deadline before calls.
+Q4-011 evidence is unchanged; sealed outcome: `rounds/vnext-18-9-q4-012/live-outcome.json`.
+
+### Fresh Q4-012 package prepared — 2026-10-22
+
+Prepared locally at `rounds/vnext-18-9-q4-012/`, not launched. Same seed,
+mutation limits, Luna medium roles and pinned CLI as Q4-011; fresh descriptor.
+Proposed allowance: six actual calls (matching the unused balance), new
+1800-second window. Provider authorization remains false. Dry admission and
+unauthorized-launch refusal pass; sealed Q4-011 run files are unchanged.
+
+A draft decision instruction localizes the approved at-most-one-execution policy
+to the first Reporting requirement and freezes all other lines/layout. It is not
+an imported grant, seed amendment or synthetic candidate. Bind through supported
+owners only after a matching fresh finding; otherwise stop for inspection.
+The first launch remains ordinary Phase 1 and stops at the decision gate.
+Qualification still requires decision-bearing promotion and later Reviewer
+history. No Phase 2, activation, external apply-back, commit or push is included.
+
+### Q4-011 local budget/retry investigation — 2026-10-22
+
+The two-unit rejection is accurate: the Editor changed both the first Reporting
+requirement and the later recovery paragraph. An offline probe using the exact
+retained plan/base/response expresses the approved policy in only the first
+requirement: one normative unit, one section, no inventory-diff failures and an
+outstanding semantic obligation. Five correspondence tests pass. This is not a
+registered or semantically verified candidate. All sealed live files are unchanged.
+
+Current Phase 1 consumption stops at `candidate_final`. Technical continuation
+cannot reopen the final rejection; semantic follow-up requires a final semantic
+rejection/question, absent here (`semantic_result=not_run`). No existing same-root
+retry route applies. Recommend a separately prepared fresh run with unchanged
+budgets and a more precisely localized decision instruction; general deterministic
+retry support is separate work. Evidence and limits:
+`rounds/vnext-18-9-q4-011-budget-investigation/assessment.md`. No new live calls.
+
+### Q4-011 continuation: hard-budget rejection — 2026-10-22
+
+User authorized a new 30-minute window with only seven remaining calls. All
+runtime/package/harness/CLI/run pins matched. One Editor call returned in
+37.197s; the supervised command stopped normally at `candidate_final` after
+79.298s. The candidate changed two normative units against an admitted limit of
+one (one operation, one section). Strict validation rejected it with
+`mutation_budget_exceeded`; semantic verification did not run. Current pointer
+remains promotion ordinal 0. Two aggregate calls used, six unused. The next
+Reviewer-history qualification point was not reached.
+
+Evidence: `rounds/vnext-18-9-q4-011-continuation/live-outcome.json`, exact provider
+prompt/schema, immutable candidate/report/decision and rejected-candidate diff.
+Prior Q4-009 evidence is unchanged and the supervisor released its worker lock.
+Do not reopen the terminal candidate, rerun the launcher or silently widen the
+unit budget. Next investigate a supported new-attempt/admission path and whether
+a one-unit correction can express the approved policy before spending more calls.
+
+### Q4-011 decision bound, continuation prepared — 2026-10-22
+
+The user approved at most one execution entry per queued job, original-ID reuse
+for recording retries, and manual reconciliation for uncertain execution.
+Published through the supported operator request/response owners for exact
+round-1 finding `iss_0d9652df8fb9eae7`; dry-run previews equal committed outputs.
+Evidence: `rounds/vnext-18-9-q4-011-decision/`. This synthetic queue policy is not
+new Whetstone scheduler policy. Previous committed run files remain unchanged.
+
+Prepared `rounds/vnext-18-9-q4-011-continuation/`: exact decision selection,
+source/package/CLI pins, current run snapshot and original one-call ledger.
+Read-only status preflight passes; unauthorized launch refuses. No new model
+calls. Seven calls remain, but the original wall window expired. A new
+1800-second window is proposed and remains unapproved; all prior scope and
+stop conditions remain in force. Do not rerun the fresh-root launcher.
+
+### Q4-011 live decision stop — 2026-10-21
+
+Q4-010 was approved but not launched: the embedded CLI changed from
+0.163.0-alpha.10.2 to 0.163.0-alpha.11. Its pins refused launch before calls.
+Replacement Q4-011 passed local checks and received explicit user approval.
+Same seed, Luna medium roles, eight-call/1800-second limits; new CLI version/hash
+and derived descriptor identity. Evidence: `rounds/vnext-18-9-q4-011/`.
+
+The run completed normally at an operator gate in 30.491s, after one valid
+Reviewer call (16.932s). Round-1 finding `iss_0d9652df8fb9eae7` asks how exactly
+one start record per job relates to distinct execution attempts if a job can
+execute multiple times. The runtime correctly requires a decision despite the
+Reviewer's editor-fixable advice. No Editor, Verifier or promotion occurred;
+seven calls remain unused. This is partial evidence, not history qualification.
+The old Q4-009 evidence is unchanged. Next: decide the cardinality policy, bind
+it to this exact original transaction, then check the remaining window before
+preparing continuation. No automatic restart or carried-over time allowance.
+
+### Fresh Q4-010 package — 2026-10-19
+
+Prepared locally at `rounds/vnext-18-9-q4-010/` from checkpoint `dee2258`.
+No live calls or destination initialization. Proposed new window: eight actual
+calls / 1800 seconds; Luna medium for all roles, seven rounds per profile.
+The exact Q4-009 synthetic seed is reused with a new descriptor; no old grants,
+receipts or promotions are imported. Q4-009 and its finding remain untouched.
+The embedded CLI changed to 0.163.0-alpha.10.2; executable hash is pinned and
+local skill-discovery isolation passed. Package validation, dry admission and
+unauthorized-launch refusal passed. Authorization remains `approved=false`.
+
+Success requires a new-run decision-bearing promotion and a subsequent actual
+Reviewer prompt containing its validated history, followed by assessed independent
+feedback. Stopping earlier is partial evidence. Human decision gates remain stops;
+no automatic rebinding or continuation. This package is Phase 1 only; live Phase 2
+requires a separately prepared entry/configuration package after Phase 1 completes.
+The local README records payload scope, limits, stop conditions and launch command.
 
 ### Phase 2 implementation and Phase 1 review — 2026-10-18
 
