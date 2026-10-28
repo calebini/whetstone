@@ -2,25 +2,31 @@
 
 This is Whetstone's traceable implementation plan. The original `0.21` gates and completion records below are historical; they are not a current capability inventory. Current behavior is governed by the [coordinating spec](docs/specs/WHETSTONE_COORDINATING_SPEC.md) and its leaf specs.
 
-Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), grounded in candidate-editing design `0.5` and coordinating spec `0.73`. This is the delivery owner for the preservation bridge and later candidate pipeline; the future-improvements list is not a parallel implementation checklist.
+Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), grounded in candidate-editing design `0.5` and coordinating spec `0.74`. This is the delivery owner for the preservation bridge and later candidate pipeline; the future-improvements list is not a parallel implementation checklist.
 
-Current handoff: [18.9 Q4 reconciliation](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#reconciled-authority-and-handoff--2026-10-17). Q4-009 resumed and promoted the ledger change, then paused on a Reviewer authority finding; all eight calls are used. Q4 remains incomplete and public activation is disabled. The [18.8 delivery milestones](#188-delivery-milestones), planned from checkpoint `25c1825` on 2026-09-27, remain historical execution context, not the current next-work queue.
+Current handoff: [controlled verified-promotion release](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md) (2026-10-28). **18.9 Q1–Q4 is complete within its documented controlled opt-in boundary.** The user approved activation of the exact `vnext-verified-consumer-1` digest; its shipping V qualification entry, six-owner suite advertisement and 15 passing activation/configuration/compatibility checks are implemented locally. The accepted Q3 correctness/performance limits remain explicit. Installed runtime replacement, external source apply-back and push remain separate actions. Earlier milestones and checkpoints below retain their historical scope.
 
 ## Build Strategy
 
-Current bounded correction (2026-10-18): Phase 1 decision-history correction
-reviewed and Phase 2 support implemented locally. The review fixed historical
-source rechecks when reusing a proof. The shared Phase 2 renderer binds proven
-history into new immutable input/prompt identities and source barriers, preserving
-exact old partial publication, replay and timeout continuation. Strict validation
-and spent slots remain unchanged; pinned algorithms and schemas are unchanged.
-Eight focused tests and 22 regression tests passed (28 distinct methods).
-See the evidence and bounded coverage in the
-[Q4 current handoff](docs/VNEXT_18_9_Q4_LIVE_SOAK.md#later-reviewer-history-correction--current-handoff).
-No live calls, activation, commit or push are included. The retained round-4
-finding remains unresolved; all prior live calls are consumed. A supported
-resolution/fresh-run plan and fresh provider authorization remain prerequisites
-to another live campaign. Runtime distribution work is separate.
+Config-selected V opt-in is available in this checkout for the qualified local
+macOS/APFS scope. Existing defaults, legacy/bridge behavior, immutable inputs and
+separate provider/source-write consent remain unchanged. Frozen suites and other
+public qualification maps are unchanged. The activation cohort passed 15 methods
+in 64.017s (64.761s supervised); it uses the real shipping map for admission,
+status/recovery and refusal/immutability checks. Representative compatibility
+checks pass. This is not a new broad regression or live-model campaign.
+
+Q4-015's clean live journey reached CONVERGED in 756.223s with five calls; no
+editing, promotion or nonempty Phase 2 history was exercised there. Prior live
+proposal/history evidence retains its exact source and coverage limits. All 22
+P0 rows have historical passing credit. The original Q3 failure is outside that
+map and remains an accepted, unexplained risk, not a relabeled pass. Performance
+has no SLA. See the release record and activation receipt for exact hashes,
+results and limits. No required item remains within the approved Q1–Q4 scope.
+The 0.2.0 scoped source checkpoint adds version metadata, release notes and
+updated Markdown/HTML documentation. Candidate installation and its smoke checks
+precede separate stable promotion; tags/push/site publication remain subsequent
+actions. Unrelated runtime distribution work, notes and audit reports are excluded.
 
 Build deterministic behavior first, then introduce live clients behind narrow gates.
 
@@ -2231,10 +2237,10 @@ rounds/vnext-18-9-q4-review-authority-investigation-001/.
 
 ##### 18.9 Release Acceptance Gates
 
-- [ ] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.
-- [ ] Run the full regression suite plus process/CLI and fault-injection conformance; demonstrate that legacy runs, reviewer-only audits/sweeps, bridge runs and proposal-only jobs retain their declared behavior. Publish exact tested schema/algorithm/client versions and known limits.
-- [ ] Perform a separately authorized isolated live soak only after deterministic gates pass; inspect both successful and rejected proposals and preservation evidence. No source apply-back is implied by qualification.
-- [ ] Advertise `verified_promotion` only for the supported suite that passed the complete activation gate. Document new-root seed import, unsupported-version refusal, immutable input rules, operator recovery, and how to disable future automatic jobs without rewriting active descriptors or historical artifacts.
+- [x] Map every candidate-spec P0 scenario to an executable fixture/test and evidence record, including destructive recurrence, valid simplification, forbidden compatibility, stale decisions, parser edges, partial regression, cross-implementation determinism, interrupted registration/verification/promotion, and external-source drift.
+- [x] Execute and reconcile the full regression inventory plus process/CLI and fault-injection conformance (1,634 passes, one unexplained non-P0 failure explicitly accepted by the operator; not all green); demonstrate that legacy runs, reviewer-only audits/sweeps, bridge runs and proposal-only jobs retain their declared behavior. Publish exact tested schema/algorithm/client versions and known limits.
+- [x] Perform a separately authorized isolated live soak after the recorded deterministic qualification and explicit risk/performance acceptance; inspect both successful and rejected proposals and preservation evidence. No source apply-back is implied by qualification.
+- [x] Advertise `verified_promotion` only for the supported suite that passed the complete activation gate. Document new-root seed import, unsupported-version refusal, immutable input rules, operator recovery, and how to disable future automatic jobs without rewriting active descriptors or historical artifacts.
 
 Likely surfaces: conformance fixtures/tests, release metadata, coordinating and all amended leaves, Quickstart and examples. Acceptance: every P0 row has reproducible evidence; no advertised mode exceeds qualified support; legacy accepted hashes are never presented as candidate verification proof. Rollout: explicit opt-in promotion, then observation before considering wider defaults. Non-goals: automatic legacy migration, project-wide spec tracking, semantic quorum, UI work or unrelated scheduler optimization.
 

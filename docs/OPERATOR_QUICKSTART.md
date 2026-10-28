@@ -2,7 +2,7 @@
 
 This guide is for running Whetstone against an existing spec document, especially a spec that lives in another repo.
 
-The safest pattern is an isolated run root: copy the source spec into a Whetstone run directory as `spec.md`, let Whetstone mutate only that copy, inspect the results, then manually apply back to the source file.
+Use an isolated run root and inspect the results before separately approving source apply-back. For legacy/bridge workflows, copy the source spec into the run directory as `spec.md`. For V, prepare the seed in an external input package and let fresh-root admission create the destination as described below.
 
 ## Mental Model
 
@@ -15,19 +15,21 @@ Whetstone persists every round under `rounds/`. For legacy/bridge runs, `rounds/
 
 ## Recommended Defaults
 
-### Proposed V release command surface (qualification-gated)
+### Verified-promotion command surface (explicit opt-in)
 
-This section describes the future config-selected V consumer. It MUST NOT be
-presented as available until the implementation advertises the qualified suite.
-The suite version below is a placeholder, not an accepted current version.
+Whetstone 0.2.0 V support is explicitly opted in per job using `vnext-verified-consumer-1`,
+manifest digest `7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+It requires the qualified local macOS/APFS runtime and the scope below. Hashes in
+the example are placeholders for exact prepared input bytes.
 
 ```yaml
 editing_mode: verified_promotion
-contract_suite_version: <qualified-V-suite-version>
+contract_suite_version: vnext-verified-consumer-1
 vnext_input_package:
   path: inputs/package.json
   hash: <SHA-256-of-exact-package-bytes>
-# Required when requesting Phase 2; its path is relative to the admitted root.
+# Add only after admission and staging Phase 2 inputs in the admitted root.
+# Required for Phase 2; paths are root-relative.
 vnext_phase2_configuration:
   path: inputs/phase2/configuration.json
   hash: <SHA-256-of-exact-configuration-bytes>
@@ -48,7 +50,7 @@ text` for the actual gate. Choosing V does not approve external source writes.
 Never use legacy source-mismatch/non-converged overrides or supplied-draft flags
 on a V root. Removing config selectors must not route it to a legacy writer.
 
-The command matrix below is the proposed complete first-release surface. Existing
+The command matrix below is the complete supported first-release surface. Existing
 legacy/bridge/reviewer-only/proposal interfaces retain their own semantics.
 
 For the new Q1 consuming suite, the Phase 2 Reviewer supplies guidance directly
@@ -75,16 +77,111 @@ existing explicit-advice contract.
 | strop / apply-back | V inspection or retained-intent recovery; new writes require complete current eligibility | Separate assessment/status, apply/retry and historical recovery as defined below; recovery never rewrites | review_apply_back/apply_back/recover_apply_back |
 | Other commands on a V root | Not in the declared matrix | Refuse unsupported gate before client/writer; standalone audits/intake/decomposition use their own roots | existing protocol preflight refusal |
 
-The following are proposed V-only operand extensions, not existing supported
-flags: `vnext-decide --repair-request FILE` and `--gap-acceptance FILE` replace
+The following V-only operands share the exact qualified-suite gate:
+`vnext-decide --repair-request FILE` and `--gap-acceptance FILE` replace
 `--selections` for their one exact request type; `strop`/`apply-back` add
 `--config`, `--approval FILE`, `--approval-hash HASH`, `--exclusive-source-access`,
 `--recover`, and `--retry-apply`. These are operation inputs, not mode selectors.
 
 
+#### Operating a qualified V release
+
+Current release status and evidence are in the
+[verified-promotion release decision](VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+As of 2026-10-28, the exact suite above is publicly qualified for explicit opt-in.
+Test harness qualification is not a user setting. There is no configuration, environment variable or CLI switch that can
+qualify an implementation.
+
+**Start a new job.** Have the agent prepare a canonical immutable package from
+the exact seed, authority, protected invariants, approved scope and review/client
+configuration. Copy only the selected source text into the new package; do not
+copy an existing run's authority files. Keep the package and launch configuration
+outside the destination, which must not exist, including as an empty directory.
+Select `editing_mode: verified_promotion` and the advertised exact suite in the
+run configuration. The package descriptor must select the same mode and suite.
+
+Validate and admit using the selected runtime's `whetstone` command:
+
+```sh
+whetstone vnext-admit --root /absolute/new-run --config /absolute/run.yaml --dry-run
+whetstone vnext-admit --root /absolute/new-run --config /absolute/run.yaml
+whetstone status --root /absolute/new-run --config /absolute/run.yaml --format json
+whetstone live-phase1 --root /absolute/new-run --config /absolute/run.yaml
+```
+
+Use only a release that advertises the chosen suite and D8 storage support.
+Unknown, altered or unqualified suites refuse before model calls or authority
+writes. A package that validates offline is not permission to run V. A partial
+initialization is retained for diagnosis; do not overwrite or force-reinitialize
+that destination. Prepare a genuinely new job if initialization cannot complete
+through its documented owner.
+
+**Keep inputs immutable.** After admission, retained mode, suite, role identities,
+seed, authority, invariants and review configuration own the job. Changed bytes
+or conflicting selectors refuse. A changed descriptor-bound selection needs a
+new job; editing the launch config cannot upgrade a legacy/R/P root or change an
+existing V job. Preserve the actual client executable/version recorded by the
+job. If an app upgrade replaces it, restore the exact retained client or prepare
+a new job with the new identity. Operational timeout changes retain the existing
+per-attempt rules; they do not renew authority or spent request slots.
+
+**Enter Phase 2 after full Phase 1 stability.** Prepare its exact job-bound v3
+configuration and supported rubric under `inputs/phase2/`, then add the
+root-relative `vnext_phase2_configuration` Ref to the launch config. Do this after
+admission: a fresh nonexistent root cannot resolve a Phase 2 input path yet.
+Focused-profile stability does not establish complete Phase 1 prerequisites.
+
+```sh
+whetstone promote-phase2 --root /absolute/new-run --config /absolute/run.yaml
+whetstone live-phase2 --root /absolute/new-run --config /absolute/run.yaml
+whetstone status --root /absolute/new-run --config /absolute/run.yaml --format json
+```
+
+Configuration/request publication and distinct entry are separate commits. Any
+required metadata change must pass the verified candidate path before entry.
+Read the reported gate and bound terminal evidence; a returned response or zero
+finding count alone is not convergence. Top-level legacy fields in a V state
+projection may retain earlier values; its V references and `status` resolve the
+current committed entry/closeout. Reviewer advice is handed to the owners
+automatically. Bring new product or authority choices to the human with their
+exact base/effects; history supplies context, not permission for a new edit.
+
+**Inspect before recovery.** Run `status`, then the exact supported `resume
+--dry-run` invocation it reports, including a required round selector. Use the
+table below to distinguish publication repair from a client continuation. Review
+the possible client use and remaining allowance before executing it. Repair
+stops at its boundary; spent requests and final candidate rejections cannot be
+reopened through ordinary live commands. No generic Phase 2 Editor/Verifier
+crash recovery or force-unlock is supplied. Preserve uncertain publication
+evidence and reconcile it through the selected owner before new work.
+
+**Pause future automatic work.** Stop the external launcher/scheduler from
+starting new Whetstone jobs, disable its queued automatic invocations, and leave
+new jobs unadmitted. For assessment while paused, use the existing reviewer-only
+audit workflow in a separate root. Keep the qualified runtime, existing launch
+configs, descriptors and historical evidence intact for inspection and supported
+recovery. Do not edit an active descriptor to another mode, delete its lock file,
+or remove config selectors to obtain a legacy writer. Whetstone has no global
+pause switch or built-in run-wide token/time controller; limits and scheduling
+belong to the caller. A 30-minute Q4 harness cap is not a product default.
+
+For an active invocation, prefer its normal bounded stop. If it is interrupted,
+inspect durable status before any further dispatch; cancellation is not proof
+that a write or provider call did not occur. Avoid a second mutating invocation
+on the same root. D8 requires one canonical physical root on local macOS/APFS;
+copied archives permit offline inspection, not relocation or executable resume.
+Distributed writers, other storage backends and physical power-loss behavior
+are not qualified by the retained tests.
+
+**Approve source writes separately.** A converged root is not apply-back consent.
+Use the existing strop/apply-back assessment, exact approval and exclusive source
+access procedure below. The qualification runs supply no authority to write a
+real external specification. Live transmission also needs its own approved input
+scope and caller budget; activating V does not provide blanket provider consent.
+
 #### Exact V recovery and continuation routes
 
-This table is the complete initial V `resume` surface. It does not change the
+This table is the complete supported V `resume` surface. It does not change the
 earlier R/P interfaces. Every row requires valid retained inputs, the pinned
 consumer and fresh evidence validation under D8. Status reports the exact row,
 request/transaction/pass references and proposed invocation; it cannot authorize
@@ -620,7 +717,7 @@ read `rounds/technical_failure_report.json`. The run completed a soft Phase 1 di
 
 ## Run A Lightweight Change Audit
 
-For the separate vNext reviewer-only workflow, see [vNext admission](VNEXT_ADMISSION.md). It uses an immutable descriptor and explicit selectors on `vnext-admit` or `live-phase1`; schema recognition alone does not activate a mode. Proposal and promotion modes remain unavailable in slice 18.3, and the existing preservation-bridge workflow remains separate.
+For the separate vNext reviewer-only workflow, see [vNext admission](VNEXT_ADMISSION.md). It uses an immutable descriptor and explicit selectors on `vnext-admit` or `live-phase1`; schema recognition alone does not activate a mode. The historical 18.3 checkpoint did not activate proposal or promotion modes. Current V support is advertised above; the preservation-bridge workflow remains separate.
 
 Use `audit-change` when a small feature or boundary update touched multiple specs and you want a reviewer-only sanity check without starting a Whetstone convergence loop.
 

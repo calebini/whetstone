@@ -9,6 +9,19 @@ target_spec_id: scheduler_state_and_resume_spec
 target_spec_role: leaf_spec
 -->
 
+## Verified-Promotion Release
+
+Public support: **explicit config opt-in `verified_promotion`**, qualified on
+2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
+`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+This leaf's V requirements are operative only for that advertised suite and the
+[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+D8 requires a canonical physical run root on local macOS/APFS. The standard
+workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
+immutable input gates remain mandatory. Other modes/suites gain no qualification
+by implication; legacy/bridge defaults and separate provider/source-write consent
+remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
+
 ## HALTING CONDITIONS (ORDERED PRECEDENCE)
 
 Preflight validation runs before runtime halt precedence. If preflight configuration validation fails, the Orchestrator MUST halt with `CONFIG_INVALID` before invoking any Reviewer or Editor and MUST NOT evaluate runtime halt conditions.
@@ -583,7 +596,7 @@ Use the coordinating spec's `vnext` capability block in status and preflight dia
 
 18.3 qualifies admission, seed-only initialization (including the seed-map subset), reviewer-only work and read-only capability reporting. R remains pinned to ordinal 0 and performs no version stamping, candidate creation, semantic verification, automatic Phase 2 handoff or source apply-back. Reviewer budgets/classification still apply. Mutating commands and generic legacy resume reject R when they request unavailable work. Seed initialization runs only under exclusive fresh-root ownership and the candidate leaf's immutable publication requirements; a partial initialization is diagnosed and preserved, never overwritten by a second admission. Seed-materialization recovery and every other continuation are advertised only after their dedicated checks exist.
 
-P remains unavailable until 18.5 qualifies proposal/assembly/registration and D8's required storage protocol. P may stop with an unverified candidate until 18.6 qualifies semantic verification; no silent fallback is allowed when a caller explicitly requests a later gate. V remains unavailable until the full coordinating activation gate passes. Offline suite recognition is not runtime capability. Later implementations must publish their exact supported role/phase/gate combinations before status may recommend them.
+P remains unavailable until 18.5 qualifies proposal/assembly/registration and D8's required storage protocol. P may stop with an unverified candidate until 18.6 qualifies semantic verification; no silent fallback is allowed when a caller explicitly requests a later gate. V is available only for the advertised suite that passed the full coordinating activation gate. Offline suite recognition is not runtime capability. Later implementations must publish their exact supported role/phase/gate combinations before status may recommend them.
 
 #### Verified command execution and recovery
 
@@ -1109,8 +1122,9 @@ separate from choosing V mode and remains subject to full release qualification.
    route vNext through the legacy executor, change shipped suites, rewrite old
    closeouts, grant new model work or alter legacy/bridge overrides. Reports keep
    lineage validity, convergence, source-match eligibility, approval and actual
-   write outcome separate. Only disposable fixture sources may be written during
-   implementation. Public activation and real apply-back remain deferred.
+   write outcome separate. Qualification used only disposable fixture sources.
+   Public support is limited to the advertised qualified suite; a real source
+   write still requires separate exact approval and exclusive source access.
 
 ### Source assessment, write and historical recovery
 

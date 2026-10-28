@@ -36,7 +36,9 @@ Whetstone exists to make that pressure usable.
 
 ## What Whetstone Does
 
-Whetstone currently supports:
+Whetstone 0.2.0 supports the workflows below. The verified-promotion release has
+a narrower qualified scope than the legacy/bridge workflows.
+
 
 - Live multi-round Phase 1 technical stabilization.
 - Phase 2 convergence review against canonical or custom rubric profiles.
@@ -44,6 +46,7 @@ Whetstone currently supports:
 - Review profile sets for stateful systems, lighter MVP utilities, and governance-heavy specs.
 - Horizontal and vertical review modes.
 - [Explicit preservation enforcement](docs/PRESERVATION_ACTIVATION.md) with bounded change surfaces, exact-effect review and local acceptance before draft installation.
+- [Verified promotion](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md): explicit per-job opt-in to section-addressed proposals, deterministic preservation checks, independent semantic verification and fenced promotion.
 - MVP scope intake with approved `scope_contract.json`.
 - Decision point capture and end-of-cycle decision summaries.
 - Operator decision checkpoint artifacts.
@@ -59,6 +62,37 @@ Whetstone currently supports:
   - `mvp-v1`
   - `standard-v1`
   - `governance-v6`
+
+## Verified Promotion in 0.2.0
+
+The new opt-in path keeps model-proposed edits separate from the authoritative
+draft. Whetstone classifies findings, binds any required operator decisions,
+assembles a candidate, checks preservation, obtains independent semantic
+verification, then promotes or rejects it. Later reviews receive proven decision
+history as context; a previous approval cannot authorize a new effect.
+
+Select `editing_mode: verified_promotion` and
+`contract_suite_version: vnext-verified-consumer-1` in the run configuration.
+Admission validates an immutable package containing the seed, authority,
+invariants, review configuration and exact suite bindings. Let admission create
+a **nonexistent destination**; the legacy copy-into-a-directory example below is
+not the V bootstrap procedure.
+
+The qualified release requires local macOS/APFS and the standard workflow with
+stateful-system profiles and the fixed `standard-v1` rubric. It supports horizontal
+and vertical Phase 1, focused checks, distinct Phase 2 entry, convergence and the
+[finite recovery routes](docs/OPERATOR_QUICKSTART.md#exact-v-recovery-and-continuation-routes).
+Focused stability does not grant Phase 2. Reviewer advice is handed off directly;
+humans decide product or authority choices. Source apply-back remains separately
+approved, even after convergence.
+
+Start with the [V operator procedure](docs/OPERATOR_QUICKSTART.md#operating-a-qualified-v-release),
+[HTML workflow guide](https://calebini.github.io/whetstone/#workflows/verified-promotion),
+and [0.2.0 release notes](CHANGELOG.md). Existing defaults and bridge/legacy
+behavior are unchanged. The release record retains the accepted historical
+status/reentry risk and measured latency; it claims no latency SLA or universal
+model reliability. This source release does not move an installed stable channel
+or publish the updated field guide automatically.
 
 ## The Workflow
 
@@ -139,7 +173,8 @@ Inspect the CLI:
 PYTHONPATH=src python3 -m whetstone.cli --help
 ```
 
-Create an isolated run root for a source spec:
+For a legacy/bridge run, create an isolated run root for a source spec
+(V admission uses the separate procedure above):
 
 ```bash
 SOURCE_SPEC="/absolute/path/to/MY_SPEC.md"
@@ -282,6 +317,8 @@ That artifact trail is the product. It lets a human or another agent ask: what c
 
 - [Interactive Whetstone Field Guide](https://calebini.github.io/whetstone/) — operator chapters and ten architecture plates; [opening and verification instructions](docs/site/README.md).
 - [Operator Quickstart](docs/OPERATOR_QUICKSTART.md)
+- [Verified-Promotion Release and Limits](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md)
+- [Release Notes](CHANGELOG.md)
 - [Scope Notes Guide](docs/SCOPE_NOTES_GUIDE.md)
 - [Whetstone Coordinating Spec](docs/specs/WHETSTONE_COORDINATING_SPEC.md)
 - [Spec Decomposition Manifest](docs/decomposition/decomposition_manifest.json)

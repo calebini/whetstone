@@ -14,7 +14,7 @@ Open [the local preview](http://127.0.0.1:8766/). This restricted preview does n
 
 ## Contents and interactions
 
-Eight chapters cover a model-free first run, live configuration, workflow choice, intake, seed-spec assessment, both phases, focused rechecks, evidence interpretation, recovery, strop, decomposition, commands and capability status. The ten plates cover context, runtime, concepts, phases, preparation, refinement, feedback, lineage, source ownership and execution failure boundaries.
+Eight chapters cover the 0.2.0 verified-promotion path, its evidence and recovery boundaries, a model-free first run, live configuration, workflow choice, intake, seed-spec assessment, both phases, focused rechecks, evidence interpretation, recovery, strop, decomposition, commands and capability status. The ten plates cover context, runtime, concepts, phases, preparation, refinement, feedback, lineage, source ownership and execution failure boundaries.
 
 Search with Command/Ctrl K. Section and diagram URLs are deep links. Commands are copyable. Five Cortext1 themes are remembered in browser storage where available; `?theme=inverted` (or another theme key) overrides the remembered selection.
 
@@ -24,9 +24,22 @@ Dense inline SVGs scroll horizontally on small screens. Expanded Fit shows the w
 
 ## Authority and research baseline
 
-Researched against the local package 0.1.0 working tree on 2026-09-08, with unpublished preservation development explicitly distinguished from the published CLI. Sources include the actual CLI, Operator Quickstart, promoted spec family, contracts, runtime modules, and executable fixture.
+Updated for Whetstone 0.2.0 on 2026-10-28 against the activated digest-pinned V
+release, public CLI, Operator Quickstart and owning specs. Initial research used
+the 0.1.0 working tree on 2026-09-08; bridge availability was subsequently updated.
 
-The guide distinguishes implemented public workflows, the qualified opt-in preservation bridge, inactive candidate-safe design, and exploratory/future ideas. Preservation availability was updated for the activation release; deployment of the site remains a separate publication action. The optional source-baseline check in strop requires `--expected-source-hash`; the guide does not present it as automatic.
+The guide distinguishes legacy full-draft editing, the qualified opt-in
+preservation bridge, qualified opt-in verified promotion and exploratory/future
+ideas. V setup uses a prepared immutable package and a nonexistent destination;
+legacy/bridge shell examples are labeled explicitly. It covers current-pointer
+and declaration evidence, direct Reviewer advice, human authority decisions,
+exact recovery, caller-owned pausing and separate source approval. The ten existing
+plates retain their illustrative legacy/shared views; V's transaction path is
+explained in the workflow/evidence sections. Release limitations and measured
+latency link to the qualified release record. Site publication and installed
+runtime/channel promotion remain separate actions.
+
+The optional source-baseline check in strop requires `--expected-source-hash`; the guide does not present it as automatic.
 
 The Spine field guide supplied the interaction and verification foundation, plus reusable SVG primitives. All Whetstone product prose and ten diagram compositions were authored for this system. Surface tokens, typography and five themes follow the Cortext1 brand specification 1.1.0. Diagram relationship colors use darker companion colors in the inverted theme for readability; status tokens retain their canonical values.
 
@@ -52,6 +65,17 @@ node docs/site/build-pages.mjs /tmp/whetstone-pages-preview
 ```
 
 Choose a new output directory; the packager refuses to overwrite one. By default it uses the current HEAD SHA. A local package made from uncommitted changes is a packaging preview, not proof that every cited file exists at HEAD on GitHub.
+
+## 0.2.0 documentation checkpoint
+
+The release update adds the qualified V setup, Phase 2, evidence and recovery
+sections; updates capability/version labels; and marks legacy/bridge recipes.
+Verification on the release working tree passed: content/config/shell checks,
+both public-asset packaging tests, the existing 19-route browser check, and 15
+new-section/viewport checks at 1440, 390 and 320 pixels. The new admission view was
+also visually inspected at desktop and mobile widths. No accessibility audit is
+claimed when optional axe-core is absent. These checks do not deploy the site or
+qualify installed runtime selection; source/QA receipts are retained locally.
 
 ## Verification
 

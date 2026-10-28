@@ -9,11 +9,29 @@ target_spec_id: whetstone_coordinating_spec
 target_spec_role: coordinating_spec
 -->
 
+## Verified-Promotion Release
+
+Public support: **explicit config opt-in `verified_promotion`**, qualified on
+2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
+`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+This leaf's V requirements are operative only for that advertised suite and the
+[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+D8 requires a canonical physical run root on local macOS/APFS. The standard
+workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
+immutable input gates remain mandatory. Other modes/suites gain no qualification
+by implication; legacy/bridge defaults and separate provider/source-write consent
+remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
+
 ## Purpose
 
 Automate iterative technical review between AI clients (e.g., Claude Code, Codex) to drive a spec from v0.1 -> converged (mid/final, permissive/strict), with controlled multi-perspective review per round, deterministic convergence behavior, explicit failure handling, and fully specified primitives.
 
 Reading guide: This spec defines the core convergence subsystems: round scheduling, severity normalization, identity for issues/conflicts/oscillation, rubric gap tracking, convergence declaration, and artifact validation. It also defines operator workflows such as scope intake, decision capture, apply-back, and spec decomposition. The state machine and halting conditions sections describe how the runtime subsystems compose into deterministic execution.
+
+Version `0.74` advertises controlled config opt-in for the qualified
+`vnext-verified-consumer-1` release above. The activation gate and immutable
+per-job selection requirements remain unchanged; no defaults or other modes
+are enabled by this release.
 
 Version `0.69` specifies the lightweight `audit-change` workflow for reviewer-only cross-spec change audits.
 
@@ -29,7 +47,7 @@ identifiers are type-prefixed full digests with schema-owned preimages, and a
 version is supported only through one digest-pinned contract-suite manifest.
 This does not activate a vNext editing mode.
 
-The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). D7 is specified below and its [bounded consistency audit](../audits/VNEXT_D7.md) passed with zero findings; runtime admission remains gated on the later implementation slices.
+The D6 audit correction makes authority and invariant artifacts immutable pre-job inputs, removes truncated proposal/candidate identities, and explicitly derives the suite digest from the supported registry. Slice 18.2 publishes [offline contracts and conformance](../VNEXT_CONTRACTS.md). D7 is specified below and its [bounded consistency audit](../audits/VNEXT_D7.md) passed with zero findings; that historical checkpoint did not qualify the later runtime slices. The current V release is advertised above.
 
 ---
 
@@ -69,7 +87,7 @@ Owns the vNext trust boundary around Editor proposals, stable section-addressed 
 
 Editor output is untrusted client output. It is a change proposal, never draft authority or promotion proof. Only an Orchestrator-validated candidate that completes the leaf's atomic current-verified-pointer protocol may become the current verified draft.
 
-This leaf is registered for ratification but remains non-operative. Registration in the family map does not supersede the current scheduler, artifact, scope/decision, Phase 2, or apply-back contracts and is not evidence that candidate-safe editing is implemented.
+This leaf is ratified and operative for the qualified suite advertised above. Its scheduler, artifact, scope/decision, Phase 2 and apply-back owners retain their respective authority. Registration alone remains insufficient to qualify any other suite or mode.
 
 ### Candidate-Safety Activation Gate
 
@@ -85,7 +103,7 @@ Until every condition holds, `verified_promotion` MUST be unavailable, a configu
 
 ### vNext Admission And Capability Negotiation (D7)
 
-D7 defines the admission and scheduler contract. Slice 18.3 implements only the [seed/reviewer-only subflow](../VNEXT_ADMISSION.md); later gates remain unavailable. The [scheduler's processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns transitions, failure outcomes, retries and continuation. Candidate evidence/finality and D6 identity remain owned by the candidate leaf. D8's storage protocol and the full promotion release gate remain separate prerequisites.
+D7 defines the admission and scheduler contract. The historical 18.3 checkpoint qualified the [seed/reviewer-only subflow](../VNEXT_ADMISSION.md); the current advertised V release additionally qualifies its declared command matrix. The [scheduler's processing table](SCHEDULER_STATE_AND_RESUME_SPEC.md#vnext-candidate-processing-d7) owns transitions, failure outcomes, retries and continuation. Candidate evidence/finality and D6 identity remain owned by the candidate leaf. D8's storage protocol and the full promotion release gate remain separate prerequisites.
 
 The 18.3 selection surface is a closed `vnext` configuration block:
 
@@ -440,7 +458,7 @@ editing_mode: reviewer_only       # reviewer_only | proposal_only | verified_pro
 contract_suite_version: ""        # non-empty supported version for every vNext job
 ```
 
-These fields are non-operative until the relevant family surfaces are ratified and the implementation advertises support for them; the current runtime is not required to accept them. Configuration presence, artifact presence, or a caller claim MUST NOT activate `proposal_only` or `verified_promotion`. Once a vNext mode is supported, every new vNext job MUST copy the resolved values into its immutable `job_descriptor.json`; changing either value requires a new descriptor and job identity. `verified_promotion` MUST fail preflight unless the selected non-empty contract-suite version is supported and has passed the complete candidate-safety activation gate.
+These fields are operative only for an explicitly advertised mode and qualified suite; other selections remain unavailable. Configuration presence, artifact presence, or a caller claim MUST NOT activate `proposal_only` or `verified_promotion`. Once a vNext mode is supported, every new vNext job MUST copy the resolved values into its immutable `job_descriptor.json`; changing either value requires a new descriptor and job identity. `verified_promotion` MUST fail preflight unless the selected non-empty contract-suite version is supported and has passed the complete candidate-safety activation gate.
 
 ---
 

@@ -74,7 +74,9 @@ class VerifiedCLITests(unittest.TestCase):
     def files(self): return self.fixture.files(self.root) if self.root.exists() else {}
 
     def test_registered_suite_is_not_public_activation(self):
-        code, result = self.invoke('vnext-admit')
+        # Offline registration remains insufficient when a release is withdrawn.
+        with patch.dict(routing.QUALIFIED_VERIFIED_SUITES, {}, clear=True):
+            code, result = self.invoke('vnext-admit')
         self.assertEqual(code, 2, result)
         self.assertEqual(result['reason_code'], 'vnext_mode_unavailable')
         self.assertFalse(self.root.exists())

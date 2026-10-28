@@ -125,7 +125,7 @@
     node(738,358,315,'round-N / after','draft_after.md|unresolved_issues.json','blue','OUTPUT SNAPSHOT',106)+
     edge('M895 464V510H710V299H610V262','teal',true)+tag(859,507,'accepted hash advances state','teal')+
     note(52,590,'Also: decision registers, profile/rubric manifests, terminal reports and available client telemetry.');}
-  function applyback(){return plate('09','THE SOURCE WRITE IS A SEPARATE DECISION','Current strop behavior. Preservation is explicit opt-in; candidate-safe promotion remains gated.')+
+  function applyback(){return plate('09','THE SOURCE WRITE IS A SEPARATE DECISION','Legacy/bridge strop shown. Verified promotion uses its own exact source-approval inputs.')+
     boundary(42,131,495,410,'WHETSTONE / RUN EVIDENCE')+boundary(580,131,498,410,'OPERATOR / SOURCE OWNERSHIP','purple')+
     edge('M290 228H325')+edge('M423 272V360','teal')+
     node(67,184,223,'Converged run','Draft + declaration + decisions','teal','REVIEW INPUT')+

@@ -9,6 +9,19 @@ target_spec_id: phase2_convergence_and_declaration_spec
 target_spec_role: leaf_spec
 -->
 
+## Verified-Promotion Release
+
+Public support: **explicit config opt-in `verified_promotion`**, qualified on
+2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
+`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+This leaf's V requirements are operative only for that advertised suite and the
+[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+D8 requires a canonical physical run root on local macOS/APFS. The standard
+workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
+immutable input gates remain mandatory. Other modes/suites gain no qualification
+by implication; legacy/bridge defaults and separate provider/source-write consent
+remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
+
 ## Guarded Full-Draft Handoff
 
 For an explicitly admitted `preservation-bridge-v1` run, Phase 2 MUST apply the [scheduler's bridge consumer guard](SCHEDULER_STATE_AND_RESUME_SPEC.md#acceptance-and-downstream-consumers) before version promotion or review. Verify the accepted marker/report chain, exact materialized bytes and ordinary Phase 1 stable/normalized-hash gates. An Editor claim, rejected proposal, paused rewrite or missing report cannot supply the handoff. This is a specified pending bridge capability, not activation of vNext candidate promotion.

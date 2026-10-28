@@ -9,6 +9,19 @@ target_spec_id: artifacts_validation_and_telemetry_spec
 target_spec_role: leaf_spec
 -->
 
+## Verified-Promotion Release
+
+Public support: **explicit config opt-in `verified_promotion`**, qualified on
+2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
+`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+This leaf's V requirements are operative only for that advertised suite and the
+[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+D8 requires a canonical physical run root on local macOS/APFS. The standard
+workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
+immutable input gates remain mandatory. Other modes/suites gain no qualification
+by implication; legacy/bridge defaults and separate provider/source-write consent
+remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
+
 ## ARTIFACT SCHEMAS (MINIMUM REQUIRED FIELDS)
 
 ### vNext identity and suite-manifest invariant

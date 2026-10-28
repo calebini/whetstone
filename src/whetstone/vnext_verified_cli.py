@@ -1,7 +1,7 @@
-"""Config-selected verified command adapter, disabled pending release qualification.
+"""Config-selected verified command adapter with exact release qualification.
 
 No config/CLI/environment setting can populate QUALIFIED_VERIFIED_SUITES.
-Scripted qualification tests inject their exact suite digest into that mapping.
+Only release-qualified suite digests admit public verified-promotion jobs.
 """
 from dataclasses import asdict, is_dataclass
 import json
@@ -18,7 +18,10 @@ from whetstone.vnext_proposal_run import RUN_INPUT_PATH
 from whetstone.vnext_verified_bootstrap import prepare_verified_package
 from whetstone.vnext_verified_run import open_verified_run
 
-QUALIFIED_VERIFIED_SUITES = {}
+# Controlled opt-in release, 2026-10-28. See VNEXT_VERIFIED_PROMOTION_RELEASE.md.
+QUALIFIED_VERIFIED_SUITES = {
+    'vnext-verified-consumer-1': '7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58',
+}
 COMMANDS = frozenset({'vnext-admit', 'live-phase1', 'live-focused-phase1',
     'promote-phase2', 'live-phase2', 'status', 'resume', 'vnext-decisions',
     'vnext-decide', 'vnext-semantic-answers', 'vnext-semantic-answer',

@@ -1,12 +1,25 @@
 # Candidate Editing And Promotion Spec
 
-Status: vNext design draft
+## Verified-Promotion Release
 
-Version: `0.7`
+Public support: **explicit config opt-in `verified_promotion`**, qualified on
+2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
+`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
+This leaf's V requirements are operative only for that advertised suite and the
+[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+D8 requires a canonical physical run root on local macOS/APFS. The standard
+workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
+immutable input gates remain mandatory. Other modes/suites gain no qualification
+by implication; legacy/bridge defaults and separate provider/source-write consent
+remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
 
-Activation: non-operative until ratified by the Whetstone coordinating spec and backed by version-pinned public contracts and conformance tests.
+Status: Ratified; controlled opt-in public release
 
-The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications. Version `0.4` amended only the bridge to separate proposal/acceptance admission and define explicit correspondence. Version `0.5` closes the vNext D6 job-identity and contract-suite-manifest policy; the vNext protocol remains non-operative.
+Version: `0.8`
+
+Activation: operative for the advertised digest-pinned suite under the coordinating activation gate; every other suite/mode remains separately gated.
+
+The separately gated [current-runtime preservation bridge](#current-runtime-preservation-bridge) specifies the near-term full-draft contract. It does not activate the vNext patch, verifier, registration, or promotion protocols elsewhere in this document. Neither capability is implemented merely by publishing these specifications. Version `0.4` amended only the bridge to separate proposal/acceptance admission and define explicit correspondence. Version `0.5` closes the vNext D6 job-identity and contract-suite-manifest policy; that historical version did not activate the vNext protocol.
 
 ## Purpose
 
@@ -34,9 +47,9 @@ At no point before promotion may a proposed patch, assembled candidate, Editor r
 
 ## Activation And Compatibility
 
-This document is a design draft. It does not change the behavior or authority of the current implementation by existing alone.
+This document is ratified for the advertised release. Specification publication alone cannot qualify another implementation, suite or mode.
 
-Ratification requires coordinated amendments to the Whetstone coordinating spec and the leaves that own scheduler state, artifact validation, scope and decisions, Phase 2 convergence, and apply-back. Until those amendments are ratified:
+Ratification requires coordinated amendments to the Whetstone coordinating spec and the leaves that own scheduler state, artifact validation, scope and decisions, Phase 2 convergence, and apply-back. Those amendments and the bounded release are recorded above. For any unratified or unqualified selection:
 
 - current runtime behavior remains governed by the existing spec family;
 - this document MUST NOT be cited as evidence that automatic candidate promotion is implemented;
@@ -1916,11 +1929,11 @@ The following table is the section-addressed amendment plan for ratification. Ca
 | Phase 2 and convergence lineage | `docs/specs/PHASE2_CONVERGENCE_AND_DECLARATION_SPEC.md#phase-2-failure-handling`, `#target-matrix-precedence`, `#convergence-declaration`, `#reproducibility` | Require Phase 2, declaration generation, and reproducibility evidence to resolve and bind the promoted current verified draft rather than an unverified candidate or unverified `spec.md` mirror. |
 | Operator defaults and recovery guidance | `docs/OPERATOR_QUICKSTART.md#mental-model`, `#recommended-defaults`, `#running-whetstone-from-an-agent`, `#recover-a-timeout`, `#terminal-states`, `#safety-rules` | Default unfamiliar jobs to reviewer-only mode; document proposal-only and verified-promotion opt-in, candidate inspection, safe recovery, and the prohibition on treating Editor output as current. |
 | Current strop/apply-back operational surface | `docs/OPERATOR_QUICKSTART.md#review-before-apply-back`, `#apply-back`, `#troubleshooting` | Require strop/apply-back review and write paths to select only bytes referenced by a committed current verified pointer and to refuse unverified, rejected, or merely accepted candidates. |
-| Strop/apply-back normative ownership designation | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map` | The coordinating spec now designates `SCHEDULER_STATE_AND_RESUME_SPEC.md` as the target normative owner for the pending bounded amendment to full strop/apply-back eligibility and the external source-write lifecycle, routed to this leaf's verified-candidate eligibility guard. The scheduler section `Verified-Promotion Source Write And Readback` publishes the bounded M4 policy for an explicitly pinned future consuming suite; it remains unavailable until the full activation gate passes. Until then, current operative behavior continues under the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. This leaf does not otherwise absorb external source-spec apply-back policy. |
+| Strop/apply-back normative ownership designation | `docs/specs/WHETSTONE_COORDINATING_SPEC.md#spec-family-map` | The coordinating spec now designates `SCHEDULER_STATE_AND_RESUME_SPEC.md` as the target normative owner for the pending bounded amendment to full strop/apply-back eligibility and the external source-write lifecycle, routed to this leaf's verified-candidate eligibility guard. The scheduler section `Verified-Promotion Source Write And Readback` publishes the bounded M4 policy for an explicitly pinned consuming suite; it is available only within the advertised qualified release and full activation gate. Until then, current operative behavior continues under the scheduler leaf's existing lineage and hash guards together with the Operator Quickstart procedure. This leaf does not otherwise absorb external source-spec apply-back policy. |
 
 ## Ratification Checklist
 
-Before this leaf becomes operative, the spec family MUST be amended so that:
+Every qualified release MUST retain the following ratification conditions:
 
 - the coordinating spec routes candidate editing and promotion authority to this leaf;
 - the scheduler distinguishes verified lineage from accepted and profile-clean status;
@@ -1933,7 +1946,7 @@ Before this leaf becomes operative, the spec family MUST be amended so that:
 - resume uses the current verified pointer and immutable candidate artifacts with explicit pre-commit and post-commit guards;
 - strop/apply-back selects only promoted verified bytes;
 - operator guidance defaults unfamiliar jobs to reviewer-only mode;
-- current full-document Editor output is disabled for automatic editing;
+- V jobs cannot invoke the current full-document Editor or promote its output;
 - the historical recurrence fixture and all P0 acceptance scenarios pass.
 
 Until every checklist item is satisfied, automatic verified promotion MUST remain unavailable.

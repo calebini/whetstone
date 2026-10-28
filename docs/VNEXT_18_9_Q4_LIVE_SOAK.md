@@ -1,12 +1,104 @@
 # Q4 — isolated live soak and activation decision
 
-Status: **Q4-014 reached PHASE_1_STABLE with three clean Sol 6.1 reviews.
-No edit or promotion was needed, so live decision-history qualification remains
-unexercised. Q4 remains incomplete and public activation remains disabled.**
-Q3 is closed with the operator's explicit correctness-risk and performance
-acceptances. Q4 remains incomplete until live evidence is assessed and activation
-is explicitly decided. The finite Q4 scope remains the inventory's live soak,
-successful/rejected proposal inspection, operator guidance and activation decision.
+Status: **Q4 is complete within the approved controlled opt-in release boundary.**
+Q4-015 passed the clean live Phase 1/Phase 2 journey. The operator then approved
+activation: the exact V suite gate and six-owner advertisement are implemented
+locally, and all 15 focused activation/configuration/compatibility checks pass.
+Q3's accepted correctness/performance limits and unobserved live branches remain
+recorded. No installed runtime replacement, external apply-back, commit or push.
+
+## Controlled opt-in activation complete — 2026-10-28
+
+User approval bound the [release decision](VNEXT_VERIFIED_PROMOTION_RELEASE.md).
+Only the exact `vnext-verified-consumer-1` digest was added to V qualification;
+other public maps, frozen contracts and default workflows are unchanged. The
+new smoke checks use the shipping entry directly. All 15 new/selected tests pass
+in 64.017s (64.761s supervised at 60% duty), with no failures/errors/skips or real
+provider calls. The six spec owners and Quickstart advertise the same suite and
+preserve the existing authority, recovery and source-write boundaries. Evidence:
+`rounds/vnext-18-9-q4-activation-001/`. This completes closeout item 3. The earlier
+qualification manifests remain historical source snapshots, not instructions to
+rerun expired private launchers. All subsequent open/disabled status statements
+below describe historical checkpoints.
+
+## Operator/release guidance complete — 2026-10-28
+
+The [release decision](VNEXT_VERIFIED_PROMOTION_RELEASE.md) joins the exact suite,
+Q1/Q2/Q3/Q4 evidence, known failure and live/performance limits. The Quickstart
+now covers fresh admission, immutable inputs/client upgrades, staged Phase 2,
+exact recovery and pausing caller-owned future jobs without changing old roots.
+Read-only reconciliation confirms all 22 P0 rows / 78 mapped methods have passing
+campaign credit; the original accepted-risk failure is outside that map. Later
+runtime changes match passing scoped test receipts. Current suite and live run
+seals match; no new full-suite result is claimed. Recommendation is controlled
+config opt-in, with one bounded qualification/publication/offline-check release
+change after approval. No production activation, owning-spec edit, provider call,
+external apply-back, commit or push occurred. This completes closeout item 2;
+item 3 is the explicit activation disposition.
+
+## Q4-015 live journey passed — 2026-10-28
+
+Explicit authorization bound the frozen fresh-root package. Three clean Sol 6.1
+medium Phase 1 reviews established eligibility, followed by distinct committed
+no-version-change entry and two clean Phase 2 reviews (strict, adversarial).
+All five responses passed strict validation on attempt 1; zero rubric findings.
+The declaration owner accepted final/strict closure with unique required profiles
+clean on the same current draft; the repeated third strict step did not run.
+The command returned phase2_complete; CONVERGED terminal evidence and V entry/
+closeout state references match. Supervisor exit 0, 756.223s total at 60% duty;
+provider wall time 66.937s. These are whole-run and provider timings, not isolated
+CPU cost or an unthrottled throughput estimate.
+
+Post-run checks verify all actual payloads against native journal artifacts,
+17 bound references, 547 frozen static files and 153 prior-run files. Worker lock
+released. Pointer remains ordinal 0; draft matches the approved seed. No Editor,
+semantic Verifier, correction, promotion or nonempty Phase 2 decision history was
+exercised. Do not turn those limits into unannounced extra campaigns. Three unused
+calls confer no further launch allowance. No activation, external apply-back,
+commit or push. Evidence: rounds/vnext-18-9-q4-015/live-outcome.json and RESULT.md.
+The [closeout inventory](VNEXT_18_9_Q4_CLOSEOUT.md) now records item 1 complete and
+the two remaining release/operator and activation work items. Earlier next-work
+statements below describe their historical checkpoints.
+
+## Finite closeout inventory — 2026-10-25
+
+The [closeout inventory](VNEXT_18_9_Q4_CLOSEOUT.md) now owns the current next-work
+queue: one bounded Phase 2 live qualification package, final operator/release
+handoff, then explicit activation disposition. Successful and rejected Phase 1
+proposals, clean Phase 1 reviews, and the bounded live history-consumption probe
+are credited with their exact limitations. Five sealed run inventories rehashed:
+442 files, zero mismatches. No provider calls or test-suite rerun in this
+reconciliation; production qualification remains disabled. Earlier next-step
+statements below are historical checkpoints, not additional work queues.
+
+### Fresh combined Q4-015 package staged — 2026-10-25
+
+A genuine new D8 root binds the preserved CLI 0.164.0-alpha.11.1 and approved
+Q4-014 seed/constraints. Static Phase 2 configuration/rubric and initial Phase 1
+prompt are staged; no entry/configuration request or live result is claimed.
+Eight private guard/isolation tests pass; current local isolation rendering and
+provider-free command/pin checks pass. 547 static files and 18 root files are
+sealed; old run hashes remain unchanged. Proposed single window: eight calls,
+30 minutes, Sol 6.1 medium, 600-second call timeout, 60% duty, 180-second lease.
+Real Phase 1 completeness gates distinct Phase 2 entry and live review. New
+product/authority choices or bounded failures stop; no guaranteed convergence,
+nonempty Phase 2 history or Q4 completion. Exact scope is in
+`rounds/vnext-18-9-q4-015/README.md`. Launch authorization is false; no live calls,
+production source changes, activation, external apply-back, commit or push.
+The [closeout inventory](VNEXT_18_9_Q4_CLOSEOUT.md) owns the next launch boundary.
+
+### Phase 2 preparation blocked by historical CLI pin — 2026-10-25
+
+Q4-014's eligibility and source pins pass, with its original run unchanged.
+Proposed Phase 2 configuration/rubric and native response schema validate. The
+required CLI 0.163.0-alpha.11.2 is absent from checked local executables; the
+preserved bundle is 0.164.0-alpha.11.1. No entry request/entry or first prompt was
+committed/prepared. An offline copy refused D8 physical-root identity, as designed;
+no bypass occurred. The package is not launch-ready. The updated
+[closeout inventory](VNEXT_18_9_Q4_CLOSEOUT.md#preparation-update--2026-10-25)
+recommends a fresh correctly pinned root and one combined Phase 1/Phase 2 window,
+or recovery of the exact historical CLI. No provider calls, production code
+changes, activation, external apply-back, commit or push occurred.
 
 ## Later-Reviewer history correction — current handoff
 
@@ -14,6 +106,75 @@ successful/rejected proposal inspection, operator guidance and activation decisi
 implemented locally. Q4 remains open.** The current pass is recorded below;
 the 2026-10-17 evidence remains a historical baseline. Live outcomes and the
 unresolved round-4 finding are unchanged.
+
+### Targeted live history-consumption probe passed — 2026-10-25
+
+The user explicitly authorized replacement probe-002. Frozen payload/run/source/
+CLI pins matched. One Sol 6.1 medium structural_integrity Reviewer call completed
+in 12.793s; supervised total 27.500s, exit 0. Actual transmitted prompt equals
+frozen bytes and contains one original-bound decision request/response/base and
+promotion link. Receipt input hash and raw-response hash match; strict validation
+passed on attempt 1, with empty feedback/classifications and no repair call.
+Pointer stayed at ordinal 1; no editing, subsequent promotion or Phase 2 call.
+Prior Q4-011/012/013/014 hashes unchanged; worker lock released.
+
+This closes the bounded live Phase 1 history-delivery/consumption check. Setup
+finding, Editor and semantic pass were scripted through production owners; only
+the subsequent Reviewer was live. A clean response is consistent with correct
+handling, not proof of causal improvement without a control arm or general
+Reviewer reliability. It does not qualify a fully live promotion chain or Phase 2.
+Q4 remains open; next reconcile the finite remaining qualification inventory before
+launching further work. Evidence: `rounds/vnext-18-9-q4-history-probe-002/live-outcome.json`.
+No commit, push, external apply-back or public activation occurred.
+
+### Targeted probe isolation repaired; replacement approval required — 2026-10-25
+
+The CLI isolation failure was a false positive: generic instructions mention
+SKILL.md without a discovered skill catalog. Probe-002 now validates actual skill
+blocks/catalog entries/concrete paths and rejects malformed prompt shapes. Four
+local tests pass, including injected-catalog rejection; local debug rendering
+passes. A complete signed CLI bundle is preserved and pinned locally, avoiding
+future app-update drift. No runtime validation or discovery suppression relaxed.
+
+Rebuilt scripted setup and exact native Reviewer payload passed under the current
+production suite. Seed/draft text and approved policy match probe-001; CLI metadata,
+derived identities and checked wrapper differ. Prior live evidence is unchanged.
+Automatic approval review rejected the launch because the replacement frozen
+payload/CLI were not explicitly approved. No provider call or supervisor started.
+Replacement authorization reset to false; explicit approval required, not a bypass.
+Evidence: `rounds/vnext-18-9-q4-history-probe-002/`. Q4 remains open.
+
+### Targeted probe authorization preflight blocked — 2026-10-25
+
+User explicitly approved the one-call probe-001 payload/window. All frozen source,
+run and payload files matched, but the installed CLI executable changed from
+0.163.0-alpha.11.2 to 0.164.0-alpha.11.1. Preflight stopped before any provider call;
+the old manifest was not repinned or bypassed.
+
+Replacement staging at `rounds/vnext-18-9-q4-history-probe-002/` preserved a local
+copy of the full signed CLI app bundle to avoid future app-update drift. The bundle
+runs local debug prompt rendering, but the existing strict nested-skill isolation
+check fails under this version. No isolation relaxation or live launch occurred.
+The replacement has no completed setup run, frozen live manifest or transferred
+provider authorization. Investigate injected skill context and supported suppression
+before proceeding. Q4 remains open; prior probe and live evidence are preserved.
+
+### Targeted history probe prepared — 2026-10-24
+
+Prepared `rounds/vnext-18-9-q4-history-probe-001/` locally using the production
+consumer suite and approved Q4-014 seed. Scripted finding, supported operator
+binding of the already-approved manual policy, scripted Editor and semantic
+Verifier pass through actual registration/verification/promotion owners. Setup
+completed in 87.075s with zero providers, promotion ordinal 1 and one historical
+decision. This is deliberately scripted setup, not live semantic qualification.
+
+The exact native round-2 Reviewer prompt/schema are frozen and hash-bound; they
+contain the original decision request/response/base and selected promotion link.
+One live Sol 6.1 medium Reviewer invocation is proposed, no repair transmissions
+or follow-on work, with a 600-second call timeout and 1800-second supervised cap.
+Authorization remains false. Unauthorized launch refuses; all prior run hashes
+match. No runtime change, commit or push. Assess live interpretation separately
+from deterministic delivery and do not claim Phase 2 or fully live chain coverage.
 
 ### Q4-014 Phase 1 completion — 2026-10-24
 
