@@ -2500,3 +2500,47 @@ its classifications after consumption under D8; existing suites remain unchanged
 Interrupted attachment recovery is a separate finite recovery row. The
 [Q1 implementation handoff](docs/VNEXT_18_9_Q1_IMPLEMENTATION.md) retains the
 acceptance inventory and verification limits. Q1 is not yet complete or activated.
+
+## Proposed Declarative Profiles And Workflows
+
+**Status: draft specification for review, 2026-10-31; no implementation or
+activation authorized.** The [bounded draft](docs/DECLARATIVE_PROFILES_AND_WORKFLOWS_DRAFT.md)
+records the operator-requested direction: reusable declarative lens definitions,
+separate bounded workflow configuration, validated resolution/compilation,
+independent step identities and immutable effective inputs for continuation.
+It is not a new normative owner or a reopening of the completed 18.9 Q1–Q4 scope.
+
+Current code still uses built-in registries/sets, name/position-sensitive Phase 2
+gates, whole-vocabulary pins and route-specific reconstruction/rechecks. The
+draft records those gaps rather than claiming the scheduler already makes every
+consumer extensible. Existing jobs, frozen contracts, released qualification
+maps, legacy/bridge behavior and unrelated runtime-distribution work are preserved.
+
+Proposed finite delivery boundaries, all unstarted: **D1** offline strict data
+resolution/compiler and fixtures; **D2** frozen plans and continuation compatibility;
+**D3** reviewer-only consumer integration, with grouped assessment withheld until
+its policy is decided; **D4** sharpening adapters and conservative rechecks;
+**D5** separately qualified preservation/Phase 2 integration. See the draft's
+[delivery table](docs/DECLARATIVE_PROFILES_AND_WORKFLOWS_DRAFT.md#13-bounded-implementation-slices--proposed-not-authorized)
+for complete deliverables and stop boundaries. Selective reuse is deferred.
+
+Product decisions remain open: all-edit recheck cost; custom required-set/full
+stability admission; broader Phase 2 sequences; execution/budget defaults; and
+grouped-audit consolidation/failure/recovery policy. Technical defaults in the
+draft are proposals, not ratified policy. The [selected-lens requirements](notes/future-improvements.md#selected-lens-reviewer-only-audits-and-consolidation)
+and [audit-objectives proposal](#proposed-audit-change-objectives-release) retain
+their own status and scope; shared definition work does not approve either's
+unresolved mechanics.
+
+Next: review the draft and essential choices, then explicitly select D1 if
+implementation is desired. This specification checkpoint calls for local
+document/example/link checks only; no runtime edits, live review, dependency
+installation, commit, push, deployment or stable promotion.
+
+Local draft review revision (2026-11-02): the proposal now specifies portable
+whole-draft built-in dependencies; explicit step prerequisite edges and compiled
+completion obligations; active-phase invalidation with retained historical
+Phase 1/verified-entry evidence; and retained audit/phase call/time windows
+separate from invocation caps. Added proposed acceptance cases for those four
+boundaries. These are specification clarifications only, not ratification,
+implementation, runtime qualification or resolution of the open product choices.

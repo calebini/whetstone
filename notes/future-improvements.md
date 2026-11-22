@@ -2,6 +2,28 @@
 
 This note captures useful ideas that are not required for the next narrow build step, but should not be lost.
 
+## Reviewer Identity And Execution Provenance
+
+Future patch, recorded 2026-09-27.
+
+Reported discrepancy: an `audit-change` invocation passed `--model gpt-5.6-sol`, correctly recorded in `audit_manifest.json`, while the generated feedback reported `reviewer.model: "gpt-5"`. Validation accepted the mismatch because the reviewer identity fields only require non-empty strings; they are not checked against the invocation. This discrepancy alone does not establish that the wrong model ran.
+
+Required changes:
+
+- Make runner-recorded invocation identity authoritative for canonical reviewer metadata, including client name, version, and requested model. Model-generated identity must not override it.
+- Preserve the original model self-reported identity separately, with its source clearly labeled, so normalization does not erase the discrepancy.
+- Compare the self-report with the runner-recorded identity and persist a structured mismatch flag with the differing fields and both values. Surface it in the audit report as a provenance warning, without claiming that a label mismatch proves execution by a different model.
+- Persist execution telemetry for each audit attempt, including failures: invocation identity, timestamps/duration, exit status, and available client/provider session or request identifiers, reported model metadata, usage, and raw diagnostic references. Bind telemetry to the attempt and its feedback/manifest so provenance checks can trace the evidence. Reuse existing client telemetry machinery where possible.
+- Keep requested model, model self-report, and any model identity reported by client/provider telemetry distinct. Mark unavailable execution evidence explicitly; do not infer the actual served model from the requested label or generated prose.
+- Update affected schemas and consumers together so the separate self-report and mismatch diagnostics survive validation and reporting.
+
+Regression acceptance criteria:
+
+- Add a deterministic test in `tests/test_change_audit.py` with runner identity `gpt-5.6-sol` and otherwise valid feedback self-reporting `gpt-5`. Assert canonical identity remains `gpt-5.6-sol`, the original `gpt-5` label is retained separately, a mismatch is persisted and surfaced, and execution telemetry is persisted and linked to that attempt.
+- Cover matching labels without a false mismatch, and unavailable telemetry without inventing execution evidence. Verify failure paths retain available telemetry.
+
+Implementation starting points: `src/whetstone/change_audit.py`, reviewer validation in `src/whetstone/live.py`, telemetry capture in `src/whetstone/clients.py`, and `contracts/schemas/reviewer_feedback.schema.json`. Apply the same authority rule to shared reviewer paths as appropriate.
+
 ## Current Priority Read
 
 This is a living priority read, not a binding implementation plan. It captures the current judgment from recent Whetstone usage across Foreman, Parley, and Whetstone's own decomposed specs.
@@ -539,3 +561,549 @@ Open design questions:
 - Should Job 1 produce a revised scope-contract proposal automatically, or only a recommendation?
 - Should `run-job` create separate run roots for survey and sharpen, or encode lineage inside one higher-level job directory?
 - Should a vertical survey ever proceed directly to Phase 2 if it reaches Phase 1 stable, or should first-contact jobs always stop for operator review before Phase 2?
+
+
+## Selected-Lens Reviewer-Only Audits And Consolidation
+
+Requirements direction captured 2026-10-31 from explicit operator instruction.
+**Status: requirements captured; mechanics are open.** This records the feature
+direction only, not approval of mechanics, implementation, spec ratification, a
+live review or a new release.
+It does not reopen verified-promotion qualification, change its storage contract,
+or add work to that initiative. Existing work and single-lens audits are preserved.
+
+### Requested behavior
+
+- One bounded reviewer-only audit accepts an explicit selected set of profile
+  lenses, including the existing single-lens case. It must not silently expand
+  the selection to every profile or require the operator to manage separate audit
+  invocations. No new profile names or automatic lens selection are approved.
+- Each selected lens receives its own independent Reviewer pass against the
+  same frozen specification inputs, audit intent and scope. Do not combine all
+  lenses into one prompt. A lens pass must not be conditioned on findings from
+  another lens; how independent client contexts are enforced remains to be defined.
+- After the lens passes, one consolidation stage for that audit round produces
+  one complete bounded assessment and actionable findings list. Here, audit
+  round means this grouped audit assessment, not a Phase 1/Phase 2 scheduler round.
+- Merge duplicate findings while retaining distinct concerns, their evidence,
+  scope and recommended actions. Preserve every original review and maintain
+  traceable attribution from each consolidated finding to its source findings
+  and lenses. Every source finding must remain accounted for: no silent omission,
+  including out-of-scope findings, and no destructive rewriting of original reviews.
+  Source identities must be distinguishable even if separate passes reuse a
+  local feedback ID; the concrete identity/reference shape is not yet chosen.
+- Surface disagreements explicitly, including incompatible claims, scope
+  interpretations, recommended actions and severity judgments. Reviewer agreement
+  is corroborating context, not proof of correctness, completeness or preservation.
+- Preserve failed, invalid or incomplete per-lens outcomes and the consolidation
+  stage's own status. Retain available failed/invalid responses and diagnostics
+  as labeled evidence, without treating them as valid reviews. A report may
+  expose useful partial findings, but must not
+  present a partial audit as a complete bounded assessment or a clean pass.
+  Execution completion, assessment content and semantic confidence are distinct.
+- Make separate Reviewer calls/attempts and their costs visible, along with any
+  consolidation calls. Retain attributable timing, model/client provenance and
+  available usage/cost information; mark unavailable measurements explicitly.
+  Do not hide extra calls behind a single apparent review or infer served-model
+  identity/cost from model-generated prose.
+- Keep the workflow bounded and reviewer-only: no automatic Editor, source
+  rewrite, apply-back, Phase 1/Phase 2 admission or convergence claim. Existing
+  single-lens audit behavior remains supported. No extra review rounds or
+  repeat-until-agreement loop is implied. This capture does not change its
+  schemas, findings/severity-derived verdicts or failure behavior.
+
+### Fit with inspected machinery
+
+- [Current audit owner](../src/whetstone/change_audit.py):
+  `run_change_audit` takes one `profile`, reads the notes/specs, builds a
+  self-contained brief/manifest, invokes one Reviewer and writes feedback plus
+  JSON/Markdown reports under `change_audit/`. It already preserves valid
+  out-of-scope feedback separately from verdict counts and reports Reviewer
+  failure as `audit_failed`. This is the natural workflow seam to investigate;
+  repeated calls to it are not an implementation of the requested feature.
+- The [CLI](../src/whetstone/cli.py) currently has a scalar `--profile` defaulting
+  to `consistency`, required notes and repeated spec inputs. Each owner invocation
+  reads source files again and writes fixed artifact paths. Running it once per
+  lens against one root could overwrite prior evidence and does not establish a
+  shared frozen input set. Its brief includes the profile and its hashes use
+  normalized text; the design must distinguish common frozen input identity
+  from per-lens brief/prompt identity rather than require identical prompt hashes.
+- [Diagnostic sweep](../src/whetstone/diagnostic_sweep.py) supplies a related
+  reviewer-only per-profile pattern with retained round feedback, source-profile
+  attribution, clusters and telemetry totals. It uses configured Phase 1 profile
+  sets and a recommendation report. That is useful implementation context, not
+  the requested selected-lens audit contract or a consolidation/provenance policy.
+- The matching [scope owner](../docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#change-audit-workflow)
+  and [Quickstart](../docs/OPERATOR_QUICKSTART.md#run-a-lightweight-change-audit)
+  document the current one-profile audit. The
+  [existing audit-objectives proposal](../IMPLEMENTATION_PLAN.md#proposed-audit-change-objectives-release)
+  is explicitly unratified and unimplemented. Coordinate any later artifact and
+  version definitions with it; selecting multiple lenses does not approve that
+  proposal or equate lens agreement with objective assessment coverage.
+- [Existing audit tests](../tests/test_change_audit.py) cover one Reviewer prompt,
+  report/artifact generation, failed review and out-of-scope severity handling.
+  They are inspection evidence, not passing multi-lens qualification or tests run
+  during this requirements-only capture. The earlier
+  [identity/provenance direction](#reviewer-identity-and-execution-provenance)
+  is adjacent tracking for cost/provenance design, not an implicit authorization
+  to implement or expand it here.
+
+### Open decisions — not approved mechanics
+
+1. **Consolidation mechanism and model:** deterministic grouping, model-backed
+   synthesis or another bounded mechanism; model/role selection if needed;
+   evidence access; duplicate-versus-distinct criteria; how any consolidation-only
+   concern is distinguished from an original finding; and the single-lens path
+   without assuming a mandatory extra model call.
+2. **Severity and disagreement treatment:** preserve source severities and scope
+   judgments, but decide consolidated severity/verdict rules and how unresolved
+   conflicts affect the bounded assessment. Neither maximum severity, averaging,
+   majority voting nor a deciding model is selected by this capture.
+3. **Failure and recovery policy:** behavior when a lens fails, is invalid, times
+   out, is cancelled or exhausts budget; whether/when consolidation of partial
+   results is allowed; explicit continuation/retry authority; preserving earlier
+   successes; interruption during consolidation/publication; and conditions for
+   declaring the selected audit complete. Partial results can never be mislabeled
+   complete regardless of the chosen policy.
+4. **Order and concurrency:** serial versus parallel execution, resource limits,
+   independent context boundaries and deterministic attribution. No parallel
+   writers, distributed execution or new storage backend is approved.
+5. **CLI/config and artifact shape:** lens-selection syntax and validation,
+   shared snapshot/scope binding, per-lens/attempt namespaces and stable references,
+   report/result/schema versioning, reentry and compatibility with current v1 and
+   the separate objectives proposal. No new flag, enum, artifact path or schema
+   name in this feature has been ratified.
+6. **Budgets:** finite audit-wide and per-lens limits, consolidation and retry
+   allowances, wall time, tokens/cost where observable, cancellation and reporting
+   of exhausted/unknown amounts. No numeric limits, model or automatic retry
+   allowance is selected.
+
+### Smallest next definition step
+
+Prepare one bounded audit-extension decision brief, before coding or normative
+amendments. Define the input-freeze/completion boundary and a minimal provenance
+and reporting sketch; present concrete choices for the six open decisions above.
+Use three small illustrative cases: duplicate plus distinct findings, an explicit
+severity/claim disagreement, and one failed or incomplete lens. Show where every
+original finding/outcome appears in the assessment and how calls/costs and
+incompleteness remain visible. Keep single-lens compatibility explicit and
+coordinate artifact ownership with the existing objectives proposal. These are
+paper examples for definition, not permission to invoke models or build a broader
+review, orchestration or verified-promotion redesign.
+
+## Declarative Profile Lenses And Configurable Workflows
+
+Direction and local assessment captured in the
+[bounded draft specification](../docs/DECLARATIVE_PROFILES_AND_WORKFLOWS_DRAFT.md),
+2026-10-31. **Draft for review only; implementation and proposed mechanics are
+not approved.** The [implementation-plan proposal](../IMPLEMENTATION_PLAN.md#proposed-declarative-profiles-and-workflows)
+owns the proposed finite delivery sequence; this note is not another checklist.
+
+Use data-defined, exactly versioned lenses discovered from configured local
+locations, with separate workflows selecting steps, order, finite budgets,
+supported repeats/skips and edit-triggered rechecks. Repeated lens occurrences
+need independent step identities. New jobs freeze selected effective definitions
+and plans for resume; installed definition changes must not silently alter them.
+New engine capabilities, typed phase/terminal gates, rubric requirements and
+preservation remain engine-owned. Old jobs/contracts and current V qualification
+remain intact.
+
+The draft recommends strict deterministic resolution, no collision overrides,
+job-local snapshots and initially conservative rechecks after all accepted edits.
+Current selective-invalidation helpers are not operationally wired. Replacing
+name/position-based Phase 2 logic and whole-vocabulary coupling requires new
+versioned consumers and qualification, not just new prompt files.
+
+Shared definitions serve single/multiple lens audits and sharpening loops without
+equating their completion claims. The
+[selected-lens audit requirements](#selected-lens-reviewer-only-audits-and-consolidation)
+above remain preserved. Consolidation mechanism/model, severity conflict handling,
+failure/recovery, execution order/concurrency and final budget/CLI/artifact policy
+remain open; this draft does not approve or implement grouped consolidation.
+
+Local review revision, 2026-11-02: the draft resolves four technical gaps with
+portable whole-draft built-ins, explicit prerequisite/completion records,
+phase-scoped rechecks and retained execution-window semantics. Historical
+anchors, prior-phase evidence, entry verification and existing job contracts
+remain preserved. These remain proposed mechanics; product decisions and
+implementation authorization are separate.
+
+
+## Verified Promotion: Phase 1 Policy Independence And Final Human Review
+
+Discussion captured 2026-11-22. **Future design direction only; no implementation,
+contract changes, runtime default change or bridge deprecation is authorized by
+this note.** This item concerns compatibility of verified promotion with
+existing workflows, not creation of configurable workflows. The separate
+[Declarative Profile Lenses And Configurable Workflows](#declarative-profile-lenses-and-configurable-workflows)
+proposal is related architectural context, not a prerequisite or an expansion
+of this item's scope. Reuse the promotion machinery rather than create an engine
+per workflow.
+
+### Separate Phase 1 review policy from change acceptance
+
+Investigate making verified promotion reusable across Phase 1 review policies,
+including MVP, exploratory, governance and custom selections. Review purpose and
+criteria should be conceptually separate from candidate preservation, semantic
+verification and promotion. The operator considers Phase 2 a distinct concern;
+this item does not require generalizing Phase 2 at the same time.
+
+Operator priority clarified 2026-11-22: MVP is the most frequently used workflow;
+standard applies more review rigor than desired for those jobs. Prioritize MVP
+compatibility, with the intended direction that every otherwise supported review
+workflow can use verified promotion. Do not require switching to standard to gain
+preservation and semantic verification. Preserve each workflow's scope, review
+pressure and completion meaning. This is important new-job capability work,
+not merely optional configurable-workflow polish. Other existing workflows
+remain in scope for compatibility assessment; it is not permission for arbitrary
+unvalidated execution or a claim of current support.
+
+Static inspection found reusable candidate/semantic machinery, but broader
+workflow support is not merely untested: `vnext_verified_cli.py`,
+`vnext_verified_review.py`, `vnext_verified_review_protocol.py`,
+`vnext_verified_vertical_phase1.py` and `vnext_review_configuration.py` impose
+standard-workflow restrictions. Phase 2 separately pins standard workflow and
+rubric through schemas and `vnext_verified_phase2_binding.py`. Existing tests
+assert refusals. Recognizing workflow names in admission structures does not
+establish executable support.
+
+Next definition step: distinguish first-release qualification restrictions from
+real workflow-dependent scheduling, scope, prompt, evidence and completion
+semantics. Propose a shared policy boundary and the minimum versioned changes
+and qualification needed for Phase 1. Do not merely remove guards, loosen frozen
+contracts, or assume end-to-end support. Preserve existing job identities and
+recovery behavior. No runtime tests or alternate-workflow execution were performed
+for this discussion.
+
+
+
+### Separate follow-up: qualification limits versus architectural coupling
+
+Record a future investigation after the current operator-experience exercise.
+Do not run that campaign as part of this discussion or assume a refactor is
+needed. Static inspection establishes explicit restrictions, but does not settle
+whether they are prudent qualification boundaries, removable release-specific
+coupling, or symptoms of deeper architectural separation problems.
+
+Trace the boundaries between review policy/profile configuration, scheduling,
+candidate preservation, semantic verification, promotion, evidence invalidation
+and phase completion. Classify each restriction by its actual dependency and
+qualification evidence. Use existing MVP and profile-set selections as concrete
+cases: can they consume the shared promotion contract through policy inputs,
+without workflow-specific changes inside preservation/promotion? Distinguish
+necessary scheduler integration after an accepted revision from accidental
+workflow-name coupling. Inspect before prescribing a centralized gate or other
+replacement architecture.
+
+Deliver an evidence-backed assessment identifying qualification-only work,
+missing behavior, any justified targeted refactoring, and unresolved questions.
+Estimate implementation only after that assessment; preserve existing contracts
+and runtime gates until separately authorized changes are designed and qualified.
+Phase 2 may have genuinely distinct requirements and need not be generalized
+alongside Phase 1. This campaign is separate from the immediate documentation,
+skill and staging-ergonomics proposals.
+
+Horizontal, vertical and focused Phase 1 routes are covered for the qualified
+selection. No concrete missing alternative route was identified; do not carry
+forward a speculative "arbitrary alternative routes" gap.
+
+### Phase 1 profile-set compatibility
+
+Direction clarified 2026-11-22: extend verified promotion to existing supported
+Phase 1 profile sets by generalizing and qualifying the existing mechanism,
+not by implementing a promotion engine per set. This is distinct from inventing
+new configurable profiles and complements the existing-workflow compatibility
+work above.
+
+Profile sets are presets of profile sequences and default budgets. In the current
+vocabulary, `balanced_mvp` uses the same Phase 1 profiles as `stateful_system`
+with lower default budgets; `utility_mvp` selects buildability, consistency,
+light determinism and light operability profiles. These are not all merely
+budget aliases.
+
+Static inspection found that verified Phase 1 sequencing and closeout largely
+consume configured profile lists. However, `vnext_verified_cli.py` explicitly
+requires `stateful_system`; other sets are not currently supported merely because
+their definitions exist. Assess the public restriction and any associated
+schema, contract, profile classification, prompt and completion assumptions.
+Validate selected sets through review, editing, semantic verification, promotion
+and Phase 1 completion, including supported horizontal/vertical/focused routes
+and refusal cases as applicable. Preserve frozen job identities and existing
+qualification boundaries; do not simply remove the guard and claim support.
+
+Implementation effort is not yet sized. No alternate-set execution or new test
+qualification was performed for this capture. Phase 2 profile-set compatibility
+remains a separate assessment rather than an implied deliverable of this item.
+
+### Optional final human semantic review
+
+Agreed direction: retain internal candidate verification throughout verified
+promotion, with an explicit option for human semantic review of the accumulated
+changes against the starting specification before source adoption. Keep review
+of meaning distinct from source-write authorization. Final review is not the
+same assurance as operator attestation before each accepted revision; determine
+whether any per-change human-evidence use case must also be retained.
+
+This is a possible step toward eventual preservation-bridge retirement, not a
+current deprecation decision. Consider verified promotion the preferred design
+direction for supported new protected-editing jobs, while retaining existing
+bridge jobs and explicitly justified exceptions. The bridge's mechanical-or-
+operator-attested evidence policy is a substantive distinction from model-based
+semantic verification. Fewer interruptions or better outcomes have not been
+measured.
+
+Preparation should infer document purpose, authority, expected depth and permitted
+change from operator intent and project evidence, with clarification for material
+ambiguity. HLDs, leaf specs and machine contracts are examples, not a mandatory
+naming scheme or hierarchy. Protect explanatory rationale and nuance where those
+serve the document's purpose; do not assume technical requirements exhaust what
+matters. Start with skills, documentation and worked examples rather than a new
+deterministic preparation subsystem.
+
+
+## Verified Promotion: Portable Storage Option Assessment
+
+Future investigation captured 2026-11-22; separate from the current operator-
+experience exercise and review-policy compatibility work. No storage-contract
+change, guard bypass or implementation is authorized by this capture.
+
+The operator considers the current canonical physical-root binding and qualified
+local macOS/APFS restriction too demanding for ordinary usage. Evaluate an
+optional storage approach closer to the preservation bridge's model: confined
+run artifacts, writer exclusion, immutable evidence and durable publication,
+without assuming the same physical-directory binding and platform restriction
+are necessary for every verified-promotion job.
+
+Compare actual mechanisms and guarantees rather than treating the bridge as
+already portable or fully qualified on other filesystems. Identify which strict
+requirements serve accidental-concurrency protection, crash consistency,
+identity/replay integrity or other threats, and which are qualification limits.
+Assess a versioned storage-policy/backend boundary and explicitly state any
+changed guarantees. Evaluate relocation/copy/reopen semantics, supported local
+filesystems and recovery behavior rather than promising portability by dropping
+checks. Preserve existing physically bound jobs under their current contract;
+any alternative requires its own design, qualification and explicit selection.
+
+Desired outcome: an evidence-backed recommendation on whether a less restrictive
+storage option can meet normal operator needs, its trade-offs and implementation
+scope. This is an open option to assess, not a conclusion that existing durability
+or identity checks are unnecessary.
+
+
+## Operator Surface: Staging Guidance Refinement Inputs
+
+Agreed discussion inputs, 2026-11-22. Capture for later documentation and skill
+refinement; this note does not implement that refinement. Keep this packaging
+work separate from future verified-promotion compatibility, architecture and
+storage investigations above.
+
+- Distinguish job outcome (assessment versus stabilization), review expectations
+  (workflow/profile set), editing boundaries, semantic verification preference,
+  and runtime eligibility. These are related choices, not interchangeable modes.
+- Infer preparation choices from operator intent and existing project evidence.
+  Present material assumptions; ask only about consequential ambiguity. Do not
+  require a document taxonomy or ask operators to classify every line.
+- Prefer the question "Which parts are settled decisions, and which remain open
+  to design changes?" over the loaded preserve-versus-rethink question. Respect
+  for operator intent is assumed. This answer defines boundaries for either
+  guarded editing mechanism; it does not select the mechanism itself.
+- Explain that bridge semantic preservation evidence can require exact operator
+  attestation, whereas verified promotion uses a separate semantic Verifier.
+  Neither grants permission for unauthorized requirement changes. Do not imply
+  every bridge edit pauses or that fewer verified-mode interruptions are proven.
+- Check the complete combination against the selected installed runtime before
+  launch. Distinguish workflow names from profile-set names. Explain an MVP /
+  verified-promotion incompatibility as an unavailable combination of review
+  policy and verification mechanism, not as inability to preserve MVP content.
+- Offer concrete supported alternatives without silently switching to standard,
+  broadening scope, dropping protection or fabricating attestations. Bridge
+  support for any proposed combination must also be verified, not assumed.
+- Keep the bridge available where needed today. Verified promotion is a preferred
+  future direction for supported new protected-editing jobs, not an unconditional
+  current default; no bridge deprecation decision has been made.
+- Explain the bridge journey: agent prepares exact boundaries and bindings;
+  operator sees concrete before/after effects when attestation is required;
+  agent handles local acceptance and supported continuation. Reuse authority
+  within its actual scope without automatically rebasing changed bindings.
+- Separate data-sharing authority, execution permission, effect acceptance and
+  source apply-back. Selecting enforcement does not approve unseen rewrites.
+- Use version-consistent docs and worked examples before proposing a universal
+  deterministic preparation subsystem. The original feedback concerned staging;
+  alleged live-run defects and expensive troubleshooting are not established by
+  that experience. Documentation confusion was independently observed.
+
+Remaining walkthrough areas include functional scope/depth, review scheduling
+and budgets, client/execution preparation, validation/readiness, and monitoring
+and continuation handoffs. Continue the discussion before treating the complete
+operator journey as specified.
+
+
+### Scope intake: purpose, minimum content and clarification discipline
+
+Operator feedback, 2026-11-22: during staging, scope notes accumulated definitions
+and prescriptions that the operator considered outside scope intake's purpose.
+Clarify this in the agent skill and operator guidance; do not turn intake into a
+second specification-authoring exercise.
+
+Proposed guidance for refinement:
+
+- Scope intake directs this review: intended outcome, consumers, in-scope flows
+  and surfaces, exclusions/deferrals, appropriate depth, expansion boundaries,
+  and a concrete stopping criterion. Keep content proportionate to the job.
+- Refer to existing specification definitions instead of duplicating them.
+  Record established constraints when they bound the review, but do not invent
+  architecture, APIs, schemas, failure policies or new requirements in order to
+  fill scope fields. Technical terms are appropriate when identifying a boundary;
+  unnecessary technical prescription is the problem.
+- Distinguish a review-depth decision (for example, specify failure categories but
+  defer exhaustive error codes) from a product decision about what failure
+  behavior must be. Intake should not silently settle the latter.
+- Infer routine scope from operator intent and project guidance, showing material
+  assumptions succinctly. Ask when ambiguity changes what the run may review,
+  expand, defer or consider sufficient; do not ask exhaustive design questions
+  just to complete the notes.
+- Leave in-scope unresolved design questions for the review where appropriate.
+  Escalate upfront only when their answer is needed to establish the job boundary
+  or required authority. Unknown design details need not all block staging.
+- Include concise positive/negative examples and explain how approved scope
+  constrains review pressure. Verify the guidance against current intake schema
+  and compilation behavior before implementation; no schema change is implied.
+
+
+### Proposed operator-guide wording: select a review schedule
+
+Draft captured 2026-11-22 for the later operator-guide refinement. This is a
+recommendation policy, not a change to runtime defaults or scheduler semantics.
+
+Recommend **vertical review** as the starting choice for broad, interconnected
+sharpening. Multiple configured lenses review the same draft, followed by a
+consolidated Editor operation when correction is needed. This lets the Editor
+consider interacting findings together. Early-stage specifications often fit
+this pattern, but project age alone does not determine the schedule.
+
+Recommend **horizontal review** when there is a concrete dependency sequence:
+resolving one lens's concerns materially improves the draft that later lenses
+should inspect. Explain that dependency briefly rather than claiming horizontal
+review inherently resolves stubborn blockers better.
+
+Recommend a **focused review** when the question is isolated to one supported
+profile. Focused stability does not establish full Phase 1 stability or Phase 2
+eligibility. A missing product decision needs operator input, not a scheduling
+change. Verify the selected mode's supported route and immutable configuration
+requirements before preparing it.
+
+The operating agent should propose the schedule from the job's concerns and
+explain its reason in one sentence. Ask for clarification only when uncertainty
+would materially change scope, work or outcome. Vertical is a suggested starting
+point, not a demonstrated universal optimum or a silent override of an explicit
+operator choice.
+
+Explain budgets separately from schedule selection. Distinguish profile-review
+passes, consolidated Editor operations, complete review/edit cycles and persisted
+round identifiers; do not imply a round number counts cycles or model calls.
+Document the selected mode's actual exhaustion and continuation behavior rather
+than deriving it from the horizontal/vertical label alone.
+
+Scope-intake guidance placement also confirmed: the operator guide should explain
+prompt effects versus structured admission/finding-handling effects, expected
+notes headings and inspection of the compiled contract. The agent skill should
+reference that shared explanation rather than duplicate a drifting account.
+
+
+### Remaining operator-refinement inputs: defaults, readiness and handoff
+
+Discussion consolidated 2026-11-22. Enough product direction has been gathered
+for a documentation/skill revision; implementation has not begun.
+
+- Budgets: the agent recommends a bounded allowance using the selected preset
+  and job complexity, summarizes it and proceeds within existing authority.
+  Do not routinely ask the operator to select round counts. The operator prefers
+  more iteration and fewer budget check-ins; no numeric larger default has been
+  chosen. Ask about conflicts with explicit time/cost limits or extensions beyond
+  actual authority. More review budget does not eliminate required semantic or
+  product decisions; review allowances are not model-call or spending caps.
+- Model selection: explicitly include model and reasoning effort for Reviewer,
+  Editor and Verifier where applicable, alongside client choice. Prefer retained
+  role-specific defaults and show resolved choices in the staging summary.
+  Explain task-driven deviations and verify client support. No models or efforts
+  were selected in this discussion. Verify implementation support rather than
+  claiming configuration-only changes suffice: the inspected legacy Codex client
+  helper currently hard-codes medium reasoning effort; verified role settings
+  must be checked separately. Any required code change should be identified as
+  such, not hidden in documentation.
+- Readiness: validate explicit inputs, scope, protection bindings, supported
+  combinations, client/model settings and allowances locally using supported
+  checks. Separate local validation from provider execution. Provide a concise
+  handoff describing the intended work, permitted edits, limits and unresolved
+  requirements. Do not duplicate authorization already supplied within scope.
+- Monitoring/handoff: use evidence-backed status explaining the current
+  operation, draft/profile/cycle where known, consumed/remaining allowance,
+  required operator decision and exact permitted next action. Distinguish
+  workflow state from process liveness, and expected pending output from missing
+  committed evidence. Keep detailed diagnostics available. These are proposed
+  reporting principles, not claims that the original staged job exposed a live
+  status defect. Validate any suspected code defect before proposing a fix.
+- Completion: distinguish assessment delivery, Phase 1 stability, focused
+  stability, residual issues, convergence and source adoption. Reports should
+  state actual outcomes and next options without forcing the operator to read
+  every artifact.
+
+### Deferred separately: execution approvals and bounded delegation
+
+Repeated nested-client execution approvals during audit/edit/resubmit loops and
+more autonomous Phase 1 decision delegation warrant a separate investigation.
+The operator explicitly parked this topic to avoid expanding the current surface
+refinement. Diagnose actual prompt origin before proposing reusable execution
+permission; distinguish host permissions, provider/input authorization, semantic
+attestations, task delegation and source writes. No permission settings, reusable
+rules, blanket auto-approval, or human-attestation bypass were approved or changed.
+For the immediate guide, explain the applicable approval and reuse existing
+in-scope authorization rather than adding redundant confirmation.
+
+
+### Refinement deliverable: ship a portable Whetstone agent skill
+
+Added to the planned operator-surface refinement on 2026-11-22 at the operator's
+request. Reuse and refine the existing locally installed `whetstone-runner`
+package rather than inventing an unrelated skill. Inspection found no personal
+filesystem paths in its main file or supporting references, but its current
+preservation routing defaults to the bridge and needs the capability-aware
+selection guidance agreed above.
+
+Include the canonical skill, its supporting references and appropriate agent
+metadata in the repository, with clear installation/discovery instructions.
+Choose the repository location during refinement; do not assume file presence
+makes every agent load it automatically. Align examples, scope intake, scheduling,
+budget/model defaults, authorization and readiness guidance with the matching
+operator documentation and the selected runtime's actual capabilities. Prefer
+shared explanations over duplicated, drifting policies.
+
+Keep machine-local installation paths and personal preferences outside the
+portable package. Determine how the local installed copy consumes or is updated
+from the repository-owned version without creating two independently maintained
+sources. Do not overwrite pinned runtime installations or change runtime release
+selection merely to distribute documentation and skills. Identify any necessary
+runtime changes separately. This records a deliverable for the future refinement;
+no skill has yet been copied, modified, installed or published by this discussion.
+
+
+## Independent Multi-Model Review Experiment
+
+Idea captured 2026-11-22. Future experiment only; no model calls, provider
+integration or parallel execution authorized by this note. Distinct from the
+selected-lens audit proposal: this tests multiple model perspectives on the same
+lens, rather than multiple lenses alone.
+
+Start with two models independently reviewing the same frozen inputs, scope and
+lens. Neither receives the other's findings. Use separate retained audit outputs
+and explicit provider/input authorization. The operating agent and operator then
+compare overlaps, useful unique findings, false positives and disagreements
+before editing. Record attributable cost/usage where available and elapsed time;
+measure value against a single-reviewer baseline rather than assume diversity
+improves outcomes.
+
+Parallel execution and automatic Editor synthesis are possible later extensions,
+not prerequisites for the experiment. Preserve source attribution and unresolved
+conflicts; reviewer agreement is not proof and the Editor must not silently decide
+conflicting product requirements. Evaluate existing supported transports first;
+mentioning another provider does not establish an implemented adapter.
