@@ -1,5 +1,11 @@
 # Whetstone Operator Quickstart
 
+Start with the [operator guide](OPERATOR_GUIDE.md) for job selection, staging,
+protection choices, budgets and reporting, or the [worked examples](OPERATOR_EXAMPLES.md).
+This page retains advanced mode-specific commands and recovery procedures.
+Match them to the executing runtime; historical checkpoint documents and future
+design proposals do not advertise additional supported commands.
+
 This guide is for running Whetstone against an existing spec document, especially a spec that lives in another repo.
 
 Use an isolated run root and inspect the results before separately approving source apply-back. For legacy/bridge workflows, copy the source spec into the run directory as `spec.md`. For V, prepare the seed in an external input package and let fresh-root admission create the destination as described below.
@@ -439,7 +445,7 @@ YAML
 
 Live Whetstone runs often spawn a second CLI process, such as `codex exec`, from inside the agent that is driving the job. That is a nested-client run. The outer agent sandbox can block the inner Codex CLI from reading its own session files under `~/.codex/sessions`, even when the inner Codex invocation is configured with its own read-only sandbox.
 
-For live runs that invoke Codex or Claude Code clients, tell the driving agent to request the necessary execution approval before running `live-phase1`, `live-phase2`, `live-focused-phase1`, `reviewer-smoke`, or `editor-smoke`. Do not make a first sandboxed attempt "just to see." A sandbox-denied nested client commonly halts as `HALTED_ARTIFACT_INVALID`, is often non-resumable, and wastes a run root without producing semantic signal.
+For live runs that invoke Codex or Claude Code clients, establish the execution permission needed by the selected environment before launching. Reuse applicable existing authorization; request only a genuinely missing permission. Do not make a sandboxed attempt when a known session-access restriction will prevent the client from starting. Such a failure is infrastructure failure, not review evidence; inspect the actual status and supported recovery rather than assuming a generic resume is available.
 
 Copy/paste operator instruction:
 

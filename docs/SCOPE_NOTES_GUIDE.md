@@ -14,6 +14,53 @@ Answer these questions before generating a scope contract:
 6. What should reviewers avoid expanding?
 7. What counts as good enough for this run?
 
+## What scope intake does
+
+Scope intake directs the review; it does not define the system on the operator's
+behalf. The operating agent should infer a concise proposal from intent and
+existing guidance, then ask about ambiguity that changes the boundary, authority
+or stopping condition. Do not resolve every in-scope design question before the
+review; some questions are the reason for running it.
+
+| Include | Avoid unless already an explicit constraint |
+| --- | --- |
+| Review failure categories; defer exhaustive error codes. | Invent five error codes and a retry algorithm. |
+| Clarify component responsibilities while preserving architectural rationale. | Turn explanatory prose into a new schema or remove it as non-normative noise. |
+| Make the import/report flow implementable without adding scheduling. | Prescribe a new background worker to make the scope sound complete. |
+
+Reference existing definitions rather than repeat them. Document names do not
+establish their purpose: a design note can be authoritative, and one document
+can contain explanatory and machine-facing sections with different depth needs.
+
+Scope has two consumers. Reviewer and Editor prompts use its meaning to guide
+work. Structured machinery validates it and uses finding scope classifications:
+MVP requires an approved contract; guarded paths bind the exact scope to their
+inputs; verified classification can defer a finding on a deferred surface or
+route excluded work to a scope-change gate. The model still interprets which
+surface a concern belongs to. A valid schema is not proof that the scope captures
+the operator's intent or prevents every inappropriate suggestion.
+
+## Compile and inspect
+
+The existing `intake` command generates notes or deterministically compiles them;
+it is not a model that understands arbitrary prose. Use the exact level-two
+headings shown below. Compile without `--approve` first when approval has not yet
+been given, inspect the result, and record approval only within actual authority.
+Use the executing runtime's `intake --help` for paths and supported flags.
+
+Check the compiled outcome, flows, surface names, depths, deferrals and expansion
+rules. Missing sections can generate defaults rather than the intended boundary.
+In the current notes compiler, the combined **Deferred / Out Of Scope** heading
+produces `deferred` surfaces; it does not infer a permanent `out_of_scope` status
+from a sentence. Freeform expansion-rule parsing is also limited. If the intended
+boundary is not represented, use the supported contract schema/validation path
+and review the resulting artifact rather than claiming the prose was enforced.
+Do this before hashing and admission; do not edit a bound scope in place later.
+
+For verified preparation, keep inputs outside the fresh destination and follow
+its package procedure. The legacy intake run-root examples are not permission
+to precreate a verified destination. See [job preparation](OPERATOR_GUIDE.md).
+
 ## Example
 
 ```markdown

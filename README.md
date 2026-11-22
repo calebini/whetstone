@@ -5,6 +5,10 @@ Whetstone is an AI spec convergence orchestrator.
 [Explore the Whetstone field guide →](https://calebini.github.io/whetstone/)
 Operator documentation and ten interactive architecture diagrams.
 
+Start with the [operator guide](docs/OPERATOR_GUIDE.md),
+[worked examples](docs/OPERATOR_EXAMPLES.md), and
+[portable agent skill](skills/README.md).
+
 It helps turn messy, ambitious, half-stable technical specs into implementation-ready artifacts by running structured Reviewer and Editor passes, preserving every round, and forcing the work to end in explicit states instead of conversational vibes.
 
 Most AI spec work happens in chat: paste the doc, ask for feedback, patch it manually, repeat, and hope nobody loses the thread. Whetstone makes that loop durable. It gives the models roles, gives the operator controls, gives every decision an artifact, and gives the final spec a trail you can inspect.

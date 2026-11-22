@@ -1,0 +1,4 @@
+interface:
+  display_name: "Whetstone Runner"
+  short_description: "Prepare and operate bounded specification reviews"
+  default_prompt: "Use $whetstone-runner to prepare or interpret a bounded Whetstone job using the selected runtime's supported capabilities."

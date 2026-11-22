@@ -1,6 +1,6 @@
 # Run Whetstone with preservation enforcement
 
-`preservation-bridge-v1` is available by explicit configuration in a fresh isolated run root. It covers the qualified current-runtime paths, including horizontal/vertical Phase 1, focused work, local acceptance and supported continuation, Phase 2 maintenance and bounded closeout, and guarded strop. Omitting the block retains `legacy_unguarded` editing. Candidate editing and `verified_promotion` remain separate, inactive vNext capabilities.
+`preservation-bridge-v1` is available by explicit configuration in a fresh isolated run root. It covers the qualified current-runtime paths, including horizontal/vertical Phase 1, focused work, local acceptance and supported continuation, Phase 2 maintenance and bounded closeout, and guarded strop. Omitting the block retains `legacy_unguarded` editing. Verified promotion is a separate opt-in capability in the [qualified source release](VNEXT_VERIFIED_PROMOTION_RELEASE.md), with narrower workflow and storage support. It cannot be mixed with bridge configuration. An older installed runtime may not include it. Use the [operator guide](OPERATOR_GUIDE.md) to choose a supported combination.
 
 ## Ask your agent
 
