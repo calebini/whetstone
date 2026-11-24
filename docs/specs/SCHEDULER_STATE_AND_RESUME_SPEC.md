@@ -1188,3 +1188,12 @@ Saving/extracting the packet grants no write permission. The operator must still
 review the diff and evidence and explicitly invoke `--apply --approve` with the
 assessment file/hash and exclusive-access acknowledgement. Read-only strop itself
 does not write either file or publish/repair a run artifact.
+
+
+## Versioned shared Phase 1 completion amendment
+
+New `review-configuration-v3` jobs are governed by the
+[shared Phase 1 completion policy](PHASE1_COMPLETION_POLICY_SPEC.md).
+This amendment does not reinterpret existing suites or enable Phase 2.
+Implementation and targeted offline qualification are complete;
+[production activation remains separate](../PHASE1_COMPLETION_QUALIFICATION.md).

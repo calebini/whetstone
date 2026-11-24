@@ -1,0 +1,54 @@
+{
+  "status": "blocked_by_state_recovery_validation",
+  "additional_calls": 2,
+  "campaign_total_calls": 16,
+  "unused_calls": 4,
+  "result": {
+    "exit_code": 2,
+    "provider_calls": 16,
+    "result": {
+      "protocol": "vnext",
+      "mode": "verified_promotion",
+      "admitted": false,
+      "reason_code": "vnext_input_invalid",
+      "reason": "$: Phase 1 evidence changed during state recovery"
+    }
+  },
+  "observed_pointer": {
+    "candidate_verification_hash": "06fbad8a7bded669af66c3250d6a24ac351e63bb58da21df63a33229c9b50c15",
+    "candidate_verification_path": "rounds/round-10/candidates/can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911/candidate_verification-attempt-2.json",
+    "job_id": "job_1e348fc13db2928d8fb43c296fd313778d95999c6a7b83cbd90c4072e099dff4",
+    "previous_verified_draft_hash": "07c0dd9c34478512f0cc83d800e07c59bf9409c05b29954bede3e72092e2453e",
+    "previous_verified_pointer_hash": "8add9b8d84602f8ebd647de173c6f4000f3d7fc91371ba6e0d662f11ddd519d8",
+    "previous_verified_pointer_path": "rounds/verified_history/current-verified-1.json",
+    "promoted_at": "2026-11-24T21:59:51Z",
+    "promotion_disposition_event_hash": "9675bc641d56e2a2ceffa7daed93124c41c843fea30d75879684f448f78b437f",
+    "promotion_disposition_event_path": "rounds/round-10/candidates/can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911/disposition_events/event-4.json",
+    "promotion_intent_hash": "ab6ffbf94c1c4f40e30f45497a2328c75ce474e704fbc5a8ed7da41f4c0a68e2",
+    "promotion_intent_path": "rounds/round-10/candidates/can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911/promotion_intents/promotion-intent-2.json",
+    "promotion_ordinal": 2,
+    "schema_version": "current-verified-pointer-v1",
+    "source_candidate_creation_event_hash": "7d7b5bd6d1ce8fae43399ed640ad8763be8312a117c4ed1bf6a09299206a32e9",
+    "source_candidate_creation_event_path": "rounds/candidate_index/creation-2.json",
+    "source_candidate_creation_ordinal": 2,
+    "source_candidate_id": "can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911",
+    "source_transaction_id": "txn_4028b724e35218470d60ab4e35e3478f18704b652af2ecef5a14924d0c2d1584",
+    "verified_draft_hash": "ca8f88bfc22209efc768283c82c9142c3175e9f7611f07c5301bfdd61a824a7f",
+    "verified_draft_path": "rounds/round-10/candidates/can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911/candidate_unverified.md",
+    "verified_section_identity_map_hash": "709ed86c3d0f3d60407aa7c9446809885754cad9cc43728ef5031787f94b7b1f",
+    "verified_section_identity_map_path": "rounds/round-10/candidates/can_f1ac6fa3a027f9b4c7b5420dedb6bf55048ffab89735eff283a615e6b3376911/section_identity_map_candidate.json"
+  },
+  "phase1_complete": false,
+  "production_activation": false,
+  "artifacts": {
+    "rounds/phase1-readiness-20261124/live-campaign-002/invalid-input-outcome.json": "0cec98156b584358615d4c13332bc4db3f7056cabab63c25b07b1804d526236b",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-15.response.bin": "f2c58ef642d03302b2932dee0ce9fc1894fee542473481c7dc9a33803ebef910",
+    "rounds/phase1-readiness-20261124/live-campaign-002/invalid-input-authorization.json": "60f137be1145ce527a37f84d6f4d919428957222b72726106648be20c598b2f0",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-16.prompt.txt": "6bd7bf253899cb32c3b3e02acd4dddc039324557b192fc755b9a722c294c52fc",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-15.schema.json": "468dd0c21041a67a57eb17a3e164e07add373fcfc501b1fe8cccc1089bbb79db",
+    "rounds/phase1-readiness-20261124/live-campaign-002/approved-invalid-input.json": "9267ef1eed73b20cb60f494d917f89362de708d9d136606d47022a760d13932c",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-15.prompt.txt": "02e3c826d9bb95e6e697daa802d60f38ed5732a1060181ba00c4865b16c29388",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-16.response.bin": "b4ad205c43a3b33cab6bd653be149fe26b4bf6b59108bf76aac69bcb3192e065",
+    "rounds/phase1-readiness-20261124/live-campaign-002/provider-16.schema.json": "e216bf49f574944efbc7163f398c2681397356c41564adf87e9c30f8e818e8c3"
+  }
+}

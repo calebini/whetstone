@@ -72,10 +72,11 @@ def merge(proof, cycle, number):
     proof.reader.suite.registry.validate(packet, 'vnext_vertical_merge_v1')
     values = proof.values(packet['base_pointer'])
     from whetstone.vnext_classification import classify_feedback
-    findings, _ = classify_feedback(feedback=feedback, feedback_ref=packet['feedback'], advice=advice,
+    findings, evidence = classify_feedback(feedback=feedback, feedback_ref=packet['feedback'], advice=advice,
         job=values['job'], authority=values['authority'], invariants=values['invariants'],
-        base=values['base'], section_map=values['base_map'], scope=values['scope'])
-    actionable = any(r['classification'] != 'deferable' for r in findings)
+        base=values['base'], section_map=values['base_map'], scope=values['scope'], review=values['review'])
+    from whetstone.vnext_phase1_policy import requires_work
+    actionable = requires_work(values['review'], dict(feedback=feedback, findings=findings, evidence=evidence))
     assets = {packet['feedback']['path']: canonical_json_bytes(feedback),
               packet['advice']['path']: canonical_json_bytes(advice), prefix+'/draft_before.md': values['base'],
               prefix+'/profile_used.yaml': canonical_json_bytes(dict(profile='vertical', round_kind='consolidated_editor'))}
@@ -141,8 +142,8 @@ def sequence(proof, *, through_round=None):
             if frame.receipt is None: return done('pending', name)
             cycle.append(frame)
             counts[name] += 1
-            clean[name] = not any(r['in_scope'] and r['normalized_severity'] in {'major', 'blocker'}
-                                  for r in frame.review['feedback']['feedback'])
+            from whetstone.vnext_phase1_policy import blocking_rows
+            clean[name] = not blocking_rows(proof.seed_values['review'], frame.review)
             number += 1
         if any(f.review['feedback']['feedback'] for f in cycle):
             packet, assets, actionable, present = merge(proof, cycle, number)
@@ -204,8 +205,9 @@ def context(reader, number, *, review, job, base_pointer):
 
 def validate_context(value, *, suite, job, review, feedback, advice, base_pointer):
     pins(suite)
+    from whetstone.vnext_phase1_policy import enabled as shared_policy
     require(job['editing_mode'] == 'verified_promotion' and enabled(review)
-            and review['workflow'] == 'standard', 'vertical Editor requires standard V configuration')
+            and (shared_policy(review) or review['workflow'] == 'standard'), 'vertical Editor requires standard V configuration')
     packet, sources = value['merge'], value['sources']
     suite.registry.validate(packet, 'vnext_vertical_merge_v1')
     require(packet['job_id'] == job['job_id'] and packet['base_pointer'] == base_pointer
@@ -260,7 +262,9 @@ def failure(proof, frames, progress, *, existing=None, generated_at=None):
     stamp = decode_json(existing)['generated_at'] if existing is not None else generated_at
     report = focused_failure(proof, frames, progress, generated_at=stamp)
     current = {f.request.profile: f for f in frames if f.receipt is not None and f.header['base_pointer'] == proof.latest}
-    rows = [r for f in current.values() for r in f.review['feedback']['feedback']]
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, blocking_rows
+    rows = [r for f in current.values() for r in (blocking_rows(proof.seed_values['review'], f.review)
+            if shared_policy(proof.seed_values['review']) else f.review['feedback']['feedback'])]
     for key, severity in [('unresolved_blockers', 'blocker'), ('unresolved_major_issues', 'major')]:
         report[key] = [{k: deepcopy(r[k]) for k in ('issue_id','issue_fingerprint','normalized_severity','affected_sections','claim')}
                        for r in rows if r['normalized_severity'] == severity]

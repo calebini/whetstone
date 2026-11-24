@@ -6,6 +6,55 @@ Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), groun
 
 Current handoff: [controlled verified-promotion release](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md) (2026-10-28). **18.9 Q1–Q4 is complete within its documented controlled opt-in boundary.** The user approved activation of the exact `vnext-verified-consumer-1` digest; its shipping V qualification entry, six-owner suite advertisement and 15 passing activation/configuration/compatibility checks are implemented locally. The accepted Q3 correctness/performance limits remain explicit. Installed runtime replacement, external source apply-back and push remain separate actions. Earlier milestones and checkpoints below retain their historical scope.
 
+## Shared Phase 1 completion and MVP qualification (active)
+
+Owner: [shared completion spec](docs/specs/PHASE1_COMPLETION_POLICY_SPEC.md).
+User authorized implementation on 2026-11-22; release remains separate.
+
+Readiness slice (2026-11-24):
+- **Outcome:** prepare a qualified, versioned Phase 1 release candidate.
+- **Boundary:** Standard/MVP × three declared profile sets; horizontal/vertical
+  full reviews and horizontal focused reviews. Preserve old jobs, suites and bridge.
+  No Phase 2 expansion, vertical focused, storage changes or activation.
+- **Done:** verified matrix, reused valid evidence, candidate-package checks,
+  bounded live evidence and exact stable activation/rollback procedure ready for review.
+Trigger investigation: confirmed descriptive `removed` false positive; no unsafe
+regex exemption. Exact clarification-only decision prepared and dry-run validated;
+34 regression tests pass. General classifier correction remains unresolved.
+
+Current live result: Utility MVP vertical reached PHASE_1_STABLE on ordinal 2 after supported recovery, one pass per profile and four clean live reviews. All 20 calls used. Activation off. See the qualification record for remaining release gates.
+
+Recovery fix: timestamp drift reproduced and corrected without relaxing evidence
+equality. Eight offline recovery tests pass; read-only real-run evidence agrees
+and all 253 failed-run files remain unchanged. Four live calls unused. Candidate
+snapshot needs refresh before release. See qualification record for continuation.
+
+Historical release blocker: invalid-input decision approved; 16 total calls; second
+verified history entry written, then state recovery rejected changed Phase 1
+evidence. Four calls unused. Preserve failed run and diagnose before more live work.
+Activation remains off.
+
+Earlier live checkpoint: 14 total calls; approved clarification promoted at ordinal 1;
+four current-draft reviews stopped on a new minor invalid-input authority decision.
+Six calls unused. Balanced confirmation staged, not launched; activation off.
+
+Earlier live checkpoint: eight provider calls; corrected Utility MVP vertical run stopped
+at an operator-decision gate before editing. No promotion or activation. See the
+existing qualification record for the staging correction and remaining evidence.
+
+- **Escalate:** new external payload approval, substantive policy ambiguity, or
+  failure requiring changes outside this boundary. Publishing and stable adoption
+  require separate authorization.
+
+
+- [x] Specify scope-aware completion shared by Standard and MVP, with versioned replay.
+- [x] Implement policy, coherent capability admission, prompts and closeout evidence.
+- [x] Qualify balanced_mvp and utility_mvp across Phase 1 routes and recovery (targeted offline/scripted evidence).
+- [x] Record results, compatibility evidence and remaining release conditions in [the qualification record](docs/PHASE1_COMPLETION_QUALIFICATION.md).
+
+Phase 2, promotion commit machinery, existing frozen suites and installed pins
+remain outside the behavioral change.
+
 ## Build Strategy
 
 Config-selected V opt-in is available in this checkout for the qualified local

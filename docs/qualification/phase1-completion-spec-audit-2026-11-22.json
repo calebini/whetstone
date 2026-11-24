@@ -1,0 +1,110 @@
+{
+  "date": "2026-11-22",
+  "kind": "live-provider-spec-audit",
+  "runtime": {
+    "channel": "stable",
+    "version": "0.1.0",
+    "commit": "6e19fe3e72dedda50a372781a43c08e5d7e7480a"
+  },
+  "provider": "OpenAI via Codex CLI",
+  "codex_cli_version": "0.171.0-alpha.13",
+  "profile": "consistency",
+  "model_selection": "client default; no explicit model requested",
+  "reviewer_reported_identity": {
+    "model": "gpt-6",
+    "name": "Codex",
+    "version": "6"
+  },
+  "reasoning_effort": "medium (legacy adapter setting)",
+  "verdict": "pass",
+  "boundary_preserved": true,
+  "feedback_counts": {
+    "blocker": 0,
+    "major": 0,
+    "minor": 0,
+    "nit": 0
+  },
+  "findings_disposition": "No findings returned; no spec or runtime corrections required by this audit.",
+  "source_hashes_verified": {
+    "docs/specs/PHASE1_COMPLETION_POLICY_SPEC.md": {
+      "sha256": "5f0d9878fde4cfb67cbd147aaaa5978f13f2cc8c7076e387e9086d263e0e8a5e",
+      "bytes": 4711
+    },
+    "contracts/algorithms/vnext_phase1_completion_policy_v1.md": {
+      "sha256": "7d322da8e3f846f8728a8f63ec9b2cc3fe4c72c3adb130ed1d8b0178e0377b62",
+      "bytes": 1764
+    },
+    "docs/specs/WHETSTONE_COORDINATING_SPEC.md": {
+      "sha256": "aaccece53a1316169fc55ba38b06c25f66fcdd12f1287c624dc57f07d9a24065",
+      "bytes": 38833
+    },
+    "docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md": {
+      "sha256": "aca0b774d2eac159d136f711b2f5a7ed09b86e10440b2134d7210ea32b89b4ab",
+      "bytes": 63238
+    },
+    "docs/specs/SCHEDULER_STATE_AND_RESUME_SPEC.md": {
+      "sha256": "efab4469f77dce8f6d4ceed423aa3afc12d3b40e1e83f27c0ef7e752e85371be",
+      "bytes": 108838
+    },
+    "docs/specs/RUBRICS_PROFILES_AND_FEEDBACK_SPEC.md": {
+      "sha256": "73c01c2de579878632bd79c13cbf74fc6ac2e5087ecb74a7fd0ec3f548d149bc",
+      "bytes": 25652
+    },
+    "docs/specs/CANDIDATE_EDITING_AND_PROMOTION_SPEC.md": {
+      "sha256": "8ab7e250931f271822ed96b83b1c2c118c7a913802a66e0a964fb1dfedd9142e",
+      "bytes": 155474
+    },
+    "docs/specs/ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md": {
+      "sha256": "d73ba29e98a0179af2f35fdef9a9079d59c3cce1b756553436d5f5f716f3de88",
+      "bytes": 93770
+    }
+  },
+  "artifact_hashes": {
+    "rounds/phase1-policy-live-20261122/audit-001/change_audit/audit_brief.md": "e4f560d7352ba23946f92c0e1e71505ba8d2a8ee9dfbc38adfce3b92b0d8e9bb",
+    "rounds/phase1-policy-live-20261122/audit-001/change_audit/audit_manifest.json": "a426a6f0e88a621307530573b82d1f5fa836db449c0d627a75890001faebb18e",
+    "rounds/phase1-policy-live-20261122/audit-001/change_audit/change_audit_feedback.json": "a1385fdeb346f7c0968967163ef5830c48574f9bfac1e39c846d7039fb37272c",
+    "rounds/phase1-policy-live-20261122/audit-001/change_audit/change_audit_report.json": "a7268f837ebfab0286a9b9bfc1ba3cc2fe25199e3ad684446b370e9cbae04f31",
+    "rounds/phase1-policy-live-20261122/audit-001/change_audit/change_audit_report.md": "4e2512f5ef8ce2ddd6f02f85af0351b17558d60d13f9cd6edad3ab7ccbe5eaba"
+  },
+  "report": {
+    "audit_brief_hash": "e4f560d7352ba23946f92c0e1e71505ba8d2a8ee9dfbc38adfce3b92b0d8e9bb",
+    "audit_manifest_path": "rounds/phase1-policy-live-20261122/audit-001/change_audit/audit_manifest.json",
+    "boundary_preserved": true,
+    "failure_reason": null,
+    "feedback_counts": {
+      "blocker": 0,
+      "major": 0,
+      "minor": 0,
+      "nit": 0
+    },
+    "generated_at": "2026-11-22T20:11:20.525137+00:00",
+    "in_scope_feedback_ids": [],
+    "out_of_scope_feedback_ids": [],
+    "profile": "consistency",
+    "recommended_next_action": "none",
+    "schema_version": "change-audit-report-v1",
+    "source_feedback_path": "rounds/phase1-policy-live-20261122/audit-001/change_audit/change_audit_feedback.json",
+    "verdict": "pass"
+  },
+  "feedback": {
+    "draft_hash": "e4f560d7352ba23946f92c0e1e71505ba8d2a8ee9dfbc38adfce3b92b0d8e9bb",
+    "feedback": [],
+    "profile": "consistency",
+    "reviewer": {
+      "model": "gpt-6",
+      "name": "Codex",
+      "version": "6"
+    },
+    "round_number": 1
+  },
+  "new_suite_activated": false,
+  "qualified_suites_observed": {
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58"
+  },
+  "limits": [
+    "One bounded consistency audit; not proof of semantic correctness.",
+    "No new-suite live Reviewer/Editor/Verifier qualification occurred in this audit.",
+    "Provider-reported model identity is not an independently pinned model version.",
+    "Historical offline qualification receipt remains separate and unchanged."
+  ]
+}

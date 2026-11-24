@@ -581,3 +581,12 @@ The Phase 2 reviewer prompt MUST include:
 These requirements are prompt-boundary discipline. Schema validation is the safety net, not the primary mechanism for obtaining stable classifications.
 
 ---
+
+
+## Versioned shared Phase 1 completion amendment
+
+New `review-configuration-v3` jobs are governed by the
+[shared Phase 1 completion policy](PHASE1_COMPLETION_POLICY_SPEC.md).
+This amendment does not reinterpret existing suites or enable Phase 2.
+Implementation and targeted offline qualification are complete;
+[production activation remains separate](../PHASE1_COMPLETION_QUALIFICATION.md).

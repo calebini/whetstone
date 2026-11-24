@@ -91,6 +91,8 @@ class _Eligibility(_OperatorStatus):
         closeout = self.evaluate(proof)
         status = self._status(proof, closeout)
         blockers = []
+        from whetstone.vnext_phase1_policy import enabled as shared_policy
+        if shared_policy(proof.seed_values['review']): blockers.append('shared_phase1_policy_phase2_unsupported')
         if focused_profile(proof.seed_values['review']) is not None:
             blockers.append('focused_profile_is_not_full_phase1')
         if closeout.review_gate != 'review_complete': blockers.append('phase1_' + closeout.review_gate)

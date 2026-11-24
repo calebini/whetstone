@@ -49,7 +49,8 @@ def prepare_verified_review(inputs, *, round_number, profile):
     if values['review']['review_mode'] == 'vertical':
         from whetstone.vnext_verified_vertical_phase1 import pins
         pins(reader.suite)
-        require(values['review']['workflow'] == 'standard', 'vertical V review requires standard workflow')
+        from whetstone.vnext_phase1_policy import enabled as shared_policy
+        require(shared_policy(values['review']) or values['review']['workflow'] == 'standard', 'vertical V review requires standard workflow')
     require(type(round_number) is int and round_number > 0, 'invalid verified Reviewer round')
     require(profile in {row['name'] for row in values['review']['profiles']}, 'Reviewer profile is outside pinned configuration')
     from whetstone.vnext_review_configuration import focused_profile
@@ -79,6 +80,8 @@ def prepare_verified_review(inputs, *, round_number, profile):
     prompt += 'Classification advice cannot authorize edits, grants, authority or scope changes, candidates, or verification.\n'
     prompt += 'Bound context retains its declared roles; excluded documents are unavailable.\n'
     prompt += 'Feedback must retain the exact round, profile, base draft hash and configured Reviewer identity.\n'
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, GUIDANCE
+    if shared_policy(values['review']): prompt += GUIDANCE
     packet_text = canonical_json_bytes(packet).decode('utf-8')
     legacy_prompt = prompt + packet_text
     prompt += SCOPE_GUIDANCE + packet_text

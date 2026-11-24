@@ -87,6 +87,8 @@ def _prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_m
         'suite_version':suite.version,'suite_digest':suite.digest})))
     rules=discovery_rules(invariants)
     registry=VNextSchemaRegistry();validate_review_configuration(review, registry)
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, pins as policy_pins
+    if shared_policy(review): policy_pins(suite)
     require(job['editing_mode'] in {'proposal_only','verified_promotion'},'job mode prohibits Editor work')
     require(sha256_bytes(canonical_json_bytes(review))==job['review_configuration_hash'], 'preflight role configuration changed')
     require(sha256_bytes(seed)==job['seed_draft']['hash'],'preflight seed bytes changed')
@@ -122,7 +124,7 @@ def _prepare_unit_preflight(*,job,authority,invariants,seed,seed_map,base,base_m
         require(inventory['seed_draft_hash']==job['seed_draft']['hash'],'inventory belongs to a different seed')
         if inventory['base_inventory_hash'] is None:validate_seed_inventory(inventory,base,base_map,job,rules=rules)
     findings,evidence=classify_feedback(feedback=feedback,feedback_ref=feedback_ref,advice=advice,job=job,
-        authority=authority,invariants=invariants,base=base,section_map=base_map,scope=scope)
+        authority=authority,invariants=invariants,base=base,section_map=base_map,scope=scope,review=review if phase2 is None else None)
     require(not any(e['requires_new_job'] for e in evidence.values()),'immutable policy requires a new job')
     by_finding={f['finding_id']:f for f in findings};bindings=[]
     for decision in decisions:

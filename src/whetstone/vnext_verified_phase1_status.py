@@ -56,9 +56,9 @@ def _profiles(proof, profiles, frames):
         completed = [frame for frame in frames
                      if frame.request.profile == profile['name'] and frame.receipt is not None]
         latest = completed[-1] if completed else None
+        from whetstone.vnext_phase1_policy import blocking_rows
         clean = bool(latest is not None and latest.header['base_pointer'] == proof.latest
-                     and not any(row['in_scope'] and row['normalized_severity'] in {'major', 'blocker'}
-                                 for row in latest.review['feedback']['feedback']))
+                     and not blocking_rows(proof.seed_values['review'], latest.review))
         receipt = (dict(path=latest.request.directory + '/result.json',
                         hash=sha256_bytes(canonical_json_bytes(latest.receipt))) if clean else None)
         progress.append(ProfileProgress(profile['name'], profile['budget'], len(completed), clean,

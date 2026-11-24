@@ -88,7 +88,7 @@ def inspect_admission(root,*,descriptor_ref,review_ref,feedback_ref,advice_ref=N
     require(feedback['profile'] in {p['name'] for p in review['profiles']}, 'feedback profile is outside pinned review configuration')
     advice=_packet(reader,advice_ref,'vnext_finding_advice_v1') if advice_ref is not None else None
     findings,evidence=classify_feedback(feedback=feedback,feedback_ref=feedback_ref,advice=advice,
-        job=job,authority=authority,invariants=invariants,base=base,section_map=mapping,scope=scope)
+        job=job,authority=authority,invariants=invariants,base=base,section_map=mapping,scope=scope,review=review)
     return MutationAdmission(reader,job,authority,invariants,scope,review,base,mapping,pointer_ref,
                              findings,evidence,deepcopy(feedback_ref),deepcopy(advice_ref),addressable_seed_units(base,mapping))
 

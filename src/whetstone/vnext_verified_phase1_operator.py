@@ -1,4 +1,5 @@
 """Evidence-derived operator status and recovery-only Phase 1 state projection."""
+from whetstone.vnext_phase1_policy import closeout_schema
 from copy import deepcopy
 from dataclasses import dataclass
 
@@ -51,7 +52,7 @@ class _OperatorStatus(_Closeout):
         else:
             changed = state.get(STATE_FIELD) != reference
             state[STATE_FIELD] = deepcopy(reference)
-            vertical = ('vertical_merges' in closeout.evidence and closeout.evidence['schema_version'] != 'vnext-verified-phase1-closeout-v4') or (
+            vertical = ('vertical_merges' in closeout.evidence and closeout.evidence['schema_version'] not in {'vnext-verified-phase1-closeout-v4', 'vnext-verified-phase1-closeout-v5'}) or (
                 proof is not None and proof.seed_values['review']['review_mode'] == 'vertical')
             if closeout.evidence.get('focused_profile') is not None or vertical:
                 focused_state = dict(terminal_state=closeout.report['terminal_state'],
@@ -87,6 +88,10 @@ class _OperatorStatus(_Closeout):
                     last_accepted_draft_hash=proof.pointers[-1]['verified_draft_hash'] if stable else None)
                 changed = changed or any(state.get(k) != v for k,v in values.items())
                 state.update(values)
+        from whetstone.vnext_phase1_policy import enabled as shared_policy
+        if proof is not None and shared_policy(proof.seed_values['review']):
+            changed = changed or state.get('ready_for_phase_2') is not False
+            state['ready_for_phase_2'] = False
         return raw, canonical_json_bytes(state) if changed else raw, stale
 
     def _status(self, proof, closeout):
@@ -142,7 +147,7 @@ class _OperatorStatus(_Closeout):
                     self.store.synchronize_existing(store._token, checked.technical_failure_ref['path'], expected=packet)
                     existing = self._optional(FAILURE_MIRROR)
                     from whetstone.vnext_verified_phase1_budget import records
-                    historical = [proof.reader.json(v['closeout'], 'vnext_verified_phase1_closeout_v4')
+                    historical = [proof.reader.json(v['closeout'], closeout_schema(proof.seed_values['review']))
                                   for _,v in records(proof)]
                     owned = any(c['technical_failure'] is not None and existing == proof.reader.raw(c['technical_failure'])
                                 for c in historical)
@@ -172,7 +177,10 @@ class _OperatorStatus(_Closeout):
             else:
                 # Equality after a lost final acknowledgement is not durability.
                 self.store.synchronize_existing(store._token, STATE_PATH, expected=target)
-            checked = self.evaluate(proof)
+            # Reuse the provisional failure timestamp for this recovery operation.
+            # Uncommitted reports otherwise acquire a new hash when the clock ticks;
+            # retained reports still validate against their persisted timestamp.
+            checked = self.evaluate(proof, generated_at=(closeout.technical_failure or {}).get('generated_at'))
             require(checked.evidence == closeout.evidence and checked.materialized == closeout.materialized,
                     'Phase 1 evidence changed during state recovery')
             result = self._status(proof, checked)

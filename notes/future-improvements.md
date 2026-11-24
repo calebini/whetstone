@@ -731,6 +731,13 @@ implementation authorization are separate.
 
 ## Verified Promotion: Phase 1 Policy Independence And Final Human Review
 
+Implementation update: the operator subsequently authorized shared Phase 1
+completion and MVP with balanced_mvp/utility_mvp. That bounded work is tracked in
+[the implementation plan](../IMPLEMENTATION_PLAN.md#shared-phase-1-completion-and-mvp-qualification-active)
+and [qualification record](../docs/PHASE1_COMPLETION_QUALIFICATION.md). The original
+discussion below remains historical; other workflows, Phase 2, final human review
+and storage changes remain future work.
+
 Discussion captured 2026-11-22. **Future design direction only; no implementation,
 contract changes, runtime default change or bridge deprecation is authorized by
 this note.** This item concerns compatibility of verified promotion with

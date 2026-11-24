@@ -14,7 +14,10 @@ def directory(proof, frames):
 
 def failure(proof, frames, progress, *, existing=None, generated_at=None):
     last = frames[-1]
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, blocking_rows
     rows = last.review['feedback']['feedback'] if last.header['base_pointer'] == proof.latest else []
+    if rows and shared_policy(proof.seed_values['review']):
+        rows = blocking_rows(proof.seed_values['review'], last.review)
     def issues(severity):
         return [{key: deepcopy(row[key]) for key in ('issue_id', 'issue_fingerprint',
                  'normalized_severity', 'affected_sections', 'claim')}
@@ -67,7 +70,8 @@ def round_assets(request, review=None):
             original_prompt_path=request.directory+'/original_prompt.txt'))}
     if vertical:
         assets[prefix+'/context_snapshot.json'] = canonical_json_bytes(values['context'])
-    if review is not None and (vertical or not any(row['classification'] != 'deferable' for row in review['findings'])):
+    from whetstone.vnext_phase1_policy import requires_work
+    if review is not None and (vertical or not requires_work(values['review'], review)):
         digest = review['feedback']['draft_hash']
         summary = dict(round_number=request.number, draft_before_hash=digest, draft_after_hash=digest,
             accepted_feedback_ids=[], modified_feedback_ids=[], declined_feedback=[], created_conflict_ids=[],

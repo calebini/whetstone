@@ -7,21 +7,26 @@ ALGORITHM = 'algorithms/vnext_verified_focused_phase1_v1.md'
 def schema(review):
     require(isinstance(review, dict), 'review configuration must be an object')
     versions = {'review-configuration-v1': 'review_configuration_v1',
-                'review-configuration-v2': 'review_configuration_v2'}
+                'review-configuration-v2': 'review_configuration_v2',
+                'review-configuration-v3': 'review_configuration_v3'}
     require(isinstance(review.get('schema_version'), str) and review['schema_version'] in versions,
             'unsupported review configuration version')
     return versions[review['schema_version']]
 
 
 def focused_profile(review):
-    return review['phase1_selection']['profile'] if schema(review) == 'review_configuration_v2' else None
+    schema(review)
+    return review.get('phase1_selection', {}).get('profile')
 
 
 def validate(review, registry):
     registry.validate(review, schema(review))
+    from whetstone.vnext_phase1_policy import enabled, validate_selection
+    if enabled(review): validate_selection(review)
     selected = focused_profile(review)
     if selected is not None:
-        require(review['workflow'] == 'standard' and review['review_mode'] == 'horizontal',
+        require((enabled(review) or review['workflow'] == 'standard') and review['review_mode'] == 'horizontal',
+                'focused selection requires horizontal review' if enabled(review) else
                 'focused V selection requires standard horizontal review')
         require(sum(row['name'] == selected for row in review['profiles']) == 1,
                 'focused selection must name exactly one configured profile')
@@ -34,6 +39,12 @@ def validate(review, registry):
 def read(reader, reference):
     review = reader.json(reference, schema(decode_json(reader.raw(reference))))
     validate(review, reader.suite.registry)
+    from whetstone.vnext_phase1_policy import enabled, pins, ALGORITHM as POLICY_ALGORITHM
+    has_policy = any(r['path'] == POLICY_ALGORITHM for r in reader.suite.manifest['algorithms'])
+    if reader.suite.version == 'vnext-verified-consumer-2':
+        require(enabled(review), 'new Phase 1 suite requires shared completion policy')
+    require(not enabled(review) or has_policy, 'review policy and contract suite differ')
+    if enabled(review): pins(reader.suite)
     if focused_profile(review) is not None:
         entries = {row['path']: row['sha256'] for family in ('algorithms', 'schemas')
                    for row in reader.suite.manifest[family]}

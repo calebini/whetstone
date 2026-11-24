@@ -36,21 +36,24 @@ def _contract(proof):
         from whetstone.scheduler import profile_names_for_phase
         require(all(p['name'] in profile_names_for_phase(review['profile_set'], 'phase_1') for p in review['profiles']),
                 'vertical selection requires Phase 1 profiles')
-    require(review['review_mode'] in {'horizontal', 'vertical'} and review['workflow'] == 'standard',
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, pins as policy_pins
+    if shared_policy(review): policy_pins(proof.reader.suite)
+    require(review['review_mode'] in {'horizontal', 'vertical'} and (shared_policy(review) or review['workflow'] == 'standard'),
             'verified review sequence requires standard horizontal or pinned vertical review')
     selected = focused_profile(review)
     return [row for row in review['profiles'] if selected is None or row['name'] == selected]
 
 
-def _actionable(frame):
-    return frame.review is not None and any(row['classification'] != 'deferable' for row in frame.review['findings'])
+def _actionable(frame, review):
+    from whetstone.vnext_phase1_policy import requires_work
+    return frame.review is not None and requires_work(review, frame.review)
 
 
 def _advance(proof, previous, reference):
     """A new base must be the next proven promotion of the preceding review."""
     old = proof.reader.json(previous.header['base_pointer'], 'current_verified_pointer_v1')
     new = proof.reader.json(reference, 'current_verified_pointer_v1')
-    require(_actionable(previous) and new['promotion_ordinal'] == old['promotion_ordinal'] + 1
+    require(_actionable(previous, proof.seed_values['review']) and new['promotion_ordinal'] == old['promotion_ordinal'] + 1
             and new['previous_verified_pointer_path'] == previous.header['base_pointer']['path']
             and new['previous_verified_pointer_hash'] == previous.header['base_pointer']['hash'],
             'Reviewer sequence changed base without its next committed promotion')
@@ -91,7 +94,7 @@ def _sequence(proof, *, through_round=None):
             clean = dict.fromkeys(clean, False)
             base = reference
         else:
-            require(previous is None or not _actionable(previous),
+            require(previous is None or not _actionable(previous, proof.seed_values['review']),
                     'Reviewer sequence bypassed unresolved findings without promotion')
         timeline.advance(frame.request.number, counts, clean, base, frames[:index])
         gate, profile = _gate(profiles, counts, clean)
@@ -99,8 +102,8 @@ def _sequence(proof, *, through_round=None):
                 'V Reviewer claim differs from eligible profile or budget')
         if frame.receipt is not None:
             counts[profile] += 1
-            clean[profile] = not any(row['in_scope'] and row['normalized_severity'] in {'major', 'blocker'}
-                                     for row in frame.review['feedback']['feedback'])
+            from whetstone.vnext_phase1_policy import blocking_rows
+            clean[profile] = not blocking_rows(proof.seed_values['review'], frame.review)
         previous = frame
     if through_round is not None:
         timeline.finish()
@@ -113,7 +116,7 @@ def _sequence(proof, *, through_round=None):
         require(previous is not None, 'promoted root has no original Reviewer sequence')
         _advance(proof, previous, proof.latest)
         clean = dict.fromkeys(clean, False)
-    elif previous is not None and _actionable(previous):
+    elif previous is not None and _actionable(previous, proof.seed_values['review']):
         timeline.finish()
         return frames, 'finding_admission', previous.request.profile
     timeline.advance(len(frames)+1, counts, clean, proof.latest, frames)
@@ -141,7 +144,7 @@ def validate_round_review(proof, number, record):
 def _validate_horizontal_round(proof, number, record):
     frames = _sequence(proof, through_round=number)
     frame = frames[-1]
-    require(_actionable(frame), 'proposal round requires actionable Reviewer findings')
+    require(_actionable(frame, proof.seed_values['review']), 'proposal round requires actionable Reviewer findings')
     require(record['base_pointer'] == frame.header['base_pointer']
             and record['feedback'] == frame.receipt['feedback'] and record['advice'] == frame.receipt['advice'],
             'V round differs from original Reviewer base, feedback or advice')

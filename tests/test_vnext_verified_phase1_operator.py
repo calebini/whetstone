@@ -212,3 +212,28 @@ class VerifiedPhase1OperatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'JSON object'): f.run.reconcile_phase1_state()
         self.assertEqual(self.files(f), before)
         self.assertEqual(client.calls, 0)
+
+
+    def test_uncommitted_failure_recovery_pins_timestamp_across_clock_tick(self):
+        from datetime import datetime, timezone, timedelta
+        import whetstone.vnext_verified_focused_phase1 as focused
+        f, client = self.start(operator_status_contract=True, budget_contract=True,
+                               focused_profile='structural_integrity', focused_contract=True, budget=1)
+        self.review(f, client)
+        self.promote(f)
+        original_now = datetime(2026, 11, 24, tzinfo=timezone.utc)
+        class Clock:
+            calls = 0
+            @classmethod
+            def now(cls, tz):
+                cls.calls += 1
+                return original_now + timedelta(seconds=cls.calls)
+        before = self.files(f)
+        with patch.object(focused, 'datetime', Clock):
+            recovered = f.run.reconcile_phase1_state()
+        self.assertTrue(recovered.value.state_current)
+        self.assertEqual(Clock.calls, 1)
+        after = self.files(f)
+        self.assertEqual({k:v for k,v in before.items() if k != STATE_PATH},
+                         {k:v for k,v in after.items() if k != STATE_PATH})
+        self.assertEqual(client.calls, 1)

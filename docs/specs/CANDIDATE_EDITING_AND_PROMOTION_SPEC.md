@@ -1950,3 +1950,12 @@ Every qualified release MUST retain the following ratification conditions:
 - the historical recurrence fixture and all P0 acceptance scenarios pass.
 
 Until every checklist item is satisfied, automatic verified promotion MUST remain unavailable.
+
+
+## Versioned shared Phase 1 completion amendment
+
+New `review-configuration-v3` jobs are governed by the
+[shared Phase 1 completion policy](PHASE1_COMPLETION_POLICY_SPEC.md).
+This amendment does not reinterpret existing suites or enable Phase 2.
+Implementation and targeted offline qualification are complete;
+[production activation remains separate](../PHASE1_COMPLETION_QUALIFICATION.md).

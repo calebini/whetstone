@@ -108,8 +108,14 @@ def _bound_settings(args, config, *, root, job, review, authority, selectors):
         if getattr(args, '_budget_explicit', False):
             require(args.budget == next(p['budget'] for p in review['profiles'] if p['name'] == selected),
                     'focused budget differs from immutable selection')
-    require(review['workflow'] == 'standard' and review['profile_set'] == 'stateful_system',
-            'unsupported verified workflow/profile set')
+    from whetstone.vnext_phase1_policy import enabled as shared_policy, validate_selection
+    if shared_policy(review):
+        validate_selection(review)
+        require(args.command not in {'promote-phase2', 'live-phase2'} and 'vnext_phase2_configuration' not in config,
+                'shared Phase 1 policy does not enable Phase 2')
+    else:
+        require(review['workflow'] == 'standard' and review['profile_set'] == 'stateful_system',
+                'unsupported verified workflow/profile set')
 
 
 def _phase2_selector(config, root, job, selectors):

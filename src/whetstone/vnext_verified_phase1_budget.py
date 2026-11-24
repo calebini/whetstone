@@ -1,4 +1,5 @@
 """Explicit grant journal over immutable baseline budgets; no client invocation."""
+from whetstone.vnext_phase1_policy import closeout_schema
 from copy import deepcopy
 from datetime import datetime, timezone
 import re
@@ -86,7 +87,7 @@ class Timeline:
         require(exhausted and not all(clean.values()), 'budget extension requires exhausted Phase 1')
         require(base == value['base_pointer'], 'budget extension base differs from replay')
         pointer = self.proof.reader.json(base, 'current_verified_pointer_v1')
-        closeout = self.proof.reader.json(value['closeout'], 'vnext_verified_phase1_closeout_v4')
+        closeout = self.proof.reader.json(value['closeout'], closeout_schema(self.proof.seed_values['review']))
         terminal = self.proof.reader.json(closeout['terminal_report'], 'terminal_report_v2')
         receipts = [dict(round_number=f.request.number, profile=f.request.profile,
             base_pointer=f.header['base_pointer'], receipt=ref(f.request.directory+'/result.json', f.receipt)) for f in frames]
@@ -134,7 +135,7 @@ def recovery_record(proof, *, last_completed=None, grants=None):
 def synchronize(store, proof):
     """Immutable grant dependencies must be durable before any appended work."""
     for reference, value in records(proof):
-        closeout = proof.reader.json(value['closeout'], 'vnext_verified_phase1_closeout_v4')
+        closeout = proof.reader.json(value['closeout'], closeout_schema(proof.seed_values['review']))
         refs = [value['review_configuration'], value['base_pointer'], value['closeout'], closeout['terminal_report']]
         if closeout['technical_failure']: refs.append(closeout['technical_failure'])
         refs += [row['receipt'] for row in closeout['review_receipts']] + closeout['vertical_merges']

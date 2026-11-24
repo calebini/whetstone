@@ -1257,3 +1257,12 @@ derivation. They are not operator approvals. Missing or contradictory coverage
 cannot silently fall back to manual or generated advice. Earlier suites keep their
 original envelope and result hashes. See the [direct guidance supplement](../../contracts/algorithms/vnext_phase2_reviewer_advice_v1.md)
 and Phase 2 specification for validation, handoff and recovery rules.
+
+
+## Versioned shared Phase 1 completion amendment
+
+New `review-configuration-v3` jobs are governed by the
+[shared Phase 1 completion policy](PHASE1_COMPLETION_POLICY_SPEC.md).
+This amendment does not reinterpret existing suites or enable Phase 2.
+Implementation and targeted offline qualification are complete;
+[production activation remains separate](../PHASE1_COMPLETION_QUALIFICATION.md).

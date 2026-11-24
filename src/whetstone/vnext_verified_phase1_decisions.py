@@ -36,7 +36,7 @@ class Phase1Decisions(Phase2Operator):
             advice = decode_json(assets[packet['advice']['path']])
             findings, evidence = classify_feedback(feedback=feedback, feedback_ref=packet['feedback'],
                 advice=advice, job=values['job'], authority=values['authority'], invariants=values['invariants'],
-                base=values['base'], section_map=values['base_map'], scope=values['scope'])
+                base=values['base'], section_map=values['base_map'], scope=values['scope'], review=values['review'])
             review = dict(findings=findings, evidence=evidence)
             result = _ref(f'rounds/round-{number}/vertical_merge.json', packet)
         inventory = values.get('base_inventory') or seed_inventory(values['base'], values['base_map'],

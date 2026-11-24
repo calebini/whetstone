@@ -1,0 +1,31 @@
+{
+  "status": "offline_qualified",
+  "root_cause": "Two evaluations of an uncommitted failure report generated different timestamps; its reference hash changed across a clock tick.",
+  "fix": "Pin the final recovery evaluation to the original provisional failure generated_at, retaining evidence and materialized equality checks.",
+  "before": "Regression reproduced exact state recovery error",
+  "after": {
+    "tests_passed": 8,
+    "elapsed_seconds": 96.334
+  },
+  "live_failed_run_readonly": {
+    "unchanged_files": 253,
+    "same_evidence_with_pinned_timestamp": true,
+    "materialized": false,
+    "terminal": "TARGET_NOT_REACHED",
+    "accepted": false,
+    "timestamp": "2026-11-24T22:11:12Z"
+  },
+  "source_hashes": {
+    "src/whetstone/vnext_verified_phase1_operator.py": "692733c547b291521a42af86b802518d83c986958b70021aea97f510d8198d80",
+    "tests/test_vnext_verified_phase1_operator.py": "d2a072d375d9cb3eb57458e8b452ba2e6d5e02822262e8894fb6205b68a11f69"
+  },
+  "evidence_hashes": {
+    "rounds/phase1-readiness-20261124/recovery-before.log": "f48522b90776128fd34a81ad1061fa8fee959a385b6cc5cd03c5016f2f6997d7",
+    "rounds/phase1-readiness-20261124/recovery-after.log": "3f22ab7b8d5ec3d259b3ac032b1386f4002f2633c79eb9ea059c78faef1eba01",
+    "rounds/phase1-readiness-20261124/failed-run-preservation.json": "840b3c57d130e17d53f6b153186ed54eba8279feb5665f2717e333c159392322",
+    "rounds/phase1-readiness-20261124/failed-run-readonly-result.json": "96a73ac1c229acb62859f23f77d744cf6a5b150c69ca4374d942a65e17e2051f"
+  },
+  "provider_calls": 0,
+  "remaining_calls": 4,
+  "activated": false
+}

@@ -105,21 +105,24 @@ class _Closeout(VerifiedReview):
                    if frame.receipt is not None and frame.header['base_pointer'] == proof.latest}
         missing = tuple(row['name'] for row in configured if row['name'] not in current)
         unclean = tuple(row.profile for row in progress if not row.clean)
-        # Global acceptance retains major/blocker debt even outside profile focus.
+        from whetstone.vnext_phase1_policy import enabled as shared_policy, blocking_rows, deferred_rows, POLICY
+        policy = shared_policy(proof.seed_values['review'])
+        # Existing suites retain their global severity rule; new jobs use obligations.
         blocking = tuple(dict(round_number=frame.request.number, feedback_id=row['feedback_id'],
                               severity=row['normalized_severity'])
                          for frame in sorted(current.values(), key=lambda f: f.request.number)
-                         for row in frame.review['feedback']['feedback']
-                         if row['normalized_severity'] in {'major', 'blocker'})
+                         for row in blocking_rows(proof.seed_values['review'], frame.review, global_acceptance=True))
         focused = focused_profile(proof.seed_values['review'])
         from whetstone.vnext_verified_vertical_phase1 import enabled, sequence, completed_round
         vertical = enabled(proof.seed_values['review'])
         accepted = focused is None and not missing and not blocking
+        if policy: accepted = accepted and not unclean and gate == 'review_complete'
         report = report_ref = evidence = evidence_ref = None
         pending = ()
         technical = technical_ref = None
         if gate in {'review_complete', 'budget_exhausted'}:
             stable = not missing and not unclean and (focused is not None or not blocking)
+            if policy: stable = stable and not blocking and gate == 'review_complete'
             terminal = ('FOCUSED_PROFILE_STABLE' if stable else 'PHASE_1_SWEEP_COMPLETE_WITH_RESIDUALS') if focused else (
                 'PHASE_1_STABLE' if stable else 'TARGET_NOT_REACHED')
             reason = ('vnext_phase1_review_complete' if stable else
@@ -157,7 +160,7 @@ class _Closeout(VerifiedReview):
                         review_round_budget=sum(p.round_budget for p in progress) + max(p.round_budget for p in progress),
                         vertical_merges=[_ref(f"rounds/round-{m[0]['round_number']}/vertical_merge.json", m[0]) for m in vertical_state.merges])
                     evidence_schema = 'vnext_verified_phase1_closeout_v3'
-            proof.reader.suite.registry.validate(evidence, evidence_schema)
+            if not policy: proof.reader.suite.registry.validate(evidence, evidence_schema)
             from whetstone.vnext_verified_phase1_budget import supported, records
             if supported(proof.reader.suite):
                 grants = records(proof)
@@ -168,8 +171,13 @@ class _Closeout(VerifiedReview):
                     round_number=number, vertical_merges=evidence.get('vertical_merges', []),
                     review_round_budget=sum(p.round_budget for p in progress) + (max(p.round_budget for p in progress) if vertical else 0),
                     budget_extensions=[r[0] for r in grants])
-                proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v4')
+                if not policy: proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v4')
                 prefix = f"rounds/phase1_closeouts/grants-{len(grants)}-{proof.latest['hash']}-{number}"
+            if policy:
+                evidence.update(schema_version='vnext-verified-phase1-closeout-v5', completion_policy=POLICY,
+                    scope_contract_hash=proof.seed_values['job']['scope_contract_hash'],
+                    deferred_findings=deferred_rows(sorted(current.values(), key=lambda f: f.request.number)))
+                proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v5')
             evidence_ref = _ref('rounds/phase1_closeouts/closeout-' + sha256_bytes(canonical_json_bytes(evidence)) + '.json', evidence)
             if focused or vertical or supported(proof.reader.suite): evidence_ref = _ref(prefix+'/closeout.json', evidence)
             stored_report = self._optional(report_ref['path'])

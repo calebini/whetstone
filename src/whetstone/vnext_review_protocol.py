@@ -73,5 +73,5 @@ def _decode_review(raw, preflight, *, feedback_path, base, section_map):
     schemas.validate(advice,'vnext_finding_advice_v1')
     findings,evidence=classify_feedback(feedback=feedback,feedback_ref=reference,advice=advice,
         job=job,authority=values['authority'],invariants=values['invariants'],base=base,
-        section_map=section_map,scope=values['scope'])
+        section_map=section_map,scope=values['scope'], review=values['review'])
     return {'feedback':feedback,'advice':advice,'findings':findings,'evidence':evidence}

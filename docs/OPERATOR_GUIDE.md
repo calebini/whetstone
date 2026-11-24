@@ -27,6 +27,11 @@ separate; do not overwrite a prior audit root to manufacture an iterative histor
 
 ## Select the runtime before promising capabilities
 
+Development note: shared Phase 1 completion and MVP support have passed targeted
+offline qualification under a new, separately registered suite. They are not enabled by the current
+production release gate. See the [qualification record](PHASE1_COMPLETION_QUALIFICATION.md);
+do not promise this capability from the existing release or upgrade retained jobs.
+
 Prefer an already configured `whetstone` launcher and its selected stable runtime.
 If available, `whetstone --runtime-info` reports launcher selection. Launcher-only
 channel options are not necessarily supported by the package CLI. Otherwise

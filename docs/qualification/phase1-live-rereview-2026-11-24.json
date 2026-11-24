@@ -1,0 +1,46 @@
+{
+  "archive": "rounds/phase1-readiness-20261124/failed-run-before-recovery.tar.gz",
+  "archive_sha256": "f2b7952ada396c29243168fca3b50bb914dc16bbf984bdf5ea495e0bfe67df51",
+  "verified_archived_files": 253,
+  "grant": {
+    "path": "rounds/phase1_budget_extensions/extension-1.json",
+    "hash": "48e60900fbffd4a8861d1761145df1b8ddc8ebdceb1313ab8af5ae8f1180b2d3"
+  },
+  "reviews": [
+    {
+      "call": 17,
+      "profile": "buildability",
+      "findings": 0,
+      "response_sha256": "16285b1148f3634f3fa6a1a444738b0eedabca82eb4a1f66d21a64f1b8fb19a7"
+    },
+    {
+      "call": 18,
+      "profile": "consistency",
+      "findings": 0,
+      "response_sha256": "506ba2fb92c9440ea05b7e1fa9f48692a3ec0ab7b24b5f2fb8504b947631dbe9"
+    },
+    {
+      "call": 19,
+      "profile": "determinism_light",
+      "findings": 0,
+      "response_sha256": "0065f77545a7f7b5b0c7c8381b68c8570911714d28cc74d0648d89c716badf14"
+    },
+    {
+      "call": 20,
+      "profile": "operability_light",
+      "findings": 0,
+      "response_sha256": "c5947356be5731e555c1d75836605d02338f840618f79c31a13de9c2953adfc4"
+    }
+  ],
+  "draft_sha256": "ca8f88bfc22209efc768283c82c9142c3175e9f7611f07c5301bfdd61a824a7f",
+  "promotion_ordinal": 2,
+  "closeout": {
+    "path": "rounds/phase1_closeouts/grants-1-2c004696d3dc320ae8d3394c9233a56666ce308c8e05822edfad429773f17212-14/closeout.json",
+    "hash": "c90d3a36b47e4c078ee1fa9ec8c220ad257556a173e2b02b75f0e6f2a94bf4b2"
+  },
+  "terminal_state": "PHASE_1_STABLE",
+  "ready_for_phase_2": false,
+  "campaign_calls": 20,
+  "remaining_calls": 0,
+  "production_activation": false
+}

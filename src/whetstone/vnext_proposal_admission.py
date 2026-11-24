@@ -140,7 +140,7 @@ class ProposalAdmission:
         advice = reader.json(record['advice'], 'vnext_finding_advice_v1') if record['advice'] else None
         _, evidence = classify_feedback(feedback=feedback, feedback_ref=record['feedback'], advice=advice,
             job=values['job'], authority=values['authority'], invariants=values['invariants'],
-            base=values['base'], section_map=values['base_map'], scope=values['scope'])
+            base=values['base'], section_map=values['base_map'], scope=values['scope'], review=values['review'])
         decisions = []
         for refs in record['decision_refs']:
             key = refs['finding_id']

@@ -19,7 +19,7 @@ PRIORITY = {'editor_fixable':0,'deferable':1,'operator_decision_required':2,'sco
 
 
 def classify_feedback(*, feedback, feedback_ref, advice, job, authority, invariants,
-                      base, section_map, scope=None):
+                      base, section_map, scope=None, review=None):
     """Return deterministic records and their exact evidence, with no writes.
 
     feedback_ref must have been read/hash-checked by the caller. The hash is
@@ -137,4 +137,7 @@ def classify_feedback(*, feedback, feedback_ref, advice, job, authority, invaria
             prior['requires_new_job'] |= new_job
         else:
             records[key]=record;evidence[key]=detail
+    from whetstone.vnext_phase1_policy import enabled, classify_obligations
+    if review is not None and enabled(review):
+        classify_obligations(feedback, advice, list(records.values()), evidence, scope, invariants)
     return [records[k] for k in sorted(records)],evidence
