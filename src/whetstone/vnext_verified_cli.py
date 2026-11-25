@@ -18,9 +18,10 @@ from whetstone.vnext_proposal_run import RUN_INPUT_PATH
 from whetstone.vnext_verified_bootstrap import prepare_verified_package
 from whetstone.vnext_verified_run import open_verified_run
 
-# Controlled opt-in release, 2026-10-28. See VNEXT_VERIFIED_PROMOTION_RELEASE.md.
+# Exact opt-in releases. See VNEXT_VERIFIED_PROMOTION_RELEASE.md and PHASE1_COMPLETION_QUALIFICATION.md.
 QUALIFIED_VERIFIED_SUITES = {
     'vnext-verified-consumer-1': '7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58',
+    'vnext-verified-consumer-3': '46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c',
 }
 COMMANDS = frozenset({'vnext-admit', 'live-phase1', 'live-focused-phase1',
     'promote-phase2', 'live-phase2', 'status', 'resume', 'vnext-decisions',

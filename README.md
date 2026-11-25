@@ -67,7 +67,13 @@ a narrower qualified scope than the legacy/bridge workflows.
   - `standard-v1`
   - `governance-v6`
 
-## Verified Promotion in 0.2.0
+## Verified promotion
+
+The 0.3.0rc4 candidate enables explicit consumer-3 selection for shared Phase 1
+completion on Standard and MVP jobs. See the [operator quickstart](docs/OPERATOR_QUICKSTART.md#verified-promotion-command-surface-explicit-opt-in)
+for the suite digest, profile sets and admission procedure.
+
+### Consumer-1 in 0.2.0
 
 The new opt-in path keeps model-proposed edits separate from the authoritative
 draft. Whetstone classifies findings, binds any required operator decisions,

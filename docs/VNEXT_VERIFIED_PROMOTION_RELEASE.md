@@ -1,5 +1,7 @@
 # Verified-promotion release decision — 2026-10-28
 
+Consumer-3 Phase 1 activation is recorded in the [shared completion qualification](PHASE1_COMPLETION_QUALIFICATION.md). This decision below covers consumer-1.
+
 **Approved by the operator on 2026-10-28. Controlled, explicit config opt-in
 activation is implemented for `vnext-verified-consumer-1`.** The exact V gate
 entry and six owning specifications now advertise the same supported digest.

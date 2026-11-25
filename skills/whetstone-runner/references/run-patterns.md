@@ -21,8 +21,8 @@ required. A standard review with scope is not automatically a custom design rubr
 ## MVP stabilization
 
 Prepare a concise scope contract. Recommend lenses and bounded allowances, then
-check the entire mode/workflow/profile combination. The qualified verified source
-release does not accept MVP; do not silently choose standard to obtain a Verifier.
+check the entire mode/workflow/profile combination. Consumer-3 supports MVP Phase 1 with approved scope. If the selected
+installation only advertises consumer-1, explain its Standard-only boundary.
 Assess bridge support and explain any operator-attestation obligation. If no
 supported combination meets intent, surface that before launch.
 

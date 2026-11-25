@@ -1,4 +1,4 @@
-"""Coherent consumer-2 packages; activation injected only inside qualification tests."""
+"""Public CLI coverage for the shipping shared-policy suite and the held predecessor."""
 from copy import deepcopy
 import json
 import sys
@@ -13,10 +13,9 @@ from test_vnext_phase1_policy import scope_packet
 
 @unittest.skipUnless(sys.platform == 'darwin', 'Local storage targets macOS/APFS')
 class PolicyCLIFixture(unittest.TestCase):
-    suite_version = "vnext-verified-consumer-2"
+    suite_version = "vnext-verified-consumer-3"
     setUpClass = old.VerifiedCLITests.setUpClass
     patch = old.VerifiedCLITests.patch
-    qualify = old.VerifiedCLITests.qualify
     clean = staticmethod(old.VerifiedCLITests.clean)
     invoke = old.VerifiedCLITests.invoke
     save_config = old.VerifiedCLITests.save_config
@@ -47,9 +46,18 @@ class PolicyCLIFixture(unittest.TestCase):
         self.save_config()
 
 
+class HeldSuiteCLITests(PolicyCLIFixture):
+    suite_version = "vnext-verified-consumer-2"
+
+    def test_registration_does_not_activate_unqualified_suite(self):
+        code,result=self.invoke('vnext-admit')
+        self.assertEqual(code,2,result)
+        self.assertEqual(result['reason_code'],'vnext_mode_unavailable')
+        self.assertFalse(self.root.exists())
+
+
 class PolicyCLITests(PolicyCLIFixture):
     def test_coherent_admission_matrix_and_scope_required(self):
-        self.qualify()
         for workflow in ('standard','mvp'):
             for profile_set in ('stateful_system','balanced_mvp','utility_mvp'):
                 for mode in ('horizontal','vertical'):
@@ -63,14 +71,7 @@ class PolicyCLITests(PolicyCLIFixture):
         self.assertEqual(code,2,result);self.assertFalse(self.root.exists())
         self.assertEqual(self.reviewer.calls,0)
 
-    def test_registration_does_not_activate_unqualified_suite(self):
-        code,result=self.invoke('vnext-admit')
-        self.assertEqual(code,2,result)
-        self.assertEqual(result['reason_code'],'vnext_mode_unavailable')
-        self.assertFalse(self.root.exists())
-
     def test_mvp_utility_horizontal_public_completion_and_phase2_refusal(self):
-        self.qualify()
         code,result=self.invoke('live-phase1')
         self.assertEqual(code,0,result)
         self.assertEqual(result['gate'],'phase1_complete')
@@ -85,7 +86,7 @@ class PolicyCLITests(PolicyCLIFixture):
         self.assertFalse((self.root/'rounds/phase2/entry.json').exists())
 
     def test_mvp_balanced_vertical_public_completion(self):
-        self.configure(profile_set='balanced_mvp',mode='vertical');self.qualify()
+        self.configure(profile_set='balanced_mvp',mode='vertical')
         code,result=self.invoke('live-phase1')
         self.assertEqual(code,0,result)
         self.assertEqual(result['gate'],'phase1_complete')
@@ -93,7 +94,7 @@ class PolicyCLITests(PolicyCLIFixture):
         self.assertFalse(json.loads((self.root/'rounds/run_state.json').read_bytes())['ready_for_phase_2'])
 
     def test_mvp_balanced_horizontal_public_completion(self):
-        self.configure(profile_set='balanced_mvp');self.qualify()
+        self.configure(profile_set='balanced_mvp')
         code,result=self.invoke('live-phase1')
         self.assertEqual(code,0,result)
         self.assertEqual(result['gate'],'phase1_complete')
@@ -112,7 +113,7 @@ class PolicyCLITests(PolicyCLIFixture):
         self.fixture.package.update(job_descriptor=self.f.job_ref,review_configuration=self.f.original.review_ref)
         self.fixture.save_package()
         self.config['vnext_input_package']['hash']=sha256_bytes((self.fixture.source/'proposal_package.json').read_bytes())
-        self.save_config();self.qualify()
+        self.save_config()
         code,result=self.invoke('vnext-admit');self.assertEqual(code,0,result)
         self.reviewer.callback=canonical_json_bytes
         original=self.reviewer.review
@@ -147,7 +148,7 @@ class PolicyCLITests(PolicyCLIFixture):
         self.fixture.package.update(job_descriptor=self.f.job_ref,review_configuration=self.f.original.review_ref)
         self.fixture.save_package()
         self.config['vnext_input_package']['hash']=sha256_bytes((self.fixture.source/'proposal_package.json').read_bytes())
-        self.save_config();self.qualify()
+        self.save_config()
         code,result=self.invoke('live-focused-phase1','--profile','buildability')
         self.assertEqual(code,0,result)
         self.assertEqual(result['operator']['terminal_report']['terminal_state'],'FOCUSED_PROFILE_STABLE')
@@ -155,7 +156,6 @@ class PolicyCLITests(PolicyCLIFixture):
         self.assertEqual(self.reviewer.calls,1)
 
 class CloseoutSeverityCLITests(PolicyCLIFixture):
-    suite_version = "vnext-verified-consumer-3"
 
     def use_nit_reviewer(self, classification):
         def respond(packet):
@@ -169,9 +169,9 @@ class CloseoutSeverityCLITests(PolicyCLIFixture):
         self.reviewer.callback = respond
 
     def test_approved_deferred_nits_close_and_replay(self):
-        code, refusal = self.invoke('vnext-admit', '--dry-run')
-        self.assertEqual((code, refusal['reason_code']), (2, 'vnext_mode_unavailable'))
-        self.qualify()
+        code, result = self.invoke('vnext-admit', '--dry-run')
+        self.assertEqual(code, 0, result)
+        self.assertFalse(self.root.exists())
         self.use_nit_reviewer('deferable')
         code, result = self.invoke('live-phase1')
         self.assertEqual(code, 0, result)
@@ -200,7 +200,6 @@ class CloseoutSeverityCLITests(PolicyCLIFixture):
         self.assertEqual(self.reviewer.calls, len(profiles))
 
     def test_decision_nit_blocks_on_deferred_surface_and_reentry(self):
-        self.qualify()
         self.use_nit_reviewer('operator_decision_required')
         for _ in range(2):
             code, result = self.invoke('live-phase1')

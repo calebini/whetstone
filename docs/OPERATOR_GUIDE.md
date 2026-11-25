@@ -27,10 +27,9 @@ separate; do not overwrite a prior audit root to manufacture an iterative histor
 
 ## Select the runtime before promising capabilities
 
-Development note: shared Phase 1 completion and MVP support have passed targeted
-offline qualification under a new, separately registered suite. They are not enabled by the current
-production release gate. See the [qualification record](PHASE1_COMPLETION_QUALIFICATION.md);
-do not promise this capability from the existing release or upgrade retained jobs.
+The activated 0.3.0rc4 candidate supports shared Phase 1 completion for Standard
+and MVP under consumer-3. Confirm the launcher selects an installation containing
+that gate. [Qualification record](PHASE1_COMPLETION_QUALIFICATION.md)
 
 Prefer an already configured `whetstone` launcher and its selected stable runtime.
 If available, `whetstone --runtime-info` reports launcher selection. Launcher-only
@@ -99,16 +98,13 @@ operator prefers delegated semantic verification. Do not present it as a univers
 runtime default or deprecate the bridge. Confirm availability in the executing
 runtime and retain bridge routes for existing jobs and justified supported cases.
 
-The checkout's [qualified verified release](VNEXT_VERIFIED_PROMOTION_RELEASE.md)
-selects `standard`, `stateful_system`, local macOS/APFS storage and, for Phase 2,
-the fixed `standard-v1` rubric. It supports horizontal/vertical Phase 1 and a
-separately pinned focused route. MVP, exploratory, governance, custom workflows
-and other profile sets are not currently admitted by that verified path.
+For a new Phase 1 job, consumer-3 supports Standard and MVP with Stateful System,
+Balanced MVP or Utility MVP on local macOS/APFS. Choose horizontal or vertical
+for a full sweep, or horizontal for a focused lens. MVP requires approved scope.
+Consumer-1 retains its Standard/Stateful System procedure and fixed Phase 2 rubric.
 
-If the user wants MVP with automated semantic verification, explain that this
-combination is unavailable—not that MVP cannot preserve content. Offer only
-validated alternatives: retain the desired review policy with a supported bridge
-path and its attestation obligations, or explicitly reconsider the review policy.
+If the selected installation lacks consumer-3, check the available protection
+and review combinations with the operator before launching an MVP job.
 Do not silently switch to standard, drop protection or claim the bridge supports
 an unchecked combination. See [bridge activation](PRESERVATION_ACTIVATION.md)
 and the [verified command/recovery matrix](OPERATOR_QUICKSTART.md#recommended-defaults).

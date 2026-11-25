@@ -1,6 +1,8 @@
 # Shared Phase 1 completion and MVP qualification
 
-**2026-11-25 — RC3 correction.** The isolated `0.3.0rc3` candidate passes deferred-nit closeout and operator-decision blocking through the CLI. See [RC3 qualification](#rc3-closeout-correction). The [RC2 hold](#release-review-disposition) still applies to consumer-2.
+**2026-11-25 — consumer-3 activation.** The 0.3.0rc4 candidate shipping map enables the qualified RC3 digest for new explicit Phase 1 jobs. See the [production CLI checks](#consumer-3-production-cli-checks).
+
+**RC3 correction.** The isolated `0.3.0rc3` candidate passes deferred-nit closeout and operator-decision blocking through the CLI. See [RC3 qualification](#rc3-closeout-correction). The [RC2 hold](#release-review-disposition) still applies to consumer-2.
 
 ## Design and scope
 
@@ -11,10 +13,9 @@ no workflow/profile branches were added to those mechanisms.
 
 `vnext-verified-consumer-2` is registered with digest
 `bc6657ad4a098f2f6a9a2652b0d4be412e5ca452be4723c8d3c8ba82443c9820`.
-Registration does not activate the public CLI: its production qualification map
-continues to advertise only the existing release. Qualification tests explicitly
-inject the new entry within their own process. Do not copy that override into an
-operator setup or change a retained job's suite/configuration.
+Consumer-2 remains held. The production CLI admits consumer-1 and consumer-3
+by exact digest. RC2 and RC3 qualification used a process-local override before
+activation. New consumer-3 jobs on the activated candidate use the shipping map.
 
 The new capability admission matrix is Standard/MVP × stateful_system/balanced_mvp/
 utility_mvp, with horizontal/vertical full review or horizontal focused selection.
@@ -53,7 +54,7 @@ balanced MVP uses structural_integrity, determinism and operability. For focused
 horizontal work add `phase1_selection: {"kind":"focused","profile":"buildability"}`
 with that profile present in the configured utility set. Bind approved scope and
 select the explicitly activated suite in the new descriptor and run configuration.
-The corrected candidate is `vnext-verified-consumer-3`. Its production gate is closed.
+The activated candidate selects `vnext-verified-consumer-3` and writes closeout v6.
 Changing these bytes changes job identity; never retrofit an existing root.
 Phase 1 has no new rubric selection. Do not attach a Phase 2 configuration.
 
@@ -443,3 +444,33 @@ records suite and snapshot identity, cohorts and evidence hashes.
 The deferred-nit release blocker is resolved for consumer-3. Stable still points
 to 0.1.0. Enabling consumer-3 requires a separate release decision for its exact
 digest and shipping-map checks on the final package.
+
+## Consumer-3 production CLI checks
+
+The operator authorized the exact consumer-3 digest on 2026-11-25. The activated
+0.3.0rc4 source snapshot was built from the working tree based on `423add5`.
+Its production map contains consumer-1 and consumer-3. Consumer-2 remains held.
+The candidate uses the same consumer-3 manifest and contracts qualified in RC3.
+
+On local macOS/APFS the isolated candidate launcher admitted 12 full and 20
+horizontal focused configurations and refused all 20 vertical focused selections.
+Fresh processes verified dry-run, initialization, retained status, refusal of a
+suite change and exact materialization recovery. MVP without approved scope was
+refused before root creation.
+
+The unmodified CLI and native adapter used a local scripted Reviewer for two
+MVP jobs. Four approved deferred nits produced an accepted v6 closeout. Re-entry
+returned the same reference after zero additional calls, and Phase 2 entry was
+refused. An explicit decision nit stopped at finding admission and stayed there
+on re-entry after one lifetime Reviewer call.
+
+The installed candidate passed 32 targeted test methods across the shared Phase 1
+policy, held-suite refusal, closeout severity, consumer-1 release and configuration
+checks, and bridge compatibility. The launcher and test cohorts used no external
+provider calls. The [activation receipt](qualification/phase1-consumer3-activation-2026-11-25.json) records the
+inventory, exact digests, matrix, results and evidence hashes. Initial harness
+corrections are listed in the receipt.
+
+Stable still resolves to `0.1.0-6e19fe3`. Stable adoption and publication require
+separate decisions. Retain this versioned candidate and the prior installations
+for review and replay.

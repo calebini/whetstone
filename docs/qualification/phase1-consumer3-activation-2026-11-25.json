@@ -1,0 +1,484 @@
+{
+  "date": "2026-11-25",
+  "base_commit": "423add5acc5c2b882845d0beeaefa37153329de6",
+  "candidate": {
+    "channel": "candidate",
+    "version": "0.3.0rc4",
+    "commit": null,
+    "target": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/rounds/consumer3-activation-20261125/releases/0.3.0rc4"
+  },
+  "production_qualified_suites": {
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58",
+    "vnext-verified-consumer-3": "46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c"
+  },
+  "qualification_receipt": "docs/qualification/phase1-closeout-rc3-2026-11-25.json",
+  "qualification_receipt_sha256": "a44f39c339603dfa2760392ffdbcb466a8ff80456a38ddc4193ac01ed7104187",
+  "snapshot": {
+    "files": 983,
+    "inventory": "rounds/consumer3-activation-20261125/snapshot-sha256.json",
+    "sha256": "fe8bfe06f4d3c5e80f2e207c3fa2a9adcad1aaa9ae972645c5e8769712e494a8"
+  },
+  "subprocess_matrix": [
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "structural_integrity",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "structural_integrity",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "determinism",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "determinism",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "operability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "operability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "structural_integrity",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "structural_integrity",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "determinism",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "determinism",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "operability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "operability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "buildability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "buildability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "consistency",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "consistency",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "determinism_light",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "determinism_light",
+      "exit_code": 2
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "operability_light",
+      "exit_code": 0
+    },
+    {
+      "workflow": "standard",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "operability_light",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "structural_integrity",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "structural_integrity",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "determinism",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "determinism",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "horizontal",
+      "lens": "operability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "stateful_system",
+      "mode": "vertical",
+      "lens": "operability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "structural_integrity",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "structural_integrity",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "determinism",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "determinism",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "horizontal",
+      "lens": "operability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "balanced_mvp",
+      "mode": "vertical",
+      "lens": "operability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": null,
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "buildability",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "buildability",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "consistency",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "consistency",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "determinism_light",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "determinism_light",
+      "exit_code": 2
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "horizontal",
+      "lens": "operability_light",
+      "exit_code": 0
+    },
+    {
+      "workflow": "mvp",
+      "preset": "utility_mvp",
+      "mode": "vertical",
+      "lens": "operability_light",
+      "exit_code": 2
+    }
+  ],
+  "subprocess_checks": {
+    "missing_scope": "$: MVP requires an approved scope contract",
+    "retained_suite_mismatch": "config differs from immutable contract_suite_version",
+    "materialization_recovery": "materialization",
+    "restored_files": 17,
+    "source_unchanged": true
+  },
+  "native_cli_scripted_reviewer": {
+    "deferred": {
+      "gate": "phase1_complete",
+      "reviewer_invocations": [
+        "buildability",
+        "consistency",
+        "determinism_light",
+        "operability_light"
+      ],
+      "reentry_additional_calls": 0
+    },
+    "decision": {
+      "gate": "finding_admission",
+      "reviewer_invocations": [
+        "buildability"
+      ],
+      "reentry_additional_calls": 0
+    }
+  },
+  "test_cohorts": {
+    "policy-cli.log": {
+      "passing": 6,
+      "methods": [
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_coherent_admission_matrix_and_scope_required",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_balanced_horizontal_public_completion",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_balanced_vertical_public_completion",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_focused_public_completion_does_not_accept_full_phase",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_utility_horizontal_public_completion_and_phase2_refusal",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_registered_mvp_suite_edits_verifies_promotes_and_rereviews"
+      ],
+      "sha256": "5eeb312f254e3cc85ad5040fcf8f45cc394736d020a496ead28ee3b51025c92a"
+    },
+    "nit-held-cli.log": {
+      "passing": 3,
+      "methods": [
+        "test_vnext_phase1_policy_cli.CloseoutSeverityCLITests.test_approved_deferred_nits_close_and_replay",
+        "test_vnext_phase1_policy_cli.CloseoutSeverityCLITests.test_decision_nit_blocks_on_deferred_surface_and_reentry",
+        "test_vnext_phase1_policy_cli.HeldSuiteCLITests.test_registration_does_not_activate_unqualified_suite"
+      ],
+      "sha256": "cb4e994968e04578f5a71aab784656bb25b2a1f609438466e0604bab3022df50"
+    },
+    "shipping-compat.log": {
+      "passing": 23,
+      "methods": [
+        "test_vnext_verified_activation.ActivatedVerifiedCLITests.test_installed_manifest_drift_refuses_with_the_real_shipping_gate",
+        "test_vnext_verified_activation.ActivatedVerifiedCLITests.test_retained_mode_and_client_selection_cannot_be_changed",
+        "test_vnext_verified_activation.ActivatedVerifiedCLITests.test_shipping_admission_dry_run_retained_status_and_selected_recovery",
+        "test_vnext_verified_activation.ActivatedVerifiedCLITests.test_unknown_unqualified_and_conflicting_selection_refuse_before_writes",
+        "test_vnext_verified_activation.VerifiedReleasePinTests.test_shipping_map_matches_both_approved_manifests",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_bound_phase2_replacement_refuses_without_entry_or_clients",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_duplicate_json_and_yaml_selectors_refuse",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_fresh_mode_suite_package_and_bound_setting_matrix",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_package_relative_locator_and_corroborating_cli_selectors",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_phase2_entry_revalidates_client_profile_rubric_and_input_barriers",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_phase2_ref_shape_paths_bytes_schema_and_job_matrix",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_registered_suite_and_wrong_digest_do_not_activate_fresh_or_retained",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_retained_mode_rejects_edited_selectors_and_accepts_omission",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_retained_package_and_descriptor_edits_cannot_convert_the_job",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_unknown_and_orphan_top_level_selectors_never_fall_back",
+        "test_vnext_verified_configuration_cli.ConfigurationCommandTests.test_unsupported_commands_and_controls_cannot_reach_legacy",
+        "test_preservation_activation.ActivationConfigTests.test_documented_opt_in_and_optional_null_load_without_gate_override",
+        "test_preservation_activation.ActivationConfigTests.test_explicit_predecessor_ref_is_retained",
+        "test_preservation_activation.ActivationConfigTests.test_invalid_opt_in_fails_public_cli_before_client_creation",
+        "test_preservation_activation.ActivationConfigTests.test_omission_keeps_legacy_defaults",
+        "test_preservation_activation.PublicActivationJourneyTests.test_invalid_surface_or_legacy_root_refused_before_clients",
+        "test_preservation_activation.PublicActivationJourneyTests.test_opt_in_pending_approval_and_continuation_through_public_cli",
+        "test_preservation_activation.PublicActivationJourneyTests.test_public_phase1_noop_is_enforced_without_editor"
+      ],
+      "sha256": "6758b252fce99e84a822aa98ffae1a816aa64c0ac642047735aac272e039a40f"
+    }
+  },
+  "artifacts": {
+    "check_shipping_cli.py": "a75bccd03932d1d21438947b919528e4c86773d4d1dd8cafcee64eb6104c9982",
+    "launcher-results.json": "a4d1928a45543128cf28eb445f6a4cc8cf99bf7d161d2231a9e8a42eb1e82d99",
+    "check_native.py": "7f0f19741cb9dea40dcf0901ab583f0d772d28992f6127f9d1077fbcf17c51af",
+    "native-results.json": "5bfc094e5aa0cbf0c20d51aacb22b8ed2c705de33618f69a6c843ba6ef3999ea"
+  },
+  "external_provider_calls": 0,
+  "stable": {
+    "channel": "stable",
+    "version": "0.1.0",
+    "commit": "6e19fe3e72dedda50a372781a43c08e5d7e7480a",
+    "target": "/Users/Shared/Agent-Workspace/tools/whetstone/releases/0.1.0-6e19fe3"
+  },
+  "limits": [
+    "Isolated source-snapshot installation on local macOS/APFS.",
+    "CLI checks used the shipping gate. Local synthetic Reviewer transport supplied normal command-line responses for the two subprocess Phase 1 jobs.",
+    "Initial harness failures involved a fictional client identity and an omitted bridge test-fixture directory. Both were corrected before passing results.",
+    "No stable-lane adoption or published release."
+  ]
+}

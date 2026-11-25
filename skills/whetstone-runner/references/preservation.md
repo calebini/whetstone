@@ -13,6 +13,11 @@ Phase 2 rubric; it is not automatic support for MVP, other profile sets or anoth
 installed runtime. Verify horizontal/vertical/focused selection and exact recovery
 support before promising it.
 
+Consumer-3 adds Standard/MVP Phase 1 under the qualified local storage contract.
+Check the exact digest, route and profile set against the executing Quickstart.
+Use horizontal focused review or either full review route. Phase 2 requires a
+separately supported job.
+
 Prepare bound seed, authority map, protected invariants, scope and review/client
 configuration using the published schemas and builders. Keep package/config
 outside a nonexistent destination. Validate with the supported admission dry run;

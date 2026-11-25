@@ -1,6 +1,6 @@
 [project]
 name = "whetstone"
-version = "0.2.0"
+version = "0.3.0rc4"
 description = "Deterministic AI spec convergence orchestrator."
 requires-python = ">=3.11"
 dependencies = []

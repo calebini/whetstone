@@ -11,16 +11,13 @@ target_spec_role: leaf_spec
 
 ## Verified-Promotion Release
 
-Public support: **explicit config opt-in `verified_promotion`**, qualified on
-2026-10-28 for **`vnext-verified-consumer-1`**, exact manifest digest
-`7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
-This leaf's V requirements are operative only for that advertised suite and the
-[qualified scope and evidence](../VNEXT_VERIFIED_PROMOTION_RELEASE.md).
-D8 requires a canonical physical run root on local macOS/APFS. The standard
-workflow, stateful-system profiles, fixed rubric, command/recovery matrix and
-immutable input gates remain mandatory. Other modes/suites gain no qualification
-by implication; legacy/bridge defaults and separate provider/source-write consent
-remain unchanged. See the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release).
+Select `verified_promotion` explicitly and bind the suite in the immutable new-job descriptor.
+Both suites require a canonical physical run root on local macOS/APFS.
+
+- `vnext-verified-consumer-3`, digest `46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c`, supports Phase 1 for Standard or MVP with Stateful System, Balanced MVP or Utility MVP. Full reviews may be horizontal or vertical. Focused reviews are horizontal. MVP requires approved scope. Phase 2 entry is unavailable for this suite. [Shared completion and qualification](../PHASE1_COMPLETION_QUALIFICATION.md)
+- `vnext-verified-consumer-1`, digest `7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`, retains its Standard/Stateful System command and recovery matrix, including the fixed Phase 2 rubric. [Consumer-1 release record](../VNEXT_VERIFIED_PROMOTION_RELEASE.md)
+
+Use the [operator procedure](../OPERATOR_QUICKSTART.md#operating-a-qualified-v-release) for admission and retained-job handling.
 
 ## Scope Contract
 
@@ -1061,5 +1058,4 @@ recommendation: retry_with_simpler_schema | switch_client | manual_review_requir
 New `review-configuration-v3` jobs are governed by the
 [shared Phase 1 completion policy](PHASE1_COMPLETION_POLICY_SPEC.md).
 This amendment does not reinterpret existing suites or enable Phase 2.
-Implementation and targeted offline qualification are complete;
-[production activation remains separate](../PHASE1_COMPLETION_QUALIFICATION.md).
+Consumer-3 is qualified for the advertised Phase 1 scope. [Activation evidence](../PHASE1_COMPLETION_QUALIFICATION.md).

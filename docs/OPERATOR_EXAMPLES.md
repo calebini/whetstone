@@ -90,7 +90,7 @@ using MVP expectations and a lighter profile set, with few routine check-ins.
 vertical review if the concerns interact; do not ask the operator to pick counts
 without a consequential reason. Explain the resolved Reviewer/Editor settings.
 
-**Compatibility finding:** The qualified verified-promotion selection requires
+**Compatibility finding:** In this example the selected installation only advertises consumer-1, which requires
 standard/stateful-system. Do not label MVP as incapable of preservation. Explain
 that MVP plus this automated verification path is unavailable in that runtime.
 

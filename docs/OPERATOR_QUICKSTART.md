@@ -23,6 +23,15 @@ Whetstone persists every round under `rounds/`. For legacy/bridge runs, `rounds/
 
 ### Verified-promotion command surface (explicit opt-in)
 
+For a consumer-3 Phase 1 job, select `editing_mode: verified_promotion` and
+`contract_suite_version: vnext-verified-consumer-3` in the launch config. Bind the same suite in the
+package descriptor. The shipping digest is `46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c`.
+Select Standard or MVP, any of the three qualified profile sets, and horizontal or
+vertical full review or horizontal focused review. Bind approved scope for MVP.
+Launch with `live-phase1` or `live-focused-phase1` after `vnext-admit --dry-run`
+on the prepared root and config. Phase 1 is the terminal phase for this suite.
+Confirm the selected installation includes this gate. [Package fields and evidence](PHASE1_COMPLETION_QUALIFICATION.md)
+
 Whetstone 0.2.0 V support is explicitly opted in per job using `vnext-verified-consumer-1`,
 manifest digest `7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58`.
 It requires the qualified local macOS/APFS runtime and the scope below. Hashes in

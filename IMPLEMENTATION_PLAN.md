@@ -22,7 +22,11 @@ Trigger investigation: confirmed descriptive `removed` false positive; no unsafe
 regex exemption. Exact clarification-only decision prepared and dry-run validated;
 34 regression tests pass. General classifier correction remains unresolved.
 
-RC3 correction (2026-11-25): the separately registered consumer-3 suite pins
+Consumer-3 shipping gate (2026-11-25): operator authorized the qualified RC3 digest.
+The versioned 0.3.0rc4 activation candidate uses the production map. Stable adoption
+awaits a separate decision. [Production CLI checks](docs/PHASE1_COMPLETION_QUALIFICATION.md#consumer-3-production-cli-checks).
+
+RC3 correction (pre-activation, 2026-11-25): the separately registered consumer-3 suite pins
 closeout v6. Installed CLI tests passed for approved deferred nits and operator
 decision nits, including re-entry. Production activation remains off.
 [RC3 qualification](docs/PHASE1_COMPLETION_QUALIFICATION.md#rc3-closeout-correction).

@@ -1,12 +1,11 @@
 # Shared Phase 1 completion policy
 
-Status: implemented; targeted offline qualification passed. See
-[qualification evidence](../PHASE1_COMPLETION_QUALIFICATION.md). Not a release approval.
+Consumer-3 is enabled for explicit Phase 1 selection in the shipping CLI. [Qualification evidence](../PHASE1_COMPLETION_QUALIFICATION.md).
 
 ## Ownership and selection
 
 New verified jobs select `scope-aware-phase1-v1` in immutable
-`review-configuration-v3`, pinned by `vnext-verified-consumer-2`. The same policy
+`review-configuration-v3`, pinned by `vnext-verified-consumer-3` with closeout v6. The held consumer-2 suite retains closeout v5. The same policy
 applies to every selected Phase 1 profile, independently of workflow name.
 The initial admission matrix is Standard or MVP with `stateful_system`,
 `balanced_mvp`, or `utility_mvp`; MVP requires approved scope. Profile names must
@@ -53,7 +52,7 @@ required reviews must be clean before full Phase 1 acceptance. Focused stability
 covers only the selected profile. Budget exhaustion never substitutes for these
 conditions. An unresolved decision must not be bypassed by a terminal report.
 
-Closeout v5 retains existing receipts, current pointer, budgets and terminal
+Both closeout versions retain existing receipts, current pointer, budgets and terminal
 bindings, and records justified deferred findings with scope surface IDs and
 scope hash. Deferred findings remain visible; they are not marked fixed.
 Existing raw feedback remains immutable evidence. Technical failure summaries

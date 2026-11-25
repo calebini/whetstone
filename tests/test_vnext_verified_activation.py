@@ -11,13 +11,16 @@ import test_vnext_verified_cli as helpers
 
 
 class VerifiedReleasePinTests(unittest.TestCase):
-    def test_only_the_approved_suite_digest_is_publicly_qualified(self):
-        suite = validate_contract_suite(CONTRACT_ROOT/'suites/vnext-verified-consumer-1.json')
-        self.assertEqual(routing.QUALIFIED_VERIFIED_SUITES, {
+    def test_shipping_map_matches_both_approved_manifests(self):
+        expected = {
             'vnext-verified-consumer-1': '7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58',
-        })
-        self.assertEqual(routing.QUALIFIED_VERIFIED_SUITES[suite.version], suite.digest)
-        self.assertNotIn('vnext-contracts-1', routing.QUALIFIED_VERIFIED_SUITES)
+            'vnext-verified-consumer-3': '46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c',
+        }
+        self.assertEqual(routing.QUALIFIED_VERIFIED_SUITES, expected)
+        for name, digest in expected.items():
+            with self.subTest(suite=name):
+                suite = validate_contract_suite(CONTRACT_ROOT / 'suites' / (name + '.json'))
+                self.assertEqual(suite.digest, digest)
 
 
 @unittest.skipUnless(sys.platform == 'darwin', 'D8 requires local macOS/APFS')
