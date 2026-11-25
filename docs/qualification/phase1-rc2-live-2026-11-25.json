@@ -1,0 +1,114 @@
+{
+  "candidate": "0.3.0rc2",
+  "commit": "17de139c491b07e49d5173aa8ac95c68f31695f1",
+  "provider": "OpenAI via Codex CLI",
+  "model": "gpt-6.1-sol",
+  "reasoning": "medium",
+  "ledger": [
+    {
+      "job": "balanced",
+      "profile": "structural_integrity",
+      "call": 1,
+      "prompt_sha256": "e766c4b1dc5dc9d91b0358de07b7eace68fdc50b068e942f08fa78dce7cc7965",
+      "event": "dispatch",
+      "epoch": 1795563714.5049841
+    },
+    {
+      "job": "balanced",
+      "profile": "structural_integrity",
+      "call": 1,
+      "prompt_sha256": "e766c4b1dc5dc9d91b0358de07b7eace68fdc50b068e942f08fa78dce7cc7965",
+      "event": "returned",
+      "sha256": "5a7ce7239f9759470f0f19ec8475de3b47e58fa919db6b57ee177319deb72b8d",
+      "epoch": 1795563723.0045528
+    },
+    {
+      "job": "balanced",
+      "profile": "determinism",
+      "call": 2,
+      "prompt_sha256": "524266f33fef6c743303f5cfeab97b772913176e2c2b87a7aba29df4de866cdf",
+      "event": "dispatch",
+      "epoch": 1795563729.0034618
+    },
+    {
+      "job": "balanced",
+      "profile": "determinism",
+      "call": 2,
+      "prompt_sha256": "524266f33fef6c743303f5cfeab97b772913176e2c2b87a7aba29df4de866cdf",
+      "event": "returned",
+      "sha256": "572d6e60462a54f5dc64a6a5e5d1df47c0a0e320e55dbc226b3fb9750a1d9467",
+      "epoch": 1795563737.7459562
+    },
+    {
+      "job": "balanced",
+      "profile": "operability",
+      "call": 3,
+      "prompt_sha256": "ad927843533192c92a7fa2e72fd66de785b4c4a20ed6c062d7538b7ec8055bb1",
+      "event": "dispatch",
+      "epoch": 1795563745.609519
+    },
+    {
+      "job": "balanced",
+      "profile": "operability",
+      "call": 3,
+      "prompt_sha256": "ad927843533192c92a7fa2e72fd66de785b4c4a20ed6c062d7538b7ec8055bb1",
+      "event": "returned",
+      "sha256": "e1d0a4f0e6a1339af553749cdd6616a779bf41ad1009e28f0cadf70757949080",
+      "epoch": 1795563754.030089
+    },
+    {
+      "job": "dependency",
+      "profile": "buildability",
+      "call": 4,
+      "prompt_sha256": "195990f5e8603b1101ee820c19e309082a4a1119a3e4a2d082784e78852e460f",
+      "event": "dispatch",
+      "epoch": 1795563781.6010501
+    },
+    {
+      "job": "dependency",
+      "profile": "buildability",
+      "call": 4,
+      "prompt_sha256": "195990f5e8603b1101ee820c19e309082a4a1119a3e4a2d082784e78852e460f",
+      "event": "returned",
+      "sha256": "4fba84520ca5ee10b05d834e19a0fd6544a134aede00a9e0a7e29395277e5b89",
+      "epoch": 1795563800.5772521
+    }
+  ],
+  "jobs": {
+    "balanced": {
+      "exit_code": 0,
+      "gate": "phase1_complete",
+      "result_sha256": "18b0c5d5a88ec2b95428b1d8fbfa1c9e8918848df025f908a62f23bfc034030a",
+      "closeout": {
+        "path": "rounds/phase1_closeouts/grants-0-6d69cf7e05517b4e35611b3aa447064d95164208515f56e6704dbab88974e9cf-3/closeout.json",
+        "hash": "4db55e88b7011a9492561957db32c5b20cd4156605ecb226601b8cbad2f760c0"
+      },
+      "terminal": "PHASE_1_STABLE",
+      "draft": "ca8f88bfc22209efc768283c82c9142c3175e9f7611f07c5301bfdd61a824a7f",
+      "findings": 0
+    },
+    "dependency": {
+      "exit_code": 2,
+      "gate": "finding_admission",
+      "result_sha256": "e447e668a1b8b581c5f93b54d522d0ff21332749d75d12a084ba6147db0ded9d",
+      "finding": {
+        "finding_id": "iss_04937a449fb1b851",
+        "source_feedback_ids": [
+          "fb_001"
+        ],
+        "classification": "operator_decision_required",
+        "target_section_ids": [
+          "sec_1692485086243155db041211ec78e5d98c64da3d607e91281eb5d9d91746bbe1",
+          "sec_3b410025d48b52ead89406c1fa8ceb411f4845523633f451d116fc3117c9a061",
+          "sec_65a880cba8e1ad0950a0ef2259e2631ef8cfe65025ad381710d9ed988e861b38"
+        ]
+      },
+      "claim": "The required restart recovery flow depends on retaining queue state across process exit, but both the draft and approved scope defer persistence, and the draft explicitly discards that state.",
+      "reasons": [
+        "deferred_scope_surface",
+        "explicit_decision_prevents_deferral",
+        "scope_or_authority_effect_prevents_deferral"
+      ]
+    }
+  }
+}

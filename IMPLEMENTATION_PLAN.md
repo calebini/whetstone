@@ -22,7 +22,11 @@ Trigger investigation: confirmed descriptive `removed` false positive; no unsafe
 regex exemption. Exact clarification-only decision prepared and dry-run validated;
 34 regression tests pass. General classifier correction remains unresolved.
 
-Current live result: Utility MVP vertical reached PHASE_1_STABLE on ordinal 2 after supported recovery, one pass per profile and four clean live reviews. All 20 calls used. Activation off. See the qualification record for remaining release gates.
+RC2 release review: installed Balanced MVP horizontal closeout and the focused
+deferred-dependency probe passed their live criteria in four approved calls.
+Production activation remains off.
+
+Earlier live result: Utility MVP vertical reached PHASE_1_STABLE on ordinal 2 after supported recovery, one pass per profile and four clean live reviews. All 20 calls used. Activation off. See the qualification record for remaining release gates.
 
 Recovery fix: timestamp drift reproduced and corrected without relaxing evidence
 equality. Eight offline recovery tests pass; read-only real-run evidence agrees

@@ -331,3 +331,27 @@ The [final re-review receipt](qualification/phase1-live-rereview-2026-11-24.json
 records the archive, grant, draft, responses and closeout references. Balanced MVP
 live confirmation, the deliberate dependency-conflict probe, a refreshed installed
 candidate and release review remain outstanding. Production activation is off.
+
+## Installed candidate and live staging, 2026-11-25
+
+The isolated 0.3.0rc2 installation selects commit `17de139`. All 939 selected
+tracked files were checked against Git, with only the two candidate version labels
+adjusted. Its own interpreter passed 23 recovery and policy tests, including the
+clock-tick regression. Configuration checks accepted 32 selections and rejected
+20 vertical focused selections. Both packages passed qualification-only CLI
+admission dry-runs. The shipping map refused consumer-2. Stable selected 0.1.0.
+
+Balanced MVP stages three horizontal passes on the accepted ordinal-2 queue draft.
+The separate focused Utility MVP probe requires restart recovery while persistence
+is deferred. The proposed maximum is four Reviewer calls over 30 minutes. Both
+jobs await launch approval. [Installed candidate and payload receipt](qualification/phase1-rc2-staging-2026-11-25.json).
+
+### RC2 live results
+
+All four authorized Reviewer calls returned. Balanced MVP horizontal committed
+PHASE_1_STABLE on the ordinal-2 seed after zero findings across structural
+integrity, determinism and operability. The focused Utility MVP buildability probe
+identified the dependency between required restart recovery and deferred persistence.
+Canonical classification retained an operator decision at finding admission,
+blocking completion as expected. Both checks met their staged success criteria.
+Production activation remains off pending release review. [Live receipt](qualification/phase1-rc2-live-2026-11-25.json).

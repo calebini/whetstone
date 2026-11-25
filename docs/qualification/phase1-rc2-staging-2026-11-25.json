@@ -1,0 +1,57 @@
+{
+  "runtime": {
+    "channel": "candidate",
+    "version": "0.3.0rc2",
+    "commit": "17de139c491b07e49d5173aa8ac95c68f31695f1",
+    "target": "/Users/Shared/Agent-Workspace/repos/personal/cortext1/whetstone/rounds/phase1-readiness-20261125/releases/0.3.0rc2"
+  },
+  "installation": "isolated versioned source snapshot with dedicated venv",
+  "tracked_files_checked": 939,
+  "version_only_substitutions": [
+    "src/whetstone/__init__.py",
+    "pyproject.toml"
+  ],
+  "installed_tests": 23,
+  "log_sha256": "07420220265d84f90acd3a08612a9d1b0a168c36c93246a9455de631485740ed",
+  "configuration_checks": 32,
+  "vertical_focused_refusals": 20,
+  "suite_digests": {
+    "vnext-contracts-1": "69dbe84ce740ccae19126a39514f9bca5bcc036c3152d7a0a623e29bd9214548",
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58",
+    "vnext-verified-consumer-2": "bc6657ad4a098f2f6a9a2652b0d4be412e5ca452be4723c8d3c8ba82443c9820"
+  },
+  "production_map": {
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58"
+  },
+  "provider_calls": 0,
+  "jobs": {
+    "balanced": {
+      "package/inputs/authority.json": "38646de81b022ba0b73b907a90eafc955e4e12c519b7ea3c354c6aa6293203ca",
+      "package/inputs/invariants.json": "e24c8d834f782bd1a34f17569a387db756df771f687f55c03582782ba5683e5a",
+      "package/inputs/mutation-constraints.json": "513130dbb99fb516eadb667a72243991a543cc33389716aee336ff512005ef78",
+      "package/inputs/review.json": "115d789c909090c36615f2760b9557821c9c3cf5fe5978ef503aa9a22553f42c",
+      "package/inputs/scope.json": "19954f9ec75a182d46dad4f8b19be79b64d53e0568594dbc6f3952ade2908b20",
+      "package/inputs/seed.md": "ca8f88bfc22209efc768283c82c9142c3175e9f7611f07c5301bfdd61a824a7f",
+      "package/job_descriptor.json": "285ca11e862774d559ba35dd8070f211d66d0bf9a91d7b0ccebef184e2f7ddc1",
+      "package/proposal_package.json": "f43b1fae50b70847d25f77169d1954f9d34cf09e175a188c90d5c1df926e03d6",
+      "run-config.json": "fc5eceda6fd7222b754e0e4db2535b5131ecabc61e05a1a5c9b1a866c186a39e",
+      "isolated-codex.py": "7789cd51df819c0fbdec832021a484f7f5b94c0f6b9a8673c096c83aaf1b6ecc",
+      "isolation-settings.json": "6b67b93a8727e767f41e51e8bfa394329bb66ac15b520f4edc443d44e29c2baf",
+      "isolation_check.py": "1620535fac12a146390e638ebad0dbe73b88414b07ed4aa76210b1652d2aa720"
+    },
+    "dependency": {
+      "package/inputs/authority.json": "86344c05f3974c9e0930bebeaba5ccb1e9228a3788ee23f9920b1f11acde4ade",
+      "package/inputs/invariants.json": "5da400263be4136b17e209f739a199bed59dd1dde0465cfa4d1b77853491aebc",
+      "package/inputs/mutation-constraints.json": "02df6053efc4199016bb50db63468ce4840f049881f8e14ec0f63cea346d0f2d",
+      "package/inputs/review.json": "c05d28134d5b30de7c5cbf7958e8101f7ef7422afd63e5aba0cad76b419ba236",
+      "package/inputs/scope.json": "ce719b5a19f06d938e36139166dd27a6845a66c1497f8c6be6f6932b9b6fa4e1",
+      "package/inputs/seed.md": "eb75ac2e71ce2a23c1127b45386500b507643ed5236b4989411c3908737712c0",
+      "package/job_descriptor.json": "c53f94edcd59ec675700c4a7486fc05081cdf39d6c4a33cf03baedeb41eca781",
+      "package/proposal_package.json": "c18854df02ad6eec0883670c86a94320914e305b20638af33a1b0cbf695a46e7",
+      "run-config.json": "5b404f97f16fe0213fa38c521217fbcf7ff6bc3f5e790720075f4ed527a3efff",
+      "isolated-codex.py": "7789cd51df819c0fbdec832021a484f7f5b94c0f6b9a8673c096c83aaf1b6ecc",
+      "isolation-settings.json": "6b67b93a8727e767f41e51e8bfa394329bb66ac15b520f4edc443d44e29c2baf",
+      "isolation_check.py": "1620535fac12a146390e638ebad0dbe73b88414b07ed4aa76210b1652d2aa720"
+    }
+  }
+}
