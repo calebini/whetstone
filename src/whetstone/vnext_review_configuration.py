@@ -41,7 +41,7 @@ def read(reader, reference):
     validate(review, reader.suite.registry)
     from whetstone.vnext_phase1_policy import enabled, pins, ALGORITHM as POLICY_ALGORITHM
     has_policy = any(r['path'] == POLICY_ALGORITHM for r in reader.suite.manifest['algorithms'])
-    if reader.suite.version == 'vnext-verified-consumer-2':
+    if reader.suite.version in {'vnext-verified-consumer-2', 'vnext-verified-consumer-3'}:
         require(enabled(review), 'new Phase 1 suite requires shared completion policy')
     require(not enabled(review) or has_policy, 'review policy and contract suite differ')
     if enabled(review): pins(reader.suite)

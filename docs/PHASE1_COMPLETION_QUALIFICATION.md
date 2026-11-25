@@ -1,7 +1,6 @@
 # Shared Phase 1 completion and MVP qualification
 
-Status: implementation complete; targeted offline qualification passed. Not a release
-activation, installed-runtime upgrade, or live-provider qualification.
+**2026-11-25 — RC3 correction.** The isolated `0.3.0rc3` candidate passes deferred-nit closeout and operator-decision blocking through the CLI. See [RC3 qualification](#rc3-closeout-correction). The [RC2 hold](#release-review-disposition) still applies to consumer-2.
 
 ## Design and scope
 
@@ -53,7 +52,8 @@ lenses are buildability, consistency, determinism_light and operability_light;
 balanced MVP uses structural_integrity, determinism and operability. For focused
 horizontal work add `phase1_selection: {"kind":"focused","profile":"buildability"}`
 with that profile present in the configured utility set. Bind approved scope and
-select `vnext-verified-consumer-2` in the new descriptor and run configuration.
+select the explicitly activated suite in the new descriptor and run configuration.
+The corrected candidate is `vnext-verified-consumer-3`. Its production gate is closed.
 Changing these bytes changes job identity; never retrofit an existing root.
 Phase 1 has no new rubric selection. Do not attach a Phase 2 configuration.
 
@@ -166,7 +166,8 @@ The candidate cannot yet be called release-ready.
 ### Stable activation and rollback procedure (not executed)
 
 1. After live evidence review and explicit activation authorization, add only
-   consumer-2's exact validated digest to the production map, retaining consumer-1.
+   the approved corrected suite digest to the production map, retaining consumer-1.
+   RC2/consumer-2 remains held. See the RC3 receipt for the candidate digest.
    Update suite advertisements consistently and run actual shipping-map admission,
    re-entry and refusal checks. Rebuild a new versioned snapshot; do not mutate this
    candidate or any frozen suite/job. A separately authorized commit supplies the
@@ -185,8 +186,7 @@ The candidate cannot yet be called release-ready.
    `whetstone --channel stable --runtime-info` afterwards.
 4. Rollback uses the same temporary-symlink/`os.replace` operation on `stable`,
    pointing to the saved old installation; verify runtime-info and audit help.
-   Retain both installations. Do not resume consumer-2 jobs under the old stable:
-   use their matching retained runtime explicitly. Lane rollback is not job migration.
+   Retain both installations so consumer-2 and consumer-3 jobs can resume under their matching runtime.
 
 No pointer change, commit, publish, activation or external source write is authorized
 by this procedure. The final activation artifact must be rechecked after its gate
@@ -355,3 +355,91 @@ identified the dependency between required restart recovery and deferred persist
 Canonical classification retained an operator decision at finding admission,
 blocking completion as expected. Both checks met their staged success criteria.
 Production activation remains off pending release review. [Live receipt](qualification/phase1-rc2-live-2026-11-25.json).
+
+## Release review disposition
+
+**Hold RC2 at source `17de139`.** The registered consumer-2 suite cannot record
+every severity the Reviewer can emit. A job whose only findings are approved
+deferred nits can finish all required reviews and still fail to produce its closeout.
+
+**Reproduction.** In the isolated RC2 install, use the existing
+`PolicyCLITests` package and its process-local qualification helper. Run a full
+MVP horizontal review with `utility_mvp` and the existing approved
+`future-hardening` deferral. In the scripted Reviewer callback set baseline
+severity to `nit`, clear all three severity impacts and use the existing
+`PolicyRuntimeTests.deferred` response. All four Reviewer calls completed.
+`live-phase1` exited 2 with `vnext_input_invalid` at
+`$.deferred_findings[0].severity: value is not in enum`. Re-entry returned the
+same error with the call count still at four. A separate runtime-level probe
+traced the failure to closeout evidence validation during state projection.
+Both probes used temporary jobs and local scripted clients.
+
+The [feedback severity contract](../contracts/schemas/common.schema.json)
+permits nit. The [v5 closeout contract](../contracts/schemas/vnext_verified_phase1_closeout_v5.schema.json)
+omits it in both deferred and global blocking rows. The deferred case reproduced
+through the CLI. The blocking-row discrepancy was found by schema inspection.
+Preserve the original severity, approved scope references and the rule that an
+unresolved decision blocks at any severity.
+
+| Gate | Review result |
+| --- | --- |
+| Offline policy and recovery | Retain the 96-method targeted record. Of 24 source/test hashes, 23 still match that receipt. The later recovery receipt matches the replacement operator source, its test and all four evidence files. The eight audited spec/algorithm inputs and five audit outputs also match. |
+| Installed RC2 | All three suite digests revalidated. The installed 23-test log matches its receipt. The matrix records 12 full and 20 horizontal focused configurations and 20 vertical focused refusals. The actual shipping map rejected consumer-2 in an admission dry-run. The new scripted reproduction blocks release. |
+| Live behavior | Reconciled all 24 staged files, the four-call ledger, four raw responses and both RC2 result files. Balanced MVP closed cleanly on the seed from Utility promotion ordinal 2. The focused dependency probe stopped for an operator decision. The Utility archive, extension grant, four current-draft re-review responses and both stable closeout references matched their receipts. |
+| Activation | The inherited P0 mapping is historical evidence for consumer-1. Consumer-2 adds a pinned algorithm, two schemas and three review-configuration fixtures. Its closeout contract needs a correction and a severity conformance fixture. Production advertises consumer-1 only. Stable still resolves to 0.1.0-6e19fe3. |
+
+**Exit from hold.** Prepare a separately identifiable corrected contract and
+candidate while preserving the RC2 bytes and bound job identities. Cover all
+permitted severities in both closeout row types, then exercise deferred-nit
+closeout and replay through the registered CLI and verify that a nit requiring
+an operator decision still blocks. Recheck suite pins, installed admission and
+the affected regression coverage. The failure is reproducible offline. Existing
+live evidence remains available for behaviors unaffected by the correction.
+
+After a passing review of the corrected identity, request explicit authorization
+for that exact digest. The [activation and rollback procedure](#stable-activation-and-rollback-procedure-not-executed)
+requires consistent suite advertisements and real shipping-map checks on the final
+package before a stable-lane change.
+
+## RC3 closeout correction
+
+The isolated `0.3.0rc3` installation uses `vnext-verified-consumer-3`, digest
+`46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c`.
+It is a versioned working-tree snapshot based on `8bb7eee`. Its installation
+metadata identifies the snapshot by its file inventory. The uncommitted
+correction has no release commit.
+
+Consumer-3 pins closeout v6 and a conformance fixture covering all four Reviewer
+severities in both deferred and global blocking findings. V6 references the
+same pinned severity vocabulary as Reviewer feedback. The job's immutable suite
+selects the evidence format for writing, recovery and reading budget grants.
+Consumer-2 continues to use v5.
+
+Two installed, scripted CLI regressions repeated the RC2 scenario under consumer-3:
+
+- A horizontal Utility MVP sweep returned an approved deferred nit from each
+  of four lenses. Phase 1 reached `PHASE_1_STABLE`. Every deferred row retained
+  its original severity and scope surface. Re-entry returned the same closeout
+  reference and identical bytes with four lifetime Reviewer calls.
+- On the same deferred surface, an explicit operator decision with severity
+  `nit` stopped at `finding_admission`. Re-entry returned the same gate after
+  one lifetime Reviewer call. Neither invocation produced a terminal closeout.
+
+The shipping map refused consumer-3 before the test harness enabled it for
+qualification. Prior live records cover the unchanged Reviewer, Editor and
+Verifier behaviors. This correction was exercised entirely offline.
+
+
+**Qualification result.** The installed candidate passed 34 targeted test executions:
+two nit regressions, seven public CLI tests against consumer-3, 23 policy and
+operator recovery tests, and two retained-v5 compatibility tests. A separate
+registered consumer-3 job exercised budget exhaustion, grant replay, re-review
+after promotion and accepted closeout on reopen. Configuration validation covered
+12 full and 20 horizontal focused selections and refused 20 vertical focused
+selections. All four suite digests validated. Both v6 row types rejected unknown
+severity. The [RC3 receipt](qualification/phase1-closeout-rc3-2026-11-25.json)
+records suite and snapshot identity, cohorts and evidence hashes.
+
+The deferred-nit release blocker is resolved for consumer-3. Stable still points
+to 0.1.0. Enabling consumer-3 requires a separate release decision for its exact
+digest and shipping-map checks on the final package.

@@ -52,7 +52,7 @@ class _OperatorStatus(_Closeout):
         else:
             changed = state.get(STATE_FIELD) != reference
             state[STATE_FIELD] = deepcopy(reference)
-            vertical = ('vertical_merges' in closeout.evidence and closeout.evidence['schema_version'] not in {'vnext-verified-phase1-closeout-v4', 'vnext-verified-phase1-closeout-v5'}) or (
+            vertical = (closeout.evidence['schema_version'] == 'vnext-verified-phase1-closeout-v3') or (
                 proof is not None and proof.seed_values['review']['review_mode'] == 'vertical')
             if closeout.evidence.get('focused_profile') is not None or vertical:
                 focused_state = dict(terminal_state=closeout.report['terminal_state'],
@@ -147,7 +147,7 @@ class _OperatorStatus(_Closeout):
                     self.store.synchronize_existing(store._token, checked.technical_failure_ref['path'], expected=packet)
                     existing = self._optional(FAILURE_MIRROR)
                     from whetstone.vnext_verified_phase1_budget import records
-                    historical = [proof.reader.json(v['closeout'], closeout_schema(proof.seed_values['review']))
+                    historical = [proof.reader.json(v['closeout'], closeout_schema(proof.seed_values['review'], proof.reader.suite))
                                   for _,v in records(proof)]
                     owned = any(c['technical_failure'] is not None and existing == proof.reader.raw(c['technical_failure'])
                                 for c in historical)

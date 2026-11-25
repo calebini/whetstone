@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-25",
+  "kind": "installed-candidate-offline-qualification",
+  "version": "0.3.0rc3",
+  "base_commit": "8bb7eee8af0692bc0ab76e485db9aeb9fac93946",
+  "release_commit": null,
+  "suite": "vnext-verified-consumer-3",
+  "suite_digest": "46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c",
+  "snapshot_inventory": "rounds/phase1-closeout-rc3-20261125/snapshot-sha256.json",
+  "snapshot_inventory_sha256": "c8f13c94436212f81ea6f808d69fce139cc2ebe119c29435de3f1bb570111590",
+  "snapshot_files": 945,
+  "candidate_path": "rounds/phase1-closeout-rc3-20261125/releases/0.3.0rc3",
+  "cohorts": {
+    "nit-cli.log": {
+      "tests": 2,
+      "passed": 2,
+      "methods": [
+        "test_vnext_phase1_policy_cli.CloseoutSeverityCLITests.test_approved_deferred_nits_close_and_replay",
+        "test_vnext_phase1_policy_cli.CloseoutSeverityCLITests.test_decision_nit_blocks_on_deferred_surface_and_reentry"
+      ],
+      "sha256": "dad0e8d8224068cc68b21b13826ab33c1925f9e008043266901846955d7ad706"
+    },
+    "policy-recovery.log": {
+      "tests": 23,
+      "passed": 23,
+      "methods": [
+        "test_vnext_phase1_policy.SharedPolicyTests.test_approved_deferral_is_nonblocking_even_when_reviewer_marks_in_scope",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_bare_out_of_scope_flag_cannot_waive_major",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_blocking_invariant_overrides_deferral_at_minor_severity",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_deferred_surface_cannot_hide_non_normative_authority",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_dependency_and_authority_decisions_override_deferred_surface",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_minor_optional_observation_is_nonblocking_but_not_approved_deferral",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_missing_and_unknown_scope_cannot_waive_major",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_mixed_scope_surfaces_do_not_authorize_deferral",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_new_suite_validates_without_changing_old_digests",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_optional_editor_fixable_minor_does_not_force_work_but_major_does",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_policy_requires_its_own_pinned_contracts",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_profile_mismatch_and_unknown_workflows_refuse",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_repeated_issue_disagreement_cannot_be_hidden_by_one_deferral",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_same_policy_for_every_selected_profile_and_both_workflows",
+        "test_vnext_phase1_policy.SharedPolicyTests.test_scope_change_effect_cannot_hide_behind_deferable_label",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_final_state_interruption_and_visible_lost_ack_require_full_barrier_replay",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_mirror_recovery_precedes_projection_and_ends_invocation",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_missing_pin_and_malformed_state_refuse_before_writes",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_only_committed_closeout_selects_terminal_and_projection_preserves_legacy_fields",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_promoted_budget_failure_overrides_stale_success_and_preserves_report_history",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_source_barrier_failure_and_damaged_committed_artifacts_refuse_without_state_write",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_stale_cached_success_and_newest_report_cannot_close_an_unreviewed_run",
+        "test_vnext_verified_phase1_operator.VerifiedPhase1OperatorTests.test_uncommitted_failure_recovery_pins_timestamp_across_clock_tick"
+      ],
+      "sha256": "edce450ce8d6e82e0974bc1c1146ab1a6c1c27e1b22d9de74aad80318e06da9d"
+    },
+    "retained-v5.log": {
+      "tests": 2,
+      "passed": 2,
+      "methods": [
+        "test_vnext_phase1_policy_runtime.PolicyRuntimeTests.test_exhaustion_extension_replays_v5_closeout_without_implicit_success",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_utility_horizontal_public_completion_and_phase2_refusal"
+      ],
+      "sha256": "cdee959eb79f11cf17cc7f31b71f5a50800d5b2b8fb144c8dba8d393f16c939b"
+    },
+    "matrix-replay.log": {
+      "tests": 7,
+      "passed": 7,
+      "methods": [
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_coherent_admission_matrix_and_scope_required",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_balanced_horizontal_public_completion",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_balanced_vertical_public_completion",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_focused_public_completion_does_not_accept_full_phase",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_mvp_utility_horizontal_public_completion_and_phase2_refusal",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_registered_mvp_suite_edits_verifies_promotes_and_rereviews",
+        "test_vnext_phase1_policy_cli.PolicyCLITests.test_registration_does_not_activate_unqualified_suite"
+      ],
+      "sha256": "da71558c0e24536bb8de95e5d47158781ab61434b596542cf91dba25dfa55c7e"
+    }
+  },
+  "corrected_suite_cohorts": [
+    "nit-cli.log",
+    "matrix-replay.log"
+  ],
+  "matrix": {
+    "horizontal_vertical_full": 12,
+    "horizontal_focused": 20,
+    "vertical_focused_refusals": 20
+  },
+  "probes": {
+    "grant-replay.log": "v6 exhausted closeout, budget grant, current-draft review and replay",
+    "contracts.log": "four suite pins validated; both severity rows accept the four canonical values and reject unknown severity"
+  },
+  "probe_evidence": {
+    "grant-replay.log": "23fe8aead1ac9e2b8e8952f7890879ef24c09129f8bfce78c377ae815d877708",
+    "contracts.log": "9880a483f4ffe2054117ec544a9f515f8d3dcd4caaa1dc3701e262108ced277a",
+    "configuration-matrix.json": "d9817caca2fe3fbecd19cd1db9876d62358ffc82723865599d91a06a9673ac16"
+  },
+  "production_qualified_suites": {
+    "vnext-verified-consumer-1": "7d636c3cb2da3b687dccd31b17050d8786fc0db256c8e35581739264d002fd58"
+  },
+  "stable_target": "/Users/Shared/Agent-Workspace/tools/whetstone/releases/0.1.0-6e19fe3",
+  "external_provider_calls": 0,
+  "limits": [
+    "Targeted qualification of an isolated versioned source snapshot built from uncommitted changes.",
+    "Consumer-3 CLI execution used a process-local test qualification map and scripted providers.",
+    "Prior live evidence remains attached to the original candidates.",
+    "Final shipping-map validation and lane adoption require separate authorization."
+  ]
+}

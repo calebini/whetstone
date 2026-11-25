@@ -12,7 +12,8 @@ from test_vnext_phase1_policy import scope_packet
 
 
 @unittest.skipUnless(sys.platform == 'darwin', 'Local storage targets macOS/APFS')
-class PolicyCLITests(unittest.TestCase):
+class PolicyCLIFixture(unittest.TestCase):
+    suite_version = "vnext-verified-consumer-2"
     setUpClass = old.VerifiedCLITests.setUpClass
     patch = old.VerifiedCLITests.patch
     qualify = old.VerifiedCLITests.qualify
@@ -23,7 +24,7 @@ class PolicyCLITests(unittest.TestCase):
 
     def setUp(self):
         old.VerifiedCLITests.setUp(self)
-        self.suite=validate_contract_suite(CONTRACT_ROOT/'suites/vnext-verified-consumer-2.json')
+        self.suite=validate_contract_suite(CONTRACT_ROOT/'suites'/f'{self.suite_version}.json')
         self.f.suite=self.suite
         self.configure()
 
@@ -45,6 +46,8 @@ class PolicyCLITests(unittest.TestCase):
                 hash=sha256_bytes((self.fixture.source/'proposal_package.json').read_bytes())))
         self.save_config()
 
+
+class PolicyCLITests(PolicyCLIFixture):
     def test_coherent_admission_matrix_and_scope_required(self):
         self.qualify()
         for workflow in ('standard','mvp'):
@@ -150,3 +153,62 @@ class PolicyCLITests(unittest.TestCase):
         self.assertEqual(result['operator']['terminal_report']['terminal_state'],'FOCUSED_PROFILE_STABLE')
         self.assertFalse(result['operator']['accepted'])
         self.assertEqual(self.reviewer.calls,1)
+
+class CloseoutSeverityCLITests(PolicyCLIFixture):
+    suite_version = "vnext-verified-consumer-3"
+
+    def use_nit_reviewer(self, classification):
+        def respond(packet):
+            item = packet['feedback']['feedback'][0]
+            item.update(baseline_severity='nit', authority_impact=None, determinism_impact=None,
+                        rubric_impact=None, in_scope=False)
+            packet['classifications'][0].update(classification=classification,
+                                                scope_surface_ids=['future-hardening'])
+            return canonical_json_bytes(packet)
+
+        self.reviewer.callback = respond
+
+    def test_approved_deferred_nits_close_and_replay(self):
+        code, refusal = self.invoke('vnext-admit', '--dry-run')
+        self.assertEqual((code, refusal['reason_code']), (2, 'vnext_mode_unavailable'))
+        self.qualify()
+        self.use_nit_reviewer('deferable')
+        code, result = self.invoke('live-phase1')
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result['gate'], 'phase1_complete')
+        operator = result['operator']
+        self.assertEqual(operator['terminal_report']['terminal_state'], 'PHASE_1_STABLE')
+        self.assertTrue(operator['accepted'])
+        self.assertFalse(operator['phase2_permitted'])
+        ref = operator['closeout_ref']
+        raw = (self.root / ref['path']).read_bytes()
+        self.assertEqual(sha256_bytes(raw), ref['hash'])
+        evidence = json.loads(raw)
+        self.assertEqual(evidence['schema_version'], 'vnext-verified-phase1-closeout-v6')
+        self.assertEqual(evidence['global_blocking_findings'], [])
+        self.assertEqual(evidence['scope_contract_hash'], self.f.job['scope_contract_hash'])
+        rows = evidence['deferred_findings']
+        profiles = PROFILE_SETS['utility_mvp'].phase_1_profiles
+        self.assertCountEqual([row['profile'] for row in rows], profiles)
+        for row in rows:
+            self.assertEqual((row['severity'], row['scope_surface_ids']), ('nit', ['future-hardening']))
+        code, replay = self.invoke('live-phase1')
+        self.assertEqual(code, 0, replay)
+        self.assertTrue(replay['operator']['accepted'])
+        self.assertEqual(replay['operator']['closeout_ref'], ref)
+        self.assertEqual((self.root / ref['path']).read_bytes(), raw)
+        self.assertEqual(self.reviewer.calls, len(profiles))
+
+    def test_decision_nit_blocks_on_deferred_surface_and_reentry(self):
+        self.qualify()
+        self.use_nit_reviewer('operator_decision_required')
+        for _ in range(2):
+            code, result = self.invoke('live-phase1')
+            self.assertEqual((code, result['gate']), (2, 'finding_admission'))
+            self.assertFalse(result['operator']['phase_complete'])
+            self.assertEqual(result['operator']['findings'][0]['classification'],
+                             'operator_decision_required')
+            row = result['review']['review']['feedback']['feedback'][0]
+            self.assertEqual(row['normalized_severity'], 'nit')
+            self.assertEqual(self.reviewer.calls, 1)
+            self.assertFalse(list((self.root / 'rounds/phase1_closeouts').glob('**/closeout.json')))

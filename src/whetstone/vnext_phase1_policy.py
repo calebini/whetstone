@@ -14,8 +14,13 @@ def enabled(review):
 
 def pins(suite):
     entries = {r['path']: r['sha256'] for family in ('algorithms', 'schemas') for r in suite.manifest[family]}
-    for path in (ALGORITHM, 'schemas/review_configuration_v3.schema.json',
-                 'schemas/vnext_verified_phase1_closeout_v5.schema.json'):
+    paths = [ALGORITHM, 'schemas/review_configuration_v3.schema.json']
+    if suite.version == 'vnext-verified-consumer-3':
+        paths.extend(('algorithms/vnext_verified_phase1_closeout_v6.md',
+                      'schemas/vnext_verified_phase1_closeout_v6.schema.json'))
+    else:
+        paths.append('schemas/vnext_verified_phase1_closeout_v5.schema.json')
+    for path in paths:
         require(path in entries and entries[path] == sha256_bytes(confined_file(CONTRACT_ROOT, path).read_bytes()),
                 'shared Phase 1 completion contract is absent or changed', path)
 
@@ -120,8 +125,12 @@ def deferred_rows(frames):
     return result
 
 
-def closeout_schema(review):
-    return 'vnext_verified_phase1_closeout_v5' if enabled(review) else 'vnext_verified_phase1_closeout_v4'
+def closeout_schema(review, suite):
+    if not enabled(review):
+        return 'vnext_verified_phase1_closeout_v4'
+    if suite.version == 'vnext-verified-consumer-3':
+        return 'vnext_verified_phase1_closeout_v6'
+    return 'vnext_verified_phase1_closeout_v5'
 
 
 GUIDANCE = '''\nShared Phase 1 completion policy:

@@ -105,7 +105,7 @@ class _Closeout(VerifiedReview):
                    if frame.receipt is not None and frame.header['base_pointer'] == proof.latest}
         missing = tuple(row['name'] for row in configured if row['name'] not in current)
         unclean = tuple(row.profile for row in progress if not row.clean)
-        from whetstone.vnext_phase1_policy import enabled as shared_policy, blocking_rows, deferred_rows, POLICY
+        from whetstone.vnext_phase1_policy import enabled as shared_policy, blocking_rows, deferred_rows, closeout_schema, POLICY
         policy = shared_policy(proof.seed_values['review'])
         # Existing suites retain their global severity rule; new jobs use obligations.
         blocking = tuple(dict(round_number=frame.request.number, feedback_id=row['feedback_id'],
@@ -174,10 +174,11 @@ class _Closeout(VerifiedReview):
                 if not policy: proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v4')
                 prefix = f"rounds/phase1_closeouts/grants-{len(grants)}-{proof.latest['hash']}-{number}"
             if policy:
-                evidence.update(schema_version='vnext-verified-phase1-closeout-v5', completion_policy=POLICY,
+                evidence_schema = closeout_schema(proof.seed_values['review'], proof.reader.suite)
+                evidence.update(schema_version=evidence_schema.replace('_', '-'), completion_policy=POLICY,
                     scope_contract_hash=proof.seed_values['job']['scope_contract_hash'],
                     deferred_findings=deferred_rows(sorted(current.values(), key=lambda f: f.request.number)))
-                proof.reader.suite.registry.validate(evidence, 'vnext_verified_phase1_closeout_v5')
+                proof.reader.suite.registry.validate(evidence, evidence_schema)
             evidence_ref = _ref('rounds/phase1_closeouts/closeout-' + sha256_bytes(canonical_json_bytes(evidence)) + '.json', evidence)
             if focused or vertical or supported(proof.reader.suite): evidence_ref = _ref(prefix+'/closeout.json', evidence)
             stored_report = self._optional(report_ref['path'])

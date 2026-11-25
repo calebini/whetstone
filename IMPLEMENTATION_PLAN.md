@@ -22,9 +22,15 @@ Trigger investigation: confirmed descriptive `removed` false positive; no unsafe
 regex exemption. Exact clarification-only decision prepared and dry-run validated;
 34 regression tests pass. General classifier correction remains unresolved.
 
-RC2 release review: installed Balanced MVP horizontal closeout and the focused
-deferred-dependency probe passed their live criteria in four approved calls.
-Production activation remains off.
+RC3 correction (2026-11-25): the separately registered consumer-3 suite pins
+closeout v6. Installed CLI tests passed for approved deferred nits and operator
+decision nits, including re-entry. Production activation remains off.
+[RC3 qualification](docs/PHASE1_COMPLETION_QUALIFICATION.md#rc3-closeout-correction).
+
+RC2 release review (2026-11-25): **hold**. The installed public CLI rejects a
+valid approved deferred nit during closeout and repeats the failure on re-entry.
+The live receipts reconcile. Correct and qualify the versioned closeout contract
+before requesting activation. [Review disposition and reproduction](docs/PHASE1_COMPLETION_QUALIFICATION.md#release-review-disposition).
 
 Earlier live result: Utility MVP vertical reached PHASE_1_STABLE on ordinal 2 after supported recovery, one pass per profile and four clean live reviews. All 20 calls used. Activation off. See the qualification record for remaining release gates.
 
