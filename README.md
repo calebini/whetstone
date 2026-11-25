@@ -69,7 +69,7 @@ a narrower qualified scope than the legacy/bridge workflows.
 
 ## Verified promotion
 
-The 0.3.0rc4 candidate enables explicit consumer-3 selection for shared Phase 1
+The 0.3.0 release enables explicit consumer-3 selection for shared Phase 1
 completion on Standard and MVP jobs. See the [operator quickstart](docs/OPERATOR_QUICKSTART.md#verified-promotion-command-surface-explicit-opt-in)
 for the suite digest, profile sets and admission procedure.
 

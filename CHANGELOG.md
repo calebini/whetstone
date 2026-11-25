@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.3.0 — 2026-11-25
+
+- Adds explicit `vnext-verified-consumer-3` selection for Phase 1 verified promotion on Standard and MVP jobs. Stateful System, Balanced MVP and Utility MVP support horizontal and vertical full reviews and horizontal focused reviews. MVP requires approved scope.
+- Closeout v6 records approved deferrals at every Reviewer severity. A finding that requires an operator decision blocks completion at any severity, including a nit.
+- Consumer-1 retains its existing Phase 2 support. Phase 1 is the terminal phase for consumer-3. See the [production CLI qualification](docs/PHASE1_COMPLETION_QUALIFICATION.md#consumer-3-production-cli-checks).
+
 ## 0.2.0 — 2026-10-28
 
 ### Verified promotion, explicitly opted in

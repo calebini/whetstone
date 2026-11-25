@@ -27,7 +27,7 @@ separate; do not overwrite a prior audit root to manufacture an iterative histor
 
 ## Select the runtime before promising capabilities
 
-The activated 0.3.0rc4 candidate supports shared Phase 1 completion for Standard
+The activated 0.3.0 release supports shared Phase 1 completion for Standard
 and MVP under consumer-3. Confirm the launcher selects an installation containing
 that gate. [Qualification record](PHASE1_COMPLETION_QUALIFICATION.md)
 
