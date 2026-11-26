@@ -4,12 +4,12 @@ This is Whetstone's traceable implementation plan. The original `0.21` gates and
 
 Active initiative: [18. Safer Editor Pipeline](#18-safer-editor-pipeline), grounded in candidate-editing design `0.5` and coordinating spec `0.74`. This is the delivery owner for the preservation bridge and later candidate pipeline; the future-improvements list is not a parallel implementation checklist.
 
-Current handoff: [controlled verified-promotion release](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md) (2026-10-28). **18.9 Q1–Q4 is complete within its documented controlled opt-in boundary.** The user approved activation of the exact `vnext-verified-consumer-1` digest; its shipping V qualification entry, six-owner suite advertisement and 15 passing activation/configuration/compatibility checks are implemented locally. The accepted Q3 correctness/performance limits remain explicit. Installed runtime replacement, external source apply-back and push remain separate actions. Earlier milestones and checkpoints below retain their historical scope.
+Historical consumer-1 handoff: [controlled verified-promotion release](docs/VNEXT_VERIFIED_PROMOTION_RELEASE.md) (2026-10-28). **18.9 Q1–Q4 is complete within its documented controlled opt-in boundary.** The user approved activation of the exact `vnext-verified-consumer-1` digest; its shipping V qualification entry, six-owner suite advertisement and 15 passing activation/configuration/compatibility checks are implemented locally. The accepted Q3 correctness/performance limits remain explicit. Installed runtime replacement, external source apply-back and push remain separate actions. Earlier milestones and checkpoints below retain their historical scope.
 
-## Shared Phase 1 completion and MVP qualification (active)
+## Shared Phase 1 completion and MVP qualification (released in 0.3.0)
 
 Owner: [shared completion spec](docs/specs/PHASE1_COMPLETION_POLICY_SPEC.md).
-User authorized implementation on 2026-11-22; release remains separate.
+Stable runs release commit `4fcfc00`. The [stable release closeout](docs/PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout) records final admission checks, skill reconciliation and the rollback target.
 
 Readiness slice (2026-11-24):
 - **Outcome:** prepare a qualified, versioned Phase 1 release candidate.
@@ -23,8 +23,8 @@ regex exemption. Exact clarification-only decision prepared and dry-run validate
 34 regression tests pass. General classifier correction remains unresolved.
 
 Consumer-3 shipping gate (2026-11-25): operator authorized the qualified RC3 digest.
-The versioned 0.3.0rc4 activation candidate uses the production map. Stable adoption
-awaits a separate decision. [Production CLI checks](docs/PHASE1_COMPLETION_QUALIFICATION.md#consumer-3-production-cli-checks).
+The versioned 0.3.0rc4 activation candidate exercised the production map before
+stable promotion. [Production CLI checks](docs/PHASE1_COMPLETION_QUALIFICATION.md#consumer-3-production-cli-checks).
 
 RC3 correction (pre-activation, 2026-11-25): the separately registered consumer-3 suite pins
 closeout v6. Installed CLI tests passed for approved deferred nits and operator

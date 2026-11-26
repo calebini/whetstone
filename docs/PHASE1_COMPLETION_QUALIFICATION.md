@@ -1,5 +1,19 @@
 # Shared Phase 1 completion and MVP qualification
 
+## Stable release closeout
+
+The shared launcher and annotated tag `0.3.0` both select release commit `4fcfc00`.
+The previous installation, `0.1.0-6e19fe3`, is retained for rollback. Before
+the atomic switch, the final installation matched all 1,281 tracked files in
+the release commit and validated all four contract digests. CLI admission
+passed for 32 supported selections and refused all 20 vertical focused selections.
+After the switch, the default launcher passed a fresh Balanced MVP admission dry-run.
+
+The installed runner skill matches the stable release, including its consumer-3
+MVP guidance. A separate consuming directory successfully admitted a prepared
+synthetic MVP package and read its status. The maintainer release checklist
+was added to `main` after the runtime release in `0bfd2c4`.
+
 **2026-11-25 — consumer-3 activation.** The 0.3.0rc4 candidate shipping map enables the qualified RC3 digest for new explicit Phase 1 jobs. See the [production CLI checks](#consumer-3-production-cli-checks).
 
 **RC3 correction.** The isolated `0.3.0rc3` candidate passes deferred-nit closeout and operator-decision blocking through the CLI. See [RC3 qualification](#rc3-closeout-correction). The [RC2 hold](#release-review-disposition) still applies to consumer-2.
@@ -471,6 +485,5 @@ provider calls. The [activation receipt](qualification/phase1-consumer3-activati
 inventory, exact digests, matrix, results and evidence hashes. Initial harness
 corrections are listed in the receipt.
 
-Stable still resolves to `0.1.0-6e19fe3`. Stable adoption and publication require
-separate decisions. Retain this versioned candidate and the prior installations
-for review and replay.
+At the RC4 checkpoint, stable still selected `0.1.0-6e19fe3`. The subsequent
+[stable release closeout](#stable-release-closeout) records the final promotion.

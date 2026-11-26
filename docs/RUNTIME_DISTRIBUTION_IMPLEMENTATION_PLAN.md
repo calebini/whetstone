@@ -7,6 +7,9 @@ Whetstone version using versioned installations, three channel pointers and one
 launcher. The [revised contract](specs/RUNTIME_DISTRIBUTION_AND_SELECTION_SPEC.md)
 owns this scope.
 
+Current stable is `0.3.0-4fcfc00`. The prior installation remains available for
+rollback. See the [stable release closeout](PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout).
+
 Initial local stable pin selected by the operator with known development risk
 accepted: commit `6e19fe3e72dedda50a372781a43c08e5d7e7480a`, reported version `0.1.0`.
 A separate snapshot and environment are installed outside the development repo.
