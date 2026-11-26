@@ -6,6 +6,7 @@ from whetstone.vnext_contracts import CONTRACT_ROOT, confined_file, require, sha
 POLICY = 'scope-aware-phase1-v1'
 ALGORITHM = 'algorithms/vnext_phase1_completion_policy_v1.md'
 DECISIONS = frozenset({'operator_decision_required', 'scope_change', 'authority_conflict'})
+SUPPORTED_PROFILE_SETS = ('stateful_system', 'balanced_mvp', 'utility_mvp')
 
 
 def enabled(review):
@@ -29,7 +30,7 @@ def validate_selection(review):
     """Capability admission only; the obligation evaluator below has no preset branches."""
     from whetstone.scheduler import profile_names_for_phase
     require(review['workflow'] in {'standard', 'mvp'}, 'unsupported shared Phase 1 workflow')
-    require(review['profile_set'] in {'stateful_system', 'balanced_mvp', 'utility_mvp'},
+    require(review['profile_set'] in SUPPORTED_PROFILE_SETS,
             'unsupported shared Phase 1 profile set')
     require(review['review_mode'] in {'horizontal', 'vertical'}, 'unsupported shared Phase 1 route')
     names = [p['name'] for p in review['profiles']]

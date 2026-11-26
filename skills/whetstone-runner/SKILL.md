@@ -54,6 +54,10 @@ Do not invent attestations or claim the bridge is deprecated.
 Read [preparation](references/preparation.md) for scope, schedule, allowances,
 models and handoff. Use [run patterns](references/run-patterns.md) for examples
 and [commands](references/commands.md) for command/artifact interpretation.
+For a single-spec full MVP run, check the selected CLI for `stage-mvp`. When
+available, follow **Stage a single-spec MVP** in the matching runtime's
+`docs/OPERATOR_EXAMPLES.md#stage-a-single-spec-mvp`. Use a fresh package for
+the approved rebuild and check admission with the same runtime.
 The agent assembles snapshots, inventories and hashes; the operator reviews
 boundaries and exact effects. Use existing supported builders/validators; no
 universal preparation command is supplied by this skill.

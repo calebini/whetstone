@@ -1,5 +1,10 @@
 # Release notes
 
+## 0.4.0rc1 — 2026-11-26 (candidate)
+
+- `stage-mvp` prepares an offline verified Phase 1 package for one Markdown spec from explicit scope, protected meanings, mutation ceilings and review settings. The runner skill links to the [caller example](docs/OPERATOR_EXAMPLES.md#stage-a-single-spec-mvp).
+- Intake writes UTC timestamps at whole-second precision. The builder accepts timestamp spellings from earlier intake, normalizes the staged seed, and reports the source and seed hashes. Draft scope still requires approval before admission.
+
 ## 0.3.0 — 2026-11-25
 
 - Adds explicit `vnext-verified-consumer-3` selection for Phase 1 verified promotion on Standard and MVP jobs. Stateful System, Balanced MVP and Utility MVP support horizontal and vertical full reviews and horizontal focused reviews. MVP requires approved scope.

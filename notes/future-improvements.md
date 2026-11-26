@@ -442,6 +442,23 @@ The key invariant should remain: freeform operator intent may help generate the 
 
 ## First-Contact Job Designer
 
+**Single-spec MVP staging rehearsal, 2026-11-26.** On stable 0.3.0 a fresh
+calling agent selected the right review and protections but needed a custom
+package script, installed internals and a timestamp conversion to reach scope
+approval. In the development rehearsal another fresh agent staged its own ticket
+import spec from the runner skill, worked example and public CLI. It encoded the
+preview rationale and whole-file rejection as two blocking semantic commitments.
+Draft admission dry-run stopped at scope approval (exit 2). After fixture-only
+approval it rebuilt in a fresh directory and passed dry-run (exit 0). Both
+checks left the run destination absent. The agent needed no procedural coaching.
+It flagged `admitted: false` on successful dry-run, now explained in the example.
+
+The agents were given the skill location and used different synthetic specs.
+This demonstrates staging after skill discovery. Timing, automatic discovery
+and live execution were outside the rehearsal. The development cohort passed
+119 tests. The release candidate carries this bounded staging improvement;
+the broader job designer below remains a proposal.
+
 Whetstone should eventually have a first-contact job design capability that sits above scope intake. The operator supplies a fresh spec plus a small set of intent markers, and Whetstone produces a concrete job descriptor that downstream commands can execute without guesswork.
 
 This feature is broader than scope-contract generation, but it should produce or update a scope contract as one of its outputs. The scope contract remains the authoritative boundary artifact; the job descriptor explains how Whetstone should pressure the spec.

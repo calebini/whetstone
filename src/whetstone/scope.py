@@ -146,7 +146,7 @@ def scope_contract_from_notes(notes: str, *, source_path: str | None = None, app
             }
         ]
 
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {
         "schema_version": SCOPE_CONTRACT_SCHEMA_VERSION,
         "generated_at": generated_at,

@@ -120,3 +120,84 @@ Report resolved values, not this illustrative placeholder text:
 
 Do not claim a prepared package is authorized, a local check is live qualification,
 or an illustrative mode combination has been tested merely because it appears here.
+
+## Stage a single-spec MVP
+
+Use an installed launcher that lists `stage-mvp` in `whetstone --help`.
+This example starts in a fresh caller directory. Substitute your own spec,
+intake notes, protected meanings and client settings for a real job.
+
+```sh
+cat > design.md <<'SPEC'
+# Roster imports
+
+## Preview
+Show the proposed changes before applying them so the coordinator can catch a mistaken column mapping.
+
+## Apply
+One invalid row rejects the whole file. No rows from a rejected file change the roster.
+SPEC
+
+cat > scope-notes.md <<'NOTES'
+## Core Outcome
+Make the manual roster import clear enough to implement.
+## Primary Actor Or Consumer
+The roster coordinator.
+## Core Flows
+- must: Preview the file and then apply a valid import.
+## In Scope
+- preview: define
+- apply: define
+## Deferred / Out Of Scope
+- Scheduled imports
+- Exhaustive diagnostic codes
+## Good Enough
+An implementer can explain the benefit of preview and the effect of an invalid row.
+NOTES
+
+whetstone intake --from-notes scope-notes.md --output draft-scope.json
+```
+
+Select the installed client version and a model available to the caller. This
+example uses one identity across Reviewer, Editor and Verifier. The preset owns
+the per-lens budgets. The edit boundary permits section-body replacements and
+sets explicit per-proposal ceilings. The package contains the seed snapshot and
+has no source adoption target.
+
+```sh
+client_version=$(codex --version | awk '{print $NF}')
+model=gpt-6.2-astra
+stage_import() {
+  whetstone stage-mvp --seed design.md --scope "$1" --output "$2" \
+    --authority-scope roster-import --profile-set utility_mvp --review-mode vertical \
+    --client codex --client-version "$client_version" --model "$model" \
+    --max-operations 3 --max-changed-sections 2 --max-changed-normative-units 3 \
+    --protect Preview 'Preview precedes apply so the coordinator can catch a mistaken mapping.' 'Retain the reason for preview.' \
+    --protect Apply 'Any invalid row rejects the entire file without roster changes.' 'Partial writes change settled behavior.'
+}
+stage_import draft-scope.json package-draft
+whetstone vnext-admit --root "$PWD/new-run" --config "$PWD/package-draft/run.yaml" --dry-run
+```
+
+The expected draft result is exit 2 with `scope must be approved`. Review
+`draft-scope.json`, the protected concepts in `package-draft/protected.json`,
+the seed and the proposed settings. Each protection selects one exact, unique
+heading, delegates wording equivalence to the Verifier, and blocks a loss of the
+declared meaning. Input notes and the seed should still match what was reviewed.
+
+**After explicit scope approval**, compile the reviewed notes with approval and
+repeat the same staging function using a new directory. For a synthetic rehearsal
+the operator can explicitly authorize approval of the fixture alone.
+
+```sh
+whetstone intake --from-notes scope-notes.md --approve --output approved-scope.json
+stage_import approved-scope.json package-approved
+whetstone vnext-admit --root "$PWD/new-run" --config "$PWD/package-approved/run.yaml" --dry-run
+```
+
+On the qualified local storage platform, expect exit 0 for an eligible package.
+The successful dry-run reports `admitted: false` because it checks eligibility
+without initializing a run. Both dry-runs leave the run destination absent. Approval changes the scope binding
+and job identity. Existing directories are never reused. The builder can read
+earlier intake UTC timestamps and canonicalizes only its staged copy. Any later
+live execution requires its own applicable authority.

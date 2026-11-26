@@ -23,6 +23,10 @@ Whetstone persists every round under `rounds/`. For legacy/bridge runs, `rounds/
 
 ### Verified-promotion command surface (explicit opt-in)
 
+For a full MVP Phase 1 review of one Markdown spec, check the selected runtime for
+`stage-mvp` and follow the [runnable staging example](OPERATOR_EXAMPLES.md#stage-a-single-spec-mvp)
+to prepare the draft and approved packages.
+
 For a consumer-3 Phase 1 job, select `editing_mode: verified_promotion` and
 `contract_suite_version: vnext-verified-consumer-3` in the launch config. Bind the same suite in the
 package descriptor. The shipping digest is `46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c`.

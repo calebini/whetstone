@@ -564,7 +564,16 @@ def main(argv: list[str] | None = None) -> int:
         child.add_argument("--vnext-input-package", help="staged proposal package manifest; requires a qualified proposal suite")
         child.add_argument("--vnext-round", type=int, help="explicit stored proposal round for inspection or continuation")
         child.add_argument("--vnext-decisions", help="explicit retained operator selection receipt, relative to the run root")
+    from whetstone import mvp_staging
+    mvp_staging.add_parser(subparsers)
     args = parser.parse_args(argv)
+    if args.command == "stage-mvp":
+        try:
+            print(json.dumps(mvp_staging.stage_mvp(args)))
+        except (OSError, ValueError) as exc:
+            print(json.dumps({"error": str(exc)}))
+            return 2
+        return 0
     import sys
     supplied = sys.argv[1:] if argv is None else argv
     args._budget_explicit = any(value == "--budget" or value.startswith("--budget=") for value in supplied)

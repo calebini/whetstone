@@ -212,6 +212,23 @@ These are reporting distinctions, not new persisted Whetstone state names.
 Launch only when both are satisfied; do not add a duplicate confirmation when
 launch has already been authorized within that scope.
 
+### Single-spec MVP package preparation
+
+On runtimes that advertise `stage-mvp`, supply the Markdown seed, intake scope,
+authority scope, protected meanings and their exact section headings. Choose the
+full Phase 1 schedule, profile preset and shared client identity. The builder
+applies Whetstone’s existing draft whitespace normalization to the staged seed,
+reports both original and staged hashes, validates and serializes the bound artifacts, and writes
+`run.yaml` last inside a new package directory. It reports the job ID, package
+digest, scope status and review allowances. It preserves the intake approval
+state. An approved rebuild belongs in a second directory so the reviewed draft
+package remains available.
+
+Use a separate, nonexistent run destination with `vnext-admit --dry-run` to
+check admission. A draft should reach the scope approval gate. Check the approved
+rebuild the same way before seeking launch authority.
+[Runnable caller-project example](OPERATOR_EXAMPLES.md#stage-a-single-spec-mvp).
+
 ## Monitor evidence and make decisions concrete
 
 Use the selected runtime's `status` first. Report what is happening, the current
