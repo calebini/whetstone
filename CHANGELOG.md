@@ -1,6 +1,6 @@
 # Release notes
 
-## 0.4.0rc1 — 2026-11-26 (candidate)
+## 0.4.0 — 2026-11-26
 
 - `stage-mvp` prepares an offline verified Phase 1 package for one Markdown spec from explicit scope, protected meanings, mutation ceilings and review settings. The runner skill links to the [caller example](docs/OPERATOR_EXAMPLES.md#stage-a-single-spec-mvp).
 - Intake writes UTC timestamps at whole-second precision. The builder accepts timestamp spellings from earlier intake, normalizes the staged seed, and reports the source and seed hashes. Draft scope still requires approval before admission.
