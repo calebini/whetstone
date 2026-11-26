@@ -1,0 +1,4 @@
+interface:
+  display_name: "Whetstone Release"
+  short_description: "Qualify releases, deploy stable and sync agent skills"
+  default_prompt: "Use $whetstone-release to work through the Whetstone release checklist and verify the requested deployment milestone."

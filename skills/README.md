@@ -1,17 +1,19 @@
-# Whetstone agent skill
+# Whetstone agent skills
 
 `whetstone-runner/` is the repository-owned portable skill, adapted from the
 previous separately installed skill. It includes mode routing and supporting
 references. The [operator guide](../docs/OPERATOR_GUIDE.md) owns the shared human
 and agent explanations; the skill tells an agent which guidance to consult.
 
+[Whetstone Release](whetstone-release/SKILL.md) is the maintainer checklist for release preparation, qualification, deployment, rollback and reconciliation of installed agent skills.
+
 ## Use and installation
 
-An agent can read `whetstone-runner/SKILL.md` directly from this checkout when
+An agent can read either skill’s `SKILL.md` directly from this checkout when
 explicitly directed to it. For automatic discovery, install the **whole folder**
 (including `references/` and `agents/`) into the skill location supported by your
 agent host. In Codex, a typical personal location is
-`${CODEX_HOME:-$HOME/.codex}/skills/whetstone-runner`. Follow the host's discovery
+`${CODEX_HOME:-$HOME/.codex}/skills/<skill-name>`. Follow the host's discovery
 or reload procedure; repository presence alone does not guarantee loading.
 
 Before replacing an existing installation, inspect it for local changes and
