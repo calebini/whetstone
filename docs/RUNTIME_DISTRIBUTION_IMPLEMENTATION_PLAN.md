@@ -8,8 +8,31 @@ launcher. The [revised contract](specs/RUNTIME_DISTRIBUTION_AND_SELECTION_SPEC.m
 owns this scope.
 
 Current candidate is `0.4.0rc1-f443a60` ([installed staging qualification](qualification/mvp-staging-0.4.0rc1.json)).
-Current stable is `0.3.0-4fcfc00`. The prior installation remains available for
-rollback. See the [stable release closeout](PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout).
+Current stable is `0.4.0-c8f1a3c`. The rollback installation is `0.3.0-4fcfc00`.
+
+### 0.4.0 stable promotion, 2026-11-26
+
+The release was installed from commit `c8f1a3c2808734030ce17fb8cd2048ae5b783329`
+in a separate environment. All 1,286 tracked files matched the commit. The final
+CLI passed the four installed staging tests and validated all four suite
+manifests. Consumer-1 and consumer-3 retain their qualified digests.
+
+From an external caller directory, the installed example reached the expected
+draft approval gate, passed approved admission dry-run and rejected a modified
+seed. The final CLI also accepted the six retained full MVP packages
+(three profile sets, horizontal and vertical) and the package staged from
+0.3.0 intake. These checks made zero live provider calls.
+
+After the atomic pointer switch, ordinary PATH lookup and explicit stable
+selection reported the exact release. Command help and approved admission
+dry-run passed. The runner skill's `SKILL.md` was synced from the selected
+installation. Both complete host skill trees matched the installation
+(eight runner files and two release files), and both passed skill validation.
+
+The retained 0.3.0 launcher passed admission dry-run after promotion. To roll
+back, atomically replace the stable symlink with one pointing to the retained
+`0.3.0-4fcfc00` installation, verify the default launcher and dry-run from a
+calling project, and reconcile host skills using the release checklist.
 
 Initial local stable pin selected by the operator with known development risk
 accepted: commit `6e19fe3e72dedda50a372781a43c08e5d7e7480a`, reported version `0.1.0`.

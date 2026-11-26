@@ -9,7 +9,9 @@ Historical consumer-1 handoff: [controlled verified-promotion release](docs/VNEX
 ## Shared Phase 1 completion and MVP qualification (released in 0.3.0)
 
 Owner: [shared completion spec](docs/specs/PHASE1_COMPLETION_POLICY_SPEC.md).
-Stable runs release commit `4fcfc00`. The [stable release closeout](docs/PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout) records final admission checks, skill reconciliation and the rollback target.
+Release `0.3.0` introduced this capability at commit `4fcfc00`. The
+[0.3.0 closeout](docs/PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout) records its checks.
+The [0.4.0 promotion record](docs/RUNTIME_DISTRIBUTION_IMPLEMENTATION_PLAN.md#040-stable-promotion-2026-11-26) identifies current stable and rollback.
 
 Readiness slice (2026-11-24):
 - **Outcome:** prepare a qualified, versioned Phase 1 release candidate.

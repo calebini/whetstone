@@ -2,7 +2,7 @@
 
 ## Stable release closeout
 
-The shared launcher and annotated tag `0.3.0` both select release commit `4fcfc00`.
+At 0.3.0 promotion the shared launcher and annotated tag `0.3.0` both selected release commit `4fcfc00`.
 The previous installation, `0.1.0-6e19fe3`, is retained for rollback. Before
 the atomic switch, the final installation matched all 1,281 tracked files in
 the release commit and validated all four contract digests. CLI admission

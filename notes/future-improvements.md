@@ -465,7 +465,7 @@ From a separate caller directory the public CLI accepted approved scope for
 all three presets on both full Phase 1 routes. It refused draft scope and a
 modified seed. Intake produced by stable 0.3.0 also passed after staging.
 All four installed staging tests passed. Dry-runs left the destination absent.
-Stable remains on 0.3.0 pending operator review.
+Stable remained on 0.3.0 during candidate review. The [0.4.0 promotion record](../docs/RUNTIME_DISTRIBUTION_IMPLEMENTATION_PLAN.md#040-stable-promotion-2026-11-26) records the subsequent rollout.
 
 Whetstone should eventually have a first-contact job design capability that sits above scope intake. The operator supplies a fresh spec plus a small set of intent markers, and Whetstone produces a concrete job descriptor that downstream commands can execute without guesswork.
 
