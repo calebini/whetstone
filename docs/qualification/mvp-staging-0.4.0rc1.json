@@ -1,0 +1,88 @@
+{
+  "candidate": {
+    "channel": "candidate",
+    "version": "0.4.0rc1",
+    "commit": "f443a6051d7c68b21f14cefc6a2642b0133f5da8"
+  },
+  "draft": {
+    "protocol": "vnext",
+    "mode": "verified_promotion",
+    "admitted": false,
+    "reason_code": "vnext_input_invalid",
+    "reason": "$: scope must be approved"
+  },
+  "approved": {
+    "protocol": "vnext",
+    "mode": "verified_promotion",
+    "admitted": false,
+    "gate": "admission"
+  },
+  "tamper": {
+    "protocol": "vnext",
+    "mode": "verified_promotion",
+    "admitted": false,
+    "reason_code": "vnext_input_invalid",
+    "reason": "seed.md: artifact hash mismatch"
+  },
+  "approved_matrix": [
+    [
+      "stateful_system",
+      "horizontal"
+    ],
+    [
+      "stateful_system",
+      "vertical"
+    ],
+    [
+      "balanced_mvp",
+      "horizontal"
+    ],
+    [
+      "balanced_mvp",
+      "vertical"
+    ],
+    [
+      "utility_mvp",
+      "horizontal"
+    ],
+    [
+      "utility_mvp",
+      "vertical"
+    ]
+  ],
+  "draft_package": "c930636d9bc97b3dd4301514a4ecce3f8411226a7c799edf6b27909bfd971f29",
+  "approved_package": "259be2a20d36c87b800b2036262a651fc58653605da802b0e98184c813a7f180",
+  "root_absent": true,
+  "stable_scope_compatibility": {
+    "producer_version": "0.3.0",
+    "source_hash": "985fc59818441cd3c67af2b2dfab87f4225323296bdd1aff44fec18a95db8dc6",
+    "admission": {
+      "protocol": "vnext",
+      "mode": "verified_promotion",
+      "admitted": false,
+      "gate": "admission"
+    }
+  },
+  "date": "2026-11-26",
+  "stable_after_checks": {
+    "version": "0.3.0",
+    "commit": "4fcfc00fdcd5caa1a1fe1fe30570fa125f70cc4b",
+    "channel": "stable"
+  },
+  "qualification": "Offline public CLI on local macOS/APFS from an external caller directory using the installed example.",
+  "installed_tracked_files_verified": 1285,
+  "installed_staging_tests_passed": 4,
+  "development_regression_tests_passed": 119,
+  "provider_calls": 0,
+  "consumer_3_digest": "46a7d73362aa8c1463e20978f2dc9803a588dae6e043c461321492d33c42313c",
+  "shipped_verified_suites": [
+    "vnext-verified-consumer-1",
+    "vnext-verified-consumer-3"
+  ],
+  "skill_comparison": {
+    "whetstone-runner": [
+      "SKILL.md"
+    ],
+    "whetstone-release": []
+  }
+}

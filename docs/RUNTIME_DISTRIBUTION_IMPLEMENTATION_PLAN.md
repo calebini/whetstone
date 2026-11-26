@@ -7,6 +7,7 @@ Whetstone version using versioned installations, three channel pointers and one
 launcher. The [revised contract](specs/RUNTIME_DISTRIBUTION_AND_SELECTION_SPEC.md)
 owns this scope.
 
+Current candidate is `0.4.0rc1-f443a60` ([installed staging qualification](qualification/mvp-staging-0.4.0rc1.json)).
 Current stable is `0.3.0-4fcfc00`. The prior installation remains available for
 rollback. See the [stable release closeout](PHASE1_COMPLETION_QUALIFICATION.md#stable-release-closeout).
 
@@ -14,7 +15,7 @@ Initial local stable pin selected by the operator with known development risk
 accepted: commit `6e19fe3e72dedda50a372781a43c08e5d7e7480a`, reported version `0.1.0`.
 A separate snapshot and environment are installed outside the development repo.
 The machine-local `whetstone` launcher defaults to stable; `--channel development`
-selects the working checkout. Candidate remains unset. Machine-specific paths and
+selects the working checkout. Candidate was unset at that initial baseline. Machine-specific paths and
 pointer records stay outside Git. This is a practical operator-selected baseline,
 not a claim that the unfinished verified-promotion feature is release-qualified.
 

@@ -459,6 +459,14 @@ and live execution were outside the rehearsal. The development cohort passed
 119 tests. The release candidate carries this bounded staging improvement;
 the broader job designer below remains a proposal.
 
+**Installed candidate, 2026-11-26.** The [qualification receipt](../docs/qualification/mvp-staging-0.4.0rc1.json)
+binds `0.4.0rc1` to commit `f443a6051d7c68b21f14cefc6a2642b0133f5da8`.
+From a separate caller directory the public CLI accepted approved scope for
+all three presets on both full Phase 1 routes. It refused draft scope and a
+modified seed. Intake produced by stable 0.3.0 also passed after staging.
+All four installed staging tests passed. Dry-runs left the destination absent.
+Stable remains on 0.3.0 pending operator review.
+
 Whetstone should eventually have a first-contact job design capability that sits above scope intake. The operator supplies a fresh spec plus a small set of intent markers, and Whetstone produces a concrete job descriptor that downstream commands can execute without guesswork.
 
 This feature is broader than scope-contract generation, but it should produce or update a scope contract as one of its outputs. The scope contract remains the authoritative boundary artifact; the job descriptor explains how Whetstone should pressure the spec.
