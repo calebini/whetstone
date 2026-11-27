@@ -345,7 +345,7 @@ The human-readable `change_audit_report.md` MUST include the verdict, boundary-p
 
 ### Proposed extension: explicit objectives and evidence-backed coverage
 
-**Status: proposal for review; not ratified or implemented.** This subsection
+**Approved for implementation on 2026-11-27.** This subsection
 defines an opt-in extension to `audit-change`. The v1 workflow above remains the
 current contract. The proposed machine shapes and validation rules are owned by
 [the artifact leaf](ARTIFACTS_VALIDATION_AND_TELEMETRY_SPEC.md#proposed-change-audit-objective-contracts).
@@ -369,8 +369,9 @@ whetstone audit-change --root <fresh_audit_root> \
 ```
 
 `--audit-request` is mutually exclusive with `--notes` and `--spec`. It supplies
-the notes, role-bound source inputs, and optional objective list in one small JSON
-packet; profile and client options retain their existing meanings. The old
+the notes, role-bound source inputs, and a required `objectives` array in one
+JSON packet. Use `"objectives": []` for findings only. Profile and client
+options retain their existing meanings. The old
 `--notes` plus repeated `--spec` invocation continues to select v1. Request-based
 invocation selects v2 reports even with `objectives: []`; it requires no baseline
 unless an objective actually compares against a baseline. An ordinary v2 audit
@@ -428,6 +429,27 @@ the baseline and any explicit supersession rules. If a complete post-change
 judgment requires missing context, the result is `not_assessed`; Whetstone does
 not synthesize a revised document or assume an implicit merge. This role does
 not register a vNext candidate or import its promotion lifecycle.
+
+#### Manual edit and resubmission
+
+The operator chooses the obligation and decides how to address the result. The
+calling agent can prepare the request, hash the selected inputs, and locate the
+baseline passage on the operator's behalf. For a recheck of the same obligation,
+reuse its objective ID, question and criteria. For preservation, retain the
+original baseline bytes and obligation spans. Bind
+the revised candidate bytes in a new request and submit to a fresh audit root.
+The earlier report remains available alongside the new one. Each assessment
+stands on the evidence submitted in its own audit. A deliberate change in the
+obligation's meaning receives a new objective ID.
+
+For example, the objective `whole-file-rejection` asks whether an import with
+one invalid row rejects the entire file. If the revised spec says to skip that
+row and commit the valid rows, the first report should show the baseline rule,
+the conflicting passage and the linked finding. If the operator and agent edit
+the candidate to restore whole-file rejection, the second report should show
+the same question and the passage that now satisfies it. The operator can
+compare the two rows directly. This requires no cross-run state or automated
+comparison command.
 
 #### Reporting and operating boundary
 

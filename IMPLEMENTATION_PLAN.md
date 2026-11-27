@@ -2364,9 +2364,10 @@ First successful live build:
 
 ## Proposed Audit-Change Objectives Release
 
-**Status: proposal for review only, 2026-09-13.** No runtime, schema, fixture, or
-test implementation is included. This proposal does not change the existing
-candidate-editing delivery sequence or authorize nested review, commit, or push.
+**Approved for implementation on 2026-11-27.** The first bounded consistency
+audit identified one major and four minor findings. After the corrections, a
+separate focused recheck passed with zero findings. Implement the two-submission
+acceptance case first. Stable 0.4.0 uses the findings-only v1 workflow.
 
 ### Current-state assessment
 
@@ -2439,6 +2440,47 @@ overall verdict also considers severity. Missing/malformed records are contract
 failures; `not_assessed` is a completed but inconclusive review. Findings-only
 audits remain available with either legacy flags or an empty v2 objective list.
 No semantic preservation field is populated from finding counts.
+
+### First end-to-end acceptance case
+
+Exercise the [manual edit and resubmission](docs/specs/SCOPE_INTAKE_AND_DECISIONS_SPEC.md#manual-edit-and-resubmission)
+through the proposed public CLI using two scripted Reviewer responses. Freeze the
+instructions and baseline, use one `preservation` objective named
+`whole-file-rejection`, and submit two complete candidate revisions to separate
+fresh roots. The first candidate permits partial imports. The second restores
+whole-file rejection. Use one in-scope minor finding for the first submission
+and zero findings for the second. This isolates the objective’s effect on the verdict.
+
+| Submission | Required report evidence | Expected result |
+| --- | --- | --- |
+| First | The baseline rule, the candidate passage permitting partial imports, and a linked in-scope finding | `violated`, complete coverage, `needs_revision`, exit 1 |
+| After manual edit | The same baseline rule and the restored requirement cited from the new candidate | `satisfied`, complete coverage, `pass`, exit 0 |
+
+Assert one Reviewer invocation per submission, identical objective ID, question,
+criteria and complete `preservation.baseline_refs` (artifact ID, digest and byte
+endpoints), distinct candidate hashes, and byte-identical first-run artifacts
+after the second audit. These are fixture comparisons across two independent
+requests. Verify that each Markdown report renders its own snapshot's citations.
+
+Keep the candidate input ID stable. Begin both candidate files with the same
+supporting sentence, “These rules apply to every row in the import.” Cite its
+unchanged byte range in both responses alongside each revision's decisive rule.
+Exercise these controls independently using scripted responses:
+
+- In the otherwise valid second response, replace only the supporting Ref's
+  digest with the first candidate digest. Expect `INVALID_EVIDENCE_REF`,
+  `invalid_review` and exit 2.
+- Remove all candidate evidence from the satisfied assessment, retaining its
+  correct baseline citation. Expect `invalid_review`, `audit_failed`, objective
+  pass false and exit 2. Omitting the entire assessment also yields an invalid
+  review with exit 2.
+- Supply `not_assessed` with a concrete inability reason, empty evidence and
+  no findings. Expect `completed`, incomplete coverage, `inconclusive` and exit 1.
+- In the first response, duplicate the valid finding link. Separately, add a
+  distinct out-of-scope finding and link it alongside the valid one. Each
+  response yields `invalid_review` and exit 2.
+
+This case exercises the core loop first; the release fixtures below still apply.
 
 ### Focused fixtures and test requirements
 

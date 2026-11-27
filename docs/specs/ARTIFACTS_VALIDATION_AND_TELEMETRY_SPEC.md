@@ -698,7 +698,7 @@ unresolved_human_decision_count: integer
 
 ### Proposed change-audit objective contracts
 
-**Status: proposal for review; not ratified or implemented.** These contracts
+**Approved for implementation on 2026-11-27.** These contracts
 apply only to the proposed `--audit-request` input form defined in the
 [scope leaf](SCOPE_INTAKE_AND_DECISIONS_SPEC.md#proposed-extension-explicit-objectives-and-evidence-backed-coverage).
 The existing v1 shapes above and canonical `reviewer_feedback` remain unchanged.
@@ -790,6 +790,14 @@ checks and explanations of absence, not invented successor text. Render readable
 excerpts and line/byte locators from verified snapshots; do not ask the Reviewer
 to compute hashes or normalize source coordinates.
 
+During manual resubmission, stable objective IDs let readers compare reports.
+Every assessment and finding link MUST resolve within its own submission.
+Reusing a candidate input ID for revised bytes requires its new digest in the
+request and evidence. A reference carrying the previous candidate digest MUST
+fail validation even if its offsets still resolve to identical text. The
+Markdown report MUST render citations from that submission’s retained snapshots,
+so later source edits cannot change what an earlier report shows.
+
 #### Manifest, Reviewer response, and persistence
 
 Proposed `change_audit_manifest_v2.schema.json`:
@@ -869,8 +877,8 @@ The following checks are deterministic, after shape/context/hash validation:
    Every `satisfied` or `violated` assessment cites at least one Ref for every
    applicable input ID. `not_assessed` may have no evidence when unavailable;
    any supplied evidence is still validated.
-3. `violated` requires at least one distinct `finding_ids` entry resolving to an
-   in-scope finding in this response. `satisfied` and `not_assessed` require an
+3. For `violated`, `finding_ids` MUST be nonempty and pairwise distinct. Every
+   entry MUST resolve by `feedback_id` to an in-scope finding in this response. `satisfied` and `not_assessed` require an
    empty finding list. `not_assessed` requires a nonempty `inability_reason`;
    other statuses require null. All statuses require concise reasoning.
 4. For conclusive preservation assessments, evidence contains each declared
@@ -878,7 +886,7 @@ The following checks are deterministic, after shape/context/hash validation:
    requires actual candidate byte ranges; a violated assessment may use whole
    candidate Refs to explain loss. An unassessed preservation objective remains
    incomplete, even when other obligations are satisfied.
-5. There is no assessment scope flag or waiver. A violated objective linked only
+5. There is no assessment scope flag or waiver. A violated objective with any link
    to an `in_scope=false` finding fails validation; the Orchestrator MUST NOT
    silently reclassify that finding. A claim of scope conflict can only be an
    explicit `not_assessed`, never a successful exemption.
